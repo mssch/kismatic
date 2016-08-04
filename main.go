@@ -1,7 +1,9 @@
+// Copyright © 2016 Kismatic <kismatic@apprenda.com>
+
 package main
 
-import "fmt"
+import "github.com/apprenda/kismatic-platform/cmd"
 
 func main() {
-	fmt.Println("Hello kismatic-platform")
+	cmd.Execute()
 }
