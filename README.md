@@ -1,1 +1,1 @@
-# kismatic-platform
+# Kismatic Platform
