@@ -1,0 +1,14 @@
+# variables for the etcd_k8s
+etcd_path: /etc/etcd_k8s
+etcd_binary_version: v3.0.4
+etcd_service_name: etcd_k8s
+
+# etcd.service.j2 variables
+etcd_data_dir: /var/lib/etcd_k8s
+etcd_cert_file: "{{ etcd_path }}/{{ etcd_cert_file_name }}"
+etcd_key_file: "{{ etcd_path }}/{{ etcd_key_file_name }}"
+etcd_ca_file: "{{ etcd_path }}/{{ etcd_ca_file_name }}"
+etcd_peer_port: 2380
+etcd_client_port: 2379
+etcd_cluster_token: etcd-cluster-k8s #TODO some random/custom string to not collide with another etcd on the network
+etcd_cluster_string: etcd3=https://147.75.204.229:{{ etcd_peer_port }},etcd2=https://147.75.204.227:{{ etcd_peer_port }},etcd1=https://147.75.204.201:{{ etcd_peer_port }} #TODO need to be passed in from previous process

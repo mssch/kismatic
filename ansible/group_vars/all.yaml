@@ -1,0 +1,5 @@
+# common variables for all hosts
+temprary_download_dir: /tmp/kismatic
+init_system_dir: /etc/systemd
+init_system_file_extenstion: service
+bin_dir: /usr/bin

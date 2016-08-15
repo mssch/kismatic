@@ -1,0 +1,15 @@
+---
+  # install and verify etcd2 for Calico networking
+  - hosts: etcd
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/etcd_common.yaml
+      - group_vars/etcd_networking.yaml
+
+    roles:
+      - common
+      - etcd-cert
+      - etcd-install
+      - etcd-verify
