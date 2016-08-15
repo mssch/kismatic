@@ -1,0 +1,9 @@
+---
+- name: create etcd directory
+  file: path={{ etcd_path }} state=directory
+- name: copy {{ etcd_ca_file_name }}
+  copy: src=../tls/ca.pem dest="{{ etcd_path }}/{{ etcd_ca_file_name }}" owner="{{ etcd_service_owner }}" group="{{ etcd_service_group }}" mode="{{ etcd_service_mode }}"
+- name: copy {{ etcd_cert_file_name }}
+  copy: src=../tls/kubernetes.pem dest="{{ etcd_path }}/{{ etcd_cert_file_name }}" owner="{{ etcd_service_owner }}" group="{{ etcd_service_group }}" mode="{{ etcd_service_mode }}"
+- name: copy {{ etcd_key_file_name }}
+  copy: src=../tls/kubernetes-key.pem dest="{{ etcd_path }}/{{ etcd_key_file_name }}" owner="{{ etcd_service_owner }}" group="{{ etcd_service_group }}" mode="{{ etcd_service_mode }}"

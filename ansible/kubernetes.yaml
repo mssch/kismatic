@@ -1,0 +1,4 @@
+---
+  # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
+  - include: etcd_k8s.yaml
+  - include: etcd_networking.yaml

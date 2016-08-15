@@ -1,0 +1,15 @@
+---
+- name: create etcd directory
+  file: path={{ etcd_path }} state=directory
+- name: download and untar etcd
+  unarchive: src={{ etcd_binary_download_path }} dest={{ temprary_download_dir }} remote_src=yes copy=no
+- name: move etcd binaries
+  command: mv {{ temprary_download_dir }}/{{ etcd_untared_dir }}/etcd {{ bin_dir }}
+- name: move etcdctl binaries
+  command: mv {{ temprary_download_dir }}/{{ etcd_untared_dir }}/etcdctl {{ bin_dir }}
+- name: copy {{ etcd_service_name }}.{{ init_system_file_extenstion }} to remote
+  template: src={{ etcd_service_template_name }} dest={{ init_system_dir }}/{{ etcd_service_name }}.{{ init_system_file_extenstion }}  owner={{ etcd_service_owner }} group={{ etcd_service_group }} mode={{ etcd_service_mode }}
+- name: enable {{ etcd_service_name }}.{{ init_system_file_extenstion }}
+  command: systemctl enable {{ init_system_dir }}/{{ etcd_service_name }}.{{ init_system_file_extenstion }}
+  notify:
+    - start etcd service

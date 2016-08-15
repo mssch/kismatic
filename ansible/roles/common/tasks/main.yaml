@@ -1,0 +1,4 @@
+---
+# common tasks
+- name: create a temporary download directory
+  file: path={{ temprary_download_dir }} state=directory

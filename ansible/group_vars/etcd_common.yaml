@@ -1,0 +1,14 @@
+# common variables for etcd
+# etcd.install
+etcd_binary_download_name: etcd-{{ etcd_binary_version }}-linux-amd64.tar.gz
+etcd_untared_dir: etcd-{{ etcd_binary_version }}-linux-amd64
+etcd_binary_download_path: https://github.com/coreos/etcd/releases/download/{{ etcd_binary_version }}/{{ etcd_binary_download_name }} #TODO change to hosted
+etcd_service_template_name: etcd.service.j2
+etcd_service_owner: root
+etcd_service_group: wheel
+etcd_service_mode: 0664
+
+# etcd.certificates
+etcd_ca_file_name: ca.pem
+etcd_cert_file_name: etcd.pem
+etcd_key_file_name: etcd-key.pem

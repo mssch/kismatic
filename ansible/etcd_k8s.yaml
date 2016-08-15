@@ -1,0 +1,15 @@
+---
+  # install and verify etcd3 for Kubernetes
+  - hosts: etcd
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/etcd_common.yaml
+      - group_vars/etcd_k8s.yaml
+
+    roles:
+      - common
+      - etcd-cert
+      - etcd-install
+      - etcd-verify
