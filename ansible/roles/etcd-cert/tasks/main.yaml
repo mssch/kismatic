@@ -3,7 +3,7 @@
   file: path="{{ etcd_install_path }}" state=directory
 - name: copy {{ etcd_certificates_ca_file }}
   copy: src=../tls/ca.pem dest="{{ etcd_certificates_ca_file }}" owner="{{ etcd_certificates_owner }}" group="{{ etcd_certificates_group }}" mode="{{ etcd_certificates_mode }}"
-- name: copy {{ etcd_install_path }}/{{ etcd_certificates_cert_file }}
+- name: copy {{ etcd_certificates_cert_file }}
   copy: src=../tls/kubernetes.pem dest="{{ etcd_certificates_cert_file }}" owner="{{ etcd_certificates_owner }}" group="{{ etcd_certificates_group }}" mode="{{ etcd_certificates_mode }}"
 - name: copy {{ etcd_certificates_key_file}}
   copy: src=../tls/kubernetes-key.pem dest="{{ etcd_certificates_key_file }}" owner="{{ etcd_certificates_owner }}" group="{{ etcd_certificates_group }}" mode="{{ etcd_certificates_mode }}"
