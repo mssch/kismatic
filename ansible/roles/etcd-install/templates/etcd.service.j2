@@ -6,15 +6,15 @@ Documentation=https://github.com/coreos/etcd
 User=root
 Type=notify
 Environment=ETCD_NAME={{ ansible_hostname }}
-Environment=ETCD_DATA_DIR={{ etcd_data_dir }}
-Environment=CERT_FILE={{ etcd_cert_file }}
-Environment=KEY_FILE={{ etcd_key_file }}
-Environment=CA_FILE={{ etcd_ca_file }}
+Environment=ETCD_DATA_DIR={{ etcd_service_data_dir }}
+Environment=CERT_FILE={{ etcd_certificates_cert_file }}
+Environment=KEY_FILE={{ etcd_certificates_key_file }}
+Environment=CA_FILE={{ etcd_certificates_ca_file }}
 Environment=IP={{ ansible_default_ipv4.address }}
-Environment=PEER_PORT={{ etcd_peer_port }}
-Environment=CLIENT_PORT={{ etcd_client_port }}
-Environment=ETCD_CLUSTER_TOKEN={{ etcd_cluster_token }}
-Environment=CLUSTER_STRING={{ etcd_cluster_string }}
+Environment=PEER_PORT={{ etcd_service_peer_port }}
+Environment=CLIENT_PORT={{ etcd_service_client_port }}
+Environment=ETCD_CLUSTER_TOKEN={{ etcd_service_cluster_token }}
+Environment=CLUSTER_STRING={{ etcd_service_cluster_string }}
 ExecStart=/usr/bin/etcd --name ${ETCD_NAME} \
   --data-dir=${ETCD_DATA_DIR} \
   --client-cert-auth \
