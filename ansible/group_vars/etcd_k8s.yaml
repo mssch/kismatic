@@ -10,6 +10,8 @@ etcd_certificates_key_file: "{{ etcd_install_path }}/{{ etcd_certificates_key_fi
 # etcd-install
 etcd_install_path: /etc/etcd_k8s
 etcd_install_binary_version: v3.0.4
+etcd_install_bin_name: etcd3
+etcdctl_install_bin_name: etcdctl3
 
 # etcd-install:etcd.service.j2
 etcd_service_name: etcd_k8s

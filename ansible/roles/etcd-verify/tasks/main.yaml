@@ -1,3 +1,3 @@
 ---
-- name: verify etcd cluster health
-  command: etcdctl --endpoint="https://127.0.0.1:{{ etcd_service_client_port }}/" --cert-file={{ etcd_certificates_cert_file }} --key-file={{ etcd_certificates_key_file }} --ca-file={{ etcd_certificates_ca_file }} cluster-health
+- name: verify {{ etcd_install_bin_name }} cluster health
+  command: /usr/bin/{{ etcdctl_install_bin_name }} --endpoint="https://127.0.0.1:{{ etcd_service_client_port }}/" --cert-file={{ etcd_certificates_cert_file }} --key-file={{ etcd_certificates_key_file }} --ca-file={{ etcd_certificates_ca_file }} cluster-health

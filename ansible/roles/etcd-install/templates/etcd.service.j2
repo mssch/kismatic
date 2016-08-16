@@ -15,7 +15,8 @@ Environment=PEER_PORT={{ etcd_service_peer_port }}
 Environment=CLIENT_PORT={{ etcd_service_client_port }}
 Environment=ETCD_CLUSTER_TOKEN={{ etcd_service_cluster_token }}
 Environment=CLUSTER_STRING={{ etcd_service_cluster_string }}
-ExecStart=/usr/bin/etcd --name ${ETCD_NAME} \
+ExecStart=/usr/bin/{{ etcd_install_bin_name }} \
+  --name=${ETCD_NAME} \
   --data-dir=${ETCD_DATA_DIR} \
   --client-cert-auth \
   --cert-file=${CERT_FILE} \
@@ -25,13 +26,13 @@ ExecStart=/usr/bin/etcd --name ${ETCD_NAME} \
   --peer-key-file=${KEY_FILE} \
   --trusted-ca-file=${CA_FILE} \
   --peer-trusted-ca-file=${CA_FILE} \
-  --initial-advertise-peer-urls https://${IP}:${PEER_PORT} \
-  --listen-peer-urls https://${IP}:${PEER_PORT} \
-  --listen-client-urls https://${IP}:${CLIENT_PORT},https://127.0.0.1:${CLIENT_PORT} \
-  --advertise-client-urls https://${IP}:${CLIENT_PORT} \
-  --initial-cluster-token ${ETCD_CLUSTER_TOKEN} \
-  --initial-cluster ${CLUSTER_STRING} \
-  --initial-cluster-state new
+  --initial-advertise-peer-urls=https://${IP}:${PEER_PORT} \
+  --listen-peer-urls=https://${IP}:${PEER_PORT} \
+  --listen-client-urls=https://${IP}:${CLIENT_PORT},https://127.0.0.1:${CLIENT_PORT} \
+  --advertise-client-urls=https://${IP}:${CLIENT_PORT} \
+  --initial-cluster-token=${ETCD_CLUSTER_TOKEN} \
+  --initial-cluster=${CLUSTER_STRING} \
+  --initial-cluster-state=new
 Restart=always
 RestartSec=10s
 LimitNOFILE=40000
