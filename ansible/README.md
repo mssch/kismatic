@@ -4,9 +4,7 @@
 * `cfssl`
 
 On a Mac run `brew install ansible cfssl`
-* manually modify `inventory.ini` with the IPs/hosts
-* manually modify `../tls/kubernetes-csr.json` with the IPs/hosts
-* manually modify `runtime_vars.yaml` with the IPs/hosts
+* manually modify `/etc/hosts` of the machine that is the control machine with the IPs/hosts
 * `./install.sh "@runtime_vars.yaml"`
 
 To just run the playbook

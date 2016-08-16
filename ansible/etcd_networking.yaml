@@ -11,5 +11,6 @@
     roles:
       - common
       - etcd-cert
+      - update-hosts
       - etcd-install
       - etcd-verify
