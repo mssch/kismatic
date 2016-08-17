@@ -6,6 +6,12 @@
 # Folders
 _obj
 _test
+.DS_Store
+bin
+out
+tools
+vendor-ansible
+
 
 # Architecture specific extensions/prefixes
 *.[568vq]
