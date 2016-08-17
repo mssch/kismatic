@@ -10,7 +10,6 @@ _test
 bin
 out
 tools
-vendor-ansible
 
 
 # Architecture specific extensions/prefixes
