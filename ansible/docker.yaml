@@ -1,0 +1,13 @@
+---
+  # install and verify etcd3 for Kubernetes
+  - hosts: master:worker
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/docker.yaml
+
+    roles:
+      - common
+      - docker-install
+      - docker-verify

@@ -1,7 +1,7 @@
 ---
 # download and install etcd and etcdctl
-- name: create {{ etcd_install_path }} directory
-  file: path={{ etcd_install_path }} state=directory
+- name: create {{ etcd_install_dir }} directory
+  file: path={{ etcd_install_dir }} state=directory
 - name: download and untar {{ etcd_install_bin_name }}
   unarchive: src={{ etcd_install_binary_download_path }} dest={{ temprary_download_dir }} remote_src=yes copy=no
 - name: copy {{ etcd_install_bin_name }} binaries

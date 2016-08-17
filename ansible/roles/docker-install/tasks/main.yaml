@@ -1,0 +1,14 @@
+---
+  # install Docker using official https://get.docker.com/ script
+  - name: create {{ docker_install_dir }} directory
+    file: path={{ docker_install_dir }} state=directory
+  - name: install lastest version of docker # create a signal file after successful install
+    script: docker.sh creates={{ docker_installed_path }}
+    notify:
+    - docker installed
+
+  # start docker service
+  - name: enable {{ docker_service_path }}
+    command: systemctl enable {{ docker_service_path }}
+  - name: start {{ docker_service_name }} service
+    service: name={{ docker_service_name }} state=started enabled=yes

@@ -1,0 +1,4 @@
+---
+  # verify that Docker installed succesfully and is running
+  - name: verify docker is installed
+    command: docker ps

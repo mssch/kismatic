@@ -3,12 +3,12 @@
 etcd_certificates_ca_file_name: ca.pem
 etcd_certificates_cert_file_name: etcd.pem
 etcd_certificates_key_file_name: etcd-key.pem
-etcd_certificates_ca_file: "{{ etcd_install_path }}/{{ etcd_certificates_ca_file_name }}"
-etcd_certificates_cert_file: "{{ etcd_install_path }}/{{ etcd_certificates_cert_file_name }}"
-etcd_certificates_key_file: "{{ etcd_install_path }}/{{ etcd_certificates_key_file_name }}"
+etcd_certificates_ca_file: "{{ etcd_install_dir }}/{{ etcd_certificates_ca_file_name }}"
+etcd_certificates_cert_file: "{{ etcd_install_dir }}/{{ etcd_certificates_cert_file_name }}"
+etcd_certificates_key_file: "{{ etcd_install_dir }}/{{ etcd_certificates_key_file_name }}"
 
 # etcd-install
-etcd_install_path: /etc/etcd_networking
+etcd_install_dir: /etc/etcd_networking
 etcd_install_binary_version: v2.3.7
 etcd_install_bin_name: etcd2
 etcdctl_install_bin_name: etcdctl2
