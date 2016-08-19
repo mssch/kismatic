@@ -1,2 +1,3 @@
 package: github.com/apprenda/kismatic-platform
-import: []
+import:
+- package: gopkg.in/yaml.v2
