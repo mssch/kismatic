@@ -6,7 +6,7 @@ endif
 # Setup some useful vars
 HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
-GLIDE_VERSION = "v0.11.1"
+GLIDE_VERSION = v0.11.1
 
 clean: 
 	rm -rf bin
