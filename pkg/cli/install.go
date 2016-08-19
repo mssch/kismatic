@@ -54,10 +54,17 @@ func doInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) error
 		fmt.Fprintf(out, "Generating installation plan file with %d etcd nodes, %d master nodes and %d worker nodes\n",
 			etcdNodes, masterNodes, workerNodes)
 
+		m := install.MasterNodeGroup{}
+		m.ExpectedCount = masterNodes
+
 		p := install.Plan{
-			EtcdNodeCount:   etcdNodes,
-			MasterNodeCount: masterNodes,
-			WorkerNodeCount: workerNodes,
+			Etcd: install.NodeGroup{
+				ExpectedCount: etcdNodes,
+			},
+			Master: m,
+			Worker: install.NodeGroup{
+				ExpectedCount: workerNodes,
+			},
 		}
 		err = install.WritePlanTemplate(p, plan)
 		if err != nil {

@@ -85,14 +85,14 @@ func TestInstallCmdPlanNotFound(t *testing.T) {
 		if !test.shouldError {
 			// Verify defaults are set in the plan
 			p := fp.plan
-			if p.EtcdNodeCount != test.expectedEtcd {
-				t.Errorf("expected %d etcd nodes, got %d", test.expectedEtcd, p.EtcdNodeCount)
+			if p.Etcd.ExpectedCount != test.expectedEtcd {
+				t.Errorf("expected %d etcd nodes, got %d", test.expectedEtcd, p.Etcd.ExpectedCount)
 			}
-			if p.MasterNodeCount != 2 {
-				t.Errorf("expected %d master nodes, got %d", test.expectedMaster, p.MasterNodeCount)
+			if p.Master.ExpectedCount != 2 {
+				t.Errorf("expected %d master nodes, got %d", test.expectedMaster, p.Master.ExpectedCount)
 			}
-			if p.WorkerNodeCount != 3 {
-				t.Errorf("expected %d worker nodes, got %d", test.expectedWorker, p.WorkerNodeCount)
+			if p.Worker.ExpectedCount != 3 {
+				t.Errorf("expected %d worker nodes, got %d", test.expectedWorker, p.Worker.ExpectedCount)
 			}
 			// Verify we didn't attempt to read plan
 			if fp.readCalled {

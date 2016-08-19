@@ -8,21 +8,54 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+type NetworkConfig struct {
+	Type             string
+	PodCIDRBlock     string `yaml:"pod_cidr_block"`
+	ServiceCIDRBlock string `yaml:"service_cidr_block"`
+}
+
+type CertsConfig struct {
+	Expiry          string
+	LocationCity    string `yaml:"location_city"`
+	LocationState   string `yaml:"location_state"`
+	LocationCountry string `yaml:"location_country"`
+}
+
+type SSHConfig struct {
+	User string
+	Key  string `yaml:"ssh_key"`
+	Port int    `yaml:"ssh_port"`
+}
+
+type Cluster struct {
+	Name         string
+	Networking   NetworkConfig
+	Certificates CertsConfig
+	SSH          SSHConfig
+}
+
+type Node struct {
+	Host   string
+	IP     string
+	Labels []string
+}
+
+type NodeGroup struct {
+	ExpectedCount int `yaml:"expected_count"`
+	Nodes         []Node
+}
+
+type MasterNodeGroup struct {
+	NodeGroup
+	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
+	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
+}
+
 type Plan struct {
-	ClusterName string `yaml:"clusterName"`
-
-	SshUser    string `yaml:"sshUser"`
-	SshPort    int    `yaml:"sshPort"`
-	SshKeyPath string `yaml:"sshKeyPath"`
-
-	EtcdNodeCount int      `yaml:"etcdNodeCount"`
-	EtcdNodes     []string `yaml:"etcdNodes"`
-
-	MasterNodeCount int      `yaml:"masterNodeCount"`
-	MasterNodes     []string `yaml:"masterNodes"`
-
-	WorkerNodeCount int      `yaml:"workerNodeCount"`
-	WorkerNodes     []string `yaml:"workerNodes"`
+	Cluster Cluster
+	Etcd    NodeGroup
+	Master  MasterNodeGroup
+	Worker  NodeGroup
 }
 
 type PlanReaderWriter interface {
@@ -68,19 +101,36 @@ func (pf *PlanFile) Exists() bool {
 
 func WritePlanTemplate(p Plan, w PlanReaderWriter) error {
 	// Set sensible defaults
-	p.SshPort = 22
+	p.Cluster.Name = "kubernetes"
+
+	// Set SSH defaults
+	p.Cluster.SSH.User = "kismaticuser"
+	p.Cluster.SSH.Key = "kismaticuser.key"
+	p.Cluster.SSH.Port = 22
+
+	// Set Networking defaults
+	p.Cluster.Networking.Type = "bridged"
+	p.Cluster.Networking.PodCIDRBlock = "172.16.0.0/16"
+	p.Cluster.Networking.ServiceCIDRBlock = "172.17.0.0/16"
+
+	// Set Certificate defaults
+	p.Cluster.Certificates.Expiry = "17520h"
+	p.Cluster.Certificates.LocationCity = "Troy"
+	p.Cluster.Certificates.LocationState = "New York"
+	p.Cluster.Certificates.LocationCountry = "US"
 
 	// Generate entries for all node types
-	for i := 0; i < p.EtcdNodeCount; i++ {
-		p.EtcdNodes = append(p.EtcdNodes, fmt.Sprintf("etcd%d", i))
+	n := Node{Host: "shortname", IP: "127.0.0.1"}
+	for i := 0; i < p.Etcd.ExpectedCount; i++ {
+		p.Etcd.Nodes = append(p.Etcd.Nodes, n)
 	}
 
-	for i := 0; i < p.MasterNodeCount; i++ {
-		p.MasterNodes = append(p.MasterNodes, fmt.Sprintf("master%d", i))
+	for i := 0; i < p.Master.ExpectedCount; i++ {
+		p.Master.Nodes = append(p.Master.Nodes, n)
 	}
 
-	for i := 0; i < p.WorkerNodeCount; i++ {
-		p.WorkerNodes = append(p.WorkerNodes, fmt.Sprintf("worker%d", i))
+	for i := 0; i < p.Worker.ExpectedCount; i++ {
+		p.Worker.Nodes = append(p.Worker.Nodes, n)
 	}
 
 	if err := w.Write(&p); err != nil {
@@ -90,7 +140,7 @@ func WritePlanTemplate(p Plan, w PlanReaderWriter) error {
 }
 
 func ValidatePlan(p *Plan) error {
-	if p.SshKeyPath == "" {
+	if p.Cluster.SSH.Key == "" {
 		return fmt.Errorf("SshKeyPath is empty. The path to the SSH key is required.")
 	}
 
