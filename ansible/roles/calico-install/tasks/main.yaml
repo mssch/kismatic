@@ -1,0 +1,60 @@
+---
+  # install Calico network plugin
+  # setup directories
+  - name: create {{ calico_install_dir }} directory
+    file: path={{ calico_install_dir }} state=directory
+  - name: create {{ network_plugin_dir }} directory
+    file: path={{ network_plugin_dir }} state=directory
+  - name: create {{ network_plugin_bin_dir }} directory
+    file: path={{ network_plugin_bin_dir }} state=directory
+
+  # install Calico
+  - name: download Calicoctl - v{{ calico_ctl_version }}
+    get_url: url={{ calicoctl_binary_path }} dest={{ bin_dir }} mode={{ calico_executable_mode }}
+  # pre-download Docker image
+  - name: download calico/node:v{{ calico_docker_version }} docker image
+    command: docker pull calico/node:v{{ calico_docker_version }}
+  - name: copy network-environment to remote
+    template: src=network-environment.j2 dest={{ network_environment_path }} owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ network_environment_mode }}
+  - name: copy calico-node.service to remote
+    template: src=calico-node.service.j2 dest={{ kubernetes_service_dir }}/calico-node.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable calico-node
+    command: systemctl enable calico-node.service
+  - name: start calico-node service
+    service: name=calico-node.service state=started enabled=yes
+  # install calico-containers
+  - name: download calico - v{{ calico_version }}
+    get_url: url={{ calico_cni_path }}/calico dest={{ network_plugin_bin_dir }}/calico mode={{ calico_executable_mode }}
+  - name: download calico-ipam - v{{ calico_version }}
+    get_url: url={{ calico_cni_path }}/calico-ipam dest={{ network_plugin_bin_dir }}/calico-ipam mode={{ calico_executable_mode }}
+  - name: copy 10-calico.conf to remote
+    template: src=10-calico.conf.j2 dest={{ network_plugin_dir }}/10-calico.conf
+
+  # setup Calico CIDR
+  - name: remove default CIDR - {{ dafault_cidr }}
+    command: calicoctl pool remove {{ dafault_cidr }}
+    environment:
+      DEFAULT_IPV4: "{{ ansible_all_ipv4_addresses[1] }}"
+      ETCD_ENDPOINTS: "{{ etcd_networking_cluster_ip_list }}"
+      ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
+      ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
+      ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
+    ignore_errors: yes # TODO better way to handle when this is run more than once
+  - name: add pods CIDR - {{ kubernetes_pods_cidr }}
+    command: calicoctl pool add {{ kubernetes_pods_cidr }}
+    environment:
+      DEFAULT_IPV4: "{{ ansible_all_ipv4_addresses[1] }}"
+      ETCD_ENDPOINTS: "{{ etcd_networking_cluster_ip_list }}"
+      ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
+      ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
+      ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
+  - name: add services CIDR - {{ kubernetes_services_cidr }}
+    command: calicoctl pool add {{ kubernetes_services_cidr }}
+    environment:
+      DEFAULT_IPV4: "{{ ansible_all_ipv4_addresses[1] }}"
+      ETCD_ENDPOINTS: "{{ etcd_networking_cluster_ip_list }}"
+      ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
+      ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
+      ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"

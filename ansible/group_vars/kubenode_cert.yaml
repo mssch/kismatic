@@ -1,0 +1,10 @@
+# certificat configs for master and worker nodes
+kubernetes_certificates_ca_file_name: ca.pem
+kubernetes_certificates_cert_file_name: kubenode.pem
+kubernetes_certificates_key_file_name: kubenode-key.pem
+kubernetes_certificates_ca_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_ca_file_name }}"
+kubernetes_certificates_cert_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_cert_file_name }}"
+kubernetes_certificates_key_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_key_file_name }}"
+kubernetes_certificates_owner: root
+kubernetes_certificates_group: root
+kubernetes_certificates_mode: 0660

@@ -5,10 +5,13 @@
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
+      - group_vars/calico.yaml
+      - group_vars/kubenode_cert.yaml
       - group_vars/kubernetes_master.yaml
 
     roles:
       - common
       - kubenode-cert
+      - calico-install
       - kubernetes-master-install
       #- kubernetes-master-verify
