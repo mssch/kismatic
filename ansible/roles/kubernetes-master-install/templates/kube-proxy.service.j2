@@ -1,0 +1,17 @@
+[Unit]
+Description=Kubernetes Proxy
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+[Service]
+Environment=KUBECONFIG={{ kubernetes_kubeconfig_path }}
+Environment=MASTER_IP={{ kubernetes_master_ip }}
+ExecStart={{ bin_dir }}/kube-proxy \
+  --kubeconfig=${KUBECONFIG} \
+  --master=https://${MASTER_IP}:6443 \
+  --proxy-mode=iptables \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

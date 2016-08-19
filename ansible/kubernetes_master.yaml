@@ -1,0 +1,14 @@
+---
+  # install and verify Kubernetes master components
+  - hosts: master
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/kubernetes_master.yaml
+
+    roles:
+      - common
+      - kubenode-cert
+      - kubernetes-master-install
+      #- kubernetes-master-verify

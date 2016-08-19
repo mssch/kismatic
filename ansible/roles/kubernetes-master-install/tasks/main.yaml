@@ -1,0 +1,105 @@
+---
+  # install kubernetes master components
+  # setup directories
+  - name: create {{ kubernetes_install_dir }} directory
+    file: path={{ kubernetes_install_dir }} state=directory
+  - name: create {{ kubernetes_network_plugin_dir }} directory
+    file: path={{ kubernetes_network_plugin_dir }} state=directory
+
+  # install Calico
+  - name: download Calicoctl - {{ calico_version }}
+    get_url: url={{ calico_binary_path }} dest={{ bin_dir }} mode={{ calico_executable_mode }}
+  - name: download calico/node:v{{ calico_version }} docker image
+    command: docker pull calico/node:v{{ calico_version }}
+  - name: copy network-environment to remote
+    template: src=network-environment.j2 dest=/etc/network-environment owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ network_environment_mode }}
+  - name: copy calico-node.service to remote
+    template: src=calico-node.service.j2 dest={{ kubernetes_service_path }}/calico-node.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable calico-node
+    command: systemctl enable calico-node.service
+  - name: start calico-node service
+    service: name=calico-node.service state=restarted enabled=yes
+  # install calico-containers
+  - name: create /opt/cni/bin/ directory
+    file: path=/opt/cni/bin/ state=directory
+  - name: download calico - 1.3.1
+    get_url: url=https://github.com/projectcalico/calico-cni/releases/download/v1.3.1/calico dest=/opt/cni/bin/calico mode={{ calico_executable_mode }}
+  - name: download calico-ipam - 1.3.1
+    get_url: url=https://github.com/projectcalico/calico-cni/releases/download/v1.3.1/calico-ipam dest=/opt/cni/bin/calico-ipam mode={{ calico_executable_mode }}
+  - name: create /etc/cni/net.d/ directory
+    file: path=/etc/cni/net.d/ state=directory
+  - name: copy 10-calico.conf to remote
+    template: src=10-calico.conf.j2 dest=/etc/cni/net.d/10-calico.conf
+
+  # download kubernetes binaries
+  - name: download kube-apiserver - {{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kube-apiserver dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+  - name: download kube-controller-manager - {{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kube-controller-manager dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+  - name: download kube-scheduler - {{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kube-scheduler dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+  - name: download kube-proxy - {{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kube-proxy dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+  - name: download kubectl - {{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kubectl dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+  - name: download kubelet - {{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kubelet dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+  - name: create /var/lib/kubernetes/ directory
+    file: path=//var/lib/kubernetes/ state=directory
+  - name: copy tokens.csv to remote
+    copy: src=tokens.csv dest=/var/lib/kubernetes/tokens.csv
+  - name: copy authorization-policy.json to remote
+    copy: src=authorization-policy.json dest=/var/lib/kubernetes/authorization-policy.json
+
+  # start kubernetes services
+  # kube-apiserver
+  - name: copy kube-apiserver.service to remote
+    template: src=kube-apiserver.service.j2 dest={{ kubernetes_service_path }}/kube-apiserver.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kube-apiserver
+    command: systemctl enable kube-apiserver.service
+  - name: start kube-apiserver service
+    service: name=kube-apiserver.service state=restarted enabled=yes
+  # kube-scheduler
+  - name: copy kube-scheduler.service to remote
+    template: src=kube-scheduler.service.j2 dest={{ kubernetes_service_path }}/kube-scheduler.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kube-scheduler
+    command: systemctl enable kube-scheduler.service
+  - name: start kube-scheduler service
+    service: name=kube-scheduler.service state=restarted enabled=yes
+  # kube-controller-manager
+  - name: copy kube-controller-manager.service to remote
+    template: src=kube-controller-manager.service.j2 dest={{ kubernetes_service_path }}/kube-controller-manager.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kube-controller-manager
+    command: systemctl enable kube-controller-manager.service
+  - name: start kube-controller-manager service
+    service: name=kube-controller-manager.service state=restarted enabled=yes
+  # kube-proxy
+  - name: copy kube-proxy.service to remote
+    template: src=kube-proxy.service.j2 dest={{ kubernetes_service_path }}/kube-proxy.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kube-proxy
+    command: systemctl enable kube-proxy.service
+  - name: start kube-proxy service
+    service: name=kube-proxy.service state=restarted enabled=yes
+  # kubelet
+  - name: create /var/lib/kubelet/ directory
+    file: path=/var/lib/kubelet/ state=directory
+  - name: copy kubeconfig to remote
+    copy: src=kubeconfig dest=/var/lib/kubelet/kubeconfig
+  - name: copy kubelet.service to remote
+    template: src=kubelet.service.j2 dest={{ kubernetes_service_path }}/kubelet.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kubelet
+    command: systemctl enable kubelet.service
+  - name: start kubelet service
+    service: name=kubelet.service state=restarted enabled=yes

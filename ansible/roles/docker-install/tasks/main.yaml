@@ -10,5 +10,7 @@
   # start docker service
   - name: enable {{ docker_service_path }}
     command: systemctl enable {{ docker_service_path }}
+  - name: reload services
+    command: systemctl daemon-reload
   - name: start {{ docker_service_name }} service
     service: name={{ docker_service_name }} state=started enabled=yes

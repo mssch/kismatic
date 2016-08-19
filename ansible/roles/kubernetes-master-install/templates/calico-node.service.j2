@@ -1,0 +1,17 @@
+[Unit]
+Description=Calico per-node agent
+Documentation=https://github.com/projectcalico/calico-docker
+Requires=docker.service
+After=docker.service
+
+[Service]
+User=root
+Environment=INTERNAL_IP={{ ansible_all_ipv4_addresses[1] }}
+EnvironmentFile=/etc/network-environment
+PermissionsStartOnly=true
+ExecStart={{ bin_dir }}/calicoctl node --ip=${INTERNAL_IP} --detach=false
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

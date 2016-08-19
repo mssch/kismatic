@@ -12,6 +12,8 @@
 # install and start etcd service
 - name: copy {{ etcd_service_file }} to remote
   template: src={{ etcd_service_template_name }} dest={{ etcd_service_path }} owner={{ etcd_service_owner }} group={{ etcd_service_group }} mode={{ etcd_service_mode }}
+- name: reload services
+  command: systemctl daemon-reload
 - name: enable {{ etcd_service_path }}
   command: systemctl enable {{ etcd_service_path }}
 - name: start {{ etcd_service_name }} service

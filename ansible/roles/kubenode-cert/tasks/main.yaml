@@ -1,0 +1,9 @@
+---
+- name: create
+  file: path="{{ kubernetes_install_dir }}" state=directory
+- name: copy {{ kubernetes_certificates_ca_file_name }}
+  copy: src=../tls/ca.pem dest="{{ kubernetes_certificates_ca_path }}" owner="{{ kubernetes_certificates_owner }}" group="{{ kubernetes_certificates_group }}" mode="{{ kubernetes_certificates_mode }}"
+- name: copy {{ kubernetes_certificates_cert_file_name }}
+  copy: src=../tls/kubernetes.pem dest="{{ kubernetes_certificates_cert_path }}" owner="{{ kubernetes_certificates_owner }}" group="{{ kubernetes_certificates_group }}" mode="{{ kubernetes_certificates_mode }}"
+- name: copy {{ kubernetes_certificates_key_file_name }}
+  copy: src=../tls/kubernetes-key.pem dest="{{ kubernetes_certificates_key_path }}" owner="{{ kubernetes_certificates_owner }}" group="{{ kubernetes_certificates_group }}" mode="{{ kubernetes_certificates_mode }}"

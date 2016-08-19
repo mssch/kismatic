@@ -1,0 +1,40 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+[Service]
+Environment=INTERNAL_IP={{ ansible_all_ipv4_addresses[1] }}
+Environment=APISERVER_COUNT=2
+Environment=AUTHORIZATION_POLICY_FILE={{ kubernetes_authorization_policy_path }}
+Environment=ETCD_SERVERS={{ etcd_k8s_cluster_string }}
+Environment=CA_FILE={{ kubernetes_certificates_ca_path }}
+Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
+Environment=KEY_FILE={{ kubernetes_certificates_key_path }}
+Environment=SERVICES_CIDR={{ kubernetes_services_cidr }}
+Environment=TOKEN_AUTH_FILE={{ kubernetes_token_atuh_path }}
+ExecStart={{ bin_dir }}/kube-apiserver \
+  --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
+  --advertise-address=${INTERNAL_IP} \
+  --allow-privileged=true \
+  --apiserver-count=${APISERVER_COUNT} \
+  --authorization-mode=ABAC \
+  --authorization-policy-file=${AUTHORIZATION_POLICY_FILE} \
+  --bind-address=0.0.0.0 \
+  --enable-swagger-ui=true \
+  --etcd-cafile=${CA_FILE} \
+  --etcd-certfile=${CERT_FILE} \
+  --etcd-keyfile=${KEY_FILE} \
+  --etcd-servers=${ETCD_SERVERS} \
+  --insecure-bind-address=127.0.0.1 \
+  --kubelet-certificate-authority=${CA_FILE} \
+  --service-account-key-file=${KEY_FILE} \
+  --service-cluster-ip-range=${SERVICES_CIDR} \
+  --tls-cert-file=${CERT_FILE} \
+  --tls-private-key-file=${KEY_FILE} \
+  --token-auth-file=${TOKEN_AUTH_FILE} \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

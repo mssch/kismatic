@@ -1,0 +1,3 @@
+admin_password,admin,admin
+scheduler_password,scheduler,scheduler
+kubelet_password,kubelet,kubelet
