@@ -4,14 +4,14 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
 Environment=INTERNAL_IP={{ ansible_all_ipv4_addresses[1] }}
-Environment=APISERVER_COUNT=2
+Environment=APISERVER_COUNT={{ kubernetes_mater_apiserver_count }}
 Environment=AUTHORIZATION_POLICY_FILE={{ kubernetes_authorization_policy_path }}
-Environment=ETCD_SERVERS={{ etcd_k8s_cluster_string }}
+Environment=ETCD_SERVERS={{ etcd_k8s_cluster_ip_list }}
 Environment=CA_FILE={{ kubernetes_certificates_ca_path }}
 Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
 Environment=KEY_FILE={{ kubernetes_certificates_key_path }}
 Environment=SERVICES_CIDR={{ kubernetes_services_cidr }}
-Environment=TOKEN_AUTH_FILE={{ kubernetes_token_atuh_path }}
+Environment=TOKEN_AUTH_FILE={{ kubernetes_token_auth_path }}
 ExecStart={{ bin_dir }}/kube-apiserver \
   --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
   --advertise-address=${INTERNAL_IP} \

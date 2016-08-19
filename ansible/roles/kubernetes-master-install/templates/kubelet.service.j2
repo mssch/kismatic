@@ -11,7 +11,7 @@ Environment=KUBECONFIG={{ kubernetes_kubeconfig_path }}
 Environment=REGISTER_SCHEDULABLE={{ kubernetes_schedulable }}
 Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
 Environment=KEY_FILE={{ kubernetes_certificates_key_path }}
-Environment=NETWORK_PLUGIN_DIR={{ kubernetes_network_plugin_dir }}
+Environment=NETWORK_PLUGIN_DIR={{ network_plugin_dir }}
 ExecStart=/usr/bin/kubelet \
   --allow-privileged=true \
   --api-servers=${MASTER_LIST} \

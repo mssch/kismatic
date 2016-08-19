@@ -8,7 +8,7 @@ Environment=MASTER_IP={{ kubernetes_master_ip }}
 ExecStart={{ bin_dir }}/kube-scheduler \
   --kubeconfig=${KUBECONFIG} \
   --leader-elect=true \
-  --master=https://${MASTER_IP}:6443 \
+  --master=${MASTER_IP} \
   --v=2
 Restart=on-failure
 RestartSec=5

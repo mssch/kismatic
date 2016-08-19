@@ -1,5 +1,5 @@
 DEFAULT_IPV4={{ ansible_all_ipv4_addresses[1] }}
-ETCD_ENDPOINTS={{ etcd_networking_cluster_string }}
+ETCD_ENDPOINTS={{ etcd_networking_cluster_ip_list }}
 ETCD_CA_CERT_FILE={{ kubernetes_certificates_ca_path }}
 ETCD_CERT_FILE={{ kubernetes_certificates_cert_path }}
 ETCD_KEY_FILE={{ kubernetes_certificates_key_path }}

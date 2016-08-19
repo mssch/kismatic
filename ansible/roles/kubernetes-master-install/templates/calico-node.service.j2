@@ -7,7 +7,7 @@ After=docker.service
 [Service]
 User=root
 Environment=INTERNAL_IP={{ ansible_all_ipv4_addresses[1] }}
-EnvironmentFile=/etc/network-environment
+EnvironmentFile={{ network_environment_path }}
 PermissionsStartOnly=true
 ExecStart={{ bin_dir }}/calicoctl node --ip=${INTERNAL_IP} --detach=false
 Restart=always

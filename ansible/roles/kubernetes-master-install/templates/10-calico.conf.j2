@@ -1,7 +1,7 @@
 {
     "name": "calico-k8s-network",
     "type": "calico",
-    "etcd_endpoints": "{{ etcd_networking_cluster_string }}",
+    "etcd_endpoints": "{{ etcd_networking_cluster_ip_list }}",
     "k8s_client_certificate": "{{ kubernetes_certificates_cert_path }}",
     "k8s_client_key": "{{ kubernetes_certificates_key_path }}",
     "k8s_certificate_authority": "{{ kubernetes_certificates_ca_path }}",
