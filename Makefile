@@ -6,12 +6,13 @@ endif
 # Setup some useful vars
 HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
-GLIDE_VERSION = "v0.11.1"
+GLIDE_VERSION = v0.11.1
 
 clean: 
 	rm -rf bin
 	rm -rf out
 	rm -rf vendor-ansible/out
+	rm -rf vendor-cfssl/out
 
 build: vendor
 	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
@@ -29,11 +30,20 @@ vendor-ansible/out:
 	docker build -t apprenda/vendor-ansible -q vendor-ansible 
 	docker run --rm -v $(shell pwd)/vendor-ansible/out:/ansible apprenda/vendor-ansible pip install --install-option="--prefix=/ansible" ansible
 
-dist: vendor-ansible/out build
+vendor-cfssl/out:
+	mkdir -p vendor-cfssl/out/
+	wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O vendor-cfssl/out/cfssl_linux-amd64
+	wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -O vendor-cfssl/out/cfssljson_linux-amd64 
+	wget https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64 -O vendor-cfssl/out/cfssl_darwin-amd64
+	wget https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64 -O vendor-cfssl/out/cfssljson_darwin-amd64
+
+dist: vendor-ansible/out vendor-cfssl/out build
 	mkdir -p out
 	cp bin/kismatic out
 	mkdir -p out/ansible
 	cp -r vendor-ansible/out/* out/ansible
 	cp -r ansible out/ansible/playbooks
+	mkdir -p out/cfssl
+	cp -r vendor-cfssl/out/* out/cfssl
 	rm -f out/kismatic.tar.gz
 	tar -cvzf out/kismatic.tar.gz -C out .
