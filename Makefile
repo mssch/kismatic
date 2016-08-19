@@ -8,13 +8,13 @@ HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
 
+build: vendor
+	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
+
 clean: 
 	rm -rf bin
 	rm -rf out
 	rm -rf vendor-ansible/out
-
-build: vendor
-	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
 
 vendor: tools/glide
 	./tools/glide install
