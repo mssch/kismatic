@@ -11,12 +11,14 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// NetworkConfig describes the cluster's networking configuration
 type NetworkConfig struct {
 	Type             string
 	PodCIDRBlock     string `yaml:"pod_cidr_block"`
 	ServiceCIDRBlock string `yaml:"service_cidr_block"`
 }
 
+// CertsConfig describes the cluster's trust and certificate configuration
 type CertsConfig struct {
 	Expiry          string
 	LocationCity    string `yaml:"location_city"`
@@ -24,12 +26,14 @@ type CertsConfig struct {
 	LocationCountry string `yaml:"location_country"`
 }
 
+// SSHConfig describes the cluster's SSH configuration for accessing nodes
 type SSHConfig struct {
 	User string
 	Key  string `yaml:"ssh_key"`
 	Port int    `yaml:"ssh_port"`
 }
 
+// Cluster describes a Kismatic cluster
 type Cluster struct {
 	Name         string
 	Networking   NetworkConfig
@@ -37,23 +41,27 @@ type Cluster struct {
 	SSH          SSHConfig
 }
 
+// A Node is a compute unit, virtual or physical, that is part of the cluster
 type Node struct {
 	Host   string
 	IP     string
 	Labels []string
 }
 
+// A NodeGroup is a collection of nodes
 type NodeGroup struct {
 	ExpectedCount int `yaml:"expected_count"`
 	Nodes         []Node
 }
 
+// MasterNodeGroup is the collection of master nodes
 type MasterNodeGroup struct {
 	NodeGroup
 	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
 }
 
+// Plan is the installation plan that the user intends to execute
 type Plan struct {
 	Cluster Cluster
 	Etcd    NodeGroup
@@ -61,16 +69,19 @@ type Plan struct {
 	Worker  NodeGroup
 }
 
+// PlanReaderWriter is capable of reading/writing a Plan
 type PlanReaderWriter interface {
 	Read() (*Plan, error)
 	Write(*Plan) error
 	Exists() bool
 }
 
+// PlanFile is an installation plan backed by a file
 type PlanFile struct {
 	File string
 }
 
+// Read the plan from the file system
 func (pf *PlanFile) Read() (*Plan, error) {
 	d, err := ioutil.ReadFile(pf.File)
 	if err != nil {
@@ -84,6 +95,7 @@ func (pf *PlanFile) Read() (*Plan, error) {
 	return p, nil
 }
 
+// Write the plan to the file system
 func (pf *PlanFile) Write(p *Plan) error {
 	d, err := yaml.Marshal(&p)
 	if err != nil {
@@ -97,11 +109,13 @@ func (pf *PlanFile) Write(p *Plan) error {
 	return nil
 }
 
+// Exists return true if the plan exists on the file system
 func (pf *PlanFile) Exists() bool {
 	_, err := os.Stat(pf.File)
 	return !os.IsNotExist(err)
 }
 
+// WritePlanTemplate writes an installation plan with pre-filled defaults.
 func WritePlanTemplate(p Plan, w PlanReaderWriter) error {
 	// Set sensible defaults
 	p.Cluster.Name = "kubernetes"
@@ -142,6 +156,9 @@ func WritePlanTemplate(p Plan, w PlanReaderWriter) error {
 	return nil
 }
 
+// ValidatePlan runs validation against the installation plan to ensure
+// that the plan contains valid user input. Returns true, nil if the validation
+// is successful. Otherwise, returns false and a collection of validation errors.
 func ValidatePlan(p *Plan) (bool, []error) {
 	v := newValidator()
 	v.validate(p)

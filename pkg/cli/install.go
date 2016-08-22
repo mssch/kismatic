@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewCmdInstall creates a new install command
 func NewCmdInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",

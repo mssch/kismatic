@@ -9,6 +9,7 @@ import (
 
 const planFilename = "kismatic-cluster.yaml"
 
+// NewKismaticCommand creates the kismatic command
 func NewKismaticCommand(in io.Reader, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "kismatic",
