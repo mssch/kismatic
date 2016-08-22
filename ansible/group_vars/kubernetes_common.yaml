@@ -1,0 +1,16 @@
+# versions
+kubernetes_version: 1.3.4
+
+# file modes
+kubernetes_executable_mode: 0775
+kuberntes_service_mode: 0664
+
+# owner/group
+kuberntes_owner: root
+kubernetes_group: root
+
+kubernetes_binary_path: https://storage.googleapis.com/kubernetes-release/release/v{{ kubernetes_version }}/bin/linux/amd64
+
+etcd_k8s_client_port: 2379
+
+dafault_cidr: 192.168.0.0/16

@@ -5,8 +5,6 @@
     file: path={{ kubernetes_install_dir }} state=directory
   - name: create {{ kubernetes_lib_dir }} directory
     file: path={{ kubernetes_lib_dir }} state=directory
-  - name: create {{ kubelet_lid_dir }} directory
-    file: path={{ kubelet_lid_dir }} state=directory
 
   # download kubernetes binaries
   - name: download kube-apiserver - v{{ kubernetes_version }}
@@ -15,12 +13,8 @@
     get_url: url={{ kubernetes_binary_path }}/kube-controller-manager dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
   - name: download kube-scheduler - v{{ kubernetes_version }}
     get_url: url={{ kubernetes_binary_path }}/kube-scheduler dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
-  - name: download kube-proxy - v{{ kubernetes_version }}
-    get_url: url={{ kubernetes_binary_path }}/kube-proxy dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
   - name: download kubectl - v{{ kubernetes_version }}
     get_url: url={{ kubernetes_binary_path }}/kubectl dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
-  - name: download kubelet - v{{ kubernetes_version }}
-    get_url: url={{ kubernetes_binary_path }}/kubelet dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
   - name: copy tokens.csv to remote
     copy: src=tokens.csv dest={{ kubernetes_lib_dir }}/tokens.csv
   - name: copy authorization-policy.json to remote
@@ -54,23 +48,3 @@
     command: systemctl enable kube-controller-manager.service
   - name: start kube-controller-manager service
     service: name=kube-controller-manager.service state=started enabled=yes
-  # kube-proxy
-  - name: copy kube-proxy.service to remote
-    template: src=kube-proxy.service.j2 dest={{ kubernetes_service_dir }}/kube-proxy.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
-  - name: reload services
-    command: systemctl daemon-reload
-  - name: enable kube-proxy
-    command: systemctl enable kube-proxy.service
-  - name: start kube-proxy service
-    service: name=kube-proxy.service state=started enabled=yes
-  # kubelet
-  - name: copy kubeconfig to remote
-    copy: src=kubeconfig dest=/var/lib/kubelet/kubeconfig
-  - name: copy kubelet.service to remote
-    template: src=kubelet.service.j2 dest={{ kubernetes_service_dir }}/kubelet.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
-  - name: reload services
-    command: systemctl daemon-reload
-  - name: enable kubelet
-    command: systemctl enable kubelet.service
-  - name: start kubelet service
-    service: name=kubelet.service state=started enabled=yes
