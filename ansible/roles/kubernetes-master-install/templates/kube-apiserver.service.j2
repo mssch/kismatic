@@ -3,7 +3,7 @@ Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-Environment=INTERNAL_IP={{ ansible_all_ipv4_addresses[1] }}
+Environment=INTERNAL_IP={{ internal_ipv4 }}
 Environment=APISERVER_COUNT={{ kubernetes_mater_apiserver_count }}
 Environment=AUTHORIZATION_POLICY_FILE={{ kubernetes_authorization_policy_path }}
 Environment=ETCD_SERVERS={{ etcd_k8s_cluster_ip_list }}

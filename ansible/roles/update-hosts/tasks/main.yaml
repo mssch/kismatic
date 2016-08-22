@@ -1,6 +1,6 @@
 #TODO getting internal IP by index is a bad solution, how to figure out what IP is the internal one?
 #TODO add 127.0.0.1 if DNE
 - name: build hosts file
-  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$'  line="{{ hostvars[item].ansible_all_ipv4_addresses[1] }} {{item}}" state=present
-  when: hostvars[item].ansible_all_ipv4_addresses[1] is defined
+  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$'  line="{{ hostvars[item].internal_ipv4 }} {{item}}" state=present
+  when: hostvars[item].internal_ipv4 is defined
   with_items: "{{ groups['all'] }}"

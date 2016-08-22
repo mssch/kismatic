@@ -33,7 +33,7 @@ ExecStart={{ bin_dir }}/{{ etcd_install_bin_name }} \
   --initial-cluster-token=${ETCD_CLUSTER_TOKEN} \
   --initial-cluster=${CLUSTER_STRING} \
   --initial-cluster-state=new
-Restart=always
+Restart=on-failure
 RestartSec=10s
 LimitNOFILE=40000
 

@@ -1,4 +1,6 @@
 ---
+  - name: install the latest version of bridge-utils
+    package: name=bridge-utils state=latest
   # install Docker using official https://get.docker.com/ script
   - name: create {{ docker_install_dir }} directory
     file: path={{ docker_install_dir }} state=directory

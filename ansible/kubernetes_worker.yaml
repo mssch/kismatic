@@ -1,0 +1,20 @@
+---
+  # install and verify Kubernetes worker components
+  - hosts: worker
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/calico.yaml
+      - group_vars/kubernetes_common.yaml
+      - group_vars/kubenode_cert.yaml
+      - group_vars/kubernetes_worker.yaml
+
+    roles:
+      - common
+      - kubenode-cert
+      - calico-install
+      - kubeconfig
+      - kube-proxy-install
+      - kubelet-install
+      #- kubernetes-master-verify

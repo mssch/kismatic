@@ -5,3 +5,4 @@
   - include: etcd_networking.yaml
   - include: docker.yaml
   - include: kubernetes_master.yaml
+  - include: kubernetes_worker.yaml

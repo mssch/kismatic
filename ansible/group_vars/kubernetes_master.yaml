@@ -1,13 +1,9 @@
 # kubernets-master-install
 # directories
-kubernetes_install_dir: /etc/kubernetes
 kubernetes_lib_dir: /var/lib/kubernetes
-kubelet_lid_dir: /var/lib/kubelet
-kubernetes_service_dir: "{{ init_system_dir }}"
 # paths
 kubernetes_token_auth_path: "{{kubernetes_lib_dir}}/tokens.csv"
 kubernetes_authorization_policy_path: "{{kubernetes_lib_dir}}/authorization-policy.json"
-kubernetes_kubeconfig_path: "{{kubelet_lid_dir}}/kubeconfig"
 
 # do not schedule pods on the masters
 kubernetes_schedulable: false

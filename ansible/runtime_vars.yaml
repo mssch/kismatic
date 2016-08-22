@@ -11,5 +11,5 @@ kubernetes_dns_service_ip: 10.3.0.10  # first IP in services CIDR
 kubernetes_services_cidr: 10.3.0.0/24
 kubernetes_pods_cidr: 10.2.0.0/16
 # ip_list for nodes will contain all master ips
-kubernetes_master_ip_list: https://10.99.162.9:6443,https://10.99.162.7:6443
-kubernetes_master_ip: https://10.99.162.9:6443
+kubernetes_master_ip_list: https://master1:6443,https://master2:6443
+kubernetes_master_ip: https://master1:6443

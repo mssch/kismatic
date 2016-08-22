@@ -1,0 +1,4 @@
+# kubernets-worker-install
+
+# do not schedule pods on the masters
+kubernetes_schedulable: true

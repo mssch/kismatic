@@ -36,7 +36,7 @@
   - name: remove default CIDR - {{ dafault_cidr }}
     command: calicoctl pool remove {{ dafault_cidr }}
     environment:
-      DEFAULT_IPV4: "{{ ansible_all_ipv4_addresses[1] }}"
+      DEFAULT_IPV4: "{{ internal_ipv4 }}"
       ETCD_ENDPOINTS: "{{ etcd_networking_cluster_ip_list }}"
       ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
       ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
@@ -45,7 +45,7 @@
   - name: add pods CIDR - {{ kubernetes_pods_cidr }}
     command: calicoctl pool add {{ kubernetes_pods_cidr }}
     environment:
-      DEFAULT_IPV4: "{{ ansible_all_ipv4_addresses[1] }}"
+      DEFAULT_IPV4: "{{ internal_ipv4 }}"
       ETCD_ENDPOINTS: "{{ etcd_networking_cluster_ip_list }}"
       ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
       ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
@@ -53,7 +53,7 @@
   - name: add services CIDR - {{ kubernetes_services_cidr }}
     command: calicoctl pool add {{ kubernetes_services_cidr }}
     environment:
-      DEFAULT_IPV4: "{{ ansible_all_ipv4_addresses[1] }}"
+      DEFAULT_IPV4: "{{ internal_ipv4 }}"
       ETCD_ENDPOINTS: "{{ etcd_networking_cluster_ip_list }}"
       ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
       ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
