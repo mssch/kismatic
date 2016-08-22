@@ -71,20 +71,31 @@ func doInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) error
 			return fmt.Errorf("error planning installation: %v", err)
 		}
 		fmt.Fprintf(out, "Generated installation plan file at %q\n", planFilename)
+		fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the install command to proceed.\n")
 		return nil
 	}
 
 	// Plan file exists, validate and install
-	fmt.Fprintln(out, "Found plan file.")
 	p, err := plan.Read()
 	if err != nil {
+		fmt.Fprintf(out, "Reading installation plan file %q [ERROR]\n", planFilename)
 		return fmt.Errorf("error reading plan file: %v", err)
 	}
+	fmt.Fprintf(out, "Reading installation plan file %q [OK]\n", planFilename)
+	fmt.Fprintln(out, "")
 
-	err = install.ValidatePlan(p)
-	if err != nil {
-		return fmt.Errorf("errors validating installation plan file: %v", err)
+	ok, errs := install.ValidatePlan(p)
+	if !ok {
+		fmt.Fprint(out, "Validating installation plan file [ERROR]\n")
+		for _, err := range errs {
+			fmt.Fprintf(out, "- %v\n", err)
+		}
+		fmt.Fprintln(out, "")
+		return fmt.Errorf("validation error prevents installation from proceeding")
+
 	}
+
+	fmt.Fprint(out, "Validating installation plan file [OK]\n")
 
 	return nil
 }
