@@ -1,0 +1,17 @@
+---
+  # download kubernetes binaries
+  # setup directories
+  - name: create {{ kubernetes_install_dir }} directory
+    file: path={{ kubernetes_install_dir }} state=directory
+  - name: download kube-controller-manager - v{{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kube-controller-manager dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+
+  # kube-controller-manager
+  - name: copy kube-controller-manager.service to remote
+    template: src=kube-controller-manager.service.j2 dest={{ kubernetes_service_dir }}/kube-controller-manager.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kube-controller-manager
+    command: systemctl enable kube-controller-manager.service
+  - name: start kube-controller-manager service
+    service: name=kube-controller-manager.service state=started enabled=yes

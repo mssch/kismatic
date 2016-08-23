@@ -1,12 +1,14 @@
 ## Manually run Ansible playbooks
 ### Prerequisites
-* `ansible-playbook`
+* `ansible`
 * `cfssl`
 
 On a Mac run `brew install ansible cfssl`
-* manually modify `/etc/hosts` of the control machine public IPv4 and hosts for all the nodes in the cluster
-* in `../tls/kubernetes-csr.json` replace with the internal and external IPv4 for all nodes in the cluster
-* `./install.sh "@runtime_vars.yaml"`
+
+On packet create 3 etcd1 servers, 2 masters and some workers (only CentOS7 has been tested)
+* manually modify `inventory.ini` with the hostnames, `ansible_host`=public IPv4 and `internal_ipv4` of the machines you created
+* in `../tls/kubernetes-csr.json` replace with the internal and hostnames, external and internal IPv4 for all the nodes in the cluster
+* run `./install.sh`
 
 To just run the playbook
 `ansible-playbook -i inventory.ini -s kubernetes.yaml --extra-vars "@runtime_vars.yaml"`

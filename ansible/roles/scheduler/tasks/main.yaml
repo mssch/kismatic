@@ -1,0 +1,18 @@
+---
+  # setup directories
+  - name: create {{ kubernetes_install_dir }} directory
+    file: path={{ kubernetes_install_dir }} state=directory
+    
+  # download kubernetes binaries
+  - name: download kube-scheduler - v{{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kube-scheduler dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+
+  # kube-scheduler
+  - name: copy kube-scheduler.service to remote
+    template: src=kube-scheduler.service.j2 dest={{ kubernetes_service_dir }}/kube-scheduler.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kube-scheduler
+    command: systemctl enable kube-scheduler.service
+  - name: start kube-scheduler service
+    service: name=kube-scheduler.service state=started enabled=yes

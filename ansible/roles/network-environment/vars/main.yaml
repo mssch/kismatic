@@ -1,0 +1,4 @@
+# paths
+network_environment_path: "/etc/network-environment"
+
+network_environment_mode: 0660

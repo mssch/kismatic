@@ -1,5 +1,7 @@
 ---
-  - name: create {{ kubelet_lid_dir }} directory
-    file: path={{ kubelet_lid_dir }} state=directory
+  # setup directories
+  - name: create {{ kubelet_lib_dir }} directory
+    file: path={{ kubelet_lib_dir }} state=directory
+
   - name: copy kubeconfig to remote
     template: src=kubeconfig.j2 dest={{ kubernetes_kubeconfig_path }}

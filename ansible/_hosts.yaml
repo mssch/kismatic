@@ -1,0 +1,8 @@
+---
+  # update hosts files of all nodes
+  - hosts: all
+    remote_user: root
+    become_method: sudo
+
+    roles:
+      - hosts

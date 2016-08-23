@@ -1,0 +1,15 @@
+---
+  - hosts: "{{ hosts | default('master:worker') }}" 
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/binaries.yaml
+      - group_vars/versions.yaml
+      - group_vars/ports.yaml
+      - group_vars/kubernetes-common.yaml
+
+    roles:
+      - all
+      - kubeconfig
+      - proxy

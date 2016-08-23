@@ -1,0 +1,14 @@
+---
+  # download kubernetes binaries
+  - name: download kube-apiserver - v{{ kubernetes_version }}
+    get_url: url={{ kubernetes_binary_path }}/kube-apiserver dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+    
+  # kube-apiserver
+  - name: copy kube-apiserver.service to remote
+    template: src=kube-apiserver.service.j2 dest={{ kubernetes_service_dir }}/kube-apiserver.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable kube-apiserver
+    command: systemctl enable kube-apiserver.service
+  - name: start kube-apiserver service
+    service: name=kube-apiserver.service state=started enabled=yes

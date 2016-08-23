@@ -1,9 +1,0 @@
-# kubernets-master-install
-# directories
-kubernetes_lib_dir: /var/lib/kubernetes
-# paths
-kubernetes_token_auth_path: "{{kubernetes_lib_dir}}/tokens.csv"
-kubernetes_authorization_policy_path: "{{kubernetes_lib_dir}}/authorization-policy.json"
-
-# do not schedule pods on the masters
-kubernetes_schedulable: false

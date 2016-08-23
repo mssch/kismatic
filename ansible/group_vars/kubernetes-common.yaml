@@ -1,0 +1,36 @@
+# directories
+kubernetes_install_dir: /etc/kubernetes
+kubernetes_service_dir: "{{ init_system_dir }}"
+network_plugin_dir: /etc/cni/net.d
+
+# file modes
+kubernetes_executable_mode: 0775
+kuberntes_service_mode: 0664
+
+# owner/group
+kuberntes_owner: root
+kubernetes_group: root
+
+# etcd
+etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+
+# kubernetes master network
+kubernetes_dns_service_ip: 10.3.0.10  # first IP in services CIDR
+kubernetes_services_cidr: 10.3.0.0/24
+kubernetes_pods_cidr: 10.2.0.0/16
+
+# kubernetes cluster config
+kubernetes_cluster_name: kubernetes
+kubernetes_mater_apiserver_count: "{{ groups['master'] | length }}"
+
+# certificate config
+kubernetes_certificates_ca_file_name: ca.pem
+kubernetes_certificates_cert_file_name: kubenode.pem
+kubernetes_certificates_key_file_name: kubenode-key.pem
+kubernetes_certificates_ca_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_ca_file_name }}"
+kubernetes_certificates_cert_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_cert_file_name }}"
+kubernetes_certificates_key_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_key_file_name }}"
+
+
+kubernetes_master_ip_list: "{% for host in groups['master'] %}https://{{ host }}:{{ kubernetes_master_secure_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+kubernetes_master_ip: https://master1:{{ kubernetes_master_secure_port }} # TODO change to load balancer

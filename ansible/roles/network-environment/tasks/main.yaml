@@ -1,0 +1,5 @@
+---
+  - name: create {{ network_plugin_dir }} directory
+    file: path={{ network_plugin_dir }} state=directory
+  - name: copy network-environment to remote
+    template: src=network-environment.j2 dest={{ network_environment_path }} owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ network_environment_mode }}

@@ -1,0 +1,2 @@
+# kubernets-worker-install
+kubernetes_schedulable: true  # schedule pods on the workers

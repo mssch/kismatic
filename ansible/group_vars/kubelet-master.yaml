@@ -1,0 +1,2 @@
+# kubernets-master-install
+kubernetes_schedulable: false # do not schedule pods on the masters

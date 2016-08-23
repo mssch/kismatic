@@ -1,0 +1,14 @@
+---
+  - hosts: master:worker
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/binaries.yaml
+      - group_vars/versions.yaml
+      - group_vars/ports.yaml
+
+    roles:
+      - all
+      - docker
+      - docker-verify

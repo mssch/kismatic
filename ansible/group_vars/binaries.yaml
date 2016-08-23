@@ -1,0 +1,11 @@
+# binary locations, TODO use local repos
+#etcd
+etcd_install_binary_download_name: etcd-{{ etcd_install_binary_version }}-linux-amd64.tar.gz
+etcd_install_binary_download_path: https://github.com/coreos/etcd/releases/download/{{ etcd_install_binary_version }}/{{ etcd_install_binary_download_name }}
+
+#kubernetes
+kubernetes_binary_path: https://storage.googleapis.com/kubernetes-release/release/v{{ kubernetes_version }}/bin/linux/amd64
+
+#calico
+calicoctl_binary_path: https://github.com/projectcalico/calico-containers/releases/download/v{{ calico_ctl_version }}/calicoctl
+calico_cni_path: https://github.com/projectcalico/calico-cni/releases/download/v{{ calico_version }}

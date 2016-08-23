@@ -1,8 +1,21 @@
 ---
   # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
-  - include: hosts.yaml
-  - include: etcd_k8s.yaml
-  - include: etcd_networking.yaml
-  - include: docker.yaml
-  - include: kubernetes_master.yaml
-  - include: kubernetes_worker.yaml
+  - include: _hosts.yaml
+  # etcd
+  - include: _etcd-k8s.yaml
+  - include: _etcd-networking.yaml
+  # common prereqs
+  - include: _docker.yaml
+  - include: _kubenode-cert.yaml
+  # master:worker
+  - include: _kubectl.yaml
+  - include: _calico.yaml
+  # master
+  - include: _apiserver.yaml
+  - include: _scheduler.yaml
+  - include: _controller-manager.yaml
+  - include: _kubelet-master.yaml
+  - include: _proxy.yaml hosts=master
+  # worker
+  - include: _kubelet-worker.yaml
+  - include: _proxy.yaml hosts=worker

@@ -1,0 +1,4 @@
+# certificat configs for master and worker nodes
+kubernetes_certificates_owner: root
+kubernetes_certificates_group: root
+kubernetes_certificates_mode: 0660

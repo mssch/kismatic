@@ -1,15 +1,1 @@
-# etcd cluster setup
-etcd_service_cluster_string: etcd1=https://etcd1:{{ etcd_service_peer_port }},etcd2=https://etcd2:{{ etcd_service_peer_port }},etcd3=https://etcd3:{{ etcd_service_peer_port }} #TODO need to be passed in from previous process
-# kubernetes master setup
-etcd_k8s_cluster_ip_list: https://etcd1:{{ etcd_k8s_client_port }},https://etcd2:{{ etcd_k8s_client_port }},https://etcd3:{{ etcd_k8s_client_port }}
-etcd_networking_cluster_ip_list: https://etcd1:{{ etcd_networking_client_port }},https://etcd2:{{ etcd_networking_client_port }},https://etcd3:{{ etcd_networking_client_port }}
-# kubernetes cluster cofnig
-kubernetes_cluster_name: kubernetes
-kubernetes_mater_apiserver_count: 2
-# kubernetes master network
-kubernetes_dns_service_ip: 10.3.0.10  # first IP in services CIDR
-kubernetes_services_cidr: 10.3.0.0/24
-kubernetes_pods_cidr: 10.2.0.0/16
-# ip_list for nodes will contain all master ips
-kubernetes_master_ip_list: https://master1:6443,https://master2:6443
-kubernetes_master_ip: https://master1:6443
+# override paramers
