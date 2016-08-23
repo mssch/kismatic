@@ -5,6 +5,7 @@ After=docker.service
 Requires=docker.service
 
 [Service]
+EnvironmentFile={{ network_environment_path }}
 Environment=MASTER_LIST={{ kubernetes_master_ip_list }}
 Environment=CLUSTER_DNS={{ kubernetes_dns_service_ip }}
 Environment=KUBECONFIG={{ kubernetes_kubeconfig_path }}
