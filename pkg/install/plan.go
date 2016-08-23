@@ -43,9 +43,10 @@ type Cluster struct {
 
 // A Node is a compute unit, virtual or physical, that is part of the cluster
 type Node struct {
-	Host   string
-	IP     string
-	Labels []string
+	Host       string
+	IP         string
+	InternalIP string
+	Labels     []string
 }
 
 // A NodeGroup is a collection of nodes

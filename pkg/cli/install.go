@@ -97,6 +97,10 @@ func doInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) error
 	}
 
 	fmt.Fprint(out, "Validating installation plan file [OK]\n")
+	err = install.ExecutePlan(p)
+	if err != nil {
+		return fmt.Errorf("error installing: %v", err)
+	}
 
 	return nil
 }
