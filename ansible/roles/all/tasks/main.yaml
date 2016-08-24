@@ -1,4 +1,6 @@
 ---
 # common tasks for all hosts
 - name: create a temporary download directory
-  file: path={{ temprary_download_dir }} state=directory
+  file:
+    path: "{{ temprary_download_dir }}"
+    state: directory

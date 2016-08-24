@@ -1,12 +1,16 @@
 ---
   # setup directories
-  - name: create {{ kubernetes_install_dir }} directory
-    file: path={{ kubernetes_install_dir }} state=directory
   - name: create {{ kubernetes_lib_dir }} directory
-    file: path={{ kubernetes_lib_dir }} state=directory
+    file:
+      path: "{{ kubernetes_lib_dir }}"
+      state: directory
 
   # TODO use user provided data
   - name: copy tokens.csv to remote
-    copy: src=tokens.csv dest={{ kubernetes_lib_dir }}/tokens.csv
+    copy:
+      src: tokens.csv
+      dest: "{{ kubernetes_lib_dir }}/tokens.csv"
   - name: copy authorization-policy.json to remote
-    copy: src=authorization-policy.json dest={{ kubernetes_lib_dir }}/authorization-policy.json
+    copy:
+      src: authorization-policy.json
+      dest: "{{ kubernetes_lib_dir }}/authorization-policy.json"

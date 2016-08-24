@@ -1,14 +1,19 @@
 ---
-  - name: create {{ kubelet_lib_dir }} directory
-    file: path={{ kubelet_lib_dir }} state=directory
+  # download binaries
   - name: download kubelet - v{{ kubernetes_version }}
-    get_url: url={{ kubernetes_binary_path }}/kubelet dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+    get_url:
+      url: "{{ kubernetes_binary_path }}/kubelet"
+      dest: "{{ bin_dir }}"
+      mode: "{{ kubernetes_executable_mode }}"
   # kubelet
   - name: copy kubelet.service to remote
-    template: src=kubelet.service.j2 dest={{ kubernetes_service_dir }}/kubelet.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
-  - name: reload services
-    command: systemctl daemon-reload
-  - name: enable kubelet
-    command: systemctl enable kubelet.service
-  - name: start kubelet service
-    service: name=kubelet.service state=started enabled=yes
+    template:
+      src: kubelet.service.j2
+      dest: "{{ kubernetes_service_dir }}/kubelet.service"
+      owner: "{{ kuberntes_owner }}"
+      group: "{{ kubernetes_group }}"
+      mode: "{{ kuberntes_service_mode }}"
+    notify:
+      - reload services
+      - enable kubelet
+      - start kubelet service

@@ -1,6 +1,5 @@
 # calico
 # directories
-calico_install_dir: /etc/calico
 network_plugin_bin_dir: /opt/cni/bin
 # paths
 calico_conf_path: "{{network_plugin_dir}}/10-calico.conf"

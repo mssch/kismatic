@@ -1,0 +1,9 @@
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable calico-node
+    command: systemctl enable calico-node.service
+  - name: restart calico-node service
+    service:
+      name: calico-node.service
+      state: restarted
+      enabled: yes

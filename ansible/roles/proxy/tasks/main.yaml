@@ -1,12 +1,19 @@
 ---
+  # download binaries
   - name: download kube-proxy - v{{ kubernetes_version }}
-    get_url: url={{ kubernetes_binary_path }}/kube-proxy dest={{ bin_dir }} mode={{ kubernetes_executable_mode }}
+    get_url:
+      url: "{{ kubernetes_binary_path }}/kube-proxy"
+      dest: "{{ bin_dir }}"
+      mode: "{{ kubernetes_executable_mode }}"
   # kube-proxy
   - name: copy kube-proxy.service to remote
-    template: src=kube-proxy.service.j2 dest={{ kubernetes_service_dir }}/kube-proxy.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
-  - name: reload services
-    command: systemctl daemon-reload
-  - name: enable kube-proxy
-    command: systemctl enable kube-proxy.service
-  - name: start kube-proxy service
-    service: name=kube-proxy.service state=started enabled=yes
+    template:
+      src: kube-proxy.service.j2
+      dest: "{{ kubernetes_service_dir }}/kube-proxy.service"
+      owner: "{{ kuberntes_owner }}"
+      group: "{{ kubernetes_group }}"
+      mode: "{{ kuberntes_service_mode }}"
+    notify:
+      - reload services
+      - enable kube-proxy
+      - start kube-proxy service

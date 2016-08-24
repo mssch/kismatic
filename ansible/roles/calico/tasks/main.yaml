@@ -1,34 +1,51 @@
 ---
   # install Calico network plugin
   # setup directories
-  - name: create {{ calico_install_dir }} directory
-    file: path={{ calico_install_dir }} state=directory
   - name: create {{ network_plugin_bin_dir }} directory
-    file: path={{ network_plugin_bin_dir }} state=directory
+    file:
+      path: "{{ network_plugin_bin_dir }}"
+      state: directory
 
-  # install Calico
-  - name: download Calicoctl - v{{ calico_ctl_version }}
-    get_url: url={{ calicoctl_binary_path }} dest={{ bin_dir }} mode={{ calico_executable_mode }}
+  # install calicoctl
+  - name: download calicoctl - v{{ calico_ctl_version }}
+    get_url:
+      url: "{{ calicoctl_binary_path }}"
+      dest: "{{ bin_dir }}"
+      mode: "{{ calico_executable_mode }}"
   # pre-download Docker image
   - name: download calico/node:v{{ calico_docker_version }} docker image
     command: docker pull calico/node:v{{ calico_docker_version }}
+  # start calico-node service
   - name: copy calico-node.service to remote
-    template: src=calico-node.service.j2 dest={{ kubernetes_service_dir }}/calico-node.service owner={{ kuberntes_owner }} group={{ kubernetes_group }} mode={{ kuberntes_service_mode }}
-  - name: reload services
-    command: systemctl daemon-reload
-  - name: enable calico-node
-    command: systemctl enable calico-node.service
-  - name: start calico-node service
-    service: name=calico-node.service state=started enabled=yes
-  # install calico-containers
-  - name: download calico - v{{ calico_version }}
-    get_url: url={{ calico_cni_path }}/calico dest={{ network_plugin_bin_dir }}/calico mode={{ calico_executable_mode }}
-  - name: download calico-ipam - v{{ calico_version }}
-    get_url: url={{ calico_cni_path }}/calico-ipam dest={{ network_plugin_bin_dir }}/calico-ipam mode={{ calico_executable_mode }}
-  - name: copy 10-calico.conf to remote
-    template: src=10-calico.conf.j2 dest={{ network_plugin_dir }}/10-calico.conf
+    template:
+      src: calico-node.service.j2
+      dest: "{{ kubernetes_service_dir }}/calico-node.service"
+      owner: "{{ kuberntes_owner }}"
+      group: "{{ kubernetes_group }}"
+      mode: "{{ kuberntes_service_mode }}"
+    notify:
+      - reload services
+      - enable calico-node
+      - restart calico-node service
 
-  # setup Calico CIDR
+  # install calico binaries
+  - name: download calico - v{{ calico_version }}
+    get_url:
+      url: "{{ calico_cni_path }}/calico"
+      dest: "{{ network_plugin_bin_dir }}/calico"
+      mode: "{{ calico_executable_mode }}"
+  - name: download calico-ipam - v{{ calico_version }}
+    get_url:
+      url: "{{ calico_cni_path }}/calico-ipam"
+      dest: "{{ network_plugin_bin_dir }}/calico-ipam"
+      mode: "{{ calico_executable_mode }}"
+  # configure calcico
+  - name: copy 10-calico.conf to remote
+    template:
+      src: 10-calico.conf.j2
+      dest: "{{ network_plugin_dir }}/10-calico.conf"
+
+  # setup calico CIDR
   - name: remove default CIDR - {{ dafault_cidr }}
     command: calicoctl pool remove {{ dafault_cidr }}
     environment:

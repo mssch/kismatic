@@ -1,3 +1,11 @@
 ---
   - name: docker installed
     file: path={{ docker_installed_path }} state=touch
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable {{ docker_service_path }}
+    command: systemctl enable {{ docker_service_path }}
+  - name: restart {{ docker_service_name }} service
+    service:
+      name: "{{ docker_service_name }}"
+      state: restarted enabled=yes
