@@ -1,1 +1,0 @@
-etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"

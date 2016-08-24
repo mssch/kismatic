@@ -4,14 +4,9 @@
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
-      - group_vars/binaries.yaml
-      - group_vars/versions.yaml
-      - group_vars/ports.yaml
-      - group_vars/kubernetes-common.yaml
       - group_vars/kubelet-master.yaml
 
     roles:
-      - all
       - network-environment
       - kubeconfig
       - kubelet

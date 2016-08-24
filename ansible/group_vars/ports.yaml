@@ -1,4 +1,0 @@
-# etcd
-etcd_k8s_client_port: 2379
-etcd_networking_client_port: 6666
-kubernetes_master_secure_port: 6443

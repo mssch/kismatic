@@ -4,8 +4,6 @@
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
-      - group_vars/kubernetes-common.yaml
 
     roles:
-      - all
       - kubenode-cert

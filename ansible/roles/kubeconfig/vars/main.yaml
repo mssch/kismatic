@@ -1,4 +1,0 @@
-# directories
-kubelet_lib_dir: /var/lib/kubelet
-# paths
-kubernetes_kubeconfig_path: "{{kubelet_lib_dir}}/kubeconfig"

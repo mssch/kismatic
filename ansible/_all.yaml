@@ -1,10 +1,9 @@
 ---
-  - hosts: master:worker
+  - hosts: master
     remote_user: root
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
 
     roles:
-      - network-environment
-      - calico
+      - all

@@ -1,6 +1,0 @@
-# docker-install
-docker_install_dir: /etc/docker
-docker_installed_path: "{{ docker_install_dir }}/docker.installed"
-docker_service_name: docker
-docker_service_file: "{{ docker_service_name }}.{{ init_system_file_extenstion }}"
-docker_service_path: "{{ init_system_dir }}/{{ docker_service_file }}"

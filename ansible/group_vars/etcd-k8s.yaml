@@ -1,4 +1,4 @@
-# etcd_k8s
+# etcd-k8s
 # etcd-certificates
 etcd_certificates_ca_file_name: ca.pem
 etcd_certificates_cert_file_name: etcd.pem
@@ -6,13 +6,11 @@ etcd_certificates_key_file_name: etcd-key.pem
 etcd_certificates_ca_file: "{{ etcd_install_dir }}/{{ etcd_certificates_ca_file_name }}"
 etcd_certificates_cert_file: "{{ etcd_install_dir }}/{{ etcd_certificates_cert_file_name }}"
 etcd_certificates_key_file: "{{ etcd_install_dir }}/{{ etcd_certificates_key_file_name }}"
-
 # etcd-install
 etcd_install_dir: /etc/etcd_k8s
 etcd_install_binary_version: v3.0.4
 etcd_install_bin_name: etcd3
 etcdctl_install_bin_name: etcdctl3
-
 # etcd-install:etcd.service.j2
 etcd_service_name: etcd_k8s
 etcd_service_data_dir: /var/lib/etcd_k8s

@@ -1,5 +1,105 @@
+#===============================================================================
 # common variables for all hosts
 temprary_download_dir: /tmp/kismatic
 init_system_dir: /usr/lib/systemd/system
 init_system_file_extenstion: service
 bin_dir: /usr/bin
+#===============================================================================
+# binary locations
+#TODO use local repos
+#etcd
+etcd_install_binary_download_name: etcd-{{ etcd_install_binary_version }}-linux-amd64.tar.gz
+etcd_install_binary_download_path: https://github.com/coreos/etcd/releases/download/{{ etcd_install_binary_version }}/{{ etcd_install_binary_download_name }}
+#kubernetes
+kubernetes_binary_path: https://storage.googleapis.com/kubernetes-release/release/v{{ kubernetes_version }}/bin/linux/amd64
+#calico
+calicoctl_binary_path: https://github.com/projectcalico/calico-containers/releases/download/v{{ calico_ctl_version }}/calicoctl
+calico_cni_path: https://github.com/projectcalico/calico-cni/releases/download/v{{ calico_version }}
+#===============================================================================
+# component versions
+#TODO move versions from etcd_k8s and etcd_networking
+kubernetes_version: 1.3.4
+calico_version: 1.3.1
+calico_ctl_version: 0.20.0
+calico_docker_version: 0.20.0
+#===============================================================================
+# service ports
+etcd_k8s_client_port: 2379
+etcd_networking_client_port: 6666
+kubernetes_master_secure_port: 6443
+#===============================================================================
+# common variables for etcd
+# etcd-certificates
+etcd_certificates_owner: root
+etcd_certificates_group: root
+etcd_certificates_mode: 0660
+# etcd-install
+etcd_install_binary_untared_dir: "{{ temprary_download_dir }}/etcd-{{ etcd_install_binary_version }}-linux-amd64"
+etcd_install_executable_owner: 1000
+etcd_install_executable_group: 1000
+etcd_install_executable_mode: 0775
+# etcd-install:etcd.service.j2
+etcd_service_template_name: etcd.service.j2
+etcd_service_file: "{{ etcd_service_name }}.{{ init_system_file_extenstion }}"
+etcd_service_path: "{{ init_system_dir }}/{{ etcd_service_file }}"
+etcd_service_owner: root
+etcd_service_group: root
+etcd_service_mode: 0664
+# etcd cluster setup
+etcd_service_cluster_string: "{% for host in groups['etcd'] %}{{ host }}=https://{{ host }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+#===============================================================================
+# docker-install
+docker_install_dir: /etc/docker
+docker_installed_path: "{{ docker_install_dir }}/docker.installed"
+docker_service_name: docker
+docker_service_file: "{{ docker_service_name }}.{{ init_system_file_extenstion }}"
+docker_service_path: "{{ init_system_dir }}/{{ docker_service_file }}"
+#===============================================================================
+# calico
+# directories
+network_plugin_bin_dir: /opt/cni/bin
+# paths
+calico_conf_path: "{{network_plugin_dir}}/10-calico.conf"
+network_environment_path: "/etc/network-environment"
+#file modes
+calico_executable_mode: 0775
+dafault_cidr: 192.168.0.0/16
+kubernetes_dns_service_ip: 10.3.0.10  # first IP in services CIDR
+kubernetes_services_cidr: 10.3.0.0/24
+kubernetes_pods_cidr: 10.2.0.0/16
+#===============================================================================
+# kubernetes
+# directories
+kubernetes_install_dir: /etc/kubernetes
+kubernetes_service_dir: "{{ init_system_dir }}"
+network_plugin_dir: /etc/cni/net.d
+kubernetes_lib_dir: /var/lib/kubernetes
+# paths
+kubernetes_token_auth_path: "{{kubernetes_lib_dir}}/tokens.csv"
+kubernetes_authorization_policy_path: "{{kubernetes_lib_dir}}/authorization-policy.json"
+kubernetes_kubeconfig_path: "{{kubelet_lib_dir}}/kubeconfig"
+# file modes
+kubernetes_executable_mode: 0775
+kuberntes_service_mode: 0664
+kubernetes_certificates_mode: 0660
+network_environment_mode: 0660
+# owner/group
+kuberntes_owner: root
+kubernetes_group: root
+kubernetes_certificates_owner: root
+kubernetes_certificates_group: root
+# kubernetes cluster config
+kubernetes_cluster_name: kubernetes
+kubernetes_mater_apiserver_count: "{{ groups['master'] | length }}"
+kubernetes_master_ip_list: "{% for host in groups['master'] %}https://{{ host }}:{{ kubernetes_master_secure_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+kubernetes_master_ip: https://master1:{{ kubernetes_master_secure_port }} # TODO change to load balancer
+# kubernetes certificate config
+kubernetes_certificates_ca_file_name: ca.pem
+kubernetes_certificates_cert_file_name: kubenode.pem
+kubernetes_certificates_key_file_name: kubenode-key.pem
+kubernetes_certificates_ca_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_ca_file_name }}"
+kubernetes_certificates_cert_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_cert_file_name }}"
+kubernetes_certificates_key_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_key_file_name }}"
+# etcd IPs
+etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
