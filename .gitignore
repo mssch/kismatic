@@ -36,5 +36,6 @@ _testmain.go
 *.iml
 .idea
 
-/tls/*.pem
-/tls/*.csr
+/ansible/tls/*.pem
+/ansible/tls/*.csr
+/ansible/tls/kubernetes-*-csr.json

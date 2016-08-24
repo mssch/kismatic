@@ -1,0 +1,22 @@
+{
+  "CN": "Kubernetes",
+  "hosts": [
+    "${HOSTNAME}",
+    "${INTERNAL_IPV4}",
+    "${EXTRENAL_IPV4}",
+    "127.0.0.1"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "Troy",
+      "O": "Kubernetes",
+      "OU": "Cluster",
+      "ST": "New York"
+    }
+  ]
+}
