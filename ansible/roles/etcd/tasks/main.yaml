@@ -1,38 +1,45 @@
 ---
-# download and install etcd and etcdctl
-# download binaries
-- name: download and untar {{ etcd_install_bin_name }}
-  unarchive:
-    src: "{{ etcd_install_binary_download_path }}"
-    dest: "{{ temprary_download_dir }}"
-    remote_src: yes
-    copy: no
-- name: copy {{ etcd_install_bin_name }} binaries
-  copy:
-    src: "{{ etcd_install_binary_untared_dir }}/etcd"
-    dest: "{{ bin_dir }}/{{ etcd_install_bin_name }}"
-    remote_src: True
-    owner: "{{ etcd_install_executable_owner }}"
-    group: "{{ etcd_install_executable_group }}"
-    mode: "{{ etcd_install_executable_mode }}"
-- name: copy {{ etcdctl_install_bin_name }} binaries
-  copy:
-    src: "{{ etcd_install_binary_untared_dir }}/etcdctl"
-    dest: "{{ bin_dir }}/{{ etcdctl_install_bin_name }}"
-    remote_src: True
-    owner: "{{ etcd_install_executable_owner }}"
-    group: "{{ etcd_install_executable_group }}"
-    mode: "{{ etcd_install_executable_mode }}"
+  # download and install etcd and etcdctl
+  # download binaries
+  - name: download and untar {{ etcd_install_bin_name }}
+    unarchive:
+      src: "{{ etcd_install_binary_download_path }}"
+      dest: "{{ temprary_download_dir }}"
+      remote_src: yes
+      copy: no
+  - name: copy {{ etcd_install_bin_name }} binaries
+    copy:
+      src: "{{ etcd_install_binary_untared_dir }}/etcd"
+      dest: "{{ bin_dir }}/{{ etcd_install_bin_name }}"
+      remote_src: True
+      owner: "{{ etcd_install_executable_owner }}"
+      group: "{{ etcd_install_executable_group }}"
+      mode: "{{ etcd_install_executable_mode }}"
+  - name: copy {{ etcdctl_install_bin_name }} binaries
+    copy:
+      src: "{{ etcd_install_binary_untared_dir }}/etcdctl"
+      dest: "{{ bin_dir }}/{{ etcdctl_install_bin_name }}"
+      remote_src: True
+      owner: "{{ etcd_install_executable_owner }}"
+      group: "{{ etcd_install_executable_group }}"
+      mode: "{{ etcd_install_executable_mode }}"
 
-# install and start etcd service
-- name: copy {{ etcd_service_file }} to remote
-  template:
-    src: "{{ etcd_service_template_name }}"
-    dest: "{{ etcd_service_path }}"
-    owner: "{{ etcd_service_owner }}"
-    group: "{{ etcd_service_group }}"
-    mode: "{{ etcd_service_mode }}"
-  notify:
-    - reload services
-    - enable {{ etcd_service_path }}
-    - restart {{ etcd_service_name }} service
+  # install and start etcd service
+  - name: copy {{ etcd_service_file }} to remote
+    template:
+      src: "{{ etcd_service_template_name }}"
+      dest: "{{ etcd_service_path }}"
+      owner: "{{ etcd_service_owner }}"
+      group: "{{ etcd_service_group }}"
+      mode: "{{ etcd_service_mode }}"
+    notify:
+      - reload services
+      - enable {{ etcd_service_path }}
+      - restart {{ etcd_service_name }} service
+
+  - meta: flush_handlers  #Run handlers
+
+  # test etcd
+  - name: verify {{ etcd_install_bin_name }} cluster health
+    command: "{{ bin_dir }}/{{ etcdctl_install_bin_name }} --endpoint='https://127.0.0.1:{{ etcd_service_client_port }}/' --cert-file={{ etcd_certificates_cert_file }} --key-file={{ etcd_certificates_key_file }} --ca-file={{ etcd_certificates_ca_file }} cluster-health"
+  - debug: msg="{{ bin_dir }}/{{ etcdctl_install_bin_name }} --endpoint='https://127.0.0.1:{{ etcd_service_client_port }}/' --cert-file={{ etcd_certificates_cert_file }} --key-file={{ etcd_certificates_key_file }} --ca-file={{ etcd_certificates_ca_file }} cluster-health"

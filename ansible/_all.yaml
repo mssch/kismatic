@@ -1,5 +1,5 @@
 ---
-  - hosts: master
+  - hosts: all
     remote_user: root
     become_method: sudo
     vars_files:

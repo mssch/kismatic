@@ -13,3 +13,9 @@
       - reload services
       - enable {{ docker_service_path }}
       - restart {{ docker_service_name }} service
+
+  - meta: flush_handlers
+
+  # verify that Docker installed succesfully and is running
+  - name: verify docker is installed
+    command: docker ps

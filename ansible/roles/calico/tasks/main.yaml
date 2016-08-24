@@ -1,6 +1,10 @@
 ---
   # install Calico network plugin
   # setup directories
+  - name: create {{ network_plugin_dir }} directory
+    file:
+      path: "{{ network_plugin_dir }}"
+      state: directory
   - name: create {{ network_plugin_bin_dir }} directory
     file:
       path: "{{ network_plugin_bin_dir }}"

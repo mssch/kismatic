@@ -3,7 +3,7 @@
   - name: download kube-apiserver - v{{ kubernetes_version }}
     get_url:
       url: "{{ kubernetes_binary_path }}/kube-apiserver"
-      dest: "{{ bin_dir }} "
+      dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
 
   # kube-apiserver

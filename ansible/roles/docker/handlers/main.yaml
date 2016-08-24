@@ -8,4 +8,5 @@
   - name: restart {{ docker_service_name }} service
     service:
       name: "{{ docker_service_name }}"
-      state: restarted enabled=yes
+      state: restarted
+      enabled: yes
