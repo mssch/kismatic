@@ -1,6 +1,9 @@
 {
   "CN": "Kubernetes",
   "hosts": [
+    "10.3.0.1",
+    "10.3.0.5"
+    "10.3.0.10"
     "${HOSTNAME}",
     "${INTERNAL_IPV4}",
     "${EXTRENAL_IPV4}",

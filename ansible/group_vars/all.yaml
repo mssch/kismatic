@@ -63,7 +63,8 @@ network_environment_path: "/etc/network-environment"
 #file modes
 calico_executable_mode: 0775
 dafault_cidr: 192.168.0.0/16
-kubernetes_dns_service_ip: 10.3.0.10  # first IP in services CIDR
+kubernetes_dns_service_ip: 10.3.0.10
+kubernetes_webui_service_ip: 10.3.0.5 
 kubernetes_services_cidr: 10.3.0.0/24
 kubernetes_pods_cidr: 10.2.0.0/16
 #===============================================================================
