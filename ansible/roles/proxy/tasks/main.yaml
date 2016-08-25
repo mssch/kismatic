@@ -17,3 +17,5 @@
       - reload services
       - enable kube-proxy
       - start kube-proxy service
+      - verify kube-proxy is running
+      - report status of kube-proxy

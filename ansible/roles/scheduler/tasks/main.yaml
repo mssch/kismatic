@@ -18,3 +18,5 @@
       - reload services
       - enable kube-scheduler
       - start kube-scheduler service
+      - verify kube-scheduler is running
+      - report status of kube-scheduler

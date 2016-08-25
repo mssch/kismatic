@@ -18,3 +18,5 @@
       - reload services
       - enable kube-apiserver
       - restart kube-apiserver service
+      - verify kube-apiserver is running
+      - report status of kube-apiserver

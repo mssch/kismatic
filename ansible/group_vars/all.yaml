@@ -92,7 +92,7 @@ kubernetes_certificates_group: root
 kubernetes_cluster_name: kubernetes
 kubernetes_mater_apiserver_count: "{{ groups['master'] | length }}"
 kubernetes_master_ip_list: "{% for host in groups['master'] %}https://{{ host }}:{{ kubernetes_master_secure_port }}{% if not loop.last %},{% endif %}{% endfor %}"
-kubernetes_master_ip: https://master1:{{ kubernetes_master_secure_port }} # TODO change to load balancer
+kubernetes_master_ip: https://{{ groups['master'][0] }}:{{ kubernetes_master_secure_port }} # TODO change to load balancer
 # kubernetes certificate config
 kubernetes_certificates_ca_file_name: ca.pem
 kubernetes_certificates_cert_file_name: kubenode.pem

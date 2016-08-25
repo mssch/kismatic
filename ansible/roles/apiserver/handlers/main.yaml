@@ -8,3 +8,18 @@
       name: kube-apiserver.service
       state: restarted
       enabled: yes
+
+  # verify service
+  - name: verify kube-apiserver is running
+    command: systemctl status kube-apiserver
+    ignore_errors: yes
+    changed_when: false
+    register: service_kube_apiserver_status
+  - name: report status of kube-apiserver
+    fail:
+      msg: |
+        Service kube-apiserver is not running.
+        Output of `systemctl status kube-apiserver`:
+          {{ service_kube_apiserver_status.stdout }}
+          {{ service_kube_apiserver_status.stderr }}
+    when: service_kube_apiserver_status | failed

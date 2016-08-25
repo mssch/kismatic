@@ -11,7 +11,7 @@
     notify:
       - docker installed
       - reload services
-      - enable {{ docker_service_path }}
+      - enable docker
       - restart docker service
 
   - meta: flush_handlers

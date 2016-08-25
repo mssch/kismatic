@@ -5,3 +5,18 @@
     command: systemctl enable kube-proxy.service
   - name: start kube-proxy service
     service: name=kube-proxy.service state=started enabled=yes
+
+  # verify service
+  - name: verify kube-proxy is running
+    command: systemctl status kube-proxy
+    ignore_errors: yes
+    changed_when: false
+    register: service_kube_proxy_status
+  - name: report status of kube-proxy
+    fail:
+      msg: |
+        Service kube-proxy is not running.
+        Output of `systemctl status kube-proxy`:
+          {{ service_kube_proxy_status.stdout }}
+          {{ service_kube_proxy_status.stderr }}
+    when: service_kube_proxy_status | failed

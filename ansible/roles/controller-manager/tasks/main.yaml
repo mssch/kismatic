@@ -18,3 +18,5 @@
       - reload services
       - enable kube-controller-manager
       - restart kube-controller-manager service
+      - verify kube-controller-manager is running
+      - report status of kube-controller-manager

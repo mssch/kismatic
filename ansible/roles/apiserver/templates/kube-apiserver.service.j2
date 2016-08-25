@@ -34,7 +34,7 @@ ExecStart={{ bin_dir }}/kube-apiserver \
   --token-auth-file=${TOKEN_AUTH_FILE} \
   --v=2
 Restart=on-failure
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

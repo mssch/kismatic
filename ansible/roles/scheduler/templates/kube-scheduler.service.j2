@@ -11,7 +11,7 @@ ExecStart={{ bin_dir }}/kube-scheduler \
   --master=${MASTER_IP} \
   --v=2
 Restart=on-failure
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

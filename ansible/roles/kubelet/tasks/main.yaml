@@ -17,3 +17,5 @@
       - reload services
       - enable kubelet
       - start kubelet service
+      - verify kubelet is running
+      - report status of kubelet

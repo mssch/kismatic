@@ -5,3 +5,18 @@
     command: systemctl enable kubelet.service
   - name: start kubelet service
     service: name=kubelet.service state=started enabled=yes
+
+  # verify service
+  - name: verify kubelet is running
+    command: systemctl status kubelet
+    ignore_errors: yes
+    changed_when: false
+    register: service_kubelet_status
+  - name: report status of kubelet
+    fail:
+      msg: |
+        Service kubelet is not running.
+        Output of `systemctl status kubelet`:
+          {{ service_kubelet_status.stdout }}
+          {{ service_kubelet_status.stderr }}
+    when: service_kubelet_status | failed

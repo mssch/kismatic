@@ -34,8 +34,8 @@
       mode: "{{ etcd_service_mode }}"
     notify:
       - reload services
-      - enable {{ etcd_service_path }}
-      - restart {{ etcd_service_name }} service
+      - enable etcd
+      - restart etcd service
 
   - meta: flush_handlers  #Run handlers
 
