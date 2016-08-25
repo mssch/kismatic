@@ -12,7 +12,7 @@
       - docker installed
       - reload services
       - enable {{ docker_service_path }}
-      - restart {{ docker_service_name }} service
+      - restart docker service
 
   - meta: flush_handlers
 
