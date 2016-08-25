@@ -1,6 +1,10 @@
 {
   "CN": "Kubernetes",
   "hosts": [
+    "kubernetes",
+    "kubernetes.default",
+    "kubernetes.default.svc",
+    "kubernetes.default.svc.cluster.local",
     "10.3.0.1",
     "10.3.0.5",
     "10.3.0.10",
