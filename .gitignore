@@ -39,3 +39,4 @@ _testmain.go
 /ansible/tls/*.pem
 /ansible/tls/*.csr
 /ansible/tls/kubernetes-*-csr.json
+/ansible/tls/servers
