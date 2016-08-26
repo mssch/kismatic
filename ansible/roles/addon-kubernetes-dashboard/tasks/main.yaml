@@ -1,0 +1,12 @@
+---
+  # TODO notify user of the port, ingress
+  - name: copy kubernetes-dashboard.yaml to host
+    copy:
+      src: kubernetes-dashboard.yaml
+      dest: /tmp/kubernetes-dashboard.yaml
+  - name: start kubernetes-dashboard service
+    command: kubectl create -f /tmp/kubernetes-dashboard.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines

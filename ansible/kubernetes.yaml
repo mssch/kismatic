@@ -20,3 +20,5 @@
   # worker
   - include: _kubelet-worker.yaml
   - include: _proxy.yaml hosts=worker
+  # add ons
+  - include: _addon-kubernetes-dashboard.yaml
