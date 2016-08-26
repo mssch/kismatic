@@ -2,6 +2,7 @@ package cli
 
 import (
 	"io"
+	"os"
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
 	"github.com/spf13/cobra"
@@ -10,7 +11,7 @@ import (
 const planFilename = "kismatic-cluster.yaml"
 
 // NewKismaticCommand creates the kismatic command
-func NewKismaticCommand(in io.Reader, out io.Writer) *cobra.Command {
+func NewKismaticCommand(version string, in io.Reader, out io.Writer) (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "kismatic",
 		Short: "kismatic is the main tool for managing your Kismatic cluster",
@@ -21,8 +22,15 @@ func NewKismaticCommand(in io.Reader, out io.Writer) *cobra.Command {
 		SilenceErrors: true,
 	}
 
-	// Add sub-commands
-	cmd.AddCommand(NewCmdInstall(in, out, &install.PlanFile{planFilename}))
+	cmd.AddCommand(NewCmdVersion(version, out))
 
-	return cmd
+	// Add Install sub-command
+	planner := &install.FilePlanner{File: planFilename}
+	executor, err := install.NewAnsibleExecutor(out, os.Stderr) // TODO: Do we want to parameterize stderr?
+	if err != nil {
+		return nil, err
+	}
+	cmd.AddCommand(NewCmdInstall(in, out, planner, executor))
+
+	return cmd, nil
 }

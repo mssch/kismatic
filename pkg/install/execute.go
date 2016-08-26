@@ -9,9 +9,33 @@ import (
 	"os/exec"
 )
 
-func ExecutePlan(p *Plan) error {
+// The Executor will carry out the installation plan
+type Executor interface {
+	Install(p *Plan) error
+}
 
-	// produce ansible inventory and variables files
+type ansibleExecutor struct {
+	out        io.Writer
+	errOut     io.Writer
+	pythonPath string
+	ansibleBin string
+}
+
+// NewAnsibleExecutor returns an ansible based installation executor.
+func NewAnsibleExecutor(out io.Writer, errOut io.Writer) (Executor, error) {
+	ppath, err := getPythonPath()
+	if err != nil {
+		return nil, err
+	}
+	return &ansibleExecutor{
+		out:        out,
+		errOut:     errOut,
+		pythonPath: ppath,
+		ansibleBin: "./ansible/bin", // TODO: What's the best way to handle this?
+	}, nil
+}
+
+func (e *ansibleExecutor) Install(p *Plan) error {
 	inv := &bytes.Buffer{}
 	writeHostGroup(inv, "etcd", p.Etcd.Nodes)
 	writeHostGroup(inv, "master", p.Master.Nodes)
@@ -23,7 +47,7 @@ func ExecutePlan(p *Plan) error {
 	}
 
 	// run ansible
-	err = runAnsiblePlaybook("inventory.ini", "./ansible/playbooks/kubernetes.yaml")
+	err = e.runAnsiblePlaybook("inventory.ini", "./ansible/playbooks/kubernetes.yaml")
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
@@ -31,27 +55,13 @@ func ExecutePlan(p *Plan) error {
 	return nil
 }
 
-func getPythonPath() (string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("error getting working dir: %v", err)
-	}
-	return fmt.Sprintf("%s/ansible/lib/python2.7/site-packages:%[1]s/ansible/lib64/python2.7/site-packages", wd), nil
-}
+func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string) error {
+	cmd := exec.Command(fmt.Sprintf("%s/ansible-playbook", e.ansibleBin), "-i", inventoryFile, "-s", playbookFile)
+	cmd.Stdout = e.out
+	cmd.Stderr = e.errOut
+	os.Setenv("PYTHONPATH", e.pythonPath)
 
-func runAnsiblePlaybook(inventoryFile, playbookFile string) error {
-	cmd := exec.Command("./ansible/bin/ansible-playbook", "-i", inventoryFile, "-s", playbookFile, "--extra-vars", "@./ansible/playbooks/runtime_vars.yaml")
-	fmt.Println(cmd)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	ppath, err := getPythonPath()
-	if err != nil {
-		return fmt.Errorf("error building python path: %v", err)
-	}
-	os.Setenv("PYTHONPATH", ppath)
-
-	err = cmd.Run()
-
+	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error running playbook: %v", err)
 	}
@@ -68,4 +78,12 @@ func writeHostGroup(inv io.Writer, groupName string, nodes []Node) {
 		}
 		fmt.Fprintf(inv, "%s ansible_host=%s internal_ipv4=%s\n", n.Host, n.IP, internalIP)
 	}
+}
+
+func getPythonPath() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("error getting working dir: %v", err)
+	}
+	return fmt.Sprintf("%s/ansible/lib/python2.7/site-packages:%[1]s/ansible/lib64/python2.7/site-packages", wd), nil
 }

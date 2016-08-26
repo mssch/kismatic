@@ -11,20 +11,20 @@ import (
 )
 
 // NewCmdInstall creates a new install command
-func NewCmdInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) *cobra.Command {
+func NewCmdInstall(in io.Reader, out io.Writer, plan install.Planner, executor install.Executor) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "install your Kismatic cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doInstall(in, out, plan)
+			return doInstall(in, out, plan, executor)
 		},
 	}
 
 	return cmd
 }
 
-func doInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) error {
-	if !plan.Exists() {
+func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor install.Executor) error {
+	if !planner.PlanExists() {
 		// Plan file not found, planning phase
 		fmt.Fprintln(out, "Plan your Kismatic cluster:")
 
@@ -67,7 +67,7 @@ func doInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) error
 				ExpectedCount: workerNodes,
 			},
 		}
-		err = install.WritePlanTemplate(p, plan)
+		err = install.WritePlanTemplate(p, planner)
 		if err != nil {
 			return fmt.Errorf("error planning installation: %v", err)
 		}
@@ -77,7 +77,7 @@ func doInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) error
 	}
 
 	// Plan file exists, validate and install
-	p, err := plan.Read()
+	p, err := planner.Read()
 	if err != nil {
 		fmt.Fprintf(out, "Reading installation plan file %q [ERROR]\n", planFilename)
 		return fmt.Errorf("error reading plan file: %v", err)
@@ -97,7 +97,7 @@ func doInstall(in io.Reader, out io.Writer, plan install.PlanReaderWriter) error
 	}
 
 	fmt.Fprint(out, "Validating installation plan file [OK]\n")
-	err = install.ExecutePlan(p)
+	err = executor.Install(p)
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
