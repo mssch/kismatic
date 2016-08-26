@@ -16,9 +16,9 @@
   - include: _scheduler.yaml
   - include: _controller-manager.yaml
   - include: _kubelet-master.yaml
-  - include: _proxy.yaml hosts=master
   # worker
   - include: _kubelet-worker.yaml
-  - include: _proxy.yaml hosts=worker
+  # master:worker
+  - include: _proxy.yaml
   # add ons
   - include: _addon-kubernetes-dashboard.yaml
