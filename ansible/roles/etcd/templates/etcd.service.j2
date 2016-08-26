@@ -34,7 +34,7 @@ ExecStart={{ bin_dir }}/{{ etcd_install_bin_name }} \
   --initial-cluster=${CLUSTER_STRING} \
   --initial-cluster-state=new
 Restart=on-failure
-RestartSec=10
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
