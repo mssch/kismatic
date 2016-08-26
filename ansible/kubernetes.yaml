@@ -22,3 +22,4 @@
   - include: _proxy.yaml
   # add ons
   - include: _addon-kubernetes-dashboard.yaml
+  - include: _addon-kubernetes-dns.yaml

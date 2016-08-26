@@ -64,7 +64,6 @@ network_environment_path: "/etc/network-environment"
 calico_executable_mode: 0775
 dafault_cidr: 192.168.0.0/16
 kubernetes_dns_service_ip: 10.3.0.10
-kubernetes_webui_service_ip: 10.3.0.5 
 kubernetes_services_cidr: 10.3.0.0/24
 kubernetes_pods_cidr: 10.2.0.0/16
 #===============================================================================
@@ -93,7 +92,7 @@ kubernetes_certificates_group: root
 kubernetes_cluster_name: kubernetes
 kubernetes_mater_apiserver_count: "{{ groups['master'] | length }}"
 kubernetes_master_ip_list: "{% for host in groups['master'] %}https://{{ host }}:{{ kubernetes_master_secure_port }}{% if not loop.last %},{% endif %}{% endfor %}"
-kubernetes_master_ip: https://{{ groups['master'][0] }}:{{ kubernetes_master_secure_port }} # TODO change to load balancer
+kubernetes_master_ip: https://{{ hostvars[groups['master'][0]].internal_ipv4 }}:{{ kubernetes_master_secure_port }} # TODO change to load balancer
 # kubernetes certificate config
 kubernetes_certificates_ca_file_name: ca.pem
 kubernetes_certificates_cert_file_name: kubenode.pem
