@@ -49,4 +49,4 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	mkdir -p out/cfssl
 	cp -r vendor-cfssl/out/* out/cfssl
 	rm -f out/kismatic.tar.gz
-	tar -cvzf out/kismatic.tar.gz -C out .
+	tar -cvzf out/kismatic.tar.gz --exclude kismatic.tar.gz -C out .
