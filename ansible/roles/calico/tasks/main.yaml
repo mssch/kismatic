@@ -60,6 +60,7 @@
       ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
     ignore_errors: yes # TODO better way to handle when this is run more than once
     when: "'master' in group_names" # only run on masters
+    run_once: true
   - name: add pods CIDR - {{ kubernetes_pods_cidr }}
     command: calicoctl pool add {{ kubernetes_pods_cidr }} --nat-outgoing
     environment:
@@ -69,6 +70,7 @@
       ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
       ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
     when: "'master' in group_names"
+    run_once: true
   # - name: add services CIDR - {{ kubernetes_services_cidr }}
   #   command: calicoctl pool add {{ kubernetes_services_cidr }} --nat-outgoing
   #   environment:
