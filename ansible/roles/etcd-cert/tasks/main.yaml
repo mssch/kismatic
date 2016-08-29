@@ -1,6 +1,6 @@
 ---
   # setup directories
-  - name: create
+  - name: create directory
     file:
       path: "{{ etcd_install_dir }}"
       state: directory
