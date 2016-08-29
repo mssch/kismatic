@@ -7,21 +7,21 @@
   # copy certificates
   - name: copy {{ kubernetes_certificates_ca_file_name }}
     copy:
-      src: tls/ca.pem
+      src: "{{ tls_directory }}/ca.pem"
       dest: "{{ kubernetes_certificates_ca_path }}"
       owner: "{{ kubernetes_certificates_owner }}"
       group: "{{ kubernetes_certificates_group }}"
       mode: "{{ kubernetes_certificates_mode }}"
   - name: copy {{ kubernetes_certificates_cert_file_name }}
     copy:
-      src: tls/{{ inventory_hostname }}.pem
+      src: "{{ tls_directory }}/{{ inventory_hostname }}.pem"
       dest: "{{ kubernetes_certificates_cert_path }}"
       owner: "{{ kubernetes_certificates_owner }}"
       group: "{{ kubernetes_certificates_group }}"
       mode: "{{ kubernetes_certificates_mode }}"
   - name: copy {{ kubernetes_certificates_key_file_name }}
     copy:
-      src: tls/{{ inventory_hostname }}-key.pem
+      src: "{{ tls_directory }}/{{ inventory_hostname }}-key.pem"
       dest: "{{ kubernetes_certificates_key_path }}"
       owner: "{{ kubernetes_certificates_owner }}"
       group: "{{ kubernetes_certificates_group }}"
