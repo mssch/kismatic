@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewCACert(t *testing.T) {
-	key, cert, err := NewCACert("ca-csr.json")
+	key, cert, err := NewCACert("test/ca-csr.json")
 	if err != nil {
 		t.Fatalf("error creating CA cert: %v", err)
 	}

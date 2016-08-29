@@ -9,7 +9,7 @@ import (
 
 func TestGenerateNewCertificate(t *testing.T) {
 	// Create CA Cert
-	key, cert, err := NewCACert("ca-csr.json")
+	key, cert, err := NewCACert("test/ca-csr.json")
 	if err != nil {
 		t.Fatalf("error creating CA: %v", err)
 	}
@@ -17,7 +17,7 @@ func TestGenerateNewCertificate(t *testing.T) {
 	ca := &CA{
 		Key:        key,
 		Cert:       cert,
-		ConfigFile: "ca-config.json",
+		ConfigFile: "test/ca-config.json",
 		Profile:    "kubernetes",
 	}
 
