@@ -15,7 +15,6 @@ var defaultCertHosts = []string{
 	"kubernetes.default.svc",
 	"kubernetes.default.svc.cluster.local",
 	"10.3.0.1",
-	"10.3.0.5",
 	"10.3.0.10",
 	"127.0.0.1",
 }
