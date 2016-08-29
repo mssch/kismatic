@@ -27,7 +27,7 @@ type CA struct {
 
 // GenerateNewCertificate creates a new certificate/key pair using the CertificateAuthority
 // provided.
-func GenerateNewCertificate(ca CA, req csr.CertificateRequest) (key, cert []byte, err error) {
+func GenerateNewCertificate(ca *CA, req csr.CertificateRequest) (key, cert []byte, err error) {
 	g := &csr.Generator{Validator: genkey.Validator}
 	csrBytes, key, err := g.ProcessRequest(&req)
 	if err != nil {

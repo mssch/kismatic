@@ -14,7 +14,7 @@ func TestGenerateNewCertificate(t *testing.T) {
 		t.Fatalf("error creating CA: %v", err)
 	}
 
-	ca := CA{
+	ca := &CA{
 		Key:        key,
 		Cert:       cert,
 		ConfigFile: "ca-config.json",

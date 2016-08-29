@@ -26,7 +26,13 @@ func NewKismaticCommand(version string, in io.Reader, out io.Writer) (*cobra.Com
 
 	// Add Install sub-command
 	planner := &install.FilePlanner{File: planFilename}
-	executor, err := install.NewAnsibleExecutor(out, os.Stderr) // TODO: Do we want to parameterize stderr?
+	pki := &install.LocalPKI{
+		CACsr:            "ansible/playbooks/tls/ca-csr.json",
+		CAConfigFile:     "ansible/playbooks/tls/ca-config.json",
+		CASigningProfile: "kubernetes",
+	}
+	executor, err := install.NewAnsibleExecutor(out, os.Stderr, pki) // TODO: Do we want to parameterize stderr?
+
 	if err != nil {
 		return nil, err
 	}

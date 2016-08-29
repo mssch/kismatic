@@ -19,10 +19,11 @@ type ansibleExecutor struct {
 	errOut     io.Writer
 	pythonPath string
 	ansibleBin string
+	pki        PKI
 }
 
 // NewAnsibleExecutor returns an ansible based installation executor.
-func NewAnsibleExecutor(out io.Writer, errOut io.Writer) (Executor, error) {
+func NewAnsibleExecutor(out io.Writer, errOut io.Writer, pki PKI) (Executor, error) {
 	ppath, err := getPythonPath()
 	if err != nil {
 		return nil, err
@@ -32,6 +33,7 @@ func NewAnsibleExecutor(out io.Writer, errOut io.Writer) (Executor, error) {
 		errOut:     errOut,
 		pythonPath: ppath,
 		ansibleBin: "./ansible/bin", // TODO: What's the best way to handle this?
+		pki:        pki,
 	}, nil
 }
 
@@ -44,6 +46,12 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	err := ioutil.WriteFile("inventory.ini", inv.Bytes(), 0644)
 	if err != nil {
 		return fmt.Errorf("error writing ansible inventory file: %v", err)
+	}
+
+	// Generate certs for the cluster
+	err = e.pki.GenerateClusterCerts(p)
+	if err != nil {
+		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
 
 	// run ansible
