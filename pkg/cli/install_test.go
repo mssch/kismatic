@@ -16,7 +16,7 @@ type fakePlan struct {
 	readCalled bool
 }
 
-func (fp *fakePlan) Exists() bool { return fp.exists }
+func (fp *fakePlan) PlanExists() bool { return fp.exists }
 func (fp *fakePlan) Read() (*install.Plan, error) {
 	fp.readCalled = true
 	return fp.plan, fp.err
@@ -24,6 +24,16 @@ func (fp *fakePlan) Read() (*install.Plan, error) {
 func (fp *fakePlan) Write(p *install.Plan) error {
 	fp.plan = p
 	return fp.err
+}
+
+type fakeExecutor struct {
+	installCalled bool
+	err           error
+}
+
+func (fe *fakeExecutor) Install(p *install.Plan) error {
+	fe.installCalled = true
+	return fe.err
 }
 
 func TestInstallCmdPlanNotFound(t *testing.T) {
@@ -68,11 +78,9 @@ func TestInstallCmdPlanNotFound(t *testing.T) {
 	for _, test := range tests {
 		out := &bytes.Buffer{}
 		fp := &fakePlan{}
-		cmd := NewCmdInstall(test.in, out, fp)
-		cmd.SilenceUsage = true
-		cmd.SilenceErrors = true
+		fe := &fakeExecutor{}
 
-		err := cmd.Execute()
+		err := doInstall(test.in, out, fp, fe, &installOpts{})
 
 		if err == nil && test.shouldError {
 			t.Error("expected an error, but did not get one")
@@ -109,10 +117,8 @@ func TestInstallCmdPlanFound(t *testing.T) {
 		exists: true,
 		plan:   &install.Plan{},
 	}
-	cmd := NewCmdInstall(in, out, fp)
-	cmd.SilenceUsage = true
-	cmd.SilenceErrors = true
-	err := cmd.Execute()
+	fe := &fakeExecutor{}
+	err := doInstall(in, out, fp, fe, &installOpts{})
 
 	// expect an error here... we don't care about testing validation
 	if err == nil {

@@ -2,13 +2,9 @@ package cli
 
 import (
 	"io"
-	"os"
 
-	"github.com/apprenda/kismatic-platform/pkg/install"
 	"github.com/spf13/cobra"
 )
-
-const planFilename = "kismatic-cluster.yaml"
 
 // NewKismaticCommand creates the kismatic command
 func NewKismaticCommand(version string, in io.Reader, out io.Writer) (*cobra.Command, error) {
@@ -23,20 +19,7 @@ func NewKismaticCommand(version string, in io.Reader, out io.Writer) (*cobra.Com
 	}
 
 	cmd.AddCommand(NewCmdVersion(version, out))
-
-	// Add Install sub-command
-	planner := &install.FilePlanner{File: planFilename}
-	pki := &install.LocalPKI{
-		CACsr:            "ansible/playbooks/tls/ca-csr.json",
-		CAConfigFile:     "ansible/playbooks/tls/ca-config.json",
-		CASigningProfile: "kubernetes",
-	}
-	executor, err := install.NewAnsibleExecutor(out, os.Stderr, pki) // TODO: Do we want to parameterize stderr?
-
-	if err != nil {
-		return nil, err
-	}
-	cmd.AddCommand(NewCmdInstall(in, out, planner, executor))
+	cmd.AddCommand(NewCmdInstall(in, out))
 
 	return cmd, nil
 }

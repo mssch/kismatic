@@ -4,26 +4,51 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
 	"github.com/spf13/cobra"
 )
 
+type installOpts struct {
+	planFilename     string
+	caCsr            string
+	caConfigFile     string
+	caSigningProfile string
+}
+
 // NewCmdInstall creates a new install command
-func NewCmdInstall(in io.Reader, out io.Writer, plan install.Planner, executor install.Executor) *cobra.Command {
+func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
+	options := &installOpts{}
+
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "install your Kismatic cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doInstall(in, out, plan, executor)
+			planner := &install.FilePlanner{File: options.planFilename}
+			pki := &install.LocalPKI{
+				CACsr:            options.caCsr,
+				CAConfigFile:     options.caConfigFile,
+				CASigningProfile: options.caSigningProfile,
+			}
+			executor, err := install.NewAnsibleExecutor(out, os.Stderr, pki) // TODO: Do we want to parameterize stderr?
+			if err != nil {
+				return err
+			}
+			return doInstall(in, out, planner, executor, options)
 		},
 	}
+
+	cmd.Flags().StringVarP(&options.planFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
+	cmd.Flags().StringVar(&options.caCsr, "ca-csr", "ansible/playbooks/tls/ca-csr.json", "path to the Certificate Authority CSR")
+	cmd.Flags().StringVar(&options.caConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
+	cmd.Flags().StringVar(&options.caSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
 
 	return cmd
 }
 
-func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor install.Executor) error {
+func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor install.Executor, options *installOpts) error {
 	if !planner.PlanExists() {
 		// Plan file not found, planning phase
 		fmt.Fprintln(out, "Plan your Kismatic cluster:")
@@ -71,7 +96,7 @@ func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor in
 		if err != nil {
 			return fmt.Errorf("error planning installation: %v", err)
 		}
-		fmt.Fprintf(out, "Generated installation plan file at %q\n", planFilename)
+		fmt.Fprintf(out, "Generated installation plan file at %q\n", options.planFilename)
 		fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the install command to proceed.\n")
 		return nil
 	}
@@ -79,10 +104,10 @@ func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor in
 	// Plan file exists, validate and install
 	p, err := planner.Read()
 	if err != nil {
-		fmt.Fprintf(out, "Reading installation plan file %q [ERROR]\n", planFilename)
+		fmt.Fprintf(out, "Reading installation plan file %q [ERROR]\n", options.planFilename)
 		return fmt.Errorf("error reading plan file: %v", err)
 	}
-	fmt.Fprintf(out, "Reading installation plan file %q [OK]\n", planFilename)
+	fmt.Fprintf(out, "Reading installation plan file %q [OK]\n", options.planFilename)
 	fmt.Fprintln(out, "")
 
 	ok, errs := install.ValidatePlan(p)
