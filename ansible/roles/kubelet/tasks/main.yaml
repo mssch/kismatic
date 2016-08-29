@@ -19,3 +19,14 @@
       - start kubelet service
       - verify kubelet is running
       - report status of kubelet
+
+  # force_kubelet_restart=true to force restart
+  - name: force restart kubelet
+    command: /bin/true
+    notify:
+      - reload services
+      - enable kubelet
+      - start kubelet service
+      - verify kubelet is running
+      - report status of kubelet
+    when: force_kubelet_restart is defined and force_kubelet_restart == "true"

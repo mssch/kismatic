@@ -19,3 +19,14 @@
       - start kube-proxy service
       - verify kube-proxy is running
       - report status of kube-proxy
+
+  # force_proxy_restart=true to force restart
+  - name: force restart proxy
+    command: /bin/true
+    notify:
+      - reload services
+      - enable kube-proxy
+      - start kube-proxy service
+      - verify kube-proxy is running
+      - report status of kube-proxy
+    when: force_proxy_restart is defined and force_proxy_restart == "true"

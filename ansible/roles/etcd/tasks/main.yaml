@@ -37,6 +37,15 @@
       - enable etcd
       - restart etcd service
 
+  # force_etcd_restart=true to force restart
+  - name: force restart etcd
+    command: /bin/true
+    notify:
+      - reload services
+      - enable etcd
+      - restart etcd service
+    when: force_etcd_restart is defined and force_etcd_restart == "true"
+
   - meta: flush_handlers  #Run handlers
 
   # test etcd
