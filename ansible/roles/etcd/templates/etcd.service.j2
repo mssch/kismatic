@@ -10,7 +10,7 @@ Environment=ETCD_DATA_DIR={{ etcd_service_data_dir }}
 Environment=CERT_FILE={{ etcd_certificates_cert_file }}
 Environment=KEY_FILE={{ etcd_certificates_key_file }}
 Environment=CA_FILE={{ etcd_certificates_ca_file }}
-Environment=IP={{ ansible_fqdn }}
+Environment=IP={{ inventory_hostname }}
 Environment=PEER_PORT={{ etcd_service_peer_port }}
 Environment=CLIENT_PORT={{ etcd_service_client_port }}
 Environment=ETCD_CLUSTER_TOKEN={{ etcd_service_cluster_token }}
