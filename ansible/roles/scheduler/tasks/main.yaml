@@ -17,7 +17,7 @@
     notify:
       - reload services
       - enable kube-scheduler
-      - start kube-scheduler service
+      - restart kube-scheduler service
       - verify kube-scheduler is running
       - report status of kube-scheduler
 
@@ -27,7 +27,7 @@
     notify:
       - reload services
       - enable kube-scheduler
-      - start kube-scheduler service
+      - restart kube-scheduler service
       - verify kube-scheduler is running
       - report status of kube-scheduler
     when: force_scheduler_restart is defined and force_scheduler_restart == "true"

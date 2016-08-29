@@ -6,5 +6,5 @@
   - name: restart etcd service
     service:
       name: "{{ etcd_service_name }}"
-      state: started
+      state: restarted
       enabled: yes

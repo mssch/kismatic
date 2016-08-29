@@ -3,8 +3,11 @@
     command: systemctl daemon-reload
   - name: enable kube-proxy
     command: systemctl enable kube-proxy.service
-  - name: start kube-proxy service
-    service: name=kube-proxy.service state=started enabled=yes
+  - name: restart kube-proxy service
+    service:
+      name: kube-proxy.service
+      state: restarted
+      enabled: yes
 
   # verify service
   - name: verify kube-proxy is running

@@ -16,7 +16,7 @@
     notify:
       - reload services
       - enable kube-proxy
-      - start kube-proxy service
+      - restart kube-proxy service
       - verify kube-proxy is running
       - report status of kube-proxy
 
@@ -26,7 +26,7 @@
     notify:
       - reload services
       - enable kube-proxy
-      - start kube-proxy service
+      - restart kube-proxy service
       - verify kube-proxy is running
       - report status of kube-proxy
     when: force_proxy_restart is defined and force_proxy_restart == "true"

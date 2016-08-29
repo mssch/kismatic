@@ -16,7 +16,7 @@
     notify:
       - reload services
       - enable kubelet
-      - start kubelet service
+      - restart kubelet service
       - verify kubelet is running
       - report status of kubelet
 
@@ -26,7 +26,7 @@
     notify:
       - reload services
       - enable kubelet
-      - start kubelet service
+      - restart kubelet service
       - verify kubelet is running
       - report status of kubelet
     when: force_kubelet_restart is defined and force_kubelet_restart == "true"
