@@ -1,19 +1,58 @@
-hash: 10dc1df79235b5de58f0f19385d60f5309ed48eacb991d965af680e0a548f2c9
-updated: 2016-08-29T09:07:34.565059703-04:00
+hash: dbb780f1b88e9d6d21508e660071c4c65ca40e6ec6bd595ceeac3902350f2eaf
+updated: 2016-08-29T15:36:04.435464986-04:00
 imports:
-- name: github.com/apprenda/kismatic-platform
-  version: a918f2e70d1031da786fcf302a6b7e3859e65f1d
-  subpackages:
-  - pkg/cli
-  - pkg/install
 - name: github.com/cloudflare/cfssl
   version: db0d0650b6496bfe8061ec56a92edd32d8e75c30
+  subpackages:
+  - csr
+  - cli/genkey
+  - config
+  - helpers
+  - initca
+  - signer
+  - signer/local
+  - errors
+  - log
+  - cli
+  - auth
+  - ocsp/config
+  - crypto/pkcs7
+  - helpers/derhelpers
+  - certdb
+  - info
+  - signer/universal
+  - signer/remote
+  - api/client
+  - api
+- name: github.com/google/certificate-transparency
+  version: 6e5648d13b43cdde25cc8274b87675230ffefbd6
+  repo: https://github.com/google/certificate-transparency
+  subpackages:
+  - go
+  - go/client
+  - go/x509
+  - go/asn1
+  - go/x509/pkix
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/mreiferson/go-httpclient
+  version: 63fe23f7434723dc904c901043af07931f293c47
+  repo: https://github.com/mreiferson/go-httpclient
 - name: github.com/spf13/cobra
   version: 37c3f8060359192150945916cbc2d72bce804b4d
+  subpackages:
+  - cobra
 - name: github.com/spf13/pflag
   version: 103ce5cd2042f2fe629c1957abb64ab3e7f50235
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  repo: https://go.googlesource.com/crypto
+  subpackages:
+  - ocsp
+  - pbkdf2
+  - pkcs12
+  - scrypt
+  - pkcs12/internal/rc2
 - name: gopkg.in/yaml.v2
   version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 testImports: []
