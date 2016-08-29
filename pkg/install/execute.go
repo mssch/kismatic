@@ -2,11 +2,13 @@ package install
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 // The Executor will carry out the installation plan
@@ -20,6 +22,20 @@ type ansibleExecutor struct {
 	pythonPath string
 	ansibleBin string
 	pki        PKI
+}
+
+type ansibleVars struct {
+	TLSDirectory           string `json:"tls_directory"`
+	KubernetesServicesCIDR string `json:"kubernetes_services_cidr"`
+	KubernetesPodsCIDR     string `json:"kubernetes_pods_cidr"`
+}
+
+func (av *ansibleVars) CommandLineVars() (string, error) {
+	b, err := json.Marshal(av)
+	if err != nil {
+		return "", fmt.Errorf("error marshaling ansible vars")
+	}
+	return string(b), nil
 }
 
 // NewAnsibleExecutor returns an ansible based installation executor.
@@ -54,8 +70,18 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
 
+	tlsDir, err := filepath.Abs(e.pki.Location())
+	if err != nil {
+		return fmt.Errorf("error getting absolute path from cert location: %v", err)
+	}
+	vars := ansibleVars{
+		TLSDirectory:           tlsDir,
+		KubernetesServicesCIDR: p.Cluster.Networking.ServiceCIDRBlock,
+		KubernetesPodsCIDR:     p.Cluster.Networking.PodCIDRBlock,
+	}
+
 	// run ansible
-	err = e.runAnsiblePlaybook("inventory.ini", "./ansible/playbooks/kubernetes.yaml")
+	err = e.runAnsiblePlaybook("inventory.ini", "./ansible/playbooks/kubernetes.yaml", vars)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
@@ -63,13 +89,18 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	return nil
 }
 
-func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string) error {
-	cmd := exec.Command(fmt.Sprintf("%s/ansible-playbook", e.ansibleBin), "-i", inventoryFile, "-s", playbookFile)
+func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string, vars ansibleVars) error {
+	extraVars, err := vars.CommandLineVars()
+	if err != nil {
+		return fmt.Errorf("error getting vars: %v", err)
+	}
+
+	cmd := exec.Command(fmt.Sprintf("%s/ansible-playbook", e.ansibleBin), "-i", inventoryFile, "-s", playbookFile, "--extra-vars", extraVars)
 	cmd.Stdout = e.out
 	cmd.Stderr = e.errOut
 	os.Setenv("PYTHONPATH", e.pythonPath)
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return fmt.Errorf("error running playbook: %v", err)
 	}

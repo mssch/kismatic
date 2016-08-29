@@ -16,6 +16,7 @@ type installOpts struct {
 	caCsr            string
 	caConfigFile     string
 	caSigningProfile string
+	certsDestination string
 }
 
 // NewCmdInstall creates a new install command
@@ -31,6 +32,7 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 				CACsr:            options.caCsr,
 				CAConfigFile:     options.caConfigFile,
 				CASigningProfile: options.caSigningProfile,
+				DestinationDir:   options.certsDestination,
 			}
 			executor, err := install.NewAnsibleExecutor(out, os.Stderr, pki) // TODO: Do we want to parameterize stderr?
 			if err != nil {
@@ -44,6 +46,7 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.caCsr, "ca-csr", "ansible/playbooks/tls/ca-csr.json", "path to the Certificate Authority CSR")
 	cmd.Flags().StringVar(&options.caConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
 	cmd.Flags().StringVar(&options.caSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
+	cmd.Flags().StringVar(&options.certsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
 
 	return cmd
 }

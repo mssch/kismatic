@@ -3,25 +3,18 @@ package install
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
+	"os"
 	"path/filepath"
 
 	"github.com/apprenda/kismatic-platform/pkg/tls"
 	"github.com/cloudflare/cfssl/csr"
 )
 
-var defaultCertHosts = []string{
-	"kubernetes",
-	"kubernetes.default",
-	"kubernetes.default.svc",
-	"kubernetes.default.svc.cluster.local",
-	"10.3.0.1",
-	"10.3.0.10",
-	"127.0.0.1",
-}
-
 // The PKI provides a way for generating certificates for the cluster described by the Plan
 type PKI interface {
 	GenerateClusterCerts(p *Plan) error
+	Location() string
 }
 
 // LocalPKI is a file-based PKI
@@ -29,6 +22,12 @@ type LocalPKI struct {
 	CACsr            string
 	CAConfigFile     string
 	CASigningProfile string
+	DestinationDir   string
+}
+
+// Location returns the path to the directory that contains the generated certificates
+func (lp *LocalPKI) Location() string {
+	return lp.DestinationDir
 }
 
 // GenerateClusterCerts creates a Certificate Authority and Certificates
@@ -40,7 +39,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 		return fmt.Errorf("failed to create CA Cert: %v", err)
 	}
 
-	err = writeFiles(key, cert, "ca")
+	err = lp.writeFiles(key, cert, "ca")
 	if err != nil {
 		return fmt.Errorf("error writing CA files: %v", err)
 	}
@@ -52,6 +51,24 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 		Profile:    lp.CASigningProfile,
 	}
 
+	// Add kubernetes service IP (first IP in service CIDR)
+	_, servNet, err := net.ParseCIDR(p.Cluster.Networking.ServiceCIDRBlock)
+	if err != nil {
+		return fmt.Errorf("error parsing Service CIDR block %q: %v", p.Cluster.Networking.ServiceCIDRBlock, err)
+	}
+	kubeServiceIP := servNet.IP.To4()
+	kubeServiceIP[3]++
+
+	defaultCertHosts := []string{
+		"kubernetes",
+		"kubernetes.default",
+		"kubernetes.default.svc",
+		"kubernetes.default.svc.cluster.local",
+		"10.3.0.10",
+		"127.0.0.1",
+		kubeServiceIP.String(),
+	}
+
 	// Then, create certs for all nodes
 	nodes := []Node{}
 	nodes = append(nodes, p.Etcd.Nodes...)
@@ -59,11 +76,11 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 	nodes = append(nodes, p.Worker.Nodes...)
 
 	for _, n := range nodes {
-		key, cert, err := generateNodeCert(p, &n, ca)
+		key, cert, err := generateNodeCert(p, &n, ca, defaultCertHosts)
 		if err != nil {
 			return fmt.Errorf("error during cluster cert generation: %v", err)
 		}
-		err = writeFiles(key, cert, n.Host)
+		err = lp.writeFiles(key, cert, n.Host)
 		if err != nil {
 			return fmt.Errorf("error writing cert files for host %q: %v", n.Host, err)
 		}
@@ -71,17 +88,26 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 	return nil
 }
 
-func writeFiles(key, cert []byte, name string) error {
-	// Write into ansible directory for now...
-	destDir := filepath.Join("ansible", "playbooks", "tls")
+func (lp *LocalPKI) writeFiles(key, cert []byte, name string) error {
+	// Create destination dir if it doesn't exist
+	if _, err := os.Stat(lp.DestinationDir); os.IsNotExist(err) {
+		err := os.Mkdir(lp.DestinationDir, 0744)
+		if err != nil {
+			return fmt.Errorf("error creating destination dir: %v", err)
+		}
+	}
+
+	// Write private key with read-only for user
 	keyName := fmt.Sprintf("%s-key.pem", name)
-	dest := filepath.Join(destDir, keyName)
+	dest := filepath.Join(lp.DestinationDir, keyName)
 	err := ioutil.WriteFile(dest, key, 0600)
 	if err != nil {
 		return fmt.Errorf("error writing private key: %v", err)
 	}
+
+	// Write cert
 	certName := fmt.Sprintf("%s.pem", name)
-	dest = filepath.Join(destDir, certName)
+	dest = filepath.Join(lp.DestinationDir, certName)
 	err = ioutil.WriteFile(dest, cert, 0644)
 	if err != nil {
 		return fmt.Errorf("error writing certificate: %v", err)
@@ -89,8 +115,8 @@ func writeFiles(key, cert []byte, name string) error {
 	return nil
 }
 
-func generateNodeCert(p *Plan, n *Node, ca *tls.CA) (key, cert []byte, err error) {
-	hosts := append(defaultCertHosts, n.Host, n.InternalIP, n.IP)
+func generateNodeCert(p *Plan, n *Node, ca *tls.CA, initialHostList []string) (key, cert []byte, err error) {
+	hosts := append(initialHostList, n.Host, n.InternalIP, n.IP)
 	req := csr.CertificateRequest{
 		CN: p.Cluster.Name,
 		KeyRequest: &csr.BasicKeyRequest{
