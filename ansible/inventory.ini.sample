@@ -1,0 +1,9 @@
+[etcd]
+etcd1 ansible_host=147.75.205.70 internal_ipv4=10.80.76.130
+etcd2 ansible_host=147.75.205.73 internal_ipv4=10.80.76.133
+[master]
+master1 ansible_host=147.75.205.70 internal_ipv4=10.80.76.130
+master2 ansible_host=147.75.205.73 internal_ipv4=10.80.76.133
+[worker]
+worker1 ansible_host=147.75.205.73 internal_ipv4=10.80.76.133
+worker2 ansible_host=147.75.205.55 internal_ipv4=10.80.76.129

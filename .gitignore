@@ -41,5 +41,6 @@ _testmain.go
 /ansible/tls/*.csr
 /ansible/tls/kubernetes-*-csr.json
 /ansible/tls/servers
+/ansible/inventory.ini
 
 kismatic-cluster.yaml
