@@ -14,6 +14,16 @@
       - enable docker
       - restart docker service
 
+  # force_docker_restart=true to force restart
+  - name: force restart docker
+    command: /bin/true
+    notify:
+      - docker installed
+      - reload services
+      - enable docker
+      - restart docker service
+    when: force_docker_restart is defined and force_docker_restart == "true"
+
   - meta: flush_handlers
 
   # verify that Docker installed succesfully and is running
