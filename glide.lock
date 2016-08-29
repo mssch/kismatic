@@ -1,12 +1,19 @@
-hash: 96b4c548b3e947b13ac1003a0f69d4adfcaa69b8e8d6ee7de74f49b97c1967aa
-updated: 2016-08-18T16:55:38.430549339-04:00
+hash: 10dc1df79235b5de58f0f19385d60f5309ed48eacb991d965af680e0a548f2c9
+updated: 2016-08-29T09:07:34.565059703-04:00
 imports:
+- name: github.com/apprenda/kismatic-platform
+  version: a918f2e70d1031da786fcf302a6b7e3859e65f1d
+  subpackages:
+  - pkg/cli
+  - pkg/install
+- name: github.com/cloudflare/cfssl
+  version: db0d0650b6496bfe8061ec56a92edd32d8e75c30
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/spf13/cobra
-  version: 7c674d9e72017ed25f6d2b5e497a1368086b6a6f
+  version: 37c3f8060359192150945916cbc2d72bce804b4d
 - name: github.com/spf13/pflag
-  version: 4f9190456aed1c2113ca51ea9b89219747458dc1
+  version: 103ce5cd2042f2fe629c1957abb64ab3e7f50235
 - name: gopkg.in/yaml.v2
   version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 testImports: []
