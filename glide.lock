@@ -1,4 +1,12 @@
-hash: c8626dd2a8fdd717a057e6a48f33d21a03021a70c8642f645f73beaea258f93a
-updated: 2016-08-12T18:04:41.842751618-04:00
-imports: []
+hash: 96b4c548b3e947b13ac1003a0f69d4adfcaa69b8e8d6ee7de74f49b97c1967aa
+updated: 2016-08-18T16:55:38.430549339-04:00
+imports:
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/spf13/cobra
+  version: 7c674d9e72017ed25f6d2b5e497a1368086b6a6f
+- name: github.com/spf13/pflag
+  version: 4f9190456aed1c2113ca51ea9b89219747458dc1
+- name: gopkg.in/yaml.v2
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
 testImports: []

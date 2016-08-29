@@ -17,6 +17,9 @@ clean:
 	rm -rf vendor-ansible/out
 	rm -rf vendor-cfssl/out
 
+test: build
+	go test $(shell ./tools/glide nv)
+
 vendor: tools/glide
 	./tools/glide install
 
@@ -32,10 +35,10 @@ vendor-ansible/out:
 
 vendor-cfssl/out:
 	mkdir -p vendor-cfssl/out/
-	wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O vendor-cfssl/out/cfssl_linux-amd64
-	wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -O vendor-cfssl/out/cfssljson_linux-amd64 
-	wget https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64 -O vendor-cfssl/out/cfssl_darwin-amd64
-	wget https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64 -O vendor-cfssl/out/cfssljson_darwin-amd64
+	curl -L https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -o vendor-cfssl/out/cfssl_linux-amd64
+	curl -L https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -o vendor-cfssl/out/cfssljson_linux-amd64 
+	curl -L https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64 -o vendor-cfssl/out/cfssl_darwin-amd64
+	curl -L https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64 -o vendor-cfssl/out/cfssljson_darwin-amd64
 
 dist: vendor-ansible/out vendor-cfssl/out build
 	mkdir -p out
@@ -46,4 +49,4 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	mkdir -p out/cfssl
 	cp -r vendor-cfssl/out/* out/cfssl
 	rm -f out/kismatic.tar.gz
-	tar -cvzf out/kismatic.tar.gz -C out .
+	tar -cvzf out/kismatic.tar.gz --exclude kismatic.tar.gz -C out .

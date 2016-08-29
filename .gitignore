@@ -35,8 +35,11 @@ _testmain.go
 .vscode
 *.iml
 .idea
+*.swp
 
 /ansible/tls/*.pem
 /ansible/tls/*.csr
 /ansible/tls/kubernetes-*-csr.json
 /ansible/tls/servers
+
+kismatic-cluster.yaml
