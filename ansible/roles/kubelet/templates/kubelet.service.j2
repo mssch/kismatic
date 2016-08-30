@@ -8,6 +8,7 @@ Requires=docker.service
 EnvironmentFile={{ network_environment_path }}
 Environment=MASTER_LIST={{ kubernetes_master_ip_list }}
 Environment=CLUSTER_DNS={{ kubernetes_dns_service_ip }}
+Environment=HOSTNAME={{ inventory_hostname }}
 Environment=KUBECONFIG={{ kubernetes_kubeconfig_path }}
 Environment=REGISTER_SCHEDULABLE={{ kubernetes_schedulable }}
 Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
@@ -22,6 +23,7 @@ ExecStart=/usr/bin/kubelet \
   --configure-cbr0=true \
   --container-runtime=docker \
   --docker=unix:///var/run/docker.sock \
+  --hostname-override=${HOSTNAME} \
   --network-plugin=kubenet \
   --kubeconfig=${KUBECONFIG} \
   --register-schedulable=${REGISTER_SCHEDULABLE} \
