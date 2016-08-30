@@ -18,7 +18,7 @@ clean:
 	rm -rf vendor-cfssl/out
 
 test: build
-	go test $(shell ./tools/glide nv)
+	go test $(shell ./tools/glide nv) $(TEST_OPTS)
 
 vendor: tools/glide
 	./tools/glide install

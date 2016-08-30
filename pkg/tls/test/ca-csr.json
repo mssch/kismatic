@@ -12,5 +12,8 @@
       "OU": "CA",
       "ST": "New York"
     }
-  ]
+  ],
+  "ca": {
+    "expiry": "8760h"
+  }
 }
