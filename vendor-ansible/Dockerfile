@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:7.2.1511
 
 RUN yum -y update && yum clean all
 
