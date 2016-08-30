@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"os"
 	"path/filepath"
 
@@ -50,13 +49,11 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 		Profile:    lp.CASigningProfile,
 	}
 
-	// Add kubernetes service IP (first IP in service CIDR)
-	_, servNet, err := net.ParseCIDR(p.Cluster.Networking.ServiceCIDRBlock)
+	// Add kubernetes service IP to certificates
+	kubeServiceIP, err := getKubernetesServiceIP(p)
 	if err != nil {
-		return fmt.Errorf("error parsing Service CIDR block %q: %v", p.Cluster.Networking.ServiceCIDRBlock, err)
+		return fmt.Errorf("Error getting kubernetes service IP: %v", err)
 	}
-	kubeServiceIP := servNet.IP.To4()
-	kubeServiceIP[3]++
 
 	defaultCertHosts := []string{
 		"kubernetes",
@@ -65,7 +62,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 		"kubernetes.default.svc.cluster.local",
 		"10.3.0.10",
 		"127.0.0.1",
-		kubeServiceIP.String(),
+		kubeServiceIP,
 	}
 
 	// Then, create certs for all nodes

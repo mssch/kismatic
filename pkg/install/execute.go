@@ -28,6 +28,7 @@ type ansibleVars struct {
 	TLSDirectory           string `json:"tls_directory"`
 	KubernetesServicesCIDR string `json:"kubernetes_services_cidr"`
 	KubernetesPodsCIDR     string `json:"kubernetes_pods_cidr"`
+	KubernetesDNSServiceIP string `json:"kubernetes_dns_service_ip"`
 }
 
 func (av *ansibleVars) CommandLineVars() (string, error) {
@@ -68,10 +69,17 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	if err != nil {
 		return fmt.Errorf("error getting absolute path from cert location: %v", err)
 	}
+
+	dnsServiceIP, err := getDNSServiceIP(p)
+	if err != nil {
+		return fmt.Errorf("error getting DNS servie IP address: %v", err)
+	}
+
 	vars := ansibleVars{
 		TLSDirectory:           tlsDir,
 		KubernetesServicesCIDR: p.Cluster.Networking.ServiceCIDRBlock,
 		KubernetesPodsCIDR:     p.Cluster.Networking.PodCIDRBlock,
+		KubernetesDNSServiceIP: dnsServiceIP,
 	}
 
 	// run ansible
