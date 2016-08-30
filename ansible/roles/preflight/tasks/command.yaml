@@ -1,0 +1,5 @@
+---
+    - name: is {{ utility }} installed
+      shell: command -v {{ utility }} >/dev/null 2>&1 || { echo >&2 "{{ utility }} not installed"; exit 1; }
+      changed_when: false
+      ignore_errors: True
