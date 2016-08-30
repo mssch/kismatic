@@ -110,7 +110,7 @@ func TestInstallCmdPlanNotFound(t *testing.T) {
 	}
 }
 
-func TestInstallCmdPlanFound(t *testing.T) {
+func TestInstallCmdInvalidPlanFound(t *testing.T) {
 	in := strings.NewReader("")
 	out := &bytes.Buffer{}
 	fp := &fakePlan{
@@ -127,5 +127,9 @@ func TestInstallCmdPlanFound(t *testing.T) {
 
 	if !fp.readCalled {
 		t.Error("the plan was not read")
+	}
+
+	if fe.installCalled {
+		t.Error("install was called with an invalid plan")
 	}
 }
