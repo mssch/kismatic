@@ -17,7 +17,7 @@ clean:
 	rm -rf vendor-ansible/out
 	rm -rf vendor-cfssl/out
 
-test: build
+test: 
 	go test $(shell ./tools/glide nv) $(TEST_OPTS)
 
 vendor: tools/glide
