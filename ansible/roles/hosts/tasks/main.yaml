@@ -1,5 +1,7 @@
-#TODO add 127.0.0.1 if DNE
-- name: build hosts file
+- name: remove this hostname from hosts file
+  lineinfile: dest=/etc/hosts regexp='.*{{ inventory_hostname }}$' state=absent
+
+- name: add nodes to hosts file
   lineinfile: dest=/etc/hosts regexp='.*{{ item }}$'  line="{{ hostvars[item].internal_ipv4 }} {{item}}" state=present
   when: hostvars[item].internal_ipv4 is defined
   with_items: "{{ groups['all'] }}"
