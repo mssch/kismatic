@@ -17,6 +17,7 @@ type installOpts struct {
 	caConfigFile     string
 	caSigningProfile string
 	certsDestination string
+	dryRun           bool
 }
 
 // NewCmdInstall creates a new install command
@@ -47,6 +48,7 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.caConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
 	cmd.Flags().StringVar(&options.caSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
 	cmd.Flags().StringVar(&options.certsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
+	cmd.Flags().BoolVar(&options.dryRun, "dry-run", false, "run planning and validation phases, but don't perform installation")
 
 	return cmd
 }
@@ -125,6 +127,11 @@ func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor in
 	}
 
 	fmt.Fprint(out, "Validating installation plan file [OK]\n")
+
+	if options.dryRun {
+		return nil
+	}
+
 	err = executor.Install(p)
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
