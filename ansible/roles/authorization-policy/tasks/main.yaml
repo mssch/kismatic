@@ -5,9 +5,8 @@
       path: "{{ kubernetes_lib_dir }}"
       state: directory
 
-  # TODO use user provided data
   - name: copy tokens.csv to remote
-    copy:
+    template:
       src: tokens.csv
       dest: "{{ kubernetes_lib_dir }}/tokens.csv"
   - name: copy authorization-policy.json to remote

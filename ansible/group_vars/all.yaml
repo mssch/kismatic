@@ -94,6 +94,7 @@ kubernetes_certificates_owner: root
 kubernetes_certificates_group: root
 # kubernetes cluster config
 kubernetes_cluster_name: kubernetes
+kubernetes_admin_password: admin_password
 kubernetes_mater_apiserver_count: "{{ groups['master'] | length }}"
 kubernetes_master_ip_list: "{% for host in groups['master'] %}https://{{ host }}:{{ kubernetes_master_secure_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 kubernetes_master_ip: https://{{ hostvars[groups['master'][0]].internal_ipv4 }}:{{ kubernetes_master_secure_port }} # TODO change to load balancer
