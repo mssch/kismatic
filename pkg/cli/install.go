@@ -34,12 +34,13 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 				CAConfigFile:     options.caConfigFile,
 				CASigningProfile: options.caSigningProfile,
 				DestinationDir:   options.certsDestination,
+				Log:              out,
 			}
-			executor, err := install.NewAnsibleExecutor(out, os.Stderr, pki) // TODO: Do we want to parameterize stderr?
+			executor, err := install.NewAnsibleExecutor(out, os.Stderr, options.certsDestination) // TODO: Do we want to parameterize stderr?
 			if err != nil {
 				return err
 			}
-			return doInstall(in, out, planner, executor, options)
+			return doInstall(in, out, planner, executor, pki, options)
 		},
 	}
 
@@ -53,7 +54,7 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor install.Executor, options *installOpts) error {
+func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor install.Executor, pki install.PKI, options *installOpts) error {
 	if !planner.PlanExists() {
 		// Plan file not found, planning phase
 		fmt.Fprintln(out, "Plan your Kismatic cluster:")
@@ -125,8 +126,15 @@ func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor in
 		return fmt.Errorf("validation error prevents installation from proceeding")
 
 	}
+	fmt.Fprint(out, "Validating installation plan file [OK]\n\n")
 
-	fmt.Fprint(out, "Validating installation plan file [OK]\n")
+	// Generate certs for the cluster before performing installation
+	fmt.Fprintln(out, "Generating cluster certificates")
+	err = pki.GenerateClusterCerts(p)
+	if err != nil {
+		return fmt.Errorf("error generating certificates for the cluster: %v", err)
+	}
+	fmt.Fprintf(out, "Generated cluster certificates at %q [OK]\n\n", options.certsDestination)
 
 	if options.dryRun {
 		return nil

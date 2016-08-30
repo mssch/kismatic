@@ -36,6 +36,16 @@ func (fe *fakeExecutor) Install(p *install.Plan) error {
 	return fe.err
 }
 
+type fakePKI struct {
+	called bool
+	err    error
+}
+
+func (fp *fakePKI) GenerateClusterCerts(p *install.Plan) error {
+	fp.called = true
+	return fp.err
+}
+
 func TestInstallCmdPlanNotFound(t *testing.T) {
 	tests := []struct {
 		in             io.Reader
@@ -79,8 +89,9 @@ func TestInstallCmdPlanNotFound(t *testing.T) {
 		out := &bytes.Buffer{}
 		fp := &fakePlan{}
 		fe := &fakeExecutor{}
+		fpki := &fakePKI{}
 
-		err := doInstall(test.in, out, fp, fe, &installOpts{})
+		err := doInstall(test.in, out, fp, fe, fpki, &installOpts{})
 
 		if err == nil && test.shouldError {
 			t.Error("expected an error, but did not get one")
@@ -106,6 +117,10 @@ func TestInstallCmdPlanNotFound(t *testing.T) {
 			if fp.readCalled {
 				t.Errorf("attempted to read plan, when the plan does not exist")
 			}
+			// Error if we attempted to create certs for the cluster
+			if fpki.called {
+				t.Errorf("attempted to create certs, when the plan does not exist")
+			}
 		}
 	}
 }
@@ -118,7 +133,8 @@ func TestInstallCmdInvalidPlanFound(t *testing.T) {
 		plan:   &install.Plan{},
 	}
 	fe := &fakeExecutor{}
-	err := doInstall(in, out, fp, fe, &installOpts{})
+	fpki := &fakePKI{}
+	err := doInstall(in, out, fp, fe, fpki, &installOpts{})
 
 	// expect an error here... we don't care about testing validation
 	if err == nil {
@@ -129,7 +145,12 @@ func TestInstallCmdInvalidPlanFound(t *testing.T) {
 		t.Error("the plan was not read")
 	}
 
+	if fpki.called {
+		t.Error("cert generation was called with an invalid plan")
+	}
+
 	if fe.installCalled {
 		t.Error("install was called with an invalid plan")
 	}
+
 }

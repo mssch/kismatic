@@ -2,6 +2,7 @@ package install
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -14,7 +15,6 @@ import (
 // The PKI provides a way for generating certificates for the cluster described by the Plan
 type PKI interface {
 	GenerateClusterCerts(p *Plan) error
-	Location() string
 }
 
 // LocalPKI is a file-based PKI
@@ -23,16 +23,15 @@ type LocalPKI struct {
 	CAConfigFile     string
 	CASigningProfile string
 	DestinationDir   string
-}
-
-// Location returns the path to the directory that contains the generated certificates
-func (lp *LocalPKI) Location() string {
-	return lp.DestinationDir
+	Log              io.Writer
 }
 
 // GenerateClusterCerts creates a Certificate Authority and Certificates
 // for all nodes on the cluster.
 func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
+	if lp.Log == nil {
+		lp.Log = ioutil.Discard
+	}
 	// First, generate a CA
 	key, cert, err := tls.NewCACert(lp.CACsr)
 	if err != nil {
@@ -76,6 +75,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 	nodes = append(nodes, p.Worker.Nodes...)
 
 	for _, n := range nodes {
+		fmt.Fprintf(lp.Log, "Generating certificates for %q\n", n.Host)
 		key, cert, err := generateNodeCert(p, &n, ca, defaultCertHosts)
 		if err != nil {
 			return fmt.Errorf("error during cluster cert generation: %v", err)

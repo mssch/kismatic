@@ -21,7 +21,7 @@ type ansibleExecutor struct {
 	errOut     io.Writer
 	pythonPath string
 	ansibleBin string
-	pki        PKI
+	certsDir   string
 }
 
 type ansibleVars struct {
@@ -39,7 +39,7 @@ func (av *ansibleVars) CommandLineVars() (string, error) {
 }
 
 // NewAnsibleExecutor returns an ansible based installation executor.
-func NewAnsibleExecutor(out io.Writer, errOut io.Writer, pki PKI) (Executor, error) {
+func NewAnsibleExecutor(out io.Writer, errOut io.Writer, certsDir string) (Executor, error) {
 	ppath, err := getPythonPath()
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func NewAnsibleExecutor(out io.Writer, errOut io.Writer, pki PKI) (Executor, err
 		errOut:     errOut,
 		pythonPath: ppath,
 		ansibleBin: "./ansible/bin", // TODO: What's the best way to handle this?
-		pki:        pki,
+		certsDir:   certsDir,
 	}, nil
 }
 
@@ -64,13 +64,7 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 		return fmt.Errorf("error writing ansible inventory file: %v", err)
 	}
 
-	// Generate certs for the cluster
-	err = e.pki.GenerateClusterCerts(p)
-	if err != nil {
-		return fmt.Errorf("error generating certificates for the cluster: %v", err)
-	}
-
-	tlsDir, err := filepath.Abs(e.pki.Location())
+	tlsDir, err := filepath.Abs(e.certsDir)
 	if err != nil {
 		return fmt.Errorf("error getting absolute path from cert location: %v", err)
 	}

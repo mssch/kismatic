@@ -7,7 +7,12 @@ import (
 
 	"github.com/cloudflare/cfssl/csr"
 	"github.com/cloudflare/cfssl/initca"
+	"github.com/cloudflare/cfssl/log"
 )
+
+func init() {
+	log.Level = log.LevelError
+}
 
 // NewCACert creates a new Certificate Authority and returns it's private key and public certificate.
 func NewCACert(csrFile string) (key, cert []byte, err error) {
