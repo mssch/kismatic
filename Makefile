@@ -14,6 +14,7 @@ build: vendor
 clean: 
 	rm -rf bin
 	rm -rf out
+	rm -rf vendor
 	rm -rf vendor-ansible/out
 	rm -rf vendor-cfssl/out
 
