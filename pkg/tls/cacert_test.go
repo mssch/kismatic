@@ -1,6 +1,7 @@
 package tls
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
 	"time"
@@ -27,7 +28,7 @@ func TestNewCACert(t *testing.T) {
 		t.Errorf("cert issuer is not equal to the CA's subject")
 	}
 
-	if !reflect.DeepEqual(parsedCert.AuthorityKeyId, parsedCert.SubjectKeyId) {
+	if !bytes.Equal(parsedCert.AuthorityKeyId, parsedCert.SubjectKeyId) {
 		t.Errorf("certificate auth key ID is not the subject key ID of the CA")
 	}
 
