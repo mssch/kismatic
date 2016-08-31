@@ -25,6 +25,7 @@ type ansibleExecutor struct {
 }
 
 type ansibleVars struct {
+	ClusterName            string `json:"kubernetes_cluster_name"`
 	AdminPassword          string `json:"kubernetes_admin_password"`
 	TLSDirectory           string `json:"tls_directory"`
 	KubernetesServicesCIDR string `json:"kubernetes_services_cidr"`
@@ -102,6 +103,8 @@ func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string,
 	cmd.Stdout = e.out
 	cmd.Stderr = e.errOut
 	os.Setenv("PYTHONPATH", e.pythonPath)
+	// Ansible config
+	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 
 	err = cmd.Run()
 	if err != nil {
