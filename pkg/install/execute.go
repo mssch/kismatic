@@ -20,7 +20,7 @@ type ansibleExecutor struct {
 	out        io.Writer
 	errOut     io.Writer
 	pythonPath string
-	ansibleBin string
+	ansibleDir string
 	certsDir   string
 }
 
@@ -49,7 +49,7 @@ func NewAnsibleExecutor(out io.Writer, errOut io.Writer, certsDir string) (Execu
 		out:        out,
 		errOut:     errOut,
 		pythonPath: ppath,
-		ansibleBin: "./ansible/bin", // TODO: What's the best way to handle this?
+		ansibleDir: "ansible", // TODO: What's the best way to handle this?
 		certsDir:   certsDir,
 	}, nil
 }
@@ -60,7 +60,8 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	writeHostGroup(inv, "master", p.Master.Nodes)
 	writeHostGroup(inv, "worker", p.Worker.Nodes)
 
-	err := ioutil.WriteFile("inventory.ini", inv.Bytes(), 0644)
+	inventoryFile := filepath.Join(e.ansibleDir, "inventory.ini")
+	err := ioutil.WriteFile(inventoryFile, inv.Bytes(), 0644)
 	if err != nil {
 		return fmt.Errorf("error writing ansible inventory file: %v", err)
 	}
@@ -83,7 +84,8 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	// run ansible
-	err = e.runAnsiblePlaybook("inventory.ini", "./ansible/playbooks/kubernetes.yaml", vars)
+	playbook := filepath.Join(e.ansibleDir, "playbooks", "kubernetes.yaml")
+	err = e.runAnsiblePlaybook(inventoryFile, playbook, vars)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
@@ -97,7 +99,7 @@ func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string,
 		return fmt.Errorf("error getting vars: %v", err)
 	}
 
-	cmd := exec.Command(fmt.Sprintf("%s/ansible-playbook", e.ansibleBin), "-i", inventoryFile, "-s", playbookFile, "--extra-vars", extraVars)
+	cmd := exec.Command(filepath.Join(e.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbookFile, "--extra-vars", extraVars)
 	cmd.Stdout = e.out
 	cmd.Stderr = e.errOut
 	os.Setenv("PYTHONPATH", e.pythonPath)
@@ -126,5 +128,7 @@ func getPythonPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error getting working dir: %v", err)
 	}
-	return fmt.Sprintf("%s/ansible/lib/python2.7/site-packages:%[1]s/ansible/lib64/python2.7/site-packages", wd), nil
+	lib := filepath.Join(wd, "ansible", "lib", "python2.7", "site-packages")
+	lib64 := filepath.Join(wd, "ansible", "lib64", "python2.7", "site-packages")
+	return fmt.Sprintf("%s:%s", lib, lib64), nil
 }
