@@ -31,6 +31,7 @@ type ansibleVars struct {
 	KubernetesServicesCIDR string `json:"kubernetes_services_cidr"`
 	KubernetesPodsCIDR     string `json:"kubernetes_pods_cidr"`
 	KubernetesDNSServiceIP string `json:"kubernetes_dns_service_ip"`
+	CalicoNetworkType      string `json:"calico_network_type"`
 }
 
 func (av *ansibleVars) CommandLineVars() (string, error) {
@@ -82,6 +83,7 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 		KubernetesServicesCIDR: p.Cluster.Networking.ServiceCIDRBlock,
 		KubernetesPodsCIDR:     p.Cluster.Networking.PodCIDRBlock,
 		KubernetesDNSServiceIP: dnsServiceIP,
+		CalicoNetworkType:      p.Cluster.Networking.Type,
 	}
 
 	// run ansible
