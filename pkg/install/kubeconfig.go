@@ -8,7 +8,7 @@ import (
 )
 
 // GenerateKubeconfig generate a kubeconfig file for a specific user
-func GenerateKubeconfig(p *Plan, user string, certPath string, out io.Writer) error {
+func GenerateKubeconfig(p *Plan, user string, password string, certPath string, out io.Writer) error {
 
 	// base64 encode ca and cert/key pem files
 	cafile, err := ioutil.ReadFile(certPath + "/ca.pem")
@@ -46,7 +46,7 @@ preferences: {}
 users:
 - name: %s
   user:
-    token: admin_password
+    token: %s
     client-certificate-data: %s
     client-key-data: %s
 `
@@ -63,6 +63,7 @@ users:
 		p.Cluster.Name+"-"+user,
 		p.Cluster.Name+"-"+user,
 		user,
+		password,
 		certEncoded,
 		keyEncoded)
 

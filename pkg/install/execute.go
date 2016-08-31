@@ -25,6 +25,7 @@ type ansibleExecutor struct {
 }
 
 type ansibleVars struct {
+	AdminPassword          string `json:"kubernetes_admin_password"`
 	TLSDirectory           string `json:"tls_directory"`
 	KubernetesServicesCIDR string `json:"kubernetes_services_cidr"`
 	KubernetesPodsCIDR     string `json:"kubernetes_pods_cidr"`
@@ -74,6 +75,7 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	vars := ansibleVars{
+		AdminPassword:          p.Cluster.AdminPassword,
 		TLSDirectory:           tlsDir,
 		KubernetesServicesCIDR: p.Cluster.Networking.ServiceCIDRBlock,
 		KubernetesPodsCIDR:     p.Cluster.Networking.PodCIDRBlock,

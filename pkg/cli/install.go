@@ -148,7 +148,7 @@ func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor in
 	// Generate kubeconfig
 	fmt.Fprint(out, "Generating kubecofnig\n")
 	fmt.Fprint(out, "===========================================================================\n")
-	err = install.GenerateKubeconfig(p, "admin", options.certsDestination, out)
+	err = install.GenerateKubeconfig(p, "admin", p.Cluster.AdminPassword, options.certsDestination, out)
 	if err != nil {
 		fmt.Fprint(out, "Kubeconfig generation error, you may need to setup kubectl manually [ERROR]\n")
 	} else {
