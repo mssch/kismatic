@@ -76,6 +76,7 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	vars := ansibleVars{
+		ClusterName:            p.Cluster.Name,
 		AdminPassword:          p.Cluster.AdminPassword,
 		TLSDirectory:           tlsDir,
 		KubernetesServicesCIDR: p.Cluster.Networking.ServiceCIDRBlock,
