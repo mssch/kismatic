@@ -82,6 +82,18 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 			return fmt.Errorf("error writing cert files for host %q: %v", n.Host, err)
 		}
 	}
+	// Finally, create cert for user `admin`
+	adminUser := "admin"
+	fmt.Fprintf(lp.Log, "Generating certificates for user %q\n", adminUser)
+	adminKey, adminCert, err := generateClientCert(p, adminUser, ca)
+	if err != nil {
+		return fmt.Errorf("error during admin cert generation: %v", err)
+	}
+	err = lp.writeFiles(adminKey, adminCert, adminUser)
+	if err != nil {
+		return fmt.Errorf("error writing cert files for user %q: %v", adminUser, err)
+	}
+
 	return nil
 }
 
@@ -133,6 +145,31 @@ func generateNodeCert(p *Plan, n *Node, ca *tls.CA, initialHostList []string) (k
 	key, cert, err = tls.GenerateNewCertificate(ca, req)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error generating certs for node %q: %v", n.Host, err)
+	}
+
+	return key, cert, err
+}
+
+func generateClientCert(p *Plan, user string, ca *tls.CA) (key, cert []byte, err error) {
+	req := csr.CertificateRequest{
+		CN: user,
+		KeyRequest: &csr.BasicKeyRequest{
+			A: "rsa",
+			S: 2048,
+		},
+		Hosts: []string{},
+		Names: []csr.Name{
+			{
+				C:  p.Cluster.Certificates.LocationCountry,
+				ST: p.Cluster.Certificates.LocationState,
+				L:  p.Cluster.Certificates.LocationCity,
+			},
+		},
+	}
+
+	key, cert, err = tls.GenerateNewCertificate(ca, req)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error generating certs for user %q: %v", user, err)
 	}
 
 	return key, cert, err
