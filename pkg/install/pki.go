@@ -54,10 +54,6 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 	if err != nil {
 		return fmt.Errorf("Error getting kubernetes service IP: %v", err)
 	}
-	kubeDNSServiceIP, err := getDNSServiceIP(p)
-	if err != nil {
-		return fmt.Errorf("Error getting DNS service IP: %v", err)
-	}
 
 	defaultCertHosts := []string{
 		p.Cluster.Name,
@@ -66,7 +62,6 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 		p.Cluster.Name + ".default.svc.cluster.local",
 		"127.0.0.1",
 		kubeServiceIP,
-		kubeDNSServiceIP,
 	}
 
 	// Then, create certs for all nodes
