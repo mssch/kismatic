@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"time"
 )
 
@@ -129,6 +130,9 @@ func (s *SSHConfig) validate() (bool, []error) {
 	}
 	if s.Key == "" {
 		v.addError(errors.New("SSH key field is required"))
+	}
+	if _, err := os.Stat(s.Key); os.IsNotExist(err) {
+		v.addError(fmt.Errorf("SSH Key file was not found at %q", s.Key))
 	}
 	if s.Port < 1 || s.Port > 65535 {
 		v.addError(fmt.Errorf("SSH port %d is invalid. Port must be in the range 1-65535", s.Port))
