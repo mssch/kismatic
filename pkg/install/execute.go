@@ -110,25 +110,22 @@ func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string,
 }
 
 func buildNodeInventory(p *Plan) []byte {
-	sshKey := p.Cluster.SSH.Key
-	sshPort := p.Cluster.SSH.Port
-
 	inv := &bytes.Buffer{}
-	writeHostGroup(inv, "etcd", p.Etcd.Nodes, sshKey, sshPort)
-	writeHostGroup(inv, "master", p.Master.Nodes, sshKey, sshPort)
-	writeHostGroup(inv, "worker", p.Worker.Nodes, sshKey, sshPort)
+	writeHostGroup(inv, "etcd", p.Etcd.Nodes, p.Cluster.SSH)
+	writeHostGroup(inv, "master", p.Master.Nodes, p.Cluster.SSH)
+	writeHostGroup(inv, "worker", p.Worker.Nodes, p.Cluster.SSH)
 
 	return inv.Bytes()
 }
 
-func writeHostGroup(inv io.Writer, groupName string, nodes []Node, sshKey string, sshPort int) {
+func writeHostGroup(inv io.Writer, groupName string, nodes []Node, ssh SSHConfig) {
 	fmt.Fprintf(inv, "[%s]\n", groupName)
 	for _, n := range nodes {
 		internalIP := n.IP
 		if n.InternalIP != "" {
 			internalIP = n.InternalIP
 		}
-		fmt.Fprintf(inv, "%s ansible_host=%s internal_ipv4=%s ansible_ssh_private_key_file=%s ansible_port=%d\n", n.Host, n.IP, internalIP, sshKey, sshPort)
+		fmt.Fprintf(inv, "%s ansible_host=%s internal_ipv4=%s ansible_ssh_private_key_file=%s ansible_port=%d ansible_user=%s\n", n.Host, n.IP, internalIP, ssh.Key, ssh.Port, ssh.User)
 	}
 }
 

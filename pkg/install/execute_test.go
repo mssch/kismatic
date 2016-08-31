@@ -6,6 +6,7 @@ func TestBuildNodeInventory(t *testing.T) {
 	p := &Plan{}
 	p.Cluster.SSH.Key = "id_rsa"
 	p.Cluster.SSH.Port = 2222
+	p.Cluster.SSH.User = "alice"
 
 	p.Etcd.Nodes = []Node{
 		{
@@ -35,12 +36,12 @@ func TestBuildNodeInventory(t *testing.T) {
 	}
 
 	expected := `[etcd]
-etcd01 ansible_host=10.0.0.1 internal_ipv4=192.168.0.11 ansible_ssh_private_key_file=id_rsa ansible_port=2222
+etcd01 ansible_host=10.0.0.1 internal_ipv4=192.168.0.11 ansible_ssh_private_key_file=id_rsa ansible_port=2222 ansible_user=alice
 [master]
-master01 ansible_host=10.0.0.2 internal_ipv4=192.168.0.12 ansible_ssh_private_key_file=id_rsa ansible_port=2222
+master01 ansible_host=10.0.0.2 internal_ipv4=192.168.0.12 ansible_ssh_private_key_file=id_rsa ansible_port=2222 ansible_user=alice
 [worker]
-worker01 ansible_host=10.0.0.3 internal_ipv4=192.168.0.13 ansible_ssh_private_key_file=id_rsa ansible_port=2222
-worker02 ansible_host=10.0.0.4 internal_ipv4=192.168.0.14 ansible_ssh_private_key_file=id_rsa ansible_port=2222
+worker01 ansible_host=10.0.0.3 internal_ipv4=192.168.0.13 ansible_ssh_private_key_file=id_rsa ansible_port=2222 ansible_user=alice
+worker02 ansible_host=10.0.0.4 internal_ipv4=192.168.0.14 ansible_ssh_private_key_file=id_rsa ansible_port=2222 ansible_user=alice
 `
 
 	inv := buildNodeInventory(p)
