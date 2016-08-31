@@ -75,7 +75,13 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 	nodes = append(nodes, p.Master.Nodes...)
 	nodes = append(nodes, p.Worker.Nodes...)
 
+	seenNodes := []string{}
 	for _, n := range nodes {
+		// Only generate certs once for each node, nodes can be in more than one group
+		if contains(seenNodes, n.Host) {
+			continue
+		}
+		seenNodes = append(seenNodes, n.Host)
 		fmt.Fprintf(lp.Log, "Generating certificates for %q\n", n.Host)
 		key, cert, err := generateNodeCert(p, &n, ca, defaultCertHosts)
 		if err != nil {
@@ -177,4 +183,13 @@ func generateClientCert(p *Plan, user string, ca *tls.CA) (key, cert []byte, err
 	}
 
 	return key, cert, err
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
