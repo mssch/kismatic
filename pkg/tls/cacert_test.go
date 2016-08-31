@@ -29,7 +29,7 @@ func TestNewCACert(t *testing.T) {
 	}
 
 	if !bytes.Equal(parsedCert.AuthorityKeyId, parsedCert.SubjectKeyId) {
-		t.Errorf("certificate auth key ID is not the subject key ID of the CA")
+		t.Errorf("certificate auth key ID %q is not the subject key ID of the CA %q", string(parsedCert.AuthorityKeyId), string(parsedCert.SubjectKeyId))
 	}
 
 	// Verify expiration
