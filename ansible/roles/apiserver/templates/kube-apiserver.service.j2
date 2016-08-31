@@ -20,6 +20,7 @@ ExecStart={{ bin_dir }}/kube-apiserver \
   --authorization-mode=ABAC \
   --authorization-policy-file=${AUTHORIZATION_POLICY_FILE} \
   --bind-address=0.0.0.0 \
+  --client-ca-file=${CA_FILE} \
   --enable-swagger-ui=true \
   --etcd-cafile=${CA_FILE} \
   --etcd-certfile=${CERT_FILE} \
