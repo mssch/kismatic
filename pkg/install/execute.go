@@ -55,13 +55,10 @@ func NewAnsibleExecutor(out io.Writer, errOut io.Writer, certsDir string) (Execu
 }
 
 func (e *ansibleExecutor) Install(p *Plan) error {
-	inv := &bytes.Buffer{}
-	writeHostGroup(inv, "etcd", p.Etcd.Nodes)
-	writeHostGroup(inv, "master", p.Master.Nodes)
-	writeHostGroup(inv, "worker", p.Worker.Nodes)
-
+	// build inventory
+	inventory := buildNodeInventory(p)
 	inventoryFile := filepath.Join(e.ansibleDir, "inventory.ini")
-	err := ioutil.WriteFile(inventoryFile, inv.Bytes(), 0644)
+	err := ioutil.WriteFile(inventoryFile, inventory, 0644)
 	if err != nil {
 		return fmt.Errorf("error writing ansible inventory file: %v", err)
 	}
@@ -112,14 +109,26 @@ func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string,
 	return nil
 }
 
-func writeHostGroup(inv io.Writer, groupName string, nodes []Node) {
+func buildNodeInventory(p *Plan) []byte {
+	sshKey := p.Cluster.SSH.Key
+	sshPort := p.Cluster.SSH.Port
+
+	inv := &bytes.Buffer{}
+	writeHostGroup(inv, "etcd", p.Etcd.Nodes, sshKey, sshPort)
+	writeHostGroup(inv, "master", p.Master.Nodes, sshKey, sshPort)
+	writeHostGroup(inv, "worker", p.Worker.Nodes, sshKey, sshPort)
+
+	return inv.Bytes()
+}
+
+func writeHostGroup(inv io.Writer, groupName string, nodes []Node, sshKey string, sshPort int) {
 	fmt.Fprintf(inv, "[%s]\n", groupName)
 	for _, n := range nodes {
 		internalIP := n.IP
 		if n.InternalIP != "" {
 			internalIP = n.InternalIP
 		}
-		fmt.Fprintf(inv, "%s ansible_host=%s internal_ipv4=%s\n", n.Host, n.IP, internalIP)
+		fmt.Fprintf(inv, "%s ansible_host=%s internal_ipv4=%s ansible_ssh_private_key_file=%s ansible_port=%d\n", n.Host, n.IP, internalIP, sshKey, sshPort)
 	}
 }
 
