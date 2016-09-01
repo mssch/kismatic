@@ -2,7 +2,7 @@
   # download binaries
   - name: download kube-proxy - v{{ kubernetes_version }}
     get_url:
-      url: "{{ kubernetes_binary_path }}/kube-proxy"
+      url: "{{ local_repoository_path|default(kubernetes_binary_path) }}/kube-proxy"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
   # kube-proxy

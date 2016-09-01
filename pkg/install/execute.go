@@ -32,6 +32,7 @@ type ansibleVars struct {
 	KubernetesPodsCIDR     string `json:"kubernetes_pods_cidr"`
 	KubernetesDNSServiceIP string `json:"kubernetes_dns_service_ip"`
 	CalicoNetworkType      string `json:"calico_network_type"`
+	LocalRepository        string `json:"local_repoository_path,omitempty"` //Optional
 }
 
 func (av *ansibleVars) CommandLineVars() (string, error) {
@@ -84,6 +85,7 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 		KubernetesPodsCIDR:     p.Cluster.Networking.PodCIDRBlock,
 		KubernetesDNSServiceIP: dnsServiceIP,
 		CalicoNetworkType:      p.Cluster.Networking.Type,
+		LocalRepository:        p.Cluster.LocalRepository,
 	}
 
 	// run ansible

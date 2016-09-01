@@ -150,7 +150,7 @@ func doInstall(in io.Reader, out io.Writer, planner install.Planner, executor in
 	if err != nil {
 		fmt.Fprint(out, "Kubeconfig generation error, you may need to setup kubectl manually [ERROR]\n", err)
 	} else {
-		fmt.Fprint(out, "Generated \"config\", to use copy it to \"~/.kube/config\" [OK]\n")
+		fmt.Fprint(out, "Generated \"config\", to use \"cp config ~/.kube/config\" [OK]\n")
 	}
 
 	return nil

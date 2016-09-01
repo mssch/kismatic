@@ -42,6 +42,7 @@ _testmain.go
 /ansible/tls/kubernetes-*-csr.json
 /ansible/tls/servers
 /ansible/inventory.ini
+/ansible/inventory-repo.ini
 
 kismatic-cluster.yaml
 Vagrantfile

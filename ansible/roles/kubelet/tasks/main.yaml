@@ -2,7 +2,7 @@
   # download binaries
   - name: download kubelet - v{{ kubernetes_version }}
     get_url:
-      url: "{{ kubernetes_binary_path }}/kubelet"
+      url: "{{ local_repoository_path|default(kubernetes_binary_path) }}/kubelet"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
   # kubelet

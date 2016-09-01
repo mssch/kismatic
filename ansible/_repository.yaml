@@ -1,0 +1,11 @@
+---
+  - hosts: repository
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+
+    roles:
+      - all
+      - docker
+      - repository

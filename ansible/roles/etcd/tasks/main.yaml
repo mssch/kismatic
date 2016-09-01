@@ -3,7 +3,7 @@
   # download binaries
   - name: download and untar {{ etcd_install_bin_name }}
     unarchive:
-      src: "{{ etcd_install_binary_download_path }}"
+      src: "{{ local_repoository_path|default(etcd_install_binary_download_path) }}/{{etcd_install_binary_download_name}}"
       dest: "{{ temprary_download_dir }}"
       remote_src: yes
       copy: no

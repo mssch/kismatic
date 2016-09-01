@@ -2,7 +2,7 @@
   # download kubernetes binaries
   - name: download kube-controller-manager - v{{ kubernetes_version }}
     get_url:
-      url: "{{ kubernetes_binary_path }}/kube-controller-manager"
+      url: "{{ local_repoository_path|default(kubernetes_binary_path) }}/kube-controller-manager"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
 
