@@ -56,10 +56,10 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 	}
 
 	defaultCertHosts := []string{
-		p.Cluster.Name,
-		p.Cluster.Name + ".default",
-		p.Cluster.Name + ".default.svc",
-		p.Cluster.Name + ".default.svc.cluster.local",
+		"kubernetes",
+		"kubernetes.default",
+		"kubernetes.default.svc",
+		"kubernetes.default.svc.cluster.local",
 		"127.0.0.1",
 		kubeServiceIP,
 	}
