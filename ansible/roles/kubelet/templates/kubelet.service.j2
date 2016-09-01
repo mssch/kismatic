@@ -24,7 +24,6 @@ ExecStart=/usr/bin/kubelet \
   --container-runtime=docker \
   --docker=unix:///var/run/docker.sock \
   --hostname-override=${HOSTNAME} \
-  --network-plugin=kubenet \
   --kubeconfig=${KUBECONFIG} \
   --register-schedulable=${REGISTER_SCHEDULABLE} \
   --serialize-image-pulls=false \
