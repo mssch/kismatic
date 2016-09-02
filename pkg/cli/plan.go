@@ -54,6 +54,19 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, options *insta
 	fmt.Fprintf(out, "Generating installation plan file with %d etcd nodes, %d master nodes and %d worker nodes\n",
 		etcdNodes, masterNodes, workerNodes)
 
+	plan := buildPlan(etcdNodes, masterNodes, workerNodes)
+	// Write out the plan
+	err = install.WritePlanTemplate(plan, planner)
+	if err != nil {
+		return fmt.Errorf("error planning installation: %v", err)
+	}
+	fmt.Fprintf(out, "Generated installation plan file at %q\n", options.planFilename)
+	fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the \"install verify\" command to proceed.\n")
+
+	return nil
+}
+
+func buildPlan(etcdNodes int, masterNodes int, workerNodes int) install.Plan {
 	// Create a plan
 	masterNodeGroup := install.MasterNodeGroup{}
 	masterNodeGroup.ExpectedCount = masterNodes
@@ -66,13 +79,6 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, options *insta
 			ExpectedCount: workerNodes,
 		},
 	}
-	// Write out the plan
-	err = install.WritePlanTemplate(plan, planner)
-	if err != nil {
-		return fmt.Errorf("error planning installation: %v", err)
-	}
-	fmt.Fprintf(out, "Generated installation plan file at %q\n", options.planFilename)
-	fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the install verify command to proceed.\n")
 
-	return nil
+	return plan
 }

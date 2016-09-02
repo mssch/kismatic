@@ -24,6 +24,11 @@ func NewCmdValidate(in io.Reader, out io.Writer, options *installOpts) *cobra.Co
 
 func doValidate(in io.Reader, out io.Writer, planner install.Planner, options *installOpts) error {
 	// Check if plan file exists
+	if !planner.PlanExists() {
+		fmt.Fprintf(out, "Reading installation plan file [ERROR]\n")
+		fmt.Fprintf(out, "Run \"kismatic install plan\" to generate it\n")
+		return fmt.Errorf("plan does not exist")
+	}
 	plan, err := planner.Read()
 	if err != nil {
 		fmt.Fprintf(out, "Reading installation plan file %q [ERROR]\n", options.planFilename)
