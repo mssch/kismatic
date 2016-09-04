@@ -2,14 +2,12 @@ package cli
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
 )
 
 func TestApplyCmdInvalidPlanFound(t *testing.T) {
-	in := strings.NewReader("")
 	out := &bytes.Buffer{}
 	fp := &fakePlan{
 		exists: true,
@@ -17,7 +15,7 @@ func TestApplyCmdInvalidPlanFound(t *testing.T) {
 	}
 	fe := &fakeExecutor{}
 	fpki := &fakePKI{}
-	err := doApply(in, out, fp, fe, fpki, &installOpts{})
+	err := doApply(out, fp, fe, fpki, &installOpts{})
 
 	// expect an error here... we don't care about testing validation
 	if err == nil {

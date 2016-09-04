@@ -10,7 +10,7 @@ import (
 )
 
 // NewCmdApply creates a cluter using the plan file
-func NewCmdApply(in io.Reader, out io.Writer, options *installOpts) *cobra.Command {
+func NewCmdApply(out io.Writer, options *installOpts) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "apply",
@@ -28,16 +28,16 @@ func NewCmdApply(in io.Reader, out io.Writer, options *installOpts) *cobra.Comma
 				DestinationDir:   options.certsDestination,
 				Log:              out,
 			}
-			return doApply(in, out, planner, executor, pki, options)
+			return doApply(out, planner, executor, pki, options)
 		},
 	}
 
 	return cmd
 }
 
-func doApply(in io.Reader, out io.Writer, planner install.Planner, executor install.Executor, pki install.PKI, options *installOpts) error {
+func doApply(out io.Writer, planner install.Planner, executor install.Executor, pki install.PKI, options *installOpts) error {
 	// Check if plan file exists
-	err := doValidate(in, out, planner, options)
+	err := doValidate(out, planner, options)
 	if err != nil {
 		return fmt.Errorf("error validating plan: %v", err)
 	}
