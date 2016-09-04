@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
+	"github.com/apprenda/kismatic-platform/pkg/tls"
 	"github.com/spf13/cobra"
 )
 
@@ -32,10 +33,12 @@ func NewCmdApply(out io.Writer, options *installOpts) *cobra.Command {
 		},
 	}
 
+	// Flags
 	cmd.Flags().StringVar(&options.caCsr, "ca-csr", "ansible/playbooks/tls/ca-csr.json", "path to the Certificate Authority CSR")
 	cmd.Flags().StringVar(&options.caConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
 	cmd.Flags().StringVar(&options.caSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
 	cmd.Flags().StringVar(&options.certsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
+	cmd.Flags().BoolVar(&options.skipCAGeneration, "skip-ca-generation", false, "use an existing CA file")
 
 	return cmd
 }
@@ -48,11 +51,23 @@ func doApply(out io.Writer, planner install.Planner, executor install.Executor, 
 	}
 	plan, err := planner.Read()
 	// Generate certs for the cluster before performing installation
+	var ca *tls.CA
+	if !options.skipCAGeneration {
+		fmt.Fprintln(out, "Generating cluster CA")
+		ca, err = pki.GenerateClusterCA(plan)
+	} else {
+		fmt.Fprintln(out, "Reading cluster CA")
+		ca, err = pki.ReadClusterCA(plan)
+	}
+	if err != nil {
+		return fmt.Errorf("error generating CA for the cluster: %v", err)
+	}
 	fmt.Fprintln(out, "Generating cluster certificates")
-	err = pki.GenerateClusterCerts(plan)
+	err = pki.GenerateClusterCerts(plan, ca)
 	if err != nil {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
+
 	fmt.Fprintf(out, "Generated cluster certificates at %q [OK]\n\n", options.certsDestination)
 
 	// Execute playbooks

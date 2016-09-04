@@ -1,6 +1,9 @@
 package cli
 
-import "github.com/apprenda/kismatic-platform/pkg/install"
+import (
+	"github.com/apprenda/kismatic-platform/pkg/install"
+	"github.com/apprenda/kismatic-platform/pkg/tls"
+)
 
 type fakePlan struct {
 	exists     bool
@@ -34,7 +37,14 @@ type fakePKI struct {
 	err    error
 }
 
-func (fp *fakePKI) GenerateClusterCerts(p *install.Plan) error {
+func (fp *fakePKI) ReadClusterCA(p *install.Plan) (*tls.CA, error) {
+	return nil, fp.err
+}
+func (fp *fakePKI) GenerateClusterCA(p *install.Plan) (*tls.CA, error) {
+	return nil, fp.err
+}
+
+func (fp *fakePKI) GenerateClusterCerts(p *install.Plan, ca *tls.CA) error {
 	fp.called = true
 	return fp.err
 }
