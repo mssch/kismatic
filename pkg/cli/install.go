@@ -12,6 +12,7 @@ type installOpts struct {
 	caConfigFile     string
 	caSigningProfile string
 	certsDestination string
+	skipCAGeneration bool
 }
 
 // NewCmdInstall creates a new install command

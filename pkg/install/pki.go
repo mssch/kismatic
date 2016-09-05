@@ -13,7 +13,9 @@ import (
 
 // The PKI provides a way for generating certificates for the cluster described by the Plan
 type PKI interface {
-	GenerateClusterCerts(p *Plan) error
+	ReadClusterCA(p *Plan) (*tls.CA, error)
+	GenerateClusterCA(p *Plan) (*tls.CA, error)
+	GenerateClusterCerts(p *Plan, ca *tls.CA) error
 }
 
 // LocalPKI is a file-based PKI
@@ -25,21 +27,33 @@ type LocalPKI struct {
 	Log              io.Writer
 }
 
-// GenerateClusterCerts creates a Certificate Authority and Certificates
-// for all nodes on the cluster.
-func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
-	if lp.Log == nil {
-		lp.Log = ioutil.Discard
+// ReadClusterCA read a Certificate Authority from a file
+func (lp *LocalPKI) ReadClusterCA(p *Plan) (*tls.CA, error) {
+	key, cert, err := lp.readFiles("ca")
+	if err != nil {
+		return nil, err
 	}
+	ca := &tls.CA{
+		Key:        key,
+		Cert:       cert,
+		ConfigFile: lp.CAConfigFile,
+		Profile:    lp.CASigningProfile,
+	}
+
+	return ca, nil
+}
+
+// GenerateClusterCA creates a Certificate Authority for the cluster
+func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 	// First, generate a CA
 	key, cert, err := tls.NewCACert(lp.CACsr)
 	if err != nil {
-		return fmt.Errorf("failed to create CA Cert: %v", err)
+		return nil, fmt.Errorf("failed to create CA Cert: %v", err)
 	}
 
 	err = lp.writeFiles(key, cert, "ca")
 	if err != nil {
-		return fmt.Errorf("error writing CA files: %v", err)
+		return nil, fmt.Errorf("error writing CA files: %v", err)
 	}
 
 	ca := &tls.CA{
@@ -47,6 +61,15 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan) error {
 		Cert:       cert,
 		ConfigFile: lp.CAConfigFile,
 		Profile:    lp.CASigningProfile,
+	}
+
+	return ca, nil
+}
+
+// GenerateClusterCerts creates a Certificates for all nodes on the cluster
+func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA) error {
+	if lp.Log == nil {
+		lp.Log = ioutil.Discard
 	}
 
 	// Add kubernetes service IP to certificates
@@ -127,6 +150,24 @@ func (lp *LocalPKI) writeFiles(key, cert []byte, name string) error {
 		return fmt.Errorf("error writing certificate: %v", err)
 	}
 	return nil
+}
+
+func (lp *LocalPKI) readFiles(name string) ([]byte, []byte, error) {
+	keyName := fmt.Sprintf("%s-key.pem", name)
+	dest := filepath.Join(lp.DestinationDir, keyName)
+	key, errKey := ioutil.ReadFile(dest)
+	if errKey != nil {
+		return nil, nil, fmt.Errorf("error reading private key: %v", errKey)
+	}
+
+	certName := fmt.Sprintf("%s.pem", name)
+	dest = filepath.Join(lp.DestinationDir, certName)
+	cert, errCert := ioutil.ReadFile(dest)
+	if errCert != nil {
+		return nil, nil, fmt.Errorf("error reading certificate: %v", errKey)
+	}
+
+	return key, cert, nil
 }
 
 func generateNodeCert(p *Plan, n *Node, ca *tls.CA, initialHostList []string) (key, cert []byte, err error) {
