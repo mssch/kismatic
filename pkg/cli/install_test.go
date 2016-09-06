@@ -27,7 +27,11 @@ type fakeExecutor struct {
 	err           error
 }
 
-func (fe *fakeExecutor) Install(p *install.Plan) error {
+func (fe *fakeExecutor) GetVars(p *install.Plan, options *install.CliOpts) (*install.AnsibleVars, error) {
+	return &install.AnsibleVars{}, fe.err
+}
+
+func (fe *fakeExecutor) Install(p *install.Plan, av *install.AnsibleVars) error {
 	fe.installCalled = true
 	return fe.err
 }

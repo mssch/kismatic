@@ -5,6 +5,8 @@ import (
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/apprenda/kismatic-platform/pkg/install"
 )
 
 func TestValidateCmdSucess(t *testing.T) {
@@ -36,7 +38,7 @@ func TestValidateCmdSucess(t *testing.T) {
 			exists: true,
 		}
 
-		err := doPlan(test.in, out, fp, &installOpts{})
+		err := doPlan(test.in, out, fp, &install.CliOpts{})
 
 		if err != nil && !test.shouldError {
 			t.Errorf("unexpected error running command: %v", err)
