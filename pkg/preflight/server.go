@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+
+	"github.com/apprenda/kismatic-platform/pkg/preflight/check"
 )
 
 // CheckRequest contains the list of checks that should be run
@@ -68,16 +70,16 @@ func (s *Server) Start() error {
 func (s *Server) RunChecks(cr *CheckRequest) []CheckResult {
 	checks := []Check{}
 	for _, b := range cr.BinaryDependencies {
-		checks = append(checks, &binaryDependencyCheck{b})
+		checks = append(checks, &check.BinaryDependencyCheck{b})
 	}
 
 	for _, p := range cr.PackageDependencies {
-		checks = append(checks, &packageInstalledCheck{p})
+		checks = append(checks, &check.PackageInstalledCheck{p})
 	}
 
 	closable := []ClosableCheck{}
 	for _, p := range cr.TCPPorts {
-		c := &tcpPortServerCheck{PortNumber: p}
+		c := &check.TCPPortServerCheck{PortNumber: p}
 		checks = append(checks, c)
 		closable = append(closable, c)
 	}
