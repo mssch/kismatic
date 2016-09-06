@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"strconv"
@@ -67,7 +66,7 @@ func CopyKismaticToTemp() string {
 	if randomErr != nil {
 		log.Fatal("Error making a GUID: ", randomErr)
 	}
-	kisPath := tmpDir + "kisint/" + randomness
+	kisPath := tmpDir + "/kisint/" + randomness
 	err := os.MkdirAll(kisPath, 0777)
 	if err != nil {
 		log.Fatal("Error making temp dir: ", err)
@@ -97,25 +96,4 @@ func FileExists(path string) bool {
 		return false
 	}
 	return true
-}
-
-func new_scanner(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-	if i := bytes.IndexByte(data, '\n'); i >= 0 {
-		// We have a full newline-terminated line.
-		fmt.Printf("nn\n")
-		return i + 1, data[0:i], nil
-	}
-	if i := bytes.IndexByte(data, '?'); i >= 0 {
-		// We have a full ?-terminated line.
-		return i + 1, data[0:i], nil
-	}
-	// If we're at EOF, we have a final, non-terminated line. Return it.
-	if atEOF {
-		return len(data), data, nil
-	}
-	// Request more data.
-	return 0, nil, nil
 }

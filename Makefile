@@ -19,7 +19,7 @@ clean:
 	rm -rf vendor-cfssl/out
 
 test: 
-	go test . ./cmd/... ./pkg/... $(TEST_OPTS) 
+	go test ./cmd/... ./pkg/... $(TEST_OPTS) 
 
 integration-test: dist just-integration-test
 
