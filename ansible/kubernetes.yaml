@@ -24,3 +24,4 @@
   - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml
   - include: _addon-logging.yaml
+  - include: _addon-monitoring.yaml

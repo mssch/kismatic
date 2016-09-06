@@ -1,0 +1,14 @@
+---
+  # setup Prometheus for monitoring
+  - name: copy prometheus.yaml to remote
+    template:
+      src: prometheus.yaml.j2
+      dest: /tmp/prometheus.yaml
+
+  # start services
+  - name: start prometheus service
+    command: kubectl create -f /tmp/prometheus.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines
