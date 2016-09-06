@@ -1,4 +1,4 @@
-package preflight
+package check
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 )
 
 // binaryDependencyCheck checks whether the binary is on the executable path.
-type binaryDependencyCheck struct {
+type BinaryDependencyCheck struct {
 	BinaryName string
 }
 
 // Check returns true if the binary dependency was found. Otherwise, returns false with an error message that includes remediation information.
-func (c *binaryDependencyCheck) Check() error {
+func (c *BinaryDependencyCheck) Check() error {
 	cmd := exec.Command("command", "-v", c.BinaryName)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("Install %q, as it was not found in the system", c.BinaryName)
@@ -19,6 +19,6 @@ func (c *binaryDependencyCheck) Check() error {
 	return nil
 }
 
-func (c *binaryDependencyCheck) Name() string {
+func (c *BinaryDependencyCheck) Name() string {
 	return fmt.Sprintf("%s exists", c.BinaryName)
 }
