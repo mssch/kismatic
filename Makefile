@@ -14,6 +14,7 @@ endif
 
 build: vendor
 	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
+	go build -o bin/kismatic-check ./cmd/kismatic-check
 
 clean:
 	rm -rf bin
