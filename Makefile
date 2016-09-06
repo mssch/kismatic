@@ -14,7 +14,8 @@ endif
 
 build: vendor
 	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
-	go build -o bin/kismatic-check ./cmd/kismatic-check
+	GOOS=linux go build -o bin/checker/linux/$(HOST_GOARCH)/kismatic-check ./cmd/kismatic-check
+	GOOS=darwin go build -o bin/checker/darwin/$(HOST_GOARCH)/kismatic-check ./cmd/kismatic-check
 
 clean:
 	rm -rf bin
@@ -54,7 +55,9 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	mkdir -p out/ansible
 	cp -r vendor-ansible/out/* out/ansible
 	rm -rf out/ansible/playbooks
-	cp -rf ansible out/ansible/playbooks
+	cp -r ansible out/ansible/playbooks
+	mkdir -p out/ansible/playbooks/checker
+	cp -r bin/checker/* out/ansible/playbooks/checker
 	mkdir -p out/cfssl
 	cp -r vendor-cfssl/out/* out/cfssl
 	rm -f out/kismatic.tar.gz
