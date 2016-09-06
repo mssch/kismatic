@@ -5,59 +5,30 @@
     fail: msg="systemd is required"
     when: ansible_service_mgr != "systemd"
     changed_when: false
-
-  # netowrking reqs
-  - name: ping all hosts
-    command: ping -c 2 {{ hostvars[item].internal_ipv4 }}
-    when: hostvars[item].internal_ipv4 is defined
-    with_items: "{{ groups['all'] }}"
-    changed_when: false
-
-  - name: verify etcd-k8s client port 2379 is open
-    shell: "! netstat -na | grep ':2379'"
-    changed_when: false
-    when: "'etcd' in group_names"
-
-  - name: verify etcd-k8s peer port 2380 is open
-    shell: "! netstat -na | grep ':2380'"
-    changed_when: false
-    when: "'etcd' in group_names"
-
-  - name: verify etcd-networking client port 6666 is open
-    shell: "! netstat -na | grep ':6666'"
-    changed_when: false
-    when: "'etcd' in group_names"
-
-  - name: verify etcd-networking peer port 6660 is open
-    shell: "! netstat -na | grep ':6660'"
-    changed_when: false
-    when: "'etcd' in group_names"
-
-  - name: verify kubernetes insecure port {{ kubernetes_master_insecure_port }} is open
-    shell: "! netstat -na | grep ':{{ kubernetes_master_insecure_port }}'"
-    changed_when: false
-    when: "'master' in group_names"
-
-  - name: verify kubernetes secure port {{ kubernetes_master_secure_port }} is open
-    shell: "! netstat -na | grep ':{{ kubernetes_master_secure_port }}'"
-    changed_when: false
-    when: "'master' in group_names"
-
-  # list from https://github.com/kubernetes/kubernetes/issues/26093
-  - include: roles/preflight/tasks/command.yaml utility=glibc
-
-  - include: roles/preflight/tasks/command.yaml utility=iptables
-
-  - include: roles/preflight/tasks/command.yaml utility=iptables-restore
-
-  - include: roles/preflight/tasks/command.yaml utility=iptables-save
-
-  - include: roles/preflight/tasks/command.yaml utility=ip
-
-  - include: roles/preflight/tasks/command.yaml utility=nsenter
-
-  - include: roles/preflight/tasks/command.yaml utility=mount
-
-  - include: roles/preflight/tasks/command.yaml utility=unmount
-
-  - include: roles/preflight/tasks/command.yaml utility=socat
+  - name: check if checker is running 
+    command: pgrep -f kismatic-preflight-checker
+    register: checker_running
+    ignore_errors: yes
+  - name: kill existing checker
+    command: pkill -f kismatic-preflight-checker
+    when: checker_running.failed is not defined
+  - name: copy pre-flight checker utility to node
+    copy:
+      src: "{{ kismatic_preflight_checker }}"
+      dest: "{{ bin_dir }}/kismatic-preflight-checker"
+      mode: 0744
+  - name: start the pre-flight checker
+    command: "{{ bin_dir }}/kismatic-preflight-checker"
+    async: 300
+    register: start_checker
+  - name: ensure pre-flight checker is running
+    async_status: jid={{ start_checker.ansible_job_id }}
+    register: job_result
+  # Run the pre-flights checks, and always stop the checker regardless of result     
+  - block:
+    - name: run pre-flight checks
+      local_action: command {{ kismatic_preflight_checker_local | default(kismatic_preflight_checker) }} --node {{ ansible_host }}:8081 -o json --check-tcp-ports {{preflight_check_tcp_ports}}
+      become: no
+    always:
+      - name: stop the pre-flight checker 
+        command: pkill -f kismatic-preflight-checker

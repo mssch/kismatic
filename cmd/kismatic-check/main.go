@@ -80,6 +80,12 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error printing results: %v\n", err)
 		}
 
+		for _, r := range results {
+			if !r.Success {
+				os.Exit(1)
+			}
+		}
+
 		os.Exit(0)
 	}
 
