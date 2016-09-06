@@ -1,0 +1,8 @@
+---
+  - hosts: master[0]
+    remote_user: root
+    become_method: sudo
+    run_once: true
+
+    roles:
+      - addon-logging

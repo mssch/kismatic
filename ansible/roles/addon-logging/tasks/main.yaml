@@ -1,0 +1,60 @@
+---
+  # setup Elasticsearch-Fluentd-Kibana for logging
+  - name: copy es-controller.yaml to remote
+    template:
+      src: es-controller.yaml.j2
+      dest: /tmp/es-controller.yaml
+  - name: copy es-service.yaml to remote
+    template:
+      src: es-service.yaml.j2
+      dest: /tmp/es-service.yaml
+  - name: copy kibana-controller.yaml to remote
+    template:
+      src: kibana-controller.yaml.j2
+      dest: /tmp/kibana-controller.yaml
+  - name: copy kibana-service.yaml to remote
+    template:
+      src: kibana-service.yaml.j2
+      dest: /tmp/kibana-service.yaml
+  - name: copy fluentd-es.yaml to remote
+    template:
+      src: fluentd-es.yaml.j2
+      dest: /tmp/fluentd-es.yaml
+
+
+  # start services
+  - name: start es-controlle rc
+    command: kubectl create -f /tmp/es-controller.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines
+
+  - name: start es-service service
+    command: kubectl create -f /tmp/es-service.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines
+
+  - name: start kibana-controller rc
+    command: kubectl create -f /tmp/kibana-controller.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines
+
+  # TODO notify user of the port, ingress
+  - name: start kibana-service service
+    command: kubectl create -f /tmp/kibana-service.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines
+
+  - name: start fluentd-es pod
+    command: kubectl create -f /tmp/fluentd-es.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines

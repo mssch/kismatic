@@ -1,6 +1,6 @@
 ---
   # TODO notify user of the port, ingress
-  - name: copy kubernetes-dashboard.yaml to host
+  - name: copy kubernetes-dashboard.yaml to remote
     copy:
       src: kubernetes-dashboard.yaml
       dest: /tmp/kubernetes-dashboard.yaml

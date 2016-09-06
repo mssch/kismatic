@@ -1,6 +1,6 @@
 ---
   # TODO notify user of the port, ingress
-  - name: copy kubernetes-dns.yaml to host
+  - name: copy kubernetes-dns.yaml to remote
     template:
       src: kubernetes-dns.yaml
       dest: /tmp/kubernetes-dns.yaml
