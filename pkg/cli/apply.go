@@ -48,12 +48,19 @@ func NewCmdApply(out io.Writer, options *install.CliOpts) *cobra.Command {
 }
 
 func doApply(out io.Writer, planner install.Planner, executor install.Executor, pki install.PKI, options *install.CliOpts) error {
-	// Check if plan file exists
+	// Validate the plan file. Validation will ensure plan file exists.
 	err := doValidate(out, planner, options)
 	if err != nil {
 		return fmt.Errorf("error validating plan: %v", err)
 	}
 	plan, err := planner.Read()
+
+	// Run pre-flight check
+	err = executor.RunPreflightCheck(plan)
+	if err != nil {
+		return fmt.Errorf("error during pre-flight checks: %v", err)
+	}
+
 	// Generate certs for the cluster before performing installation
 	var ca *tls.CA
 	if !options.SkipCAGeneration {

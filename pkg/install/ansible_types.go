@@ -18,4 +18,6 @@ type AnsibleVars struct {
 	ForceKubeletRestart           string `json:"force_kubelet_restart"`
 	ForceCalicoRestart            string `json:"force_calico_node_restart"`
 	ForceDockerRestart            string `json:"force_docker_restart"`
+	KismaticPreflightChecker      string `json:"kismatic_preflight_checker"`
+	KismaticPreflightCheckerLocal string `json:"kismatic_preflight_checker_local"`
 }

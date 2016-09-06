@@ -9,11 +9,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 )
 
 // The Executor will carry out the installation plan
 type Executor interface {
+	RunPreflightCheck(*Plan) error
 	Install(p *Plan, av *AnsibleVars) error
 	GetVars(p *Plan, options *CliOpts) (*AnsibleVars, error)
 }
@@ -99,6 +101,30 @@ func (e *ansibleExecutor) Install(p *Plan, av *AnsibleVars) error {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
 
+	return nil
+}
+
+func (e *ansibleExecutor) RunPreflightCheck(p *Plan) error {
+	// build inventory
+	inventory := buildNodeInventory(p)
+	inventoryFile := filepath.Join(e.ansibleDir, "inventory.ini")
+	err := ioutil.WriteFile(inventoryFile, inventory, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing ansible inventory file: %v", err)
+	}
+
+	// run pre-flight playbook
+	playbook := filepath.Join(e.ansibleDir, "playbooks", "preflight.yaml")
+	// TODO: The checker dir is relative to the ansible playbooks directory
+	vars := AnsibleVars{
+		KismaticPreflightChecker: filepath.Join("checker", "linux", "amd64", "kismatic-check"),
+		// TODO: This path has to be relative to ansible dir for some reason...
+		KismaticPreflightCheckerLocal: filepath.Join(e.ansibleDir, "playbooks", "checker", runtime.GOOS, runtime.GOARCH, "kismatic-check"),
+	}
+	err = e.runAnsiblePlaybook(inventoryFile, playbook, vars)
+	if err != nil {
+		return fmt.Errorf("error running pre-flight checks: %v", err)
+	}
 	return nil
 }
 
