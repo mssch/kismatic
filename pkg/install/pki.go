@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 
 	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/cloudflare/cfssl/csr"
 )
 
@@ -15,7 +14,7 @@ import (
 type PKI interface {
 	ReadClusterCA(p *Plan) (*tls.CA, error)
 	GenerateClusterCA(p *Plan) (*tls.CA, error)
-	GenerateClusterCerts(p *Plan, ca *tls.CA) error
+	GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) error
 }
 
 // LocalPKI is a file-based PKI
@@ -29,7 +28,7 @@ type LocalPKI struct {
 
 // ReadClusterCA read a Certificate Authority from a file
 func (lp *LocalPKI) ReadClusterCA(p *Plan) (*tls.CA, error) {
-	key, cert, err := lp.readFiles("ca")
+	key, cert, err := tls.ReadCACert("ca", lp.DestinationDir)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +50,7 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 		return nil, fmt.Errorf("failed to create CA Cert: %v", err)
 	}
 
-	err = lp.writeFiles(key, cert, "ca")
+	err = tls.WriteCert(key, cert, "ca", lp.DestinationDir)
 	if err != nil {
 		return nil, fmt.Errorf("error writing CA files: %v", err)
 	}
@@ -67,7 +66,7 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 }
 
 // GenerateClusterCerts creates a Certificates for all nodes on the cluster
-func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA) error {
+func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) error {
 	if lp.Log == nil {
 		lp.Log = ioutil.Discard
 	}
@@ -96,89 +95,46 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA) error {
 	seenNodes := []string{}
 	for _, n := range nodes {
 		// Only generate certs once for each node, nodes can be in more than one group
-		if contains(seenNodes, n.Host) {
+		if util.ContainsString(seenNodes, n.Host) {
 			continue
 		}
 		seenNodes = append(seenNodes, n.Host)
 		fmt.Fprintf(lp.Log, "Generating certificates for %q\n", n.Host)
-		key, cert, err := generateNodeCert(p, &n, ca, defaultCertHosts)
+		nodeList := append(defaultCertHosts, n.Host, n.IP, n.InternalIP)
+		key, cert, err := generateCert(p.Cluster.Name, p, nodeList, ca)
 		if err != nil {
 			return fmt.Errorf("error during cluster cert generation: %v", err)
 		}
-		err = lp.writeFiles(key, cert, n.Host)
+		err = tls.WriteCert(key, cert, n.Host, lp.DestinationDir)
 		if err != nil {
 			return fmt.Errorf("error writing cert files for host %q: %v", n.Host, err)
 		}
 	}
-	// Finally, create cert for user `admin`
-	adminUser := "admin"
-	fmt.Fprintf(lp.Log, "Generating certificates for user %q\n", adminUser)
-	adminKey, adminCert, err := generateClientCert(p, adminUser, ca)
-	if err != nil {
-		return fmt.Errorf("error during admin cert generation: %v", err)
-	}
-	err = lp.writeFiles(adminKey, adminCert, adminUser)
-	if err != nil {
-		return fmt.Errorf("error writing cert files for user %q: %v", adminUser, err)
-	}
 
-	return nil
-}
-
-func (lp *LocalPKI) writeFiles(key, cert []byte, name string) error {
-	// Create destination dir if it doesn't exist
-	if _, err := os.Stat(lp.DestinationDir); os.IsNotExist(err) {
-		err := os.Mkdir(lp.DestinationDir, 0744)
+	// Finally, create certs for user
+	for _, user := range users {
+		fmt.Fprintf(lp.Log, "Generating certificates for user %q\n", user)
+		adminKey, adminCert, err := generateCert(user, p, []string{user}, ca)
 		if err != nil {
-			return fmt.Errorf("error creating destination dir: %v", err)
+			return fmt.Errorf("error during user cert generation: %v", err)
+		}
+		err = tls.WriteCert(adminKey, adminCert, user, lp.DestinationDir)
+		if err != nil {
+			return fmt.Errorf("error writing cert files for user %q: %v", user, err)
 		}
 	}
 
-	// Write private key with read-only for user
-	keyName := fmt.Sprintf("%s-key.pem", name)
-	dest := filepath.Join(lp.DestinationDir, keyName)
-	err := ioutil.WriteFile(dest, key, 0600)
-	if err != nil {
-		return fmt.Errorf("error writing private key: %v", err)
-	}
-
-	// Write cert
-	certName := fmt.Sprintf("%s.pem", name)
-	dest = filepath.Join(lp.DestinationDir, certName)
-	err = ioutil.WriteFile(dest, cert, 0644)
-	if err != nil {
-		return fmt.Errorf("error writing certificate: %v", err)
-	}
 	return nil
 }
 
-func (lp *LocalPKI) readFiles(name string) ([]byte, []byte, error) {
-	keyName := fmt.Sprintf("%s-key.pem", name)
-	dest := filepath.Join(lp.DestinationDir, keyName)
-	key, errKey := ioutil.ReadFile(dest)
-	if errKey != nil {
-		return nil, nil, fmt.Errorf("error reading private key: %v", errKey)
-	}
-
-	certName := fmt.Sprintf("%s.pem", name)
-	dest = filepath.Join(lp.DestinationDir, certName)
-	cert, errCert := ioutil.ReadFile(dest)
-	if errCert != nil {
-		return nil, nil, fmt.Errorf("error reading certificate: %v", errKey)
-	}
-
-	return key, cert, nil
-}
-
-func generateNodeCert(p *Plan, n *Node, ca *tls.CA, initialHostList []string) (key, cert []byte, err error) {
-	hosts := append(initialHostList, n.Host, n.InternalIP, n.IP)
+func generateCert(cnName string, p *Plan, hostList []string, ca *tls.CA) (key, cert []byte, err error) {
 	req := csr.CertificateRequest{
-		CN: p.Cluster.Name,
+		CN: cnName,
 		KeyRequest: &csr.BasicKeyRequest{
 			A: "rsa",
 			S: 2048,
 		},
-		Hosts: hosts,
+		Hosts: hostList,
 		Names: []csr.Name{
 			{
 				C:  p.Cluster.Certificates.LocationCountry,
@@ -188,44 +144,10 @@ func generateNodeCert(p *Plan, n *Node, ca *tls.CA, initialHostList []string) (k
 		},
 	}
 
-	key, cert, err = tls.GenerateNewCertificate(ca, req)
+	key, cert, err = tls.NewCert(ca, req)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error generating certs for node %q: %v", n.Host, err)
+		return nil, nil, fmt.Errorf("error generating certs for %q: %v", cnName, err)
 	}
 
 	return key, cert, err
-}
-
-func generateClientCert(p *Plan, user string, ca *tls.CA) (key, cert []byte, err error) {
-	req := csr.CertificateRequest{
-		CN: user,
-		KeyRequest: &csr.BasicKeyRequest{
-			A: "rsa",
-			S: 2048,
-		},
-		Hosts: []string{},
-		Names: []csr.Name{
-			{
-				C:  p.Cluster.Certificates.LocationCountry,
-				ST: p.Cluster.Certificates.LocationState,
-				L:  p.Cluster.Certificates.LocationCity,
-			},
-		},
-	}
-
-	key, cert, err = tls.GenerateNewCertificate(ca, req)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error generating certs for user %q: %v", user, err)
-	}
-
-	return key, cert, err
-}
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }

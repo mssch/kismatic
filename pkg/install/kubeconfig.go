@@ -2,10 +2,12 @@ package install
 
 import (
 	"bytes"
-	b64 "encoding/base64"
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"path/filepath"
+
+	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
 // ConfigOptions sds
@@ -51,23 +53,20 @@ func GenerateKubeconfig(p *Plan, certPath string) error {
 	context := p.Cluster.Name + "-" + user
 
 	// Base64 encoded ca
-	cafile, err := ioutil.ReadFile(certPath + "/ca.pem")
+	caEncoded, err := util.Base64String(filepath.Join(certPath, "ca.pem"))
 	if err != nil {
 		return fmt.Errorf("error reading ca file for kubeconfig: %v", err)
 	}
-	caEncoded := b64.StdEncoding.EncodeToString(cafile)
 	// Base64 encoded cert
-	certfile, err := ioutil.ReadFile(certPath + "/" + user + ".pem")
+	certEncoded, err := util.Base64String(filepath.Join(certPath, user+".pem"))
 	if err != nil {
 		return fmt.Errorf("error reading certificate file for kubeconfig: %v", err)
 	}
-	certEncoded := b64.StdEncoding.EncodeToString(certfile)
 	// Base64 encoded key
-	keyfile, err := ioutil.ReadFile(certPath + "/" + user + "-key.pem")
+	keyEncoded, err := util.Base64String(filepath.Join(certPath, user+"-key.pem"))
 	if err != nil {
 		return fmt.Errorf("error reading certificate key file for kubeconfig: %v", err)
 	}
-	keyEncoded := b64.StdEncoding.EncodeToString(keyfile)
 
 	// Process template file
 	tmpl, err := template.New("kubeconfig").Parse(kubeconfigTemplate)

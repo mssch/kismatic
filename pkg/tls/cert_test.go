@@ -53,7 +53,7 @@ func TestGenerateNewCertificate(t *testing.T) {
 		t.Fatalf("error decoding csr: %v", err)
 	}
 
-	_, cert, err := GenerateNewCertificate(ca, req)
+	_, cert, err := NewCert(ca, req)
 	if err != nil {
 		t.Errorf("error creating certificate: %v", err)
 	}

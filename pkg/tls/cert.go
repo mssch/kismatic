@@ -2,7 +2,10 @@ package tls
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 
+	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/cloudflare/cfssl/cli/genkey"
 	"github.com/cloudflare/cfssl/config"
 	"github.com/cloudflare/cfssl/csr"
@@ -25,9 +28,8 @@ type CA struct {
 	Profile string
 }
 
-// GenerateNewCertificate creates a new certificate/key pair using the CertificateAuthority
-// provided.
-func GenerateNewCertificate(ca *CA, req csr.CertificateRequest) (key, cert []byte, err error) {
+// NewCert creates a new certificate/key pair using the CertificateAuthority provided
+func NewCert(ca *CA, req csr.CertificateRequest) (key, cert []byte, err error) {
 	g := &csr.Generator{Validator: genkey.Validator}
 	csrBytes, key, err := g.ProcessRequest(&req)
 	if err != nil {
@@ -67,6 +69,50 @@ func GenerateNewCertificate(ca *CA, req csr.CertificateRequest) (key, cert []byt
 	cert, err = s.Sign(signReq)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error signing certificate: %v", err)
+	}
+
+	return key, cert, nil
+}
+
+// WriteCert writes cert and key files
+func WriteCert(key, cert []byte, name, dir string) error {
+	// Create destination dir if it doesn't exist
+	err := util.CreateDir(dir, 0744)
+	if err != nil {
+		return err
+	}
+
+	// Write private key with read-only for user
+	keyName := fmt.Sprintf("%s-key.pem", name)
+	err = ioutil.WriteFile(filepath.Join(dir, keyName), key, 0600)
+	if err != nil {
+		return fmt.Errorf("error writing private key: %v", err)
+	}
+
+	// Write cert
+	certName := fmt.Sprintf("%s.pem", name)
+	err = ioutil.WriteFile(filepath.Join(dir, certName), cert, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing certificate: %v", err)
+	}
+
+	return nil
+}
+
+// ReadCert reads cert and key files
+func ReadCert(name, dir string) ([]byte, []byte, error) {
+	keyName := fmt.Sprintf("%s-key.pem", name)
+	dest := filepath.Join(dir, keyName)
+	key, errKey := ioutil.ReadFile(dest)
+	if errKey != nil {
+		return nil, nil, fmt.Errorf("error reading private key: %v", errKey)
+	}
+
+	certName := fmt.Sprintf("%s.pem", name)
+	dest = filepath.Join(dir, certName)
+	cert, errCert := ioutil.ReadFile(dest)
+	if errCert != nil {
+		return nil, nil, fmt.Errorf("error reading certificate: %v", errKey)
 	}
 
 	return key, cert, nil

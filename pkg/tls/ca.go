@@ -3,7 +3,9 @@ package tls
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/cloudflare/cfssl/csr"
 	"github.com/cloudflare/cfssl/initca"
@@ -36,6 +38,25 @@ func NewCACert(csrFile string) (key, cert []byte, err error) {
 	cert, _, key, err = initca.New(csr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating CA cert: %v", err)
+	}
+
+	return key, cert, nil
+}
+
+// ReadCACert read CA file
+func ReadCACert(name, dir string) (key, cert []byte, err error) {
+	keyName := fmt.Sprintf("%s-key.pem", name)
+	dest := filepath.Join(dir, keyName)
+	key, errKey := ioutil.ReadFile(dest)
+	if errKey != nil {
+		return nil, nil, fmt.Errorf("error reading private key: %v", errKey)
+	}
+
+	certName := fmt.Sprintf("%s.pem", name)
+	dest = filepath.Join(dir, certName)
+	cert, errCert := ioutil.ReadFile(dest)
+	if errCert != nil {
+		return nil, nil, fmt.Errorf("error reading certificate: %v", errKey)
 	}
 
 	return key, cert, nil
