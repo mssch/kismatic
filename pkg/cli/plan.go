@@ -10,12 +10,12 @@ import (
 )
 
 // NewCmdPlan creates a new install plan command
-func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Command {
+func NewCmdPlan(in io.Reader, out io.Writer, options *install.CliOpts) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plan",
 		Short: "plan your Kismatic cluster and gerenate a plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			planner := &install.FilePlanner{File: options.planFilename}
+			planner := &install.FilePlanner{File: options.PlanFilename}
 			return doPlan(in, out, planner, options)
 		},
 	}
@@ -23,7 +23,7 @@ func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Comman
 	return cmd
 }
 
-func doPlan(in io.Reader, out io.Writer, planner install.Planner, options *installOpts) error {
+func doPlan(in io.Reader, out io.Writer, planner install.Planner, options *install.CliOpts) error {
 	fmt.Fprintln(out, "Plan your Kismatic cluster:")
 
 	// etcd nodes
@@ -60,7 +60,7 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, options *insta
 	if err != nil {
 		return fmt.Errorf("error planning installation: %v", err)
 	}
-	fmt.Fprintf(out, "Generated installation plan file at %q\n", options.planFilename)
+	fmt.Fprintf(out, "Generated installation plan file at %q\n", options.PlanFilename)
 	fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the \"install verify\" command to proceed.\n")
 
 	return nil

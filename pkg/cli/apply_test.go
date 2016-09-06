@@ -15,7 +15,7 @@ func TestApplyCmdInvalidPlanFound(t *testing.T) {
 	}
 	fe := &fakeExecutor{}
 	fpki := &fakePKI{}
-	err := doApply(out, fp, fe, fpki, &installOpts{})
+	err := doApply(out, fp, fe, fpki, &install.CliOpts{})
 
 	// expect an error here... we don't care about testing validation
 	if err == nil {

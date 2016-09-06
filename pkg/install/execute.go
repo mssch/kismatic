@@ -9,11 +9,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 )
 
 // The Executor will carry out the installation plan
 type Executor interface {
-	Install(p *Plan) error
+	Install(p *Plan, av *AnsibleVars) error
+	GetVars(p *Plan, options *CliOpts) (*AnsibleVars, error)
 }
 
 type ansibleExecutor struct {
@@ -24,18 +26,8 @@ type ansibleExecutor struct {
 	certsDir   string
 }
 
-type ansibleVars struct {
-	ClusterName            string `json:"kubernetes_cluster_name"`
-	AdminPassword          string `json:"kubernetes_admin_password"`
-	TLSDirectory           string `json:"tls_directory"`
-	KubernetesServicesCIDR string `json:"kubernetes_services_cidr"`
-	KubernetesPodsCIDR     string `json:"kubernetes_pods_cidr"`
-	KubernetesDNSServiceIP string `json:"kubernetes_dns_service_ip"`
-	CalicoNetworkType      string `json:"calico_network_type"`
-	LocalRepository        string `json:"local_repoository_path,omitempty"` //Optional
-}
-
-func (av *ansibleVars) CommandLineVars() (string, error) {
+// CommandLineVars returns "--extra-vars" as json string
+func (av *AnsibleVars) CommandLineVars() (string, error) {
 	b, err := json.Marshal(av)
 	if err != nil {
 		return "", fmt.Errorf("error marshaling ansible vars")
@@ -58,7 +50,40 @@ func NewAnsibleExecutor(out io.Writer, errOut io.Writer, certsDir string) (Execu
 	}, nil
 }
 
-func (e *ansibleExecutor) Install(p *Plan) error {
+func (e *ansibleExecutor) GetVars(p *Plan, options *CliOpts) (*AnsibleVars, error) {
+	tlsDir, err := filepath.Abs(e.certsDir)
+	if err != nil {
+		return &AnsibleVars{}, fmt.Errorf("error getting absolute path from cert location: %v", err)
+	}
+
+	dnsServiceIP, err := getDNSServiceIP(p)
+	if err != nil {
+		return &AnsibleVars{}, fmt.Errorf("error getting DNS servie IP address: %v", err)
+	}
+
+	vars := AnsibleVars{
+		ClusterName:                   p.Cluster.Name,
+		AdminPassword:                 p.Cluster.AdminPassword,
+		TLSDirectory:                  tlsDir,
+		KubernetesServicesCIDR:        p.Cluster.Networking.ServiceCIDRBlock,
+		KubernetesPodsCIDR:            p.Cluster.Networking.PodCIDRBlock,
+		KubernetesDNSServiceIP:        dnsServiceIP,
+		CalicoNetworkType:             p.Cluster.Networking.Type,
+		LocalRepository:               p.Cluster.LocalRepository,
+		ForceEtcdRestart:              strconv.FormatBool(options.RestartEtcdService),
+		ForceApiserverRestart:         strconv.FormatBool(options.RestartKubernetesService),
+		ForceControllerManagerRestart: strconv.FormatBool(options.RestartKubernetesService),
+		ForceSchedulerRestart:         strconv.FormatBool(options.RestartKubernetesService),
+		ForceProxyRestart:             strconv.FormatBool(options.RestartKubernetesService),
+		ForceKubeletRestart:           strconv.FormatBool(options.RestartKubernetesService),
+		ForceCalicoRestart:            strconv.FormatBool(options.RestartCalicoService),
+		ForceDockerRestart:            strconv.FormatBool(options.RestartDockerService),
+	}
+
+	return &vars, nil
+}
+
+func (e *ansibleExecutor) Install(p *Plan, av *AnsibleVars) error {
 	// build inventory
 	inventory := buildNodeInventory(p)
 	inventoryFile := filepath.Join(e.ansibleDir, "inventory.ini")
@@ -67,30 +92,9 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 		return fmt.Errorf("error writing ansible inventory file: %v", err)
 	}
 
-	tlsDir, err := filepath.Abs(e.certsDir)
-	if err != nil {
-		return fmt.Errorf("error getting absolute path from cert location: %v", err)
-	}
-
-	dnsServiceIP, err := getDNSServiceIP(p)
-	if err != nil {
-		return fmt.Errorf("error getting DNS servie IP address: %v", err)
-	}
-
-	vars := ansibleVars{
-		ClusterName:            p.Cluster.Name,
-		AdminPassword:          p.Cluster.AdminPassword,
-		TLSDirectory:           tlsDir,
-		KubernetesServicesCIDR: p.Cluster.Networking.ServiceCIDRBlock,
-		KubernetesPodsCIDR:     p.Cluster.Networking.PodCIDRBlock,
-		KubernetesDNSServiceIP: dnsServiceIP,
-		CalicoNetworkType:      p.Cluster.Networking.Type,
-		LocalRepository:        p.Cluster.LocalRepository,
-	}
-
 	// run ansible
 	playbook := filepath.Join(e.ansibleDir, "playbooks", "kubernetes.yaml")
-	err = e.runAnsiblePlaybook(inventoryFile, playbook, vars)
+	err = e.runAnsiblePlaybook(inventoryFile, playbook, *av)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
@@ -98,7 +102,7 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	return nil
 }
 
-func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string, vars ansibleVars) error {
+func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string, vars AnsibleVars) error {
 	extraVars, err := vars.CommandLineVars()
 	if err != nil {
 		return fmt.Errorf("error getting vars: %v", err)
