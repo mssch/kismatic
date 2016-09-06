@@ -19,7 +19,16 @@ clean:
 	rm -rf vendor-cfssl/out
 
 test: 
-	go test $(shell ./tools/glide nv) $(TEST_OPTS)
+	go test . ./cmd/... ./pkg/... $(TEST_OPTS) 
+
+integration-test: dist just-integration-test
+
+just-integration-test: 
+	go get github.com/onsi/ginkgo/ginkgo
+	go get github.com/onsi/gomega
+	go get github.com/jmcvetta/guid
+
+	go test ./integration/... -v
 
 vendor: tools/glide
 	./tools/glide install
