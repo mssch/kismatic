@@ -67,7 +67,7 @@ func doApply(out io.Writer, planner install.Planner, executor install.Executor, 
 		return fmt.Errorf("error generating CA for the cluster: %v", err)
 	}
 	fmt.Fprintln(out, "Generating cluster certificates")
-	err = pki.GenerateClusterCerts(plan, ca)
+	err = pki.GenerateClusterCerts(plan, ca, []string{"admin"})
 	if err != nil {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}

@@ -3,6 +3,8 @@ package install
 import (
 	"net"
 	"testing"
+
+	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
 func TestGetIPFromCIDR(t *testing.T) {
@@ -65,7 +67,7 @@ func TestGetIPFromCIDR(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		ip, err := getIPFromCIDR(test.cidr, test.n)
+		ip, err := util.GetIPFromCIDR(test.cidr, test.n)
 		if err != nil {
 			if !test.expectErr {
 				t.Errorf("test %d - got an unexpected error: %v", i, err)

@@ -48,7 +48,7 @@ func (fp *fakePKI) GenerateClusterCA(p *install.Plan) (*tls.CA, error) {
 	return nil, fp.err
 }
 
-func (fp *fakePKI) GenerateClusterCerts(p *install.Plan, ca *tls.CA) error {
+func (fp *fakePKI) GenerateClusterCerts(p *install.Plan, ca *tls.CA, users []string) error {
 	fp.called = true
 	return fp.err
 }
