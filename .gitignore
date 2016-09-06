@@ -47,3 +47,4 @@ _testmain.go
 kismatic-cluster.yaml
 Vagrantfile
 .vagrant
+vendor/*
