@@ -2,8 +2,11 @@ package integration
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"strconv"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"os"
 	"os/exec"
@@ -43,9 +46,10 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		})
 	})
 
-	Describe("Calling installer with install plan", func() {
+	Describe("Calling installer with 'install plan'", func() {
 		Context("and just hitting enter", func() {
 			It("should result in the output of a well formed default plan file", func() {
+				By("Outputing a file")
 				dir, _ := exec.Command("pwd").Output()
 				log.Println(string(dir))
 				c := exec.Command("./kismatic", "install", "plan")
@@ -55,6 +59,20 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				Expect(helpText).To(ContainSubstring("Generating installation plan file with 3 etcd nodes, 2 master nodes and 3 worker nodes"))
 
 				Expect(FileExists("kismatic-cluster.yaml")).To(Equal(true))
+
+				By("Outputing a file with valid YAML")
+				yamlBytes, err := ioutil.ReadFile("kismatic-cluster.yaml")
+				if err != nil {
+					Fail("Could not read cluster file")
+				}
+				yamlBlob := string(yamlBytes)
+
+				planFromYaml := ClusterPlan{}
+
+				unmarshallErr := yaml.Unmarshal([]byte(yamlBlob), &planFromYaml)
+				if unmarshallErr != nil {
+					Fail("Could not unmarshall cluster yaml: %v")
+				}
 			})
 		})
 	})
