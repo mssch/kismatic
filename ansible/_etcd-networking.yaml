@@ -1,5 +1,6 @@
 ---
   - hosts: etcd
+    name: Install networking etcd cluster
     remote_user: root
     become_method: sudo
     vars_files:

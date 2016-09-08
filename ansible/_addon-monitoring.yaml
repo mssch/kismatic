@@ -1,5 +1,6 @@
 ---
   - hosts: master[0]
+    name: Deploy monitoring add-on
     remote_user: root
     become_method: sudo
     run_once: true

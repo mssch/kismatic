@@ -1,6 +1,7 @@
 ---
   # update hosts files of all nodes
   - hosts: all
+    name: Update hosts file
     remote_user: root
     become_method: sudo
 
