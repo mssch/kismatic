@@ -23,13 +23,6 @@ test:
 
 integration-test: dist just-integration-test
 
-just-integration-test: 
-	go get github.com/onsi/ginkgo/ginkgo
-	go get github.com/onsi/gomega
-	go get github.com/jmcvetta/guid
-
-	go test ./integration/... -v
-
 vendor: tools/glide
 	./tools/glide install
 
@@ -61,3 +54,15 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	rm -f out/kismatic.tar.gz
 	tar -cvzf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
+
+just-integration-test: 
+ifndef AWS_SECRET_ACCESS_KEY 	
+	$(error Must export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to run integration tests)
+endif
+	go get github.com/onsi/ginkgo/ginkgo
+	go get github.com/onsi/gomega
+	go get github.com/jmcvetta/guid
+	go get gopkg.in/yaml.v2
+	go get -u github.com/aws/aws-sdk-go
+
+	go test ./integration/... -v

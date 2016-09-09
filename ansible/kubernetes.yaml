@@ -1,5 +1,6 @@
 ---
   # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
+  - include: _ubuntu_patch.yaml
   - include: _all.yaml
   - include: _hosts.yaml
   # etcd
@@ -23,5 +24,3 @@
   # add ons
   - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml
-  - include: _addon-logging.yaml
-  - include: _addon-monitoring.yaml

@@ -1,0 +1,7 @@
+---
+- hosts: all 
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Install python 2.7 
+      script: pythonpatch.sh
