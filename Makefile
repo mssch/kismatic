@@ -64,5 +64,6 @@ endif
 	go get github.com/jmcvetta/guid
 	go get gopkg.in/yaml.v2
 	go get -u github.com/aws/aws-sdk-go
+	go install github.com/onsi/ginkgo/ginkgo
 
 	ginkgo -v integration
