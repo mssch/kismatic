@@ -38,7 +38,8 @@ spec:
             cpu: 500m
             memory: 2500Mi
       volumes:
-      - emptyDir: {}
+      - persistentVolumeClaim:
+          claimName: monitoringclaim
         name: data
       - configMap:
           name: prometheus-config

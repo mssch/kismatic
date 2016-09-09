@@ -5,4 +5,4 @@
     run_once: true
 
     roles:
-      - addon-logging
+      - {role: addon-logging, when: "pv_logging_nfs_server_ip is defined and pv_logging_nfs_dir is defined and pv_logging_storage_size is defined" }

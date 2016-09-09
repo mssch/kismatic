@@ -52,7 +52,7 @@ etcd_service_group: root
 etcd_service_mode: 0664
 # etcd cluster setup
 etcd_service_cluster_string: "{% for host in groups['etcd'] %}{{ host }}=https://{{ host }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endfor %}"
-#etcd_service_cluster_string: "{% for host in groups['etcd'] %}{% if hostvars[host]['ansible_hostname'] is defined %}{{ host }}=https://{{ host }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
+#etcd_service_cluster_string: "{% for host in groups['etcd'] %}{% if hostvars[host]['inventory_hostname'] is defined %}{{ host }}=https://{{ host }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
 #===============================================================================
 # docker-install
 docker_install_dir: /etc/docker
@@ -111,10 +111,18 @@ kubernetes_certificates_ca_path: "{{ kubernetes_install_dir }}/{{ kubernetes_cer
 kubernetes_certificates_cert_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_cert_file_name }}"
 kubernetes_certificates_key_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_key_file_name }}"
 # etcd IPs
-#etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}{% if hostvars[host]['ansible_hostname'] is defined %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
-#etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}{% if hostvars[host]['ansible_hostname'] is defined %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
+#etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}{% if hostvars[host]['inventory_hostname'] is defined %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
+#etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}{% if hostvars[host]['inventory_hostname'] is defined %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
 etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+#===============================================================================
+# PV configs for monitoring and logging
+#pv_monitoring_nfs_server_ip: "192.168.99.20"
+#pv_monitoring_nfs_dir: "/kubernetes/monitoring"
+#pv_monitoring_storage_size: "10Gi"
+#pv_logging_nfs_server_ip: "192.168.99.20"
+#pv_logging_nfs_dir: "/kubernetes/logging"
+#pv_logging_storage_size: "10Gi"
 #===============================================================================
 # nginx to host binaries
 repository_port: 6080

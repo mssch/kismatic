@@ -5,4 +5,4 @@
     run_once: true
 
     roles:
-      - addon-monitoring
+      - {role: addon-monitoring, when: "pv_monitoring_nfs_server_ip is defined and pv_monitoring_nfs_dir is defined and pv_monitoring_storage_size is defined" }
