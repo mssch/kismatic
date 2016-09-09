@@ -52,7 +52,7 @@ spec:
           path: "{{ kubernetes_certificates_ca_path }}"
       containers:
       - name: kubedns
-        image: gcr.io/google_containers/kubedns-amd64:1.6
+        image: gcr.io/google_containers/kubedns-amd64:1.7
         resources:
           limits:
             cpu: 100m

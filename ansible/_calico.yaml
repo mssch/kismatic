@@ -6,5 +6,6 @@
       - group_vars/all.yaml
 
     roles:
+      - kubeconfig
       - network-environment
       - calico

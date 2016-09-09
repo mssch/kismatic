@@ -40,6 +40,13 @@
     when: force_calico_node_restart is defined and force_calico_node_restart == "true"
   - meta: flush_handlers  #Run handlers
 
+  # install cni binaries, TODO track with https://github.com/projectcalico/calico-containers/issues/1115
+  - name: download cni - v{{ cni_version }}
+    unarchive:
+      src: "{{ cni_path }}"
+      dest: "{{ network_plugin_bin_dir }}"
+      remote_src: yes
+      copy: no
   # install calico binaries
   - name: download calico - v{{ calico_version }}
     get_url:
