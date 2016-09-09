@@ -65,4 +65,4 @@ endif
 	go get gopkg.in/yaml.v2
 	go get -u github.com/aws/aws-sdk-go
 
-	go test ./integration/... -v
+	ginkgo -v integration

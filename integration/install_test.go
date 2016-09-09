@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
+	"regexp"
 	"strconv"
 	"text/template"
 	"time"
@@ -30,6 +32,7 @@ const SUBNETID = "subnet-85f111b9"
 const KEYNAME = "kismatic-integration-testing"
 const SECURITYGROUPID = "sg-d1dc4dab"
 const AMIUbuntu1604USEAST = "ami-29f96d3e"
+const AMICentos7UsEast = "ami-6d1c2007"
 
 var _ = Describe("Happy Path Installation Tests", func() {
 	kisPath := CopyKismaticToTemp()
@@ -87,78 +90,73 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Calling installer with a plan targetting AWS", func() {
-		Context("Using a 1/1/1 Ubtunu 16.05 layout", func() {
+		// Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
+		// 	It("should result in a working cluster", func() {
+		// 		InstallKismatic(AMIUbuntu1604USEAST, "ubuntu")
+		// 	})
+		// })
+		Context("Using a 1/1/1 CentOS 7 layout", func() {
 			It("should result in a working cluster", func() {
-				By("Building a template")
-				template, err := template.New("planUbuntuAWSOverlay").Parse(planUbuntuAWSOverlay)
-				if err != nil {
-					log.Printf("Error parsing template %v", err)
-					Fail("Couldn't parse template")
-				}
-
-				By("Making infrastructure")
-				etcdNode, etcErr := MakeETCDNode()
-				if etcErr != nil {
-					log.Printf("Error making etcd node %v", etcErr)
-					Fail("Error making etcd node")
-				}
-				masterNode, masterErr := MakeMasterNode()
-				if masterErr != nil {
-					log.Printf("Error making master node %v", masterErr)
-					Fail("Error making master node")
-				}
-				workerNode, workerErr := MakeWorkerNode()
-				if workerErr != nil {
-					log.Printf("Error making worker node %v", etcErr)
-					Fail("Error making worker node")
-				}
-				//defer TerminateInstances(etcdNode.Instanceid, masterNode.Instanceid, workerNode.Instanceid)
-				descErr := WaitForInstanceToStart(&etcdNode, &masterNode, &workerNode)
-				if descErr != nil {
-					log.Printf("Error waiting for nodes %v")
-					Fail("Error waiting for nodes")
-				}
-				log.Printf("Created etcd nodes: %v, master nodes %v, workerNodes %v", etcdNode.Instanceid, masterNode.Instanceid, workerNode.Instanceid)
-
-				By("Building a plan to set up an overlay network cluster on this hardware")
-				nodes := PlanUbuntuAWS{
-					Etcd:                []AWSNodeDeets{etcdNode},
-					Master:              []AWSNodeDeets{masterNode},
-					Worker:              []AWSNodeDeets{workerNode},
-					MasterNodeFQDN:      masterNode.Hostname,
-					MasterNodeShortName: masterNode.Hostname,
-				}
-				f, fileErr := os.Create("kismatic-1-1-1-ubuntu.yaml")
-				FailIfError(fileErr, "Error waiting for nodes")
-				defer f.Close()
-				w := bufio.NewWriter(f)
-				execErr := template.Execute(w, &nodes)
-				FailIfError(execErr, "Error filling in plan template")
-				w.Flush()
-
-				By("Validing our plan")
-				// home := os.Getenv("HOME")
-				// cop := exec.Command("cp", home+"/.ssh/kismatic-integration-testing.pem", ".")
-				// out, copyErr := cop.CombinedOutput()
-				// log.Println(string(out))
-				// FailIfError(copyErr, "Error copying key file to working directory")
-
-				ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
-				verbytes, verErr := ver.CombinedOutput()
-				verText := string(verbytes)
-
-				FailIfError(verErr, "Error validating plan", verText)
-
-				By("Punch it Chewie!")
-				app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
-				appbytes, appErr := app.CombinedOutput()
-				appText := string(appbytes)
-
-				FailIfError(appErr, "Error applying plan", appText)
+				InstallKismatic(AMICentos7UsEast, "centos")
 			})
 		})
 	})
 })
+
+func InstallKismatic(nodeType string, user string) {
+	By("Building a template")
+	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
+	FailIfError(err, "Couldn't parse template")
+
+	By("Making infrastructure")
+	etcdNode, etcErr := MakeETCDNode(nodeType)
+	FailIfError(etcErr, "Error making etcd node")
+
+	masterNode, masterErr := MakeMasterNode(nodeType)
+	FailIfError(masterErr, "Error making master node")
+
+	workerNode, workerErr := MakeWorkerNode(nodeType)
+	FailIfError(workerErr, "Error making worker node")
+
+	//defer TerminateInstances(etcdNode.Instanceid, masterNode.Instanceid, workerNode.Instanceid)
+	descErr := WaitForInstanceToStart(&etcdNode, &masterNode, &workerNode)
+	FailIfError(descErr, "Error waiting for nodes")
+	log.Printf("Created etcd nodes: %v (%v), master nodes %v (%v), workerNodes %v (%v)",
+		etcdNode.Instanceid, etcdNode.Publicip,
+		masterNode.Instanceid, masterNode.Publicip,
+		workerNode.Instanceid, workerNode.Publicip)
+
+	By("Building a plan to set up an overlay network cluster on this hardware")
+	nodes := PlanUbuntuAWS{
+		Etcd:                []AWSNodeDeets{etcdNode},
+		Master:              []AWSNodeDeets{masterNode},
+		Worker:              []AWSNodeDeets{workerNode},
+		MasterNodeFQDN:      masterNode.Hostname,
+		MasterNodeShortName: masterNode.Hostname,
+		User:                user,
+	}
+	f, fileErr := os.Create("kismatic-testing.yaml")
+	FailIfError(fileErr, "Error waiting for nodes")
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	execErr := template.Execute(w, &nodes)
+	FailIfError(execErr, "Error filling in plan template")
+	w.Flush()
+
+	By("Validing our plan")
+	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
+	verbytes, verErr := ver.CombinedOutput()
+	verText := string(verbytes)
+
+	FailIfError(verErr, "Error validating plan", verText)
+
+	By("Punch it Chewie!")
+	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	appbytes, appErr := app.CombinedOutput()
+	appText := string(appbytes)
+
+	FailIfError(appErr, "Error applying plan", appText)
+}
 
 func FailIfError(err error, message ...string) {
 	if err != nil {
@@ -205,16 +203,16 @@ func FileExists(path string) bool {
 	return true
 }
 
-func MakeETCDNode() (AWSNodeDeets, error) {
-	return MakeAWSNode(AMIUbuntu1604USEAST, ec2.InstanceTypeT2Micro)
+func MakeETCDNode(nodeType string) (AWSNodeDeets, error) {
+	return MakeAWSNode(nodeType, ec2.InstanceTypeT2Micro)
 }
 
-func MakeMasterNode() (AWSNodeDeets, error) {
-	return MakeAWSNode(AMIUbuntu1604USEAST, ec2.InstanceTypeT2Micro)
+func MakeMasterNode(nodeType string) (AWSNodeDeets, error) {
+	return MakeAWSNode(nodeType, ec2.InstanceTypeT2Micro)
 }
 
-func MakeWorkerNode() (AWSNodeDeets, error) {
-	return MakeAWSNode(AMIUbuntu1604USEAST, ec2.InstanceTypeT2Medium)
+func MakeWorkerNode(nodeType string) (AWSNodeDeets, error) {
+	return MakeAWSNode(nodeType, ec2.InstanceTypeT2Medium)
 }
 
 func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
@@ -233,10 +231,13 @@ func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 		return AWSNodeDeets{}, err
 	}
 
+	re := regexp.MustCompile("[^.]*")
+	hostname := re.FindString(*runResult.Instances[0].PrivateDnsName)
+
 	deets := AWSNodeDeets{
 		Instanceid: *runResult.Instances[0].InstanceId,
 		Privateip:  *runResult.Instances[0].PrivateIpAddress,
-		Hostname:   *runResult.Instances[0].PrivateDnsName,
+		Hostname:   hostname,
 	}
 
 	_, errtag := svc.CreateTags(&ec2.CreateTagsInput{
@@ -293,7 +294,7 @@ func WaitForInstanceToStart(nodes ...*AWSNodeDeets) error {
 
 	svc := ec2.New(sess, &aws.Config{Region: aws.String(TARGET_REGION)})
 	for _, deets := range nodes {
-		deets.Publicip = "" //not returned immediately; eep!
+		deets.Publicip = ""
 
 		for deets.Publicip == "" {
 			fmt.Print(".")
@@ -304,14 +305,26 @@ func WaitForInstanceToStart(nodes ...*AWSNodeDeets) error {
 				return descErr
 			}
 
-			time.Sleep(500 * time.Millisecond)
-
 			if *descResult.Reservations[0].Instances[0].State.Name == ec2.InstanceStateNameRunning &&
 				descResult.Reservations[0].Instances[0].PublicIpAddress != nil {
 				deets.Publicip = *descResult.Reservations[0].Instances[0].PublicIpAddress
-				deets.Hostname = *descResult.Reservations[0].Instances[0].PublicDnsName
+				BlockUntilSSHOpen(deets)
+			} else {
+				time.Sleep(1 * time.Second)
 			}
 		}
 	}
 	return nil
+}
+
+func BlockUntilSSHOpen(node *AWSNodeDeets) {
+	conn, err := net.Dial("tcp", node.Publicip+":22")
+	fmt.Print("?")
+	if err != nil {
+		time.Sleep(5 & time.Second)
+		BlockUntilSSHOpen(node)
+	} else {
+		conn.Close()
+		return
+	}
 }

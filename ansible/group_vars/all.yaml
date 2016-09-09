@@ -5,7 +5,7 @@ init_system_dir: /etc/systemd/system/
 init_system_file_extenstion: service
 bin_dir: /usr/bin
 # Path to local directory that contains the certificates
-tls_directory: tls
+tls_directory: ../../../generated-certs
 #===============================================================================
 # binary locations
 #TODO use local repos

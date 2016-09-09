@@ -6,6 +6,7 @@ type PlanUbuntuAWS struct {
 	Worker              []AWSNodeDeets
 	MasterNodeFQDN      string
 	MasterNodeShortName string
+	User                string
 }
 
 type AWSNodeDeets struct {
@@ -15,7 +16,7 @@ type AWSNodeDeets struct {
 	Hostname   string
 }
 
-const planUbuntuAWSOverlay = `cluster:
+const planAWSOverlay = `cluster:
   name: kubernetes
   admin_password: "abbazabba"
   networking:
@@ -28,7 +29,7 @@ const planUbuntuAWSOverlay = `cluster:
     location_state: New York
     location_country: US
   ssh:
-    user: ubuntu
+    user: {{.User}}
     ssh_key: /Users/mmiller/.ssh/kismatic-integration-testing.pem
     ssh_port: 22
 etcd:
