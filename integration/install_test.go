@@ -48,7 +48,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	AfterSuite(func() {
-		//os.RemoveAll(kisPath)
+		os.RemoveAll(kisPath)
 	})
 
 	Describe("Calling installer with no input", func() {
@@ -90,11 +90,11 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Calling installer with a plan targetting AWS", func() {
-		// Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
-		// 	It("should result in a working cluster", func() {
-		// 		InstallKismatic(AMIUbuntu1604USEAST, "ubuntu")
-		// 	})
-		// })
+		Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
+			It("should result in a working cluster", func() {
+				InstallKismatic(AMIUbuntu1604USEAST, "ubuntu")
+			})
+		})
 		Context("Using a 1/1/1 CentOS 7 layout", func() {
 			It("should result in a working cluster", func() {
 				InstallKismatic(AMICentos7UsEast, "centos")
@@ -118,7 +118,7 @@ func InstallKismatic(nodeType string, user string) {
 	workerNode, workerErr := MakeWorkerNode(nodeType)
 	FailIfError(workerErr, "Error making worker node")
 
-	//defer TerminateInstances(etcdNode.Instanceid, masterNode.Instanceid, workerNode.Instanceid)
+	defer TerminateInstances(etcdNode.Instanceid, masterNode.Instanceid, workerNode.Instanceid)
 	descErr := WaitForInstanceToStart(&etcdNode, &masterNode, &workerNode)
 	FailIfError(descErr, "Error waiting for nodes")
 	log.Printf("Created etcd nodes: %v (%v), master nodes %v (%v), workerNodes %v (%v)",
