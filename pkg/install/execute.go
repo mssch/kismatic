@@ -18,22 +18,21 @@ type ansibleExecutor struct {
 	runner          ansible.Runner
 	tlsDirectory    string
 	restartServices bool
+	ansibleStdout   io.Reader
+	out             io.Writer
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
 func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartServices bool) (Executor, error) {
-	r, w := io.Pipe()
+	// TODO: Is there a better way to handle this path to the ansible install dir?
+	ansibleDir := "ansible"
 
 	// Send runner output to the pipe
-	ansibleDir := "ansible" // TODO: Is there a better way to handle this path to the ansible install?
+	r, w := io.Pipe()
 	runner, err := ansible.NewRunner(w, errOut, ansibleDir)
 	if err != nil {
 		return nil, fmt.Errorf("error creating ansible runner: %v", err)
 	}
-
-	// Pipe runner output into parser
-	parser := &ansible.OutputParser{Out: out}
-	go parser.Transform(r)
 
 	td, err := filepath.Abs(tlsDirectory)
 	if err != nil {
@@ -44,11 +43,13 @@ func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartSe
 		runner:          runner,
 		tlsDirectory:    td,
 		restartServices: restartServices,
+		ansibleStdout:   r,
+		out:             out,
 	}, nil
 }
 
 // Install the cluster according to the installation plan
-func (e *ansibleExecutor) Install(p *Plan) error {
+func (ae *ansibleExecutor) Install(p *Plan) error {
 	// Build the ansible inventory
 	etcdNodes := []ansible.Node{}
 	for _, n := range p.Etcd.Nodes {
@@ -85,7 +86,7 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 	ev := ansible.ExtraVars{
 		"kubernetes_cluster_name":   p.Cluster.Name,
 		"kubernetes_admin_password": p.Cluster.AdminPassword,
-		"tls_directory":             e.tlsDirectory,
+		"tls_directory":             ae.tlsDirectory,
 		"calico_network_type":       p.Cluster.Networking.Type,
 		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
 		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
@@ -96,15 +97,49 @@ func (e *ansibleExecutor) Install(p *Plan) error {
 		ev["local_repoository_path"] = p.Cluster.LocalRepository
 	}
 
-	if e.restartServices {
+	if ae.restartServices {
 		services := []string{"etcd", "apiserver", "controller", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
 		for _, s := range services {
 			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
 		}
 	}
 
+	// Setup event handler for the install
+	events := ansible.EventStream(ae.ansibleStdout)
+	go func(es <-chan ansible.Event) {
+		for e := range es {
+			switch event := e.(type) {
+			default:
+				fmt.Fprintf(ae.out, "Unhandled event: %T\n", event)
+			case *ansible.PlaybookStartEvent:
+				fmt.Fprintf(ae.out, "Running playbook %s\n", event.Name)
+			case *ansible.PlayStartEvent:
+				fmt.Fprintf(ae.out, "- %s\n", event.Name)
+			case *ansible.RunnerItemRetryEvent:
+				fmt.Fprintf(ae.out, "[RETRYING] %s\n", event.Host)
+			case *ansible.RunnerUnreachableEvent:
+				fmt.Fprintf(ae.out, "[UNREACHABLE] %s\n", event.Host)
+			case *ansible.RunnerFailedEvent:
+				fmt.Fprintf(ae.out, "[ERROR] %s\n", event.Host)
+				fmt.Fprintf(ae.out, "|- stdout: %s\n", event.Result.Stdout)
+				fmt.Fprintf(ae.out, "|- stderr: %s\n", event.Result.Stderr)
+			// Do nothing with the following events
+			case *ansible.TaskStartEvent:
+				continue
+			case *ansible.HandlerTaskStartEvent:
+				continue
+			case *ansible.RunnerItemOKEvent:
+				continue
+			case *ansible.RunnerSkippedEvent:
+				continue
+			case *ansible.RunnerOKEvent:
+				continue
+			}
+		}
+	}(events)
+
 	// Run the installation playbook
-	err = e.runner.RunPlaybook(inventory, "kubernetes.yaml", ev)
+	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}

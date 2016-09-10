@@ -9,7 +9,7 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/install"
 )
 
-func TestPlanCmd(t *testing.T) {
+func TestPlanCmdPlanNotFound(t *testing.T) {
 	tests := []struct {
 		in             io.Reader
 		shouldError    bool
