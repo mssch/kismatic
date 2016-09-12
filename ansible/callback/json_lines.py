@@ -8,8 +8,8 @@ from os.path import basename
 
 # JSON Lines STDOUT callback module for Ansible.
 # 
-# This callback module prints Ansible events out to Ansible as JSON Lines.
-# The event consists of a type and data, which could have a different structure
+# This callback module prints Ansible events out to STDOUT as JSON Lines.
+# The event consists of a type and data. The data has a different structure
 # depending on the event type. 
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
