@@ -29,7 +29,7 @@ func NewCmdApply(out io.Writer, options *install.CliOpts) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			planner := &install.FilePlanner{File: options.PlanFilename}
 			// TODO: Do we want to parameterize stderr?
-			executor, err := install.NewExecutor(out, os.Stderr, options.CertsDestination, options.RestartServices)
+			executor, err := install.NewExecutor(out, os.Stderr, options.CertsDestination, options.RestartServices, options.Verbose)
 			if err != nil {
 				return err
 			}
@@ -60,6 +60,7 @@ func NewCmdApply(out io.Writer, options *install.CliOpts) *cobra.Command {
 	cmd.Flags().StringVar(&options.CertsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
 	cmd.Flags().BoolVar(&skipCAGeneration, "skip-ca-generation", false, "skip CA generation and use an existing file")
 	cmd.Flags().BoolVar(&options.RestartServices, "restart-services", false, "force restart clusters services (Use with care)")
+	cmd.Flags().BoolVar(&options.Verbose, "verbose", false, "enable verbose logging from the installation")
 
 	return cmd
 }

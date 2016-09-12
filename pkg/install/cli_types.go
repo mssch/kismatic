@@ -8,4 +8,5 @@ type CliOpts struct {
 	CaSigningProfile string
 	CertsDestination string
 	RestartServices  bool
+	Verbose          bool
 }

@@ -20,16 +20,25 @@ type ansibleExecutor struct {
 	restartServices bool
 	ansibleStdout   io.Reader
 	out             io.Writer
+	explainer       Explainer
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
-func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartServices bool) (Executor, error) {
+func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartServices, verbose bool) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
 
-	// Send runner output to the pipe
+	// Configure the Ansible output logging
+	outFormat := ansible.JSONLinesFormat
+	var exp Explainer = &AnsibleEventExplainer{ansible.EventStream, out}
+	if verbose {
+		exp = &RawExplainer{out}
+		outFormat = ansible.RawFormat
+	}
+
+	// Make ansible write to pipe, so that we can read on our end.
 	r, w := io.Pipe()
-	runner, err := ansible.NewRunner(w, errOut, ansibleDir)
+	runner, err := ansible.NewRunner(w, errOut, ansibleDir, outFormat, verbose)
 	if err != nil {
 		return nil, fmt.Errorf("error creating ansible runner: %v", err)
 	}
@@ -45,6 +54,7 @@ func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartSe
 		restartServices: restartServices,
 		ansibleStdout:   r,
 		out:             out,
+		explainer:       exp,
 	}, nil
 }
 
@@ -104,47 +114,8 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		}
 	}
 
-	// Setup event handler for the install
-	events := ansible.EventStream(ae.ansibleStdout)
-	go func(es <-chan ansible.Event) {
-		for e := range es {
-			switch event := e.(type) {
-			default:
-				fmt.Fprintf(ae.out, "Unhandled event: %T\n", event)
-			case *ansible.PlaybookStartEvent:
-				fmt.Fprintf(ae.out, "Running playbook %s\n", event.Name)
-			case *ansible.PlayStartEvent:
-				fmt.Fprintf(ae.out, "- %s\n", event.Name)
-			case *ansible.RunnerUnreachableEvent:
-				fmt.Fprintf(ae.out, "[UNREACHABLE] %s\n", event.Host)
-			case *ansible.RunnerFailedEvent:
-				fmt.Fprintf(ae.out, "Error from %s: %s\n", event.Host, event.Result.Message)
-				if event.Result.Stdout != "" {
-					fmt.Fprintf(ae.out, "---- STDOUT ----\n%s\n", event.Result.Stdout)
-				}
-				if event.Result.Stderr != "" {
-					fmt.Fprintf(ae.out, "---- STDERR ----\n%s\n", event.Result.Stderr)
-				}
-				if event.Result.Stderr != "" || event.Result.Stdout != "" {
-					fmt.Fprint(ae.out, "---------------\n")
-				}
-
-			// Do nothing with the following events
-			case *ansible.RunnerItemRetryEvent:
-				continue
-			case *ansible.TaskStartEvent:
-				continue
-			case *ansible.HandlerTaskStartEvent:
-				continue
-			case *ansible.RunnerItemOKEvent:
-				continue
-			case *ansible.RunnerSkippedEvent:
-				continue
-			case *ansible.RunnerOKEvent:
-				continue
-			}
-		}
-	}(events)
+	// Start explainer for handling ansible's stdout stream
+	go ae.explainer.Explain(ae.ansibleStdout)
 
 	// Run the installation playbook
 	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev)

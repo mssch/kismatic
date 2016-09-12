@@ -10,6 +10,16 @@ import (
 	"path/filepath"
 )
 
+const (
+	// RawFormat is the raw Ansible output formatting
+	RawFormat = OutputFormat("raw")
+	// JSONLinesFormat is a JSON Lines representation of Ansible events
+	JSONLinesFormat = OutputFormat("json_lines")
+)
+
+// OutputFormat is used for controlling the STDOUT format of the Ansible runner
+type OutputFormat string
+
 // Runner for running Ansible playbooks
 type Runner interface {
 	RunPlaybook(inventory Inventory, playbookFile string, vars ExtraVars) error
@@ -21,8 +31,10 @@ type runner struct {
 	// ErrOut is the stderr writer for the Ansible process
 	errOut io.Writer
 
-	pythonPath string
-	ansibleDir string
+	pythonPath   string
+	ansibleDir   string
+	outputFormat OutputFormat
+	verbose      bool
 }
 
 // ExtraVars is a map of variables that are used when executing a playbook
@@ -37,20 +49,23 @@ func (v ExtraVars) commandLineVars() (string, error) {
 }
 
 // NewRunner returns a new runner for executing Ansible commands.
-func NewRunner(out, errOut io.Writer, ansibleDir string) (Runner, error) {
+func NewRunner(out, errOut io.Writer, ansibleDir string, outputFormat OutputFormat, verbose bool) (Runner, error) {
 	ppath, err := getPythonPath()
 	if err != nil {
 		return nil, err
 	}
 
 	return &runner{
-		out:        out,
-		errOut:     errOut,
-		pythonPath: ppath,
-		ansibleDir: ansibleDir,
+		out:          out,
+		errOut:       errOut,
+		pythonPath:   ppath,
+		ansibleDir:   ansibleDir,
+		outputFormat: outputFormat,
+		verbose:      verbose,
 	}, nil
 }
 
+// RunPlaybook with the given inventory and extra vars
 func (r *runner) RunPlaybook(inv Inventory, playbookFile string, vars ExtraVars) error {
 	extraVars, err := vars.commandLineVars()
 	if err != nil {
@@ -69,7 +84,13 @@ func (r *runner) RunPlaybook(inv Inventory, playbookFile string, vars ExtraVars)
 	os.Setenv("PYTHONPATH", r.pythonPath)
 	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
-	os.Setenv("ANSIBLE_STDOUT_CALLBACK", "json_lines")
+	if r.outputFormat != RawFormat {
+		os.Setenv("ANSIBLE_STDOUT_CALLBACK", string(r.outputFormat))
+	}
+
+	if r.verbose {
+		cmd.Args = append(cmd.Args, "-vvvv")
+	}
 
 	err = cmd.Run()
 	if err != nil {
