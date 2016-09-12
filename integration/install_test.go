@@ -28,6 +28,7 @@ import (
 
 var guidMaker = guid.SimpleGenerator()
 var leaveIt = os.Getenv("LEAVE_ARTIFACTS") != ""
+var bailBeforeAnsible = os.Getenv("BAIL_BEFORE_ANSIBLE") != ""
 
 const TARGET_REGION = "us-east-1"
 const SUBNETID = "subnet-85f111b9"
@@ -99,11 +100,11 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				InstallKismatic(AMIUbuntu1604USEAST, "ubuntu")
 			})
 		})
-		Context("Using a 1/1/1 CentOS 7 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallKismatic(AMICentos7UsEast, "centos")
-			})
-		})
+		// Context("Using a 1/1/1 CentOS 7 layout", func() {
+		// 	It("should result in a working cluster", func() {
+		// 		InstallKismatic(AMICentos7UsEast, "centos")
+		// 	})
+		// })
 	})
 })
 
@@ -157,6 +158,10 @@ func InstallKismatic(nodeType string, user string) {
 	verText := string(verbytes)
 
 	FailIfError(verErr, "Error validating plan", verText)
+
+	if bailBeforeAnsible == true {
+		return
+	}
 
 	By("Punch it Chewie!")
 	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
