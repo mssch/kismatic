@@ -49,6 +49,7 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	mkdir -p out/ansible
 	cp -r vendor-ansible/out/* out/ansible
 	cp -r ansible out/ansible/playbooks
+	cp out/ansible/playbooks/ansible.cfg out/.
 	mkdir -p out/cfssl
 	cp -r vendor-cfssl/out/* out/cfssl
 	rm -f out/kismatic.tar.gz
