@@ -5,8 +5,6 @@ import (
 	"io"
 	"strings"
 	"testing"
-
-	"github.com/apprenda/kismatic-platform/pkg/install"
 )
 
 func TestPlanCmdPlanNotFound(t *testing.T) {
@@ -53,7 +51,7 @@ func TestPlanCmdPlanNotFound(t *testing.T) {
 			exists: true,
 		}
 
-		err := doPlan(test.in, out, fp, &install.CliOpts{})
+		err := doPlan(test.in, out, fp, "")
 
 		if err != nil && !test.shouldError {
 			t.Errorf("unexpected error running command: %v", err)
