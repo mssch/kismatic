@@ -108,7 +108,7 @@ func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string,
 		return fmt.Errorf("error getting vars: %v", err)
 	}
 
-	cmd := exec.Command(filepath.Join(e.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbookFile, "--extra-vars", extraVars)
+	cmd := exec.Command(filepath.Join(e.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbookFile, "-vvvvvvv", "--extra-vars", extraVars)
 	cmd.Stdout = e.out
 	cmd.Stderr = e.errOut
 	os.Setenv("PYTHONPATH", e.pythonPath)
