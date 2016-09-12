@@ -9,13 +9,13 @@ import (
 )
 
 // NewCmdValidate creates a new install validate command
-func NewCmdValidate(out io.Writer, options *install.CliOpts) *cobra.Command {
+func NewCmdValidate(out io.Writer, options *installOpts) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "validate your plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			planner := &install.FilePlanner{File: options.PlanFilename}
-			return doValidate(out, planner, options.PlanFilename)
+			planner := &install.FilePlanner{File: options.planFilename}
+			return doValidate(out, planner, options.planFilename)
 		},
 	}
 

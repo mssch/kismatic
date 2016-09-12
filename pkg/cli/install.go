@@ -3,13 +3,16 @@ package cli
 import (
 	"io"
 
-	"github.com/apprenda/kismatic-platform/pkg/install"
 	"github.com/spf13/cobra"
 )
 
+type installOpts struct {
+	planFilename string
+}
+
 // NewCmdInstall creates a new install command
 func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
-	options := &install.CliOpts{}
+	opts := &installOpts{}
 
 	cmd := &cobra.Command{
 		Use:   "install",
@@ -20,12 +23,12 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 	}
 
 	// Subcommands
-	cmd.AddCommand(NewCmdPlan(in, out, options))
-	cmd.AddCommand(NewCmdValidate(out, options))
-	cmd.AddCommand(NewCmdApply(out, options))
+	cmd.AddCommand(NewCmdPlan(in, out, opts))
+	cmd.AddCommand(NewCmdValidate(out, opts))
+	cmd.AddCommand(NewCmdApply(out, opts))
 
 	// PersistentFlags
-	cmd.PersistentFlags().StringVarP(&options.PlanFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
+	cmd.PersistentFlags().StringVarP(&opts.planFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
 
 	return cmd
 }

@@ -20,24 +20,35 @@ type applyCmd struct {
 	certsDestination string
 }
 
+type applyOpts struct {
+	caCSR            string
+	caConfigFile     string
+	caSigningProfile string
+	certsDestination string
+	skipCAGeneration bool
+	restartServices  bool
+	verbose          bool
+}
+
 // NewCmdApply creates a cluter using the plan file
-func NewCmdApply(out io.Writer, options *install.CliOpts) *cobra.Command {
+func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
+	applyOpts := applyOpts{}
 	skipCAGeneration := false
 	cmd := &cobra.Command{
 		Use:   "apply",
 		Short: "apply your plan file to create a Kismatic cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			planner := &install.FilePlanner{File: options.PlanFilename}
+			planner := &install.FilePlanner{File: installOpts.planFilename}
 			// TODO: Do we want to parameterize stderr?
-			executor, err := install.NewExecutor(out, os.Stderr, options.CertsDestination, options.RestartServices, options.Verbose)
+			executor, err := install.NewExecutor(out, os.Stderr, applyOpts.certsDestination, applyOpts.restartServices, applyOpts.verbose)
 			if err != nil {
 				return err
 			}
 			pki := &install.LocalPKI{
-				CACsr:            options.CaCsr,
-				CAConfigFile:     options.CaConfigFile,
-				CASigningProfile: options.CaSigningProfile,
-				DestinationDir:   options.CertsDestination,
+				CACsr:            applyOpts.caCSR,
+				CAConfigFile:     applyOpts.caConfigFile,
+				CASigningProfile: applyOpts.caSigningProfile,
+				DestinationDir:   applyOpts.certsDestination,
 				Log:              out,
 			}
 			applyCmd := &applyCmd{
@@ -45,22 +56,22 @@ func NewCmdApply(out io.Writer, options *install.CliOpts) *cobra.Command {
 				planner,
 				executor,
 				pki,
-				options.PlanFilename,
+				installOpts.planFilename,
 				skipCAGeneration,
-				options.CertsDestination,
+				applyOpts.certsDestination,
 			}
 			return applyCmd.run()
 		},
 	}
 
 	// Flags
-	cmd.Flags().StringVar(&options.CaCsr, "ca-csr", "ansible/playbooks/tls/ca-csr.json", "path to the Certificate Authority CSR")
-	cmd.Flags().StringVar(&options.CaConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
-	cmd.Flags().StringVar(&options.CaSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
-	cmd.Flags().StringVar(&options.CertsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
-	cmd.Flags().BoolVar(&skipCAGeneration, "skip-ca-generation", false, "skip CA generation and use an existing file")
-	cmd.Flags().BoolVar(&options.RestartServices, "restart-services", false, "force restart clusters services (Use with care)")
-	cmd.Flags().BoolVar(&options.Verbose, "verbose", false, "enable verbose logging from the installation")
+	cmd.Flags().StringVar(&applyOpts.caCSR, "ca-csr", "ansible/playbooks/tls/ca-csr.json", "path to the Certificate Authority CSR")
+	cmd.Flags().StringVar(&applyOpts.caConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
+	cmd.Flags().StringVar(&applyOpts.caSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
+	cmd.Flags().StringVar(&applyOpts.certsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
+	cmd.Flags().BoolVar(&applyOpts.skipCAGeneration, "skip-ca-generation", false, "skip CA generation and use an existing file")
+	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart clusters services (Use with care)")
+	cmd.Flags().BoolVar(&applyOpts.verbose, "verbose", false, "enable verbose logging from the installation")
 
 	return cmd
 }
