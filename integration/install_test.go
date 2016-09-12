@@ -27,6 +27,7 @@ import (
 )
 
 var guidMaker = guid.SimpleGenerator()
+var leaveIt = os.Getenv("LEAVE_ARTIFACTS") != ""
 
 const TARGET_REGION = "us-east-1"
 const SUBNETID = "subnet-85f111b9"
@@ -49,7 +50,9 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	AfterSuite(func() {
-		os.RemoveAll(kisPath)
+		if !leaveIt {
+			os.RemoveAll(kisPath)
+		}
 	})
 
 	Describe("Calling installer with no input", func() {
@@ -262,6 +265,9 @@ func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 }
 
 func TerminateInstances(instanceids ...string) {
+	if leaveIt {
+		return
+	}
 	awsinstanceids := make([]*string, len(instanceids))
 	for i, id := range instanceids {
 		awsinstanceids[i] = aws.String(id)
