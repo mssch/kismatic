@@ -115,15 +115,23 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 				fmt.Fprintf(ae.out, "Running playbook %s\n", event.Name)
 			case *ansible.PlayStartEvent:
 				fmt.Fprintf(ae.out, "- %s\n", event.Name)
-			case *ansible.RunnerItemRetryEvent:
-				fmt.Fprintf(ae.out, "[RETRYING] %s\n", event.Host)
 			case *ansible.RunnerUnreachableEvent:
 				fmt.Fprintf(ae.out, "[UNREACHABLE] %s\n", event.Host)
 			case *ansible.RunnerFailedEvent:
-				fmt.Fprintf(ae.out, "[ERROR] %s\n", event.Host)
-				fmt.Fprintf(ae.out, "|- stdout: %s\n", event.Result.Stdout)
-				fmt.Fprintf(ae.out, "|- stderr: %s\n", event.Result.Stderr)
+				fmt.Fprintf(ae.out, "Error from %s: %s\n", event.Host, event.Result.Message)
+				if event.Result.Stdout != "" {
+					fmt.Fprintf(ae.out, "---- STDOUT ----\n%s\n", event.Result.Stdout)
+				}
+				if event.Result.Stderr != "" {
+					fmt.Fprintf(ae.out, "---- STDERR ----\n%s\n", event.Result.Stderr)
+				}
+				if event.Result.Stderr != "" || event.Result.Stdout != "" {
+					fmt.Fprint(ae.out, "---------------\n")
+				}
+
 			// Do nothing with the following events
+			case *ansible.RunnerItemRetryEvent:
+				continue
 			case *ansible.TaskStartEvent:
 				continue
 			case *ansible.HandlerTaskStartEvent:
