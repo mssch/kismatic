@@ -28,6 +28,7 @@ type applyOpts struct {
 	skipCAGeneration bool
 	restartServices  bool
 	verbose          bool
+	outputFormat     string
 }
 
 // NewCmdApply creates a cluter using the plan file
@@ -40,7 +41,7 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			planner := &install.FilePlanner{File: installOpts.planFilename}
 			// TODO: Do we want to parameterize stderr?
-			executor, err := install.NewExecutor(out, os.Stderr, applyOpts.certsDestination, applyOpts.restartServices, applyOpts.verbose)
+			executor, err := install.NewExecutor(out, os.Stderr, applyOpts.certsDestination, applyOpts.restartServices, applyOpts.verbose, applyOpts.outputFormat)
 			if err != nil {
 				return err
 			}
@@ -72,6 +73,7 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	cmd.Flags().BoolVar(&applyOpts.skipCAGeneration, "skip-ca-generation", false, "skip CA generation and use an existing file")
 	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart clusters services (Use with care)")
 	cmd.Flags().BoolVar(&applyOpts.verbose, "verbose", false, "enable verbose logging from the installation")
+	cmd.Flags().StringVarP(&applyOpts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
 
 	return cmd
 }

@@ -29,6 +29,7 @@ func (e *RawExplainer) Explain(in io.Reader) error {
 type AnsibleEventExplainer struct {
 	EventStream func(in io.Reader) <-chan ansible.Event
 	Out         io.Writer
+	Verbose     bool
 }
 
 // Explain the incoming ansible event stream
@@ -41,7 +42,7 @@ func (e *AnsibleEventExplainer) Explain(in io.Reader) error {
 		case *ansible.PlaybookStartEvent:
 			fmt.Fprintf(e.Out, "Running playbook %s\n", event.Name)
 		case *ansible.PlayStartEvent:
-			fmt.Fprintf(e.Out, "- %s\n", event.Name)
+			fmt.Fprintf(e.Out, "=> %s\n", event.Name)
 		case *ansible.RunnerUnreachableEvent:
 			fmt.Fprintf(e.Out, "[UNREACHABLE] %s\n", event.Host)
 		case *ansible.RunnerFailedEvent:
@@ -60,15 +61,25 @@ func (e *AnsibleEventExplainer) Explain(in io.Reader) error {
 		case *ansible.RunnerItemRetryEvent:
 			continue
 		case *ansible.TaskStartEvent:
-			continue
+			if e.Verbose {
+				fmt.Fprintf(e.Out, "- Running task: %s\n", event.Name)
+			}
 		case *ansible.HandlerTaskStartEvent:
-			continue
+			if e.Verbose {
+				fmt.Fprintf(e.Out, "- Running task: %s\n", event.Name)
+			}
 		case *ansible.RunnerItemOKEvent:
-			continue
+			if e.Verbose {
+				fmt.Fprintf(e.Out, "   [OK] %s\n", event.Host)
+			}
 		case *ansible.RunnerSkippedEvent:
-			continue
+			if e.Verbose {
+				fmt.Fprintf(e.Out, "   [SKIPPED] %s\n", event.Host)
+			}
 		case *ansible.RunnerOKEvent:
-			continue
+			if e.Verbose {
+				fmt.Fprintf(e.Out, "   [OK] %s\n", event.Host)
+			}
 		}
 	}
 	return nil
