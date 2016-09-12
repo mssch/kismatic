@@ -1,12 +1,13 @@
 package integration
 
-type PlanUbuntuAWS struct {
+type PlanAWS struct {
 	Etcd                []AWSNodeDeets
 	Master              []AWSNodeDeets
 	Worker              []AWSNodeDeets
 	MasterNodeFQDN      string
 	MasterNodeShortName string
 	User                string
+	HomeDirectory       string
 }
 
 type AWSNodeDeets struct {
@@ -30,7 +31,7 @@ const planAWSOverlay = `cluster:
     location_country: US
   ssh:
     user: {{.User}}
-    ssh_key: /Users/mmiller/.ssh/kismatic-integration-testing.pem
+    ssh_key: {{.HomeDirectory}}/.ssh/kismatic-integration-testing.pem
     ssh_port: 22
 etcd:
   expected_count: {{len .Etcd}} 

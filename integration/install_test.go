@@ -23,6 +23,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/jmcvetta/guid"
+	homedir "github.com/mitchellh/go-homedir"
 )
 
 var guidMaker = guid.SimpleGenerator()
@@ -127,7 +128,7 @@ func InstallKismatic(nodeType string, user string) {
 		workerNode.Instanceid, workerNode.Publicip)
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
-	nodes := PlanUbuntuAWS{
+	nodes := PlanAWS{
 		Etcd:                []AWSNodeDeets{etcdNode},
 		Master:              []AWSNodeDeets{masterNode},
 		Worker:              []AWSNodeDeets{workerNode},
@@ -135,6 +136,10 @@ func InstallKismatic(nodeType string, user string) {
 		MasterNodeShortName: masterNode.Hostname,
 		User:                user,
 	}
+	var hdErr error
+	nodes.HomeDirectory, hdErr = homedir.Dir()
+	FailIfError(hdErr, "Error getting home directory")
+
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")
 	defer f.Close()

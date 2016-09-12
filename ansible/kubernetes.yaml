@@ -2,7 +2,7 @@
   # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
   - include: _ubuntu_patch.yaml
   - include: _all.yaml
-  - include: _hosts.yaml
+  #- include: _hosts.yaml
   # etcd
   - include: _etcd-k8s.yaml
   - include: _etcd-networking.yaml
