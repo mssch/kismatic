@@ -102,9 +102,10 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		exp = &RawExplainer{ae.out}
 	case ansible.JSONLinesFormat:
 		exp = &AnsibleEventExplainer{
-			EventStream: ansible.EventStream,
-			Out:         ae.out,
-			Verbose:     ae.verboseOutput,
+			EventStream:    ansible.EventStream,
+			Out:            ae.out,
+			Verbose:        ae.verboseOutput,
+			EventExplainer: EventExplainerFunc(CLIEventExplanation),
 		}
 	}
 	go exp.Explain(ae.ansibleStdout)
@@ -127,16 +128,17 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 		"kismatic_preflight_checker_local": filepath.Join("ansible", "playbooks", "checker", runtime.GOOS, runtime.GOARCH, "kismatic-check"),
 	}
 
-	// Start explainer for pre-flight checks
+	// Set explainer for pre-flight checks
 	var exp Explainer
 	switch ae.outputFormat {
 	case ansible.RawFormat:
 		exp = &RawExplainer{ae.out}
 	case ansible.JSONLinesFormat:
 		exp = &AnsibleEventExplainer{
-			EventStream: ansible.EventStream,
-			Out:         ae.out,
-			Verbose:     ae.verboseOutput,
+			EventStream:    ansible.EventStream,
+			Out:            ae.out,
+			Verbose:        ae.verboseOutput,
+			EventExplainer: EventExplainerFunc(PreFlightCLIExplanation),
 		}
 	}
 	go exp.Explain(ae.ansibleStdout)
