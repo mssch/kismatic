@@ -21,6 +21,7 @@ type ansibleExecutor struct {
 	runner          ansible.Runner
 	tlsDirectory    string
 	restartServices bool
+	modifyHostsFile bool
 	ansibleStdout   io.Reader
 	out             io.Writer
 	verboseOutput   bool
@@ -28,7 +29,7 @@ type ansibleExecutor struct {
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
-func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartServices, verbose bool, outputFormat string) (Executor, error) {
+func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartServices, modifyHostsFile, verbose bool, outputFormat string) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
 
@@ -59,6 +60,7 @@ func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartSe
 		runner:          runner,
 		tlsDirectory:    td,
 		restartServices: restartServices,
+		modifyHostsFile: modifyHostsFile,
 		ansibleStdout:   r,
 		out:             out,
 		verboseOutput:   verbose,
@@ -83,6 +85,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
 		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
 		"kubernetes_dns_service_ip": dnsIP,
+		"modify_hosts_file":         strconv.FormatBool(ae.modifyHostsFile),
 	}
 
 	if p.Cluster.LocalRepository != "" {

@@ -1,9 +1,10 @@
 ---
   - hosts: master[0]
-    name: Deploy logging Add-on
+    name: Add-On Configure Logging
     remote_user: root
     become_method: sudo
     run_once: true
 
     roles:
-      - {role: addon-logging, when: "pv_logging_nfs_server_ip is defined and pv_logging_nfs_dir is defined and pv_logging_storage_size is defined" }
+      - role: addon-logging
+        when: pv_logging_nfs_server_ip is defined and pv_logging_nfs_dir is defined and pv_logging_storage_size is defined

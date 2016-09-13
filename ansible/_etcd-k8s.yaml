@@ -1,6 +1,6 @@
 ---
   - hosts: etcd
-    name: Install Kubernetes etcd cluster
+    name: Install Kubernetes Etcd Cluster
     remote_user: root
     become_method: sudo
     vars_files:

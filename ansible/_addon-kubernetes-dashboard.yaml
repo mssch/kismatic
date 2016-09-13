@@ -1,6 +1,6 @@
 ---
   - hosts: master[0]
-    name: Deploy Kubernetes Dashboard
+    name: Add-On Configure Kubernetes Dashboard
     remote_user: root
     become_method: sudo
     run_once: true

@@ -69,6 +69,7 @@ network_environment_path: "/etc/network-environment"
 #file modes
 calico_executable_mode: 0775
 #networking
+modify_hosts_file: false
 dafault_cidr: 192.168.0.0/16
 kubernetes_dns_service_ip: 10.3.0.10
 kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_master_secure_port}}

@@ -1,9 +1,10 @@
 ---
   - hosts: master[0]
-    name: Deploy monitoring add-on
+    name: Add-On Configure Monitoring
     remote_user: root
     become_method: sudo
     run_once: true
 
     roles:
-      - {role: addon-monitoring, when: "pv_monitoring_nfs_server_ip is defined and pv_monitoring_nfs_dir is defined and pv_monitoring_storage_size is defined" }
+      - {role: addon-monitoring
+        when: pv_monitoring_nfs_server_ip is defined and pv_monitoring_nfs_dir is defined and pv_monitoring_storage_size is defined
