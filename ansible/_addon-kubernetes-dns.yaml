@@ -1,6 +1,6 @@
 ---
   - hosts: master[0]
-    name: Add-On: Configure Kubernetes DNS
+    name: Add-On Configure Kubernetes DNS
     remote_user: root
     become_method: sudo
     run_once: true
