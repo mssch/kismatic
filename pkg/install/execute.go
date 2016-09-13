@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
+	"github.com/apprenda/kismatic-platform/pkg/install/explain"
 )
 
 // The Executor will carry out the installation plan
@@ -96,16 +97,16 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	// Start explainer for handling ansible's stdout stream
-	var exp Explainer
+	var exp explain.StreamExplainer
 	switch ae.outputFormat {
 	case ansible.RawFormat:
-		exp = &RawExplainer{ae.out}
+		exp = &explain.RawExplainer{ae.out}
 	case ansible.JSONLinesFormat:
-		exp = &AnsibleEventExplainer{
-			EventStream:    ansible.EventStream,
-			Out:            ae.out,
-			Verbose:        ae.verboseOutput,
-			EventExplainer: EventExplainerFunc(CLIEventExplanation),
+		exp = &explain.AnsibleEventStreamExplainer{
+			EventStream:  ansible.EventStream,
+			Out:          ae.out,
+			Verbose:      ae.verboseOutput,
+			ExplainEvent: explain.EventExplanationText,
 		}
 	}
 	go exp.Explain(ae.ansibleStdout)
@@ -129,16 +130,16 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 	}
 
 	// Set explainer for pre-flight checks
-	var exp Explainer
+	var exp explain.StreamExplainer
 	switch ae.outputFormat {
 	case ansible.RawFormat:
-		exp = &RawExplainer{ae.out}
+		exp = &explain.RawExplainer{ae.out}
 	case ansible.JSONLinesFormat:
-		exp = &AnsibleEventExplainer{
-			EventStream:    ansible.EventStream,
-			Out:            ae.out,
-			Verbose:        ae.verboseOutput,
-			EventExplainer: EventExplainerFunc(PreFlightCLIExplanation),
+		exp = &explain.AnsibleEventStreamExplainer{
+			EventStream:  ansible.EventStream,
+			Out:          ae.out,
+			Verbose:      ae.verboseOutput,
+			ExplainEvent: explain.PreFlightEventExplanationText,
 		}
 	}
 	go exp.Explain(ae.ansibleStdout)
