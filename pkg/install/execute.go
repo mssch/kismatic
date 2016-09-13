@@ -1,154 +1,144 @@
 package install
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
+
+	"github.com/apprenda/kismatic-platform/pkg/ansible"
 )
 
 // The Executor will carry out the installation plan
 type Executor interface {
-	Install(p *Plan, av *AnsibleVars) error
-	GetVars(p *Plan, options *CliOpts) (*AnsibleVars, error)
+	Install(p *Plan) error
 }
 
 type ansibleExecutor struct {
-	out        io.Writer
-	errOut     io.Writer
-	pythonPath string
-	ansibleDir string
-	certsDir   string
+	runner          ansible.Runner
+	tlsDirectory    string
+	restartServices bool
+	ansibleStdout   io.Reader
+	out             io.Writer
+	explainer       Explainer
 }
 
-// CommandLineVars returns "--extra-vars" as json string
-func (av *AnsibleVars) CommandLineVars() (string, error) {
-	b, err := json.Marshal(av)
-	if err != nil {
-		return "", fmt.Errorf("error marshaling ansible vars")
-	}
-	return string(b), nil
-}
+// NewExecutor returns an executor for performing installations according to the installation plan.
+func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartServices, verbose bool, outputFormat string) (Executor, error) {
+	// TODO: Is there a better way to handle this path to the ansible install dir?
+	ansibleDir := "ansible"
 
-// NewAnsibleExecutor returns an ansible based installation executor.
-func NewAnsibleExecutor(out io.Writer, errOut io.Writer, certsDir string) (Executor, error) {
-	ppath, err := getPythonPath()
-	if err != nil {
-		return nil, err
+	// configure ansible output
+	var outFormat ansible.OutputFormat
+	var explainer Explainer
+	switch outputFormat {
+	case "raw":
+		outFormat = ansible.RawFormat
+		explainer = &RawExplainer{out}
+	case "simple":
+		outFormat = ansible.JSONLinesFormat
+		explainer = &AnsibleEventExplainer{ansible.EventStream, out, verbose}
+	default:
+		return nil, fmt.Errorf("Output format %q is not supported", outputFormat)
 	}
+
+	// Make ansible write to pipe, so that we can read on our end.
+	r, w := io.Pipe()
+	runner, err := ansible.NewRunner(w, errOut, ansibleDir, outFormat, verbose)
+	if err != nil {
+		return nil, fmt.Errorf("error creating ansible runner: %v", err)
+	}
+
+	td, err := filepath.Abs(tlsDirectory)
+	if err != nil {
+		return nil, fmt.Errorf("error getting absolute path from %q: %v", tlsDirectory, err)
+	}
+
 	return &ansibleExecutor{
-		out:        out,
-		errOut:     errOut,
-		pythonPath: ppath,
-		ansibleDir: "ansible", // TODO: What's the best way to handle this?
-		certsDir:   certsDir,
+		runner:          runner,
+		tlsDirectory:    td,
+		restartServices: restartServices,
+		ansibleStdout:   r,
+		out:             out,
+		explainer:       explainer,
 	}, nil
 }
 
-func (e *ansibleExecutor) GetVars(p *Plan, options *CliOpts) (*AnsibleVars, error) {
-	tlsDir, err := filepath.Abs(e.certsDir)
+// Install the cluster according to the installation plan
+func (ae *ansibleExecutor) Install(p *Plan) error {
+	// Build the ansible inventory
+	etcdNodes := []ansible.Node{}
+	for _, n := range p.Etcd.Nodes {
+		etcdNodes = append(etcdNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	masterNodes := []ansible.Node{}
+	for _, n := range p.Master.Nodes {
+		masterNodes = append(masterNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	workerNodes := []ansible.Node{}
+	for _, n := range p.Worker.Nodes {
+		workerNodes = append(workerNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	inventory := ansible.Inventory{
+		{
+			Name:  "etcd",
+			Nodes: etcdNodes,
+		},
+		{
+			Name:  "master",
+			Nodes: masterNodes,
+		},
+		{
+			Name:  "worker",
+			Nodes: workerNodes,
+		},
+	}
+
+	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
-		return &AnsibleVars{}, fmt.Errorf("error getting absolute path from cert location: %v", err)
+		return fmt.Errorf("error getting DNS service IP: %v", err)
 	}
 
-	dnsServiceIP, err := getDNSServiceIP(p)
-	if err != nil {
-		return &AnsibleVars{}, fmt.Errorf("error getting DNS servie IP address: %v", err)
+	ev := ansible.ExtraVars{
+		"kubernetes_cluster_name":   p.Cluster.Name,
+		"kubernetes_admin_password": p.Cluster.AdminPassword,
+		"tls_directory":             ae.tlsDirectory,
+		"calico_network_type":       p.Cluster.Networking.Type,
+		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
+		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
+		"kubernetes_dns_service_ip": dnsIP,
 	}
 
-	vars := AnsibleVars{
-		ClusterName:                   p.Cluster.Name,
-		AdminPassword:                 p.Cluster.AdminPassword,
-		TLSDirectory:                  tlsDir,
-		KubernetesServicesCIDR:        p.Cluster.Networking.ServiceCIDRBlock,
-		KubernetesPodsCIDR:            p.Cluster.Networking.PodCIDRBlock,
-		KubernetesDNSServiceIP:        dnsServiceIP,
-		CalicoNetworkType:             p.Cluster.Networking.Type,
-		LocalRepository:               p.Cluster.LocalRepository,
-		ForceEtcdRestart:              strconv.FormatBool(options.RestartEtcdService),
-		ForceApiserverRestart:         strconv.FormatBool(options.RestartKubernetesService),
-		ForceControllerManagerRestart: strconv.FormatBool(options.RestartKubernetesService),
-		ForceSchedulerRestart:         strconv.FormatBool(options.RestartKubernetesService),
-		ForceProxyRestart:             strconv.FormatBool(options.RestartKubernetesService),
-		ForceKubeletRestart:           strconv.FormatBool(options.RestartKubernetesService),
-		ForceCalicoRestart:            strconv.FormatBool(options.RestartCalicoService),
-		ForceDockerRestart:            strconv.FormatBool(options.RestartDockerService),
+	if p.Cluster.LocalRepository != "" {
+		ev["local_repoository_path"] = p.Cluster.LocalRepository
 	}
 
-	return &vars, nil
-}
-
-func (e *ansibleExecutor) Install(p *Plan, av *AnsibleVars) error {
-	// build inventory
-	inventory := buildNodeInventory(p)
-	inventoryFile := filepath.Join(e.ansibleDir, "inventory.ini")
-	err := ioutil.WriteFile(inventoryFile, inventory, 0644)
-	if err != nil {
-		return fmt.Errorf("error writing ansible inventory file: %v", err)
+	if ae.restartServices {
+		services := []string{"etcd", "apiserver", "controller", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
+		for _, s := range services {
+			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
+		}
 	}
 
-	// run ansible
-	playbook := filepath.Join(e.ansibleDir, "playbooks", "kubernetes.yaml")
-	err = e.runAnsiblePlaybook(inventoryFile, playbook, *av)
+	// Start explainer for handling ansible's stdout stream
+	go ae.explainer.Explain(ae.ansibleStdout)
+
+	// Run the installation playbook
+	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
-
 	return nil
 }
 
-func (e *ansibleExecutor) runAnsiblePlaybook(inventoryFile, playbookFile string, vars AnsibleVars) error {
-	extraVars, err := vars.CommandLineVars()
-	if err != nil {
-		return fmt.Errorf("error getting vars: %v", err)
+// Converts plan node to ansible node
+func installNodeToAnsibleNode(n *Node, s *SSHConfig) ansible.Node {
+	return ansible.Node{
+		Host:          n.Host,
+		PublicIP:      n.IP,
+		InternalIP:    n.InternalIP,
+		SSHPrivateKey: s.Key,
+		SSHUser:       s.User,
+		SSHPort:       s.Port,
 	}
-
-	cmd := exec.Command(filepath.Join(e.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbookFile, "-vvvvvvv", "--extra-vars", extraVars)
-	cmd.Stdout = e.out
-	cmd.Stderr = e.errOut
-	os.Setenv("PYTHONPATH", e.pythonPath)
-	// Ansible config
-	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
-
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("error running playbook: %v", err)
-	}
-
-	return nil
-}
-
-func buildNodeInventory(p *Plan) []byte {
-	inv := &bytes.Buffer{}
-	writeHostGroup(inv, "etcd", p.Etcd.Nodes, p.Cluster.SSH)
-	writeHostGroup(inv, "master", p.Master.Nodes, p.Cluster.SSH)
-	writeHostGroup(inv, "worker", p.Worker.Nodes, p.Cluster.SSH)
-
-	return inv.Bytes()
-}
-
-func writeHostGroup(inv io.Writer, groupName string, nodes []Node, ssh SSHConfig) {
-	fmt.Fprintf(inv, "[%s]\n", groupName)
-	for _, n := range nodes {
-		internalIP := n.IP
-		if n.InternalIP != "" {
-			internalIP = n.InternalIP
-		}
-		fmt.Fprintf(inv, "%s ansible_host=%s internal_ipv4=%s ansible_ssh_private_key_file=%s ansible_port=%d ansible_user=%s\n", n.Host, n.IP, internalIP, ssh.Key, ssh.Port, ssh.User)
-	}
-}
-
-func getPythonPath() (string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("error getting working dir: %v", err)
-	}
-	lib := filepath.Join(wd, "ansible", "lib", "python2.7", "site-packages")
-	lib64 := filepath.Join(wd, "ansible", "lib64", "python2.7", "site-packages")
-	return fmt.Sprintf("%s:%s", lib, lib64), nil
 }

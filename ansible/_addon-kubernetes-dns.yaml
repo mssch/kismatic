@@ -1,5 +1,6 @@
 ---
   - hosts: master[0]
+    name: Deploy Kubernetes DNS
     remote_user: root
     become_method: sudo
     run_once: true

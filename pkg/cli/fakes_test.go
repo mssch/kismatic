@@ -5,19 +5,19 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/tls"
 )
 
-type fakePlan struct {
+type fakePlanner struct {
 	exists     bool
 	plan       *install.Plan
 	err        error
 	readCalled bool
 }
 
-func (fp *fakePlan) PlanExists() bool { return fp.exists }
-func (fp *fakePlan) Read() (*install.Plan, error) {
+func (fp *fakePlanner) PlanExists() bool { return fp.exists }
+func (fp *fakePlanner) Read() (*install.Plan, error) {
 	fp.readCalled = true
 	return fp.plan, fp.err
 }
-func (fp *fakePlan) Write(p *install.Plan) error {
+func (fp *fakePlanner) Write(p *install.Plan) error {
 	fp.plan = p
 	return fp.err
 }
@@ -27,24 +27,24 @@ type fakeExecutor struct {
 	err           error
 }
 
-func (fe *fakeExecutor) GetVars(p *install.Plan, options *install.CliOpts) (*install.AnsibleVars, error) {
-	return &install.AnsibleVars{}, fe.err
-}
-
-func (fe *fakeExecutor) Install(p *install.Plan, av *install.AnsibleVars) error {
+func (fe *fakeExecutor) Install(p *install.Plan) error {
 	fe.installCalled = true
 	return fe.err
 }
 
 type fakePKI struct {
-	called bool
-	err    error
+	called              bool
+	generateCACalled    bool
+	readClusterCACalled bool
+	err                 error
 }
 
 func (fp *fakePKI) ReadClusterCA(p *install.Plan) (*tls.CA, error) {
+	fp.readClusterCACalled = true
 	return nil, fp.err
 }
 func (fp *fakePKI) GenerateClusterCA(p *install.Plan) (*tls.CA, error) {
+	fp.generateCACalled = true
 	return nil, fp.err
 }
 

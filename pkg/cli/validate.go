@@ -9,20 +9,20 @@ import (
 )
 
 // NewCmdValidate creates a new install validate command
-func NewCmdValidate(out io.Writer, options *install.CliOpts) *cobra.Command {
+func NewCmdValidate(out io.Writer, options *installOpts) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "validate your plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			planner := &install.FilePlanner{File: options.PlanFilename}
-			return doValidate(out, planner, options)
+			planner := &install.FilePlanner{File: options.planFilename}
+			return doValidate(out, planner, options.planFilename)
 		},
 	}
 
 	return cmd
 }
 
-func doValidate(out io.Writer, planner install.Planner, options *install.CliOpts) error {
+func doValidate(out io.Writer, planner install.Planner, planFile string) error {
 	// Check if plan file exists
 	if !planner.PlanExists() {
 		fmt.Fprintf(out, "Reading installation plan file [ERROR]\n")
@@ -31,10 +31,10 @@ func doValidate(out io.Writer, planner install.Planner, options *install.CliOpts
 	}
 	plan, err := planner.Read()
 	if err != nil {
-		fmt.Fprintf(out, "Reading installation plan file %q [ERROR]\n", options.PlanFilename)
+		fmt.Fprintf(out, "Reading installation plan file %q [ERROR]\n", planFile)
 		return fmt.Errorf("error reading plan file: %v", err)
 	}
-	fmt.Fprintf(out, "Reading installation plan file %q [OK]\n", options.PlanFilename)
+	fmt.Fprintf(out, "Reading installation plan file %q [OK]\n", planFile)
 
 	// Verify plan file
 	ok, errs := install.ValidatePlan(plan)

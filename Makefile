@@ -7,6 +7,10 @@ endif
 HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
+ifeq ($(origin GLIDE_GOOS), undefined)
+	GLIDE_GOOS := $(HOST_GOOS)
+endif
+
 
 build: vendor
 	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
@@ -28,9 +32,9 @@ vendor: tools/glide
 
 tools/glide:
 	mkdir -p tools
-	curl -L https://github.com/Masterminds/glide/releases/download/$(GLIDE_VERSION)/glide-$(GLIDE_VERSION)-$(HOST_GOOS)-$(HOST_GOARCH).tar.gz | tar -xz -C tools
-	mv tools/$(HOST_GOOS)-$(HOST_GOARCH)/glide tools/glide
-	rm -r tools/$(HOST_GOOS)-$(HOST_GOARCH)
+	curl -L https://github.com/Masterminds/glide/releases/download/$(GLIDE_VERSION)/glide-$(GLIDE_VERSION)-$(GLIDE_GOOS)-$(HOST_GOARCH).tar.gz | tar -xz -C tools
+	mv tools/$(GLIDE_GOOS)-$(HOST_GOARCH)/glide tools/glide
+	rm -r tools/$(GLIDE_GOOS)-$(HOST_GOARCH)
 
 vendor-ansible/out:
 	docker build -t apprenda/vendor-ansible -q vendor-ansible
