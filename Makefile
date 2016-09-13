@@ -22,7 +22,7 @@ clean:
 	rm -rf vendor-ansible/out
 	rm -rf vendor-cfssl/out
 
-test:
+test: vendor
 	go test ./cmd/... ./pkg/... $(TEST_OPTS)
 
 integration-test: dist just-integration-test
