@@ -1,7 +1,6 @@
 package tls
 
 import (
-	"bytes"
 	"reflect"
 	"testing"
 	"time"
@@ -28,9 +27,11 @@ func TestNewCACert(t *testing.T) {
 		t.Errorf("cert issuer is not equal to the CA's subject")
 	}
 
-	if !bytes.Equal(parsedCert.AuthorityKeyId, parsedCert.SubjectKeyId) {
-		t.Errorf("certificate auth key ID %q is not the subject key ID of the CA %q", string(parsedCert.AuthorityKeyId), string(parsedCert.SubjectKeyId))
-	}
+	// You might be tempted to test for this, but it seems like the AuthKeyID doesn't have to be set
+	// for self-signed certificates. https://go.googlesource.com/go/+/b623b71509b2d24df915d5bc68602e1c6edf38ca
+	// if !bytes.Equal(parsedCert.AuthorityKeyId, parsedCert.SubjectKeyId) {
+	// 	t.Errorf("certificate auth key ID %q is not the subject key ID of the CA %q", string(parsedCert.AuthorityKeyId), string(parsedCert.SubjectKeyId))
+	// }
 
 	// Verify expiration
 	now := time.Now().UTC()
