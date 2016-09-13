@@ -22,7 +22,8 @@ type ansibleExecutor struct {
 	restartServices bool
 	ansibleStdout   io.Reader
 	out             io.Writer
-	explainer       Explainer
+	verboseOutput   bool
+	outputFormat    ansible.OutputFormat
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
@@ -32,21 +33,18 @@ func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartSe
 
 	// configure ansible output
 	var outFormat ansible.OutputFormat
-	var explainer Explainer
 	switch outputFormat {
 	case "raw":
 		outFormat = ansible.RawFormat
-		explainer = &RawExplainer{out}
 	case "simple":
 		outFormat = ansible.JSONLinesFormat
-		explainer = &AnsibleEventExplainer{ansible.EventStream, out, verbose}
 	default:
 		return nil, fmt.Errorf("Output format %q is not supported", outputFormat)
 	}
 
 	// Make ansible write to pipe, so that we can read on our end.
 	r, w := io.Pipe()
-	runner, err := ansible.NewRunner(w, errOut, ansibleDir, outFormat, verbose)
+	runner, err := ansible.NewRunner(w, errOut, ansibleDir)
 	if err != nil {
 		return nil, fmt.Errorf("error creating ansible runner: %v", err)
 	}
@@ -62,7 +60,8 @@ func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartSe
 		restartServices: restartServices,
 		ansibleStdout:   r,
 		out:             out,
-		explainer:       explainer,
+		verboseOutput:   verbose,
+		outputFormat:    outFormat,
 	}, nil
 }
 
@@ -97,10 +96,21 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	// Start explainer for handling ansible's stdout stream
-	go ae.explainer.Explain(ae.ansibleStdout)
+	var exp Explainer
+	switch ae.outputFormat {
+	case ansible.RawFormat:
+		exp = &RawExplainer{ae.out}
+	case ansible.JSONLinesFormat:
+		exp = &AnsibleEventExplainer{
+			EventStream: ansible.EventStream,
+			Out:         ae.out,
+			Verbose:     ae.verboseOutput,
+		}
+	}
+	go exp.Explain(ae.ansibleStdout)
 
 	// Run the installation playbook
-	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev)
+	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev, ae.outputFormat, ae.verboseOutput)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
@@ -118,11 +128,22 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 	}
 
 	// Start explainer for pre-flight checks
-	go ae.explainer.Explain(ae.ansibleStdout)
+	var exp Explainer
+	switch ae.outputFormat {
+	case ansible.RawFormat:
+		exp = &RawExplainer{ae.out}
+	case ansible.JSONLinesFormat:
+		exp = &AnsibleEventExplainer{
+			EventStream: ansible.EventStream,
+			Out:         ae.out,
+			Verbose:     ae.verboseOutput,
+		}
+	}
+	go exp.Explain(ae.ansibleStdout)
 
 	// run pre-flight playbook
 	playbook := "preflight.yaml"
-	err := ae.runner.RunPlaybook(inventory, playbook, ev)
+	err := ae.runner.RunPlaybook(inventory, playbook, ev, ae.outputFormat, ae.verboseOutput)
 	if err != nil {
 		return fmt.Errorf("error running pre-flight checks: %v", err)
 	}
