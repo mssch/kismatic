@@ -46,6 +46,9 @@ func (e *AnsibleEventExplainer) Explain(in io.Reader) error {
 		case *ansible.RunnerUnreachableEvent:
 			fmt.Fprintf(e.Out, "[UNREACHABLE] %s\n", event.Host)
 		case *ansible.RunnerFailedEvent:
+			if event.IgnoreErrors {
+				continue
+			}
 			fmt.Fprintf(e.Out, "Error from %s: %s\n", event.Host, event.Result.Message)
 			if event.Result.Stdout != "" {
 				fmt.Fprintf(e.Out, "---- STDOUT ----\n%s\n", event.Result.Stdout)

@@ -32,6 +32,10 @@ func (fe *fakeExecutor) Install(p *install.Plan) error {
 	return fe.err
 }
 
+func (fe *fakeExecutor) RunPreflightCheck(p *install.Plan) error {
+	return nil
+}
+
 type fakePKI struct {
 	called              bool
 	generateCACalled    bool

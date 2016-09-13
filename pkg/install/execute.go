@@ -3,7 +3,6 @@ package install
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -69,33 +68,7 @@ func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartSe
 
 // Install the cluster according to the installation plan
 func (ae *ansibleExecutor) Install(p *Plan) error {
-	// Build the ansible inventory
-	etcdNodes := []ansible.Node{}
-	for _, n := range p.Etcd.Nodes {
-		etcdNodes = append(etcdNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
-	}
-	masterNodes := []ansible.Node{}
-	for _, n := range p.Master.Nodes {
-		masterNodes = append(masterNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
-	}
-	workerNodes := []ansible.Node{}
-	for _, n := range p.Worker.Nodes {
-		workerNodes = append(workerNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
-	}
-	inventory := ansible.Inventory{
-		{
-			Name:  "etcd",
-			Nodes: etcdNodes,
-		},
-		{
-			Name:  "master",
-			Nodes: masterNodes,
-		},
-		{
-			Name:  "worker",
-			Nodes: workerNodes,
-		},
-	}
+	inventory := buildInventoryFromPlan(p)
 
 	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
@@ -134,28 +107,57 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	return nil
 }
 
-func (e *ansibleExecutor) RunPreflightCheck(p *Plan) error {
+func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 	// build inventory
-	inventory := buildNodeInventory(p)
-	inventoryFile := filepath.Join(e.ansibleDir, "inventory.ini")
-	err := ioutil.WriteFile(inventoryFile, inventory, 0644)
-	if err != nil {
-		return fmt.Errorf("error writing ansible inventory file: %v", err)
+	inventory := buildInventoryFromPlan(p)
+
+	ev := ansible.ExtraVars{
+		// TODO: attempt to clean up these paths somehow...
+		"kismatic_preflight_checker":       filepath.Join("checker", "linux", "amd64", "kismatic-check"),
+		"kismatic_preflight_checker_local": filepath.Join("ansible", "playbooks", "checker", runtime.GOOS, runtime.GOARCH, "kismatic-check"),
 	}
 
+	// Start explainer for pre-flight checks
+	go ae.explainer.Explain(ae.ansibleStdout)
+
 	// run pre-flight playbook
-	playbook := filepath.Join(e.ansibleDir, "playbooks", "preflight.yaml")
-	// TODO: The checker dir is relative to the ansible playbooks directory
-	vars := AnsibleVars{
-		KismaticPreflightChecker: filepath.Join("checker", "linux", "amd64", "kismatic-check"),
-		// TODO: This path has to be relative to ansible dir for some reason...
-		KismaticPreflightCheckerLocal: filepath.Join(e.ansibleDir, "playbooks", "checker", runtime.GOOS, runtime.GOARCH, "kismatic-check"),
-	}
-	err = e.runAnsiblePlaybook(inventoryFile, playbook, vars)
+	playbook := "preflight.yaml"
+	err := ae.runner.RunPlaybook(inventory, playbook, ev)
 	if err != nil {
 		return fmt.Errorf("error running pre-flight checks: %v", err)
 	}
 	return nil
+}
+
+func buildInventoryFromPlan(p *Plan) ansible.Inventory {
+	etcdNodes := []ansible.Node{}
+	for _, n := range p.Etcd.Nodes {
+		etcdNodes = append(etcdNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	masterNodes := []ansible.Node{}
+	for _, n := range p.Master.Nodes {
+		masterNodes = append(masterNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	workerNodes := []ansible.Node{}
+	for _, n := range p.Worker.Nodes {
+		workerNodes = append(workerNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	inventory := ansible.Inventory{
+		{
+			Name:  "etcd",
+			Nodes: etcdNodes,
+		},
+		{
+			Name:  "master",
+			Nodes: masterNodes,
+		},
+		{
+			Name:  "worker",
+			Nodes: workerNodes,
+		},
+	}
+
+	return inventory
 }
 
 // Converts plan node to ansible node

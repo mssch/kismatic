@@ -22,8 +22,9 @@ type runnerResult struct {
 }
 
 type runnerResultEvent struct {
-	Host   string
-	Result runnerResult
+	Host         string
+	Result       runnerResult
+	IgnoreErrors bool
 }
 
 // PlaybookStartEvent signals the beginning of a playbook
