@@ -5,7 +5,7 @@
       src: kubernetes-dns.yaml
       dest: /tmp/kubernetes-dns.yaml
   - name: start kubernetes-dns service
-    command: kubectl create -f /tmp/kubernetes-dns.yaml
+    command: kubectl apply -f /tmp/kubernetes-dns.yaml
     ignore_errors: yes # will fail when run more than once
     register: out
 

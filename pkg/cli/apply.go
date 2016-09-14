@@ -7,6 +7,7 @@ import (
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
 	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -87,15 +88,16 @@ func (c *applyCmd) run() error {
 	plan, err := c.planner.Read()
 
 	// Generate or read cluster Certificate Authority
+	util.PrintHeader(c.out, "Configuring Certificates")
 	var ca *tls.CA
 	if !c.skipCAGeneration {
-		fmt.Fprintln(c.out, "Generating cluster Certificate Authority")
+		util.PrettyPrintOk(c.out, "Generating cluster Certificate Authority")
 		ca, err = c.pki.GenerateClusterCA(plan)
 		if err != nil {
 			return fmt.Errorf("error generating CA for the cluster: %v", err)
 		}
 	} else {
-		fmt.Fprintln(c.out, "Skipping Certificate Authority generation.")
+		util.PrettyPrint(c.out, "Skipping Certificate Authority generation\n")
 		ca, err = c.pki.ReadClusterCA(plan)
 		if err != nil {
 			return fmt.Errorf("error reading cluster CA: %v", err)
@@ -103,25 +105,26 @@ func (c *applyCmd) run() error {
 	}
 
 	// Generate node and user certificates
-	fmt.Fprintln(c.out, "Generating cluster certificates")
 	err = c.pki.GenerateClusterCerts(plan, ca, []string{"admin"})
 	if err != nil {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
-	fmt.Fprintf(c.out, "Generated cluster certificates at %q [OK]\n\n", c.certsDestination)
+	util.PrettyPrintOkf(c.out, "Generated cluster certificates at %q", c.certsDestination)
 
 	// Perform the installation
+	util.PrintHeader(c.out, "Installing Cluster")
 	err = c.executor.Install(plan)
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
 
 	// Generate kubeconfig
+	util.PrintHeader(c.out, "Generating Cluster Config")
 	err = install.GenerateKubeconfig(plan, c.certsDestination)
 	if err != nil {
-		fmt.Fprint(c.out, "Kubeconfig generation error, you may need to setup kubectl manually [ERROR]\n", err)
+		util.PrettyPrintWarn(c.out, "Kubeconfig generation error, you may need to setup kubectl manually\n")
 	} else {
-		fmt.Fprint(c.out, "Generated \"config\", to use \"cp config ~/.kube/config\" [OK]")
+		util.PrettyPrintOk(c.out, "Generated kubecofnig file at \"config\", to use \"cp config ~/.kube/config\"")
 	}
 
 	return nil
