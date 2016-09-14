@@ -44,13 +44,13 @@ func (e *AnsibleEventExplainer) Explain(in io.Reader) error {
 			}
 		case *ansible.PlayStartEvent:
 			if eventName != "" {
-				util.PrettyPrintOkf(e.Out, "=> %s", eventName)
+				util.PrettyPrintOkf(e.Out, "%s", eventName)
 			}
 			eventName = event.Name
 		case *ansible.RunnerUnreachableEvent:
 			util.PrintErrorf(e.Out, "[UNREACHABLE] %s", event.Host)
 		case *ansible.RunnerFailedEvent:
-			util.PrettyPrintErrf(e.Out, "=> %s", eventName)
+			util.PrettyPrintErrf(e.Out, "%s", eventName)
 			util.PrintErrorf(e.Out, "Error from %s: %s", event.Host, event.Result.Message)
 			if event.Result.Stdout != "" {
 				util.PrettyPrintf(e.Out, "---- STDOUT ----\n%s\n", event.Result.Stdout)
