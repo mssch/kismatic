@@ -42,6 +42,9 @@ type AnsibleEventExplainer interface {
 
 // DefaultEventExplainer returns the default string explanation of a given event
 type DefaultEventExplainer struct {
+	// Keeping this state is necessary for supporting the current way of
+	// printing output to the console... I am not a fan of this, but it'll
+	// do for now...
 	lastPlay          string
 	FirstErrorPrinted bool
 }
