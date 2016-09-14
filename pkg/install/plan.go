@@ -72,7 +72,7 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 	p.Cluster.SSH.Port = 22
 
 	// Set Networking defaults
-	p.Cluster.Networking.Type = "bridged"
+	p.Cluster.Networking.Type = "overlay"
 	p.Cluster.Networking.PodCIDRBlock = "172.16.0.0/16"
 	p.Cluster.Networking.ServiceCIDRBlock = "172.17.0.0/16"
 
