@@ -128,8 +128,8 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 
 	ev := ansible.ExtraVars{
 		// TODO: attempt to clean up these paths somehow...
-		"kismatic_preflight_checker":       filepath.Join("checker", "linux", "amd64", "kismatic-check"),
-		"kismatic_preflight_checker_local": filepath.Join("ansible", "playbooks", "checker", runtime.GOOS, runtime.GOARCH, "kismatic-check"),
+		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
+		"kismatic_preflight_checker_local": filepath.Join("ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector"),
 	}
 
 	// Set explainer for pre-flight checks

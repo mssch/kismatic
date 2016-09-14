@@ -49,7 +49,7 @@ func EventExplanationText(e ansible.Event, verbose bool) string {
 			return ""
 		}
 		buf := bytes.Buffer{}
-		fmt.Sprintf("Error from %s: %s\n", event.Host, event.Result.Message)
+		buf.WriteString(fmt.Sprintf("Error from %s: %s\n", event.Host, event.Result.Message))
 		if event.Result.Stdout != "" {
 			buf.WriteString(fmt.Sprintf("---- STDOUT ----\n%s\n", event.Result.Stdout))
 		}

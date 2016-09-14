@@ -19,12 +19,15 @@ func PreFlightEventExplanationText(e ansible.Event, verbose bool) string {
 		if event.IgnoreErrors {
 			return ""
 		}
+		buf := bytes.Buffer{}
 		results := []preflight.CheckResult{}
 		err := json.Unmarshal([]byte(event.Result.Stdout), &results)
 		if err != nil {
-			return fmt.Sprintf("error explaining pre-flight check result: %v", err)
+			buf.WriteString(fmt.Sprintf("Error explaining pre-flight check result: %v\n", err))
+			buf.WriteString(EventExplanationText(event, verbose))
+			return buf.String()
 		}
-		buf := bytes.Buffer{}
+
 		buf.WriteString(fmt.Sprintf("\nPre-flight Checks failed on %q\n", event.Host))
 		for _, r := range results {
 			if r.Success && verbose {
