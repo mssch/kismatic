@@ -27,6 +27,7 @@ type Cluster struct {
 	Name            string
 	AdminPassword   string `yaml:"admin_password"`
 	LocalRepository string `yaml:"local_repository"`
+	HostsFileDNS    bool   `yaml:"hosts_file_dns"`
 	Networking      NetworkConfig
 	Certificates    CertsConfig
 	SSH             SSHConfig
