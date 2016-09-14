@@ -65,6 +65,11 @@ func PrintErrorf(out io.Writer, msg string, a ...interface{}) {
 	printColor(out, msg, red, a...)
 }
 
+// PrintOk print whole message in ok(Green) format
+func PrintOk(out io.Writer, msg string) {
+	printColor(out, msg, green)
+}
+
 // PrintError print whole message in error(Red) format
 func PrintError(out io.Writer, msg string) {
 	printColor(out, msg, red)
