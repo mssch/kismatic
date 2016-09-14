@@ -231,7 +231,16 @@ func MakeWorkerNode(nodeType string) (AWSNodeDeets, error) {
 func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 	svc := ec2.New(session.New(&aws.Config{Region: aws.String(TARGET_REGION)}))
 	runResult, err := svc.RunInstances(&ec2.RunInstancesInput{
-		ImageId:          aws.String(ami),
+		ImageId: aws.String(ami),
+		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
+			{
+				DeviceName: aws.String("/dev/sda1"),
+				Ebs: &ec2.EbsBlockDevice{
+					DeleteOnTermination: aws.Bool(true),
+					VolumeSize:          aws.Int64(8),
+				},
+			},
+		},
 		InstanceType:     aws.String(instanceType),
 		MinCount:         aws.Int64(1),
 		MaxCount:         aws.Int64(1),

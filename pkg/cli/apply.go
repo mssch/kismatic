@@ -7,6 +7,7 @@ import (
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
 	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +28,6 @@ type applyOpts struct {
 	certsDestination string
 	skipCAGeneration bool
 	restartServices  bool
-	modifyHostsFile  bool
 	verbose          bool
 	outputFormat     string
 }
@@ -42,7 +42,7 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			planner := &install.FilePlanner{File: installOpts.planFilename}
 			// TODO: Do we want to parameterize stderr?
-			executor, err := install.NewExecutor(out, os.Stderr, applyOpts.certsDestination, applyOpts.restartServices, applyOpts.modifyHostsFile, applyOpts.verbose, applyOpts.outputFormat)
+			executor, err := install.NewExecutor(out, os.Stderr, applyOpts.certsDestination, applyOpts.restartServices, applyOpts.verbose, applyOpts.outputFormat)
 			if err != nil {
 				return err
 			}
@@ -73,7 +73,6 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	cmd.Flags().StringVar(&applyOpts.certsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
 	cmd.Flags().BoolVar(&applyOpts.skipCAGeneration, "skip-ca-generation", false, "skip CA generation and use an existing file")
 	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart clusters services (Use with care)")
-	cmd.Flags().BoolVar(&applyOpts.modifyHostsFile, "modify-hosts-file", false, "modify hosts files on all target nodes, only required if DNS is not available")
 	cmd.Flags().BoolVar(&applyOpts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&applyOpts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
 
@@ -95,15 +94,16 @@ func (c *applyCmd) run() error {
 	}
 
 	// Generate or read cluster Certificate Authority
+	util.PrintHeader(c.out, "Configuring Certificates")
 	var ca *tls.CA
 	if !c.skipCAGeneration {
-		fmt.Fprintln(c.out, "Generating cluster Certificate Authority")
+		util.PrettyPrintOk(c.out, "Generating cluster Certificate Authority")
 		ca, err = c.pki.GenerateClusterCA(plan)
 		if err != nil {
 			return fmt.Errorf("error generating CA for the cluster: %v", err)
 		}
 	} else {
-		fmt.Fprintln(c.out, "Skipping Certificate Authority generation.")
+		util.PrettyPrint(c.out, "Skipping Certificate Authority generation\n")
 		ca, err = c.pki.ReadClusterCA(plan)
 		if err != nil {
 			return fmt.Errorf("error reading cluster CA: %v", err)
@@ -111,25 +111,26 @@ func (c *applyCmd) run() error {
 	}
 
 	// Generate node and user certificates
-	fmt.Fprintln(c.out, "Generating cluster certificates")
 	err = c.pki.GenerateClusterCerts(plan, ca, []string{"admin"})
 	if err != nil {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
-	fmt.Fprintf(c.out, "Generated cluster certificates at %q [OK]\n\n", c.certsDestination)
+	util.PrettyPrintOkf(c.out, "Generated cluster certificates at %q", c.certsDestination)
 
 	// Perform the installation
+	util.PrintHeader(c.out, "Installing Cluster")
 	err = c.executor.Install(plan)
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
 
 	// Generate kubeconfig
+	util.PrintHeader(c.out, "Generating Cluster Config")
 	err = install.GenerateKubeconfig(plan, c.certsDestination)
 	if err != nil {
-		fmt.Fprint(c.out, "Kubeconfig generation error, you may need to setup kubectl manually [ERROR]\n", err)
+		util.PrettyPrintWarn(c.out, "Kubeconfig generation error, you may need to setup kubectl manually\n")
 	} else {
-		fmt.Fprint(c.out, "Generated \"config\", to use \"cp config ~/.kube/config\" [OK]")
+		util.PrettyPrintOk(c.out, "Generated kubecofnig file at \"config\", to use \"cp config ~/.kube/config\"")
 	}
 
 	return nil

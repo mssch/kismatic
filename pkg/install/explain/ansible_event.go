@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
+	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
 // AnsibleEventStreamExplainer explains the incoming ansible event stream
@@ -18,14 +19,15 @@ type AnsibleEventStreamExplainer struct {
 	Verbose bool
 	// ExplainEvent returns a string explanation fo the ansible event.
 	// The function returns an empty string if the event should be ignored.
-	ExplainEvent func(e ansible.Event, verbose bool) string
+	// ExplainEvent   func(e ansible.Event, verbose bool) string
+	EventExplainer AnsibleEventExplainer
 }
 
 // Explain the incoming ansible event stream
 func (e *AnsibleEventStreamExplainer) Explain(in io.Reader) error {
 	events := e.EventStream(in)
 	for ev := range events {
-		exp := e.ExplainEvent(ev, e.Verbose)
+		exp := e.EventExplainer.ExplainEvent(ev, e.Verbose)
 		if exp != "" {
 			fmt.Fprint(e.Out, exp)
 		}
@@ -33,59 +35,78 @@ func (e *AnsibleEventStreamExplainer) Explain(in io.Reader) error {
 	return nil
 }
 
-// EventExplanationText returns an explanation for the given event
-func EventExplanationText(e ansible.Event, verbose bool) string {
+// AnsibleEventExplainer explains a single event
+type AnsibleEventExplainer interface {
+	ExplainEvent(e ansible.Event, verbose bool) string
+}
+
+// DefaultEventExplainer returns the default string explanation of a given event
+type DefaultEventExplainer struct {
+	lastPlay          string
+	FirstErrorPrinted bool
+}
+
+// ExplainEvent returns an explanation for the given event
+func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bool) string {
+	buf := &bytes.Buffer{}
 	switch event := e.(type) {
 	default:
-		return fmt.Sprintf("Unhandled event: %T\n", event)
-	case *ansible.PlaybookStartEvent:
-		return fmt.Sprintf("Running playbook %s\n", event.Name)
+		if verbose {
+			util.PrettyPrintWarnf(buf, "Unhandled event: %T", event)
+		}
 	case *ansible.PlayStartEvent:
-		return fmt.Sprintf("=> %s\n", event.Name)
+		if explainer.lastPlay != "" {
+			util.PrintOk(buf, "[OK]")
+		}
+		util.PrettyPrintf(buf, "%s\t", event.Name)
+		explainer.lastPlay = event.Name
 	case *ansible.RunnerUnreachableEvent:
-		return fmt.Sprintf("[UNREACHABLE] %s\n", event.Host)
+		util.PrintErrorf(buf, "[UNREACHABLE] %s", event.Host)
 	case *ansible.RunnerFailedEvent:
 		if event.IgnoreErrors {
 			return ""
 		}
-		buf := bytes.Buffer{}
-		buf.WriteString(fmt.Sprintf("Error from %s: %s\n", event.Host, event.Result.Message))
+		if !explainer.FirstErrorPrinted {
+			util.PrintError(buf, "[ERROR]\n")
+		}
+		util.PrintErrorf(buf, "Error from %s: %s", event.Host, event.Result.Message)
 		if event.Result.Stdout != "" {
-			buf.WriteString(fmt.Sprintf("---- STDOUT ----\n%s\n", event.Result.Stdout))
+			util.PrettyPrintf(buf, "---- STDOUT ----\n%s\n", event.Result.Stdout)
 		}
 		if event.Result.Stderr != "" {
-			buf.WriteString(fmt.Sprintf("---- STDERR ----\n%s\n", event.Result.Stderr))
+			util.PrettyPrintf(buf, "---- STDERR ----\n%s\n", event.Result.Stderr)
 		}
 		if event.Result.Stderr != "" || event.Result.Stdout != "" {
-			buf.WriteString(fmt.Sprint("---------------\n"))
+			util.PrettyPrintf(buf, "---------------\n")
 		}
-		return buf.String()
+
+	// Do nothing with the following events
 	case *ansible.RunnerItemRetryEvent:
 		return ""
+	case *ansible.PlaybookStartEvent:
+		if verbose {
+			util.PrettyPrintf(buf, "Running playbook %s\n", event.Name)
+		}
 	case *ansible.TaskStartEvent:
 		if verbose {
-			return fmt.Sprintf("- Running task: %s\n", event.Name)
+			util.PrettyPrintf(buf, "- Running task: %s\n", event.Name)
 		}
-		return ""
 	case *ansible.HandlerTaskStartEvent:
 		if verbose {
-			return fmt.Sprintf("- Running task: %s\n", event.Name)
+			util.PrettyPrintf(buf, "- Running task: %s\n", event.Name)
 		}
-		return ""
 	case *ansible.RunnerItemOKEvent:
 		if verbose {
-			return fmt.Sprintf("   [OK] %s\n", event.Host)
+			util.PrettyPrintf(buf, "   [OK] %s\n", event.Host)
 		}
-		return ""
 	case *ansible.RunnerSkippedEvent:
 		if verbose {
-			return fmt.Sprintf("   [SKIPPED] %s\n", event.Host)
+			util.PrettyPrintf(buf, "   [SKIPPED] %s\n", event.Host)
 		}
-		return ""
 	case *ansible.RunnerOKEvent:
 		if verbose {
-			return fmt.Sprintf("   [OK] %s\n", event.Host)
+			util.PrettyPrintf(buf, "   [OK] %s\n", event.Host)
 		}
-		return ""
 	}
+	return buf.String()
 }
