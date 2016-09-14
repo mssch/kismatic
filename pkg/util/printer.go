@@ -84,20 +84,23 @@ func print(out io.Writer, msg, status string, a ...interface{}) {
 	// print message
 	format := msg + "\t"
 	fmt.Fprintf(w, format, a...)
-	// get correct color
-	var clr *color.Color
-	switch status {
-	case oktype:
-		clr = green
-	case errtype:
-		clr = red
-	case warntype:
-		clr = orange
-	}
+
 	// print status
 	if status != notype {
+		// get correct color
+		var clr *color.Color
+		switch status {
+		case oktype:
+			clr = green
+		case errtype:
+			clr = red
+		case warntype:
+			clr = orange
+		}
+
 		sformat := "%s\n"
 		fmt.Fprintf(w, sformat, clr.SprintFunc()(status))
+
 	}
 	w.Flush()
 }
