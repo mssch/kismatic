@@ -48,7 +48,7 @@ func (e *AnsibleEventExplainer) Explain(in io.Reader) error {
 			}
 			eventName = event.Name
 		case *ansible.RunnerUnreachableEvent:
-			util.PrintErrorf(e.Out, "[UNREACHABLE] %s\n", event.Host)
+			util.PrintErrorf(e.Out, "[UNREACHABLE] %s", event.Host)
 		case *ansible.RunnerFailedEvent:
 			util.PrettyPrintErrf(e.Out, "=> %s", eventName)
 			util.PrintErrorf(e.Out, "Error from %s: %s", event.Host, event.Result.Message)

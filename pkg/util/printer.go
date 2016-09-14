@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"io"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/fatih/color"
@@ -103,5 +104,7 @@ func print(out io.Writer, msg, status string, a ...interface{}) {
 
 func printColor(out io.Writer, msg string, clr *color.Color, a ...interface{}) {
 	format := "%s"
-	fmt.Fprintf(out, format, clr.SprintfFunc()(msg, a...))
+	// Remove any newline, results in only one \n
+	line := strings.Trim(fmt.Sprintf(format, clr.SprintfFunc()(msg, a...)), "\n") + "\n"
+	fmt.Fprint(out, line)
 }
