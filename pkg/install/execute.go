@@ -3,8 +3,10 @@ package install
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
 	"github.com/apprenda/kismatic-platform/pkg/tls"
@@ -34,6 +36,8 @@ type ExecutorOptions struct {
 	OutputFormat string
 	// Verbose output from the executor
 	Verbose bool
+	// RunsDirectory is where information about installation runs is kept
+	RunsDirectory string
 }
 
 // The Executor will carry out the installation plan
@@ -53,6 +57,11 @@ type ansibleExecutor struct {
 func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
+
+	// TODO: Validate options here
+	if options.RunsDirectory == "" {
+		options.RunsDirectory = "./runs"
+	}
 
 	// configure ansible output
 	var outFormat ansible.OutputFormat
@@ -86,7 +95,25 @@ func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Exec
 
 // Install the cluster according to the installation plan
 func (ae *ansibleExecutor) Install(p *Plan) error {
+	start := time.Now()
+	runDirectory := filepath.Join(ae.options.RunsDirectory, start.Format("20060102030405"))
+	if err := os.MkdirAll(runDirectory, 0777); err != nil {
+		return fmt.Errorf("error creating working directory for installation: %v", err)
+	}
+
+	// Save the plan file that was used for this execution
+	fp := FilePlanner{
+		File: filepath.Join(runDirectory, "kismatic-cluster.yaml"),
+	}
+	if err := fp.Write(p); err != nil {
+		return fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
+	}
+
 	// Generate cluster TLS assets
+	keysDir := filepath.Join(ae.options.GeneratedAssetsDirectory, "keys")
+	if err := os.MkdirAll(keysDir, 0777); err != nil {
+		return fmt.Errorf("error creating directory %s for storing TLS assets: %v", keysDir, err)
+	}
 	pki := LocalPKI{
 		CACsr:                   ae.options.CASigningRequest,
 		CAConfigFile:            ae.options.CAConfigFile,
@@ -153,10 +180,15 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		return fmt.Errorf("error getting DNS service IP: %v", err)
 	}
 
+	// Need absolute path for ansible. Otherwise it looks in the wrong place.
+	tlsDir, err := filepath.Abs(pki.GeneratedCertsDirectory)
+	if err != nil {
+		return fmt.Errorf("failed to determine absolute path to %s: %v", pki.GeneratedCertsDirectory, err)
+	}
 	ev := ansible.ExtraVars{
 		"kubernetes_cluster_name":   p.Cluster.Name,
 		"kubernetes_admin_password": p.Cluster.AdminPassword,
-		"tls_directory":             pki.GeneratedCertsDirectory,
+		"tls_directory":             tlsDir,
 		"calico_network_type":       p.Cluster.Networking.Type,
 		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
 		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
