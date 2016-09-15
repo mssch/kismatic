@@ -45,9 +45,10 @@ type DefaultEventExplainer struct {
 	// Keeping this state is necessary for supporting the current way of
 	// printing output to the console... I am not a fan of this, but it'll
 	// do for now...
-	lastPlay         string
-	lastTask         string
-	firstTaskPrinted bool
+	lastPlay          string
+	lastTask          string
+	firstTaskPrinted  bool
+	FirstErrorPrinted bool
 }
 
 // ExplainEvent returns an explanation for the given event
