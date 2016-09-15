@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
-	"github.com/apprenda/kismatic-platform/pkg/tls"
 	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +14,6 @@ type applyCmd struct {
 	out              io.Writer
 	planner          install.Planner
 	executor         install.Executor
-	pki              install.PKI
 	planFile         string
 	skipCAGeneration bool
 	certsDestination string
@@ -56,18 +54,11 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			pki := &install.LocalPKI{
-				CACsr:                   applyOpts.caCSR,
-				CAConfigFile:            applyOpts.caConfigFile,
-				CASigningProfile:        applyOpts.caSigningProfile,
-				GeneratedCertsDirectory: applyOpts.generatedAssetsDir,
-				Log: out,
-			}
+
 			applyCmd := &applyCmd{
 				out,
 				planner,
 				executor,
-				pki,
 				installOpts.planFilename,
 				skipCAGeneration,
 				applyOpts.generatedAssetsDir,
@@ -96,30 +87,6 @@ func (c *applyCmd) run() error {
 		return fmt.Errorf("error validating plan: %v", err)
 	}
 	plan, err := c.planner.Read()
-
-	// Generate or read cluster Certificate Authority
-	util.PrintHeader(c.out, "Configuring Certificates")
-	var ca *tls.CA
-	if !c.skipCAGeneration {
-		util.PrettyPrintOk(c.out, "Generating cluster Certificate Authority")
-		ca, err = c.pki.GenerateClusterCA(plan)
-		if err != nil {
-			return fmt.Errorf("error generating CA for the cluster: %v", err)
-		}
-	} else {
-		util.PrettyPrint(c.out, "Skipping Certificate Authority generation\n")
-		ca, err = c.pki.ReadClusterCA(plan)
-		if err != nil {
-			return fmt.Errorf("error reading cluster CA: %v", err)
-		}
-	}
-
-	// Generate node and user certificates
-	err = c.pki.GenerateClusterCerts(plan, ca, []string{"admin"})
-	if err != nil {
-		return fmt.Errorf("error generating certificates for the cluster: %v", err)
-	}
-	util.PrettyPrintOkf(c.out, "Generated cluster certificates at %q", c.certsDestination)
 
 	// Perform the installation
 	util.PrintHeader(c.out, "Installing Cluster")

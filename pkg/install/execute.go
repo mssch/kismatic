@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
+	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
 // ExecutorOptions are used to configure the executor
@@ -40,12 +42,11 @@ type Executor interface {
 }
 
 type ansibleExecutor struct {
-	runner          ansible.Runner
-	tlsDirectory    string
-	restartServices bool
-	ansibleStdout   io.Reader
-	out             io.Writer
-	explainer       Explainer
+	options       ExecutorOptions
+	runner        ansible.Runner
+	ansibleStdout io.Reader
+	out           io.Writer
+	explainer     Explainer
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
@@ -74,23 +75,51 @@ func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Exec
 		return nil, fmt.Errorf("error creating ansible runner: %v", err)
 	}
 
-	td, err := filepath.Abs(options.GeneratedAssetsDirectory)
-	if err != nil {
-		return nil, fmt.Errorf("error getting absolute path from %q: %v", options.GeneratedAssetsDirectory, err)
-	}
-
 	return &ansibleExecutor{
-		runner:          runner,
-		tlsDirectory:    td,
-		restartServices: options.RestartServices,
-		ansibleStdout:   r,
-		out:             out,
-		explainer:       explainer,
+		options:       options,
+		runner:        runner,
+		ansibleStdout: r,
+		out:           out,
+		explainer:     explainer,
 	}, nil
 }
 
 // Install the cluster according to the installation plan
 func (ae *ansibleExecutor) Install(p *Plan) error {
+	// Generate cluster TLS assets
+	pki := LocalPKI{
+		CACsr:                   ae.options.CASigningRequest,
+		CAConfigFile:            ae.options.CAConfigFile,
+		CASigningProfile:        ae.options.CASigningProfile,
+		GeneratedCertsDirectory: filepath.Join(ae.options.GeneratedAssetsDirectory, "keys"),
+		Log: ae.out,
+	}
+
+	// Generate or read cluster Certificate Authority
+	util.PrintHeader(ae.out, "Configuring Certificates")
+	var ca *tls.CA
+	var err error
+	if !ae.options.SkipCAGeneration {
+		util.PrettyPrintOk(ae.out, "Generating cluster Certificate Authority")
+		ca, err = pki.GenerateClusterCA(p)
+		if err != nil {
+			return fmt.Errorf("error generating CA for the cluster: %v", err)
+		}
+	} else {
+		util.PrettyPrint(ae.out, "Skipping Certificate Authority generation\n")
+		ca, err = pki.ReadClusterCA(p)
+		if err != nil {
+			return fmt.Errorf("error reading cluster CA: %v", err)
+		}
+	}
+
+	// Generate node and user certificates
+	err = pki.GenerateClusterCerts(p, ca, []string{"admin"})
+	if err != nil {
+		return fmt.Errorf("error generating certificates for the cluster: %v", err)
+	}
+	util.PrettyPrintOkf(ae.out, "Generated cluster certificates at %q", pki.GeneratedCertsDirectory)
+
 	// Build the ansible inventory
 	etcdNodes := []ansible.Node{}
 	for _, n := range p.Etcd.Nodes {
@@ -127,7 +156,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	ev := ansible.ExtraVars{
 		"kubernetes_cluster_name":   p.Cluster.Name,
 		"kubernetes_admin_password": p.Cluster.AdminPassword,
-		"tls_directory":             ae.tlsDirectory,
+		"tls_directory":             pki.GeneratedCertsDirectory,
 		"calico_network_type":       p.Cluster.Networking.Type,
 		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
 		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
@@ -139,7 +168,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		ev["local_repoository_path"] = p.Cluster.LocalRepository
 	}
 
-	if ae.restartServices {
+	if ae.options.RestartServices {
 		services := []string{"etcd", "apiserver", "controller", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
 		for _, s := range services {
 			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
