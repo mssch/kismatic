@@ -41,8 +41,18 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 		Short: "apply your plan file to create a Kismatic cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			planner := &install.FilePlanner{File: installOpts.planFilename}
+			executorOpts := install.ExecutorOptions{
+				CAConfigFile:             applyOpts.caConfigFile,
+				CASigningRequest:         applyOpts.caCSR,
+				CASigningProfile:         applyOpts.caSigningProfile,
+				SkipCAGeneration:         applyOpts.skipCAGeneration,
+				GeneratedAssetsDirectory: applyOpts.generatedAssetsDir,
+				RestartServices:          applyOpts.restartServices,
+				OutputFormat:             applyOpts.outputFormat,
+				Verbose:                  applyOpts.verbose,
+			}
 			// TODO: Do we want to parameterize stderr?
-			executor, err := install.NewExecutor(out, os.Stderr, applyOpts.generatedAssetsDir, applyOpts.restartServices, applyOpts.verbose, applyOpts.outputFormat)
+			executor, err := install.NewExecutor(out, os.Stderr, executorOpts)
 			if err != nil {
 				return err
 			}

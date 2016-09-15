@@ -9,6 +9,31 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
 )
 
+// ExecutorOptions are used to configure the executor
+type ExecutorOptions struct {
+	// CASigningRequest in JSON format expected by cfSSL
+	CASigningRequest string
+	// CAConfigFile is the Certificate Authority configuration file
+	// in the JSON format expected by cfSSL
+	CAConfigFile string
+	// CASigningProfile is the signing profile to be used when signing
+	// certificates. The profile must be defined in the CAConfigFile
+	CASigningProfile string
+	// SkipCAGeneration determines whether the Certificate Authority should
+	// be generated. If false, an existing CA file must exist.
+	SkipCAGeneration bool
+	// GeneratedAssetsDirectory is the location where generated assets
+	// are to be stored
+	GeneratedAssetsDirectory string
+	// RestartServices determines whether the cluster services should be
+	// restarted during the installation.
+	RestartServices bool
+	// OutputFormat sets the format of the executor
+	OutputFormat string
+	// Verbose output from the executor
+	Verbose bool
+}
+
 // The Executor will carry out the installation plan
 type Executor interface {
 	Install(p *Plan) error
@@ -18,47 +43,46 @@ type ansibleExecutor struct {
 	runner          ansible.Runner
 	tlsDirectory    string
 	restartServices bool
-	modifyHostsFile bool
 	ansibleStdout   io.Reader
 	out             io.Writer
 	explainer       Explainer
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
-func NewExecutor(out io.Writer, errOut io.Writer, tlsDirectory string, restartServices, verbose bool, outputFormat string) (Executor, error) {
+func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
 
 	// configure ansible output
 	var outFormat ansible.OutputFormat
 	var explainer Explainer
-	switch outputFormat {
+	switch options.OutputFormat {
 	case "raw":
 		outFormat = ansible.RawFormat
 		explainer = &RawExplainer{out}
 	case "simple":
 		outFormat = ansible.JSONLinesFormat
-		explainer = &AnsibleEventExplainer{ansible.EventStream, out, verbose}
+		explainer = &AnsibleEventExplainer{ansible.EventStream, out, options.Verbose}
 	default:
-		return nil, fmt.Errorf("Output format %q is not supported", outputFormat)
+		return nil, fmt.Errorf("Output format %q is not supported", options.OutputFormat)
 	}
 
 	// Make ansible write to pipe, so that we can read on our end.
 	r, w := io.Pipe()
-	runner, err := ansible.NewRunner(w, errOut, ansibleDir, outFormat, verbose)
+	runner, err := ansible.NewRunner(w, errOut, ansibleDir, outFormat, options.Verbose)
 	if err != nil {
 		return nil, fmt.Errorf("error creating ansible runner: %v", err)
 	}
 
-	td, err := filepath.Abs(tlsDirectory)
+	td, err := filepath.Abs(options.GeneratedAssetsDirectory)
 	if err != nil {
-		return nil, fmt.Errorf("error getting absolute path from %q: %v", tlsDirectory, err)
+		return nil, fmt.Errorf("error getting absolute path from %q: %v", options.GeneratedAssetsDirectory, err)
 	}
 
 	return &ansibleExecutor{
 		runner:          runner,
 		tlsDirectory:    td,
-		restartServices: restartServices,
+		restartServices: options.RestartServices,
 		ansibleStdout:   r,
 		out:             out,
 		explainer:       explainer,
