@@ -25,7 +25,6 @@
   - name: force restart scheduler
     command: /bin/true
     notify:
-      - reload services
       - enable kube-scheduler
       - restart kube-scheduler service
       - verify kube-scheduler is running

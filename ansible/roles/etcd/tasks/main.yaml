@@ -41,7 +41,6 @@
   - name: force restart etcd
     command: /bin/true
     notify:
-      - reload services
       - enable etcd
       - restart etcd service
     when: force_etcd_restart is defined and force_etcd_restart == "true"

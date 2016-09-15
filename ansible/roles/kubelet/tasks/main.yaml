@@ -24,7 +24,6 @@
   - name: force restart kubelet
     command: /bin/true
     notify:
-      - reload services
       - enable kubelet
       - restart kubelet service
       - verify kubelet is running
