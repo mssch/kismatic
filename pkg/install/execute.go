@@ -129,6 +129,7 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 		// TODO: attempt to clean up these paths somehow...
 		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
 		"kismatic_preflight_checker_local": filepath.Join("ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector"),
+		"modify_hosts_file":                strconv.FormatBool(p.Cluster.HostsFileDNS),
 	}
 
 	// Set explainer for pre-flight checks
