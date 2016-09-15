@@ -87,6 +87,12 @@ func (c *applyCmd) run() error {
 	}
 	plan, err := c.planner.Read()
 
+	// Run pre-flight check
+	err = c.executor.RunPreflightCheck(plan)
+	if err != nil {
+		return fmt.Errorf("error during pre-flight checks: %v", err)
+	}
+
 	// Generate or read cluster Certificate Authority
 	util.PrintHeader(c.out, "Configuring Certificates")
 	var ca *tls.CA

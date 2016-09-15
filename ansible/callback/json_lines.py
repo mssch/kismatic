@@ -101,7 +101,8 @@ class CallbackModule(CallbackBase):
     def _on_runner_result(self, event_type, result):
         event_data = {
             'host': result._host.name,
-            'result': result._result
+            'result': result._result,
+            'ignoreErrors': result._task.ignore_errors
         }
         e = self._new_event(event_type, event_data)
         self._print_event(e)
@@ -148,7 +149,6 @@ class CallbackModule(CallbackBase):
         }
         e = self._new_event(self.PLAY_START, data)
         self._print_event(e)
-        return
 
     # def v2_playbook_on_stats(self, stats):
     #     self.playbook_on_stats(stats)

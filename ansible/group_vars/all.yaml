@@ -133,3 +133,6 @@ repository_mode: 0775
 etcd_k8s_version: 3.0.4
 etcd_networking_version: 2.3.7
 #local_repoository_path: http://192.168.99.20:6080 pass this as a runtime parameter for local repository
+
+# Preflight check variables
+preflight_check_tcp_ports: "{{etcd_k8s_client_port}},{{etcd_networking_client_port}},{{kubernetes_master_secure_port}},{{kubernetes_master_insecure_port}}"

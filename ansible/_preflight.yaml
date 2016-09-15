@@ -1,10 +1,9 @@
 ---
   - hosts: all
-    name: Verify Cluster
+    name: Run Cluster Pre-Flight Checks
     remote_user: root
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
-
     roles:
       - preflight
