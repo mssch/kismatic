@@ -22,7 +22,7 @@ type OutputFormat string
 
 // Runner for running Ansible playbooks
 type Runner interface {
-	RunPlaybook(inventory Inventory, playbookFile string, vars ExtraVars) error
+	RunPlaybook(inventory Inventory, playbookFile string, vars ExtraVars, outputFormat OutputFormat, verbose bool) error
 }
 
 type runner struct {
@@ -31,10 +31,8 @@ type runner struct {
 	// ErrOut is the stderr writer for the Ansible process
 	errOut io.Writer
 
-	pythonPath   string
-	ansibleDir   string
-	outputFormat OutputFormat
-	verbose      bool
+	pythonPath string
+	ansibleDir string
 }
 
 // ExtraVars is a map of variables that are used when executing a playbook
@@ -49,24 +47,22 @@ func (v ExtraVars) commandLineVars() (string, error) {
 }
 
 // NewRunner returns a new runner for executing Ansible commands.
-func NewRunner(out, errOut io.Writer, ansibleDir string, outputFormat OutputFormat, verbose bool) (Runner, error) {
+func NewRunner(out, errOut io.Writer, ansibleDir string) (Runner, error) {
 	ppath, err := getPythonPath()
 	if err != nil {
 		return nil, err
 	}
 
 	return &runner{
-		out:          out,
-		errOut:       errOut,
-		pythonPath:   ppath,
-		ansibleDir:   ansibleDir,
-		outputFormat: outputFormat,
-		verbose:      verbose,
+		out:        out,
+		errOut:     errOut,
+		pythonPath: ppath,
+		ansibleDir: ansibleDir,
 	}, nil
 }
 
 // RunPlaybook with the given inventory and extra vars
-func (r *runner) RunPlaybook(inv Inventory, playbookFile string, vars ExtraVars) error {
+func (r *runner) RunPlaybook(inv Inventory, playbookFile string, vars ExtraVars, outputFormat OutputFormat, verbose bool) error {
 	extraVars, err := vars.commandLineVars()
 	if err != nil {
 		return fmt.Errorf("error building extra vars: %v", err)
@@ -84,11 +80,11 @@ func (r *runner) RunPlaybook(inv Inventory, playbookFile string, vars ExtraVars)
 	os.Setenv("PYTHONPATH", r.pythonPath)
 	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
-	if r.outputFormat != RawFormat {
-		os.Setenv("ANSIBLE_STDOUT_CALLBACK", string(r.outputFormat))
+	if outputFormat != RawFormat {
+		os.Setenv("ANSIBLE_STDOUT_CALLBACK", string(outputFormat))
 	}
 
-	if r.verbose {
+	if verbose {
 		cmd.Args = append(cmd.Args, "-vvvv")
 	}
 

@@ -5,10 +5,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
+	"github.com/apprenda/kismatic-platform/pkg/install/explain"
 	"github.com/apprenda/kismatic-platform/pkg/tls"
 	"github.com/apprenda/kismatic-platform/pkg/util"
 )
@@ -43,6 +45,7 @@ type ExecutorOptions struct {
 // The Executor will carry out the installation plan
 type Executor interface {
 	Install(p *Plan) error
+	RunPreflightCheck(*Plan) error
 }
 
 type ansibleExecutor struct {
@@ -50,7 +53,7 @@ type ansibleExecutor struct {
 	runner        ansible.Runner
 	ansibleStdout io.Reader
 	out           io.Writer
-	explainer     Explainer
+	outputFormat  ansible.OutputFormat
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
@@ -65,21 +68,18 @@ func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Exec
 
 	// configure ansible output
 	var outFormat ansible.OutputFormat
-	var explainer Explainer
 	switch options.OutputFormat {
 	case "raw":
 		outFormat = ansible.RawFormat
-		explainer = &RawExplainer{out}
 	case "simple":
 		outFormat = ansible.JSONLinesFormat
-		explainer = &AnsibleEventExplainer{ansible.EventStream, out, options.Verbose}
 	default:
 		return nil, fmt.Errorf("Output format %q is not supported", options.OutputFormat)
 	}
 
 	// Make ansible write to pipe, so that we can read on our end.
 	r, w := io.Pipe()
-	runner, err := ansible.NewRunner(w, errOut, ansibleDir, outFormat, options.Verbose)
+	runner, err := ansible.NewRunner(w, errOut, ansibleDir)
 	if err != nil {
 		return nil, fmt.Errorf("error creating ansible runner: %v", err)
 	}
@@ -89,7 +89,7 @@ func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Exec
 		runner:        runner,
 		ansibleStdout: r,
 		out:           out,
-		explainer:     explainer,
+		outputFormat:  outFormat,
 	}, nil
 }
 
@@ -148,32 +148,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	util.PrettyPrintOkf(ae.out, "Generated cluster certificates at %q", pki.GeneratedCertsDirectory)
 
 	// Build the ansible inventory
-	etcdNodes := []ansible.Node{}
-	for _, n := range p.Etcd.Nodes {
-		etcdNodes = append(etcdNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
-	}
-	masterNodes := []ansible.Node{}
-	for _, n := range p.Master.Nodes {
-		masterNodes = append(masterNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
-	}
-	workerNodes := []ansible.Node{}
-	for _, n := range p.Worker.Nodes {
-		workerNodes = append(workerNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
-	}
-	inventory := ansible.Inventory{
-		{
-			Name:  "etcd",
-			Nodes: etcdNodes,
-		},
-		{
-			Name:  "master",
-			Nodes: masterNodes,
-		},
-		{
-			Name:  "worker",
-			Nodes: workerNodes,
-		},
-	}
+	inventory := buildInventoryFromPlan(p)
 
 	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
@@ -208,14 +183,92 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	// Start explainer for handling ansible's stdout stream
-	go ae.explainer.Explain(ae.ansibleStdout)
+	var exp explain.StreamExplainer
+	switch ae.outputFormat {
+	case ansible.RawFormat:
+		exp = &explain.RawExplainer{ae.out}
+	case ansible.JSONLinesFormat:
+		exp = &explain.AnsibleEventStreamExplainer{
+			EventStream:    ansible.EventStream,
+			Out:            ae.out,
+			Verbose:        ae.options.Verbose,
+			EventExplainer: &explain.DefaultEventExplainer{},
+		}
+	}
+	go exp.Explain(ae.ansibleStdout)
 
 	// Run the installation playbook
-	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev)
+	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev, ae.outputFormat, ae.options.Verbose)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
 	return nil
+}
+
+func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
+	// build inventory
+	inventory := buildInventoryFromPlan(p)
+
+	ev := ansible.ExtraVars{
+		// TODO: attempt to clean up these paths somehow...
+		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
+		"kismatic_preflight_checker_local": filepath.Join("ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector"),
+		"modify_hosts_file":                strconv.FormatBool(p.Cluster.HostsFileDNS),
+	}
+
+	// Set explainer for pre-flight checks
+	var exp explain.StreamExplainer
+	switch ae.outputFormat {
+	case ansible.RawFormat:
+		exp = &explain.RawExplainer{ae.out}
+	case ansible.JSONLinesFormat:
+		exp = &explain.AnsibleEventStreamExplainer{
+			EventStream:    ansible.EventStream,
+			Out:            ae.out,
+			Verbose:        ae.options.Verbose,
+			EventExplainer: &explain.PreflightEventExplainer{&explain.DefaultEventExplainer{}},
+		}
+	}
+	go exp.Explain(ae.ansibleStdout)
+
+	// run pre-flight playbook
+	playbook := "preflight.yaml"
+	err := ae.runner.RunPlaybook(inventory, playbook, ev, ae.outputFormat, ae.options.Verbose)
+	if err != nil {
+		return fmt.Errorf("error running pre-flight checks: %v", err)
+	}
+	return nil
+}
+
+func buildInventoryFromPlan(p *Plan) ansible.Inventory {
+	etcdNodes := []ansible.Node{}
+	for _, n := range p.Etcd.Nodes {
+		etcdNodes = append(etcdNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	masterNodes := []ansible.Node{}
+	for _, n := range p.Master.Nodes {
+		masterNodes = append(masterNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	workerNodes := []ansible.Node{}
+	for _, n := range p.Worker.Nodes {
+		workerNodes = append(workerNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+	}
+	inventory := ansible.Inventory{
+		{
+			Name:  "etcd",
+			Nodes: etcdNodes,
+		},
+		{
+			Name:  "master",
+			Nodes: masterNodes,
+		},
+		{
+			Name:  "worker",
+			Nodes: workerNodes,
+		},
+	}
+
+	return inventory
 }
 
 // Converts plan node to ansible node
