@@ -1,34 +1,34 @@
 ---
-  # verify specified cluster for minimum requirements
-  # OS specific reqs
   - name: verify systemd
     fail: msg="systemd is required"
     when: ansible_service_mgr != "systemd"
     changed_when: false
-  - name: check if checker is running 
-    command: pgrep -f kismatic-preflight-checker
-    register: checker_running
+    # Kill any existing inspector before attempting
+    # to start a new one.
+  - name: check if Kismatic Inspector is running
+    command: pgrep -f kismatic-inspector
+    register: inspector_running
     ignore_errors: yes
-  - name: kill existing checker
-    command: pkill -f kismatic-preflight-checker
-    when: checker_running.failed is not defined
-  - name: copy pre-flight checker utility to node
+  - name: kill existing Kismatic Inspector
+    command: pkill -f kismatic-inspector
+    when: inspector_running.failed is not defined
+  - name: copy Kismatic Inspector to node
     copy:
       src: "{{ kismatic_preflight_checker }}"
-      dest: "{{ bin_dir }}/kismatic-preflight-checker"
+      dest: "{{ bin_dir }}/kismatic-inspector"
       mode: 0744
-  - name: start the pre-flight checker
-    command: "{{ bin_dir }}/kismatic-preflight-checker"
+  - name: start the Kismatic Inspector in server mode
+    command: "{{ bin_dir }}/kismatic-inspector"
     async: 300
-    register: start_checker
-  - name: ensure pre-flight checker is running
-    async_status: jid={{ start_checker.ansible_job_id }}
+    register: start_inspector
+  - name: ensure Kismatic Inspector server is running
+    async_status: jid={{ start_inspector.ansible_job_id }}
     register: job_result
-  # Run the pre-flights checks, and always stop the checker regardless of result     
+  # Run the pre-flights checks, and always stop the checker regardless of result
   - block:
-    - name: run pre-flight checks
+    - name: run pre-flight checks using Kismatic Inspector
       local_action: command {{ kismatic_preflight_checker_local | default(kismatic_preflight_checker) }} --node {{ ansible_host }}:8081 -o json --check-tcp-ports {{preflight_check_tcp_ports}}
       become: no
     always:
-      - name: stop the pre-flight checker 
-        command: pkill -f kismatic-preflight-checker
+      - name: stop the inspector
+        command: pkill -f kismatic-inspector
