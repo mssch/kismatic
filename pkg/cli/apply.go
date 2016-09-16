@@ -11,12 +11,12 @@ import (
 )
 
 type applyCmd struct {
-	out              io.Writer
-	planner          install.Planner
-	executor         install.Executor
-	planFile         string
-	skipCAGeneration bool
-	certsDestination string
+	out                io.Writer
+	planner            install.Planner
+	executor           install.Executor
+	planFile           string
+	skipCAGeneration   bool
+	generatedAssetsDir string
 }
 
 type applyOpts struct {
@@ -100,15 +100,21 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
+	util.PrintOk(c.out, "\nThe cluster was installed successfully.")
 
 	// Generate kubeconfig
-	util.PrintHeader(c.out, "Generating Cluster Config")
-	err = install.GenerateKubeconfig(plan, c.certsDestination)
+	util.PrintHeader(c.out, "Generating Kubeconfig File")
+	err = install.GenerateKubeconfig(plan, c.generatedAssetsDir)
 	if err != nil {
-		util.PrettyPrintWarn(c.out, "Kubeconfig generation error, you may need to setup kubectl manually\n")
+		util.PrettyPrintWarnf(c.out, "Error generating kubeconfig file: %v\n", err)
 	} else {
-		util.PrettyPrintOk(c.out, "Generated kubecofnig file at \"config\", to use \"cp config ~/.kube/config\"")
+		util.PrettyPrintOkf(c.out, "Generated kubeconfig file in the %q directory.", c.generatedAssetsDir)
+		fmt.Fprintf(c.out, "\n")
+		msg := "To use the generated kubeconfig file with kubectl, you can use \"kubectl --kubeconfig %s/kubeconfig\"," +
+			" or you may copy the config file into your home directory: \"cp %[1]s/kubeconfig ~/.kube/config\"\n"
+		fmt.Fprintf(c.out, msg, c.generatedAssetsDir)
 	}
 
+	fmt.Fprintf(c.out, "\n")
 	return nil
 }

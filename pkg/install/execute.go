@@ -3,6 +3,7 @@ package install
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -49,15 +50,15 @@ type Executor interface {
 }
 
 type ansibleExecutor struct {
-	options       ExecutorOptions
-	runner        ansible.Runner
-	ansibleStdout io.Reader
-	out           io.Writer
-	outputFormat  ansible.OutputFormat
+	options             ExecutorOptions
+	runner              ansible.Runner
+	stdout              io.Writer
+	consoleOutputFormat ansible.OutputFormat
+	ansibleOutput       io.Reader
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
-func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Executor, error) {
+func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
 
@@ -66,7 +67,7 @@ func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Exec
 		options.RunsDirectory = "./runs"
 	}
 
-	// configure ansible output
+	// Setup the console output format
 	var outFormat ansible.OutputFormat
 	switch options.OutputFormat {
 	case "raw":
@@ -77,7 +78,7 @@ func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Exec
 		return nil, fmt.Errorf("Output format %q is not supported", options.OutputFormat)
 	}
 
-	// Make ansible write to pipe, so that we can read on our end.
+	// Send ansible stdout to pipe
 	r, w := io.Pipe()
 	runner, err := ansible.NewRunner(w, errOut, ansibleDir)
 	if err != nil {
@@ -85,11 +86,11 @@ func NewExecutor(out io.Writer, errOut io.Writer, options ExecutorOptions) (Exec
 	}
 
 	return &ansibleExecutor{
-		options:       options,
-		runner:        runner,
-		ansibleStdout: r,
-		out:           out,
-		outputFormat:  outFormat,
+		options:             options,
+		runner:              runner,
+		stdout:              stdout,
+		consoleOutputFormat: outFormat,
+		ansibleOutput:       r,
 	}, nil
 }
 
@@ -119,21 +120,21 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		CAConfigFile:            ae.options.CAConfigFile,
 		CASigningProfile:        ae.options.CASigningProfile,
 		GeneratedCertsDirectory: filepath.Join(ae.options.GeneratedAssetsDirectory, "keys"),
-		Log: ae.out,
+		Log: ae.stdout,
 	}
 
 	// Generate or read cluster Certificate Authority
-	util.PrintHeader(ae.out, "Configuring Certificates")
+	util.PrintHeader(ae.stdout, "Configuring Certificates")
 	var ca *tls.CA
 	var err error
 	if !ae.options.SkipCAGeneration {
-		util.PrettyPrintOk(ae.out, "Generating cluster Certificate Authority")
+		util.PrettyPrintOk(ae.stdout, "Generating cluster Certificate Authority")
 		ca, err = pki.GenerateClusterCA(p)
 		if err != nil {
 			return fmt.Errorf("error generating CA for the cluster: %v", err)
 		}
 	} else {
-		util.PrettyPrint(ae.out, "Skipping Certificate Authority generation\n")
+		util.PrettyPrint(ae.stdout, "Skipping Certificate Authority generation\n")
 		ca, err = pki.ReadClusterCA(p)
 		if err != nil {
 			return fmt.Errorf("error reading cluster CA: %v", err)
@@ -145,7 +146,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	if err != nil {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
-	util.PrettyPrintOkf(ae.out, "Generated cluster certificates at %q", pki.GeneratedCertsDirectory)
+	util.PrettyPrintOkf(ae.stdout, "Generated cluster certificates at %q", pki.GeneratedCertsDirectory)
 
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(p)
@@ -182,25 +183,34 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		}
 	}
 
-	// Start explainer for handling ansible's stdout stream
-	var exp explain.StreamExplainer
-	switch ae.outputFormat {
-	case ansible.RawFormat:
-		exp = &explain.RawExplainer{ae.out}
+	// Setup sinks for explainer and ansible stdout
+	var explainerOut, ansibleOut io.Writer
+	switch ae.consoleOutputFormat {
 	case ansible.JSONLinesFormat:
-		exp = &explain.AnsibleEventStreamExplainer{
-			EventStream:    ansible.EventStream,
-			Out:            ae.out,
-			Verbose:        ae.options.Verbose,
-			EventExplainer: &explain.DefaultEventExplainer{},
-		}
+		explainerOut = ae.stdout
+		ansibleOut = ioutil.Discard // TODO: Send to log file once we know where it is
+	case ansible.RawFormat:
+		explainerOut = ioutil.Discard
+		ansibleOut = ae.stdout // TODO: Also send to log file once we know where it is
 	}
-	go exp.Explain(ae.ansibleStdout)
 
 	// Run the installation playbook
-	err = ae.runner.RunPlaybook(inventory, "kubernetes.yaml", ev, ae.outputFormat, ae.options.Verbose)
+	eventStream, err := ae.runner.StartPlaybook("kubernetes.yaml", inventory, ev)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
+	}
+
+	// Start event explainer to handle events
+	eventExplainer := &explain.AnsibleEventStreamExplainer{
+		Out:            explainerOut,
+		Verbose:        ae.options.Verbose,
+		EventExplainer: &explain.DefaultEventExplainer{},
+	}
+	go eventExplainer.Explain(eventStream)
+	go io.Copy(ansibleOut, ae.ansibleOutput)
+
+	if err = ae.runner.WaitPlaybook(); err != nil {
+		return fmt.Errorf("error running playbook: %v", err)
 	}
 	return nil
 }
@@ -216,27 +226,38 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 		"modify_hosts_file":                strconv.FormatBool(p.Cluster.HostsFileDNS),
 	}
 
-	// Set explainer for pre-flight checks
-	var exp explain.StreamExplainer
-	switch ae.outputFormat {
-	case ansible.RawFormat:
-		exp = &explain.RawExplainer{ae.out}
+	// Setup sinks for explainer and ansible stdout
+	var explainerOut, ansibleOut io.Writer
+	switch ae.consoleOutputFormat {
 	case ansible.JSONLinesFormat:
-		exp = &explain.AnsibleEventStreamExplainer{
-			EventStream:    ansible.EventStream,
-			Out:            ae.out,
-			Verbose:        ae.options.Verbose,
-			EventExplainer: &explain.PreflightEventExplainer{&explain.DefaultEventExplainer{}},
-		}
+		explainerOut = ae.stdout
+		ansibleOut = ioutil.Discard // TODO: Send to log file once we know where it is
+	case ansible.RawFormat:
+		explainerOut = ioutil.Discard
+		ansibleOut = ae.stdout // TODO: Also send to log file once we know where it is
 	}
-	go exp.Explain(ae.ansibleStdout)
 
 	// run pre-flight playbook
 	playbook := "preflight.yaml"
-	err := ae.runner.RunPlaybook(inventory, playbook, ev, ae.outputFormat, ae.options.Verbose)
+	eventStream, err := ae.runner.StartPlaybook(playbook, inventory, ev)
 	if err != nil {
 		return fmt.Errorf("error running pre-flight checks: %v", err)
 	}
+
+	// Start event explainer to handle events
+	eventExplainer := &explain.AnsibleEventStreamExplainer{
+		Out:            explainerOut,
+		Verbose:        ae.options.Verbose,
+		EventExplainer: &explain.PreflightEventExplainer{&explain.DefaultEventExplainer{}},
+	}
+	go eventExplainer.Explain(eventStream)
+	go io.Copy(ansibleOut, ae.ansibleOutput)
+
+	err = ae.runner.WaitPlaybook()
+	if err != nil {
+		return fmt.Errorf("error running pre-flight checks: %v", err)
+	}
+
 	return nil
 }
 
