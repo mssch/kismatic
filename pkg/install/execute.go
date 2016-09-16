@@ -51,10 +51,9 @@ type Executor interface {
 
 type ansibleExecutor struct {
 	options             ExecutorOptions
-	runner              ansible.Runner
 	stdout              io.Writer
 	consoleOutputFormat ansible.OutputFormat
-	ansibleOutput       io.Reader
+	ansibleDir          string
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
@@ -79,18 +78,12 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 	}
 
 	// Send ansible stdout to pipe
-	r, w := io.Pipe()
-	runner, err := ansible.NewRunner(w, errOut, ansibleDir)
-	if err != nil {
-		return nil, fmt.Errorf("error creating ansible runner: %v", err)
-	}
 
 	return &ansibleExecutor{
 		options:             options,
-		runner:              runner,
 		stdout:              stdout,
 		consoleOutputFormat: outFormat,
-		ansibleOutput:       r,
+		ansibleDir:          ansibleDir,
 	}, nil
 }
 
@@ -199,8 +192,13 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		ansibleOut = io.MultiWriter(ae.stdout, ansibleLogFile)
 	}
 
+	runner, err := ansible.NewRunner(ansibleOut, ansibleOut, ae.ansibleDir)
+	if err != nil {
+		return fmt.Errorf("error creating ansible runner: %v", err)
+	}
+
 	// Run the installation playbook
-	eventStream, err := ae.runner.StartPlaybook("kubernetes.yaml", inventory, ev)
+	eventStream, err := runner.StartPlaybook("kubernetes.yaml", inventory, ev)
 	if err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
@@ -212,9 +210,8 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		EventExplainer: &explain.DefaultEventExplainer{},
 	}
 	go eventExplainer.Explain(eventStream)
-	go io.Copy(ansibleOut, ae.ansibleOutput)
 
-	if err = ae.runner.WaitPlaybook(); err != nil {
+	if err = runner.WaitPlaybook(); err != nil {
 		return fmt.Errorf("error running playbook: %v", err)
 	}
 	return nil
@@ -260,9 +257,14 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 		ansibleOut = io.MultiWriter(ae.stdout, ansibleLogFile)
 	}
 
+	runner, err := ansible.NewRunner(ansibleOut, ansibleOut, ae.ansibleDir)
+	if err != nil {
+		return fmt.Errorf("error creating ansible runner: %v", err)
+	}
+
 	// run pre-flight playbook
 	playbook := "preflight.yaml"
-	eventStream, err := ae.runner.StartPlaybook(playbook, inventory, ev)
+	eventStream, err := runner.StartPlaybook(playbook, inventory, ev)
 	if err != nil {
 		return fmt.Errorf("error running pre-flight checks: %v", err)
 	}
@@ -274,9 +276,8 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 		EventExplainer: &explain.PreflightEventExplainer{&explain.DefaultEventExplainer{}},
 	}
 	go eventExplainer.Explain(eventStream)
-	go io.Copy(ansibleOut, ae.ansibleOutput)
 
-	err = ae.runner.WaitPlaybook()
+	err = runner.WaitPlaybook()
 	if err != nil {
 		return fmt.Errorf("error running pre-flight checks: %v", err)
 	}
