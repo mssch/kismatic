@@ -43,7 +43,7 @@ func doValidate(out io.Writer, planner install.Planner, planFile string) error {
 	if !ok {
 		util.PrettyPrintErr(out, "Validating installation plan file")
 		for _, err := range errs {
-			util.PrintErrorf(out, "- %v\n", err)
+			util.PrintErrorf(out, "- %v", err)
 		}
 		return fmt.Errorf("validation error prevents installation from proceeding")
 	}
