@@ -1,9 +1,11 @@
 package install
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"text/template"
 
 	"github.com/apprenda/kismatic-platform/pkg/util"
 
@@ -43,12 +45,17 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 
 // Write the plan to the file system
 func (fp *FilePlanner) Write(p *Plan) error {
-	d, err := yaml.Marshal(&p)
+	tmpl, err := template.New("plan").Parse(planTemplate)
 	if err != nil {
-		return fmt.Errorf("error marshalling install plan template: %v", err)
+		return fmt.Errorf("error reading plan template: %v", err)
+	}
+	var planBuffer bytes.Buffer
+	err = tmpl.Execute(&planBuffer, struct{ Plan Plan }{Plan: *p})
+	if err != nil {
+		return fmt.Errorf("error creating plan template: %v", err)
 	}
 
-	err = ioutil.WriteFile(fp.File, d, 0644)
+	err = ioutil.WriteFile(fp.File, planBuffer.Bytes(), 0644)
 	if err != nil {
 		return fmt.Errorf("error writing install plan template: %v", err)
 	}
@@ -117,3 +124,54 @@ func getDNSServiceIP(p *Plan) (string, error) {
 	}
 	return ip.To4().String(), nil
 }
+
+const planTemplate = `{{ $p := .Plan }}#Multi line comment
+#Another line goes here
+cluster:
+  name: {{$p.Cluster.Name}}  #inline comment
+  admin_password: {{$p.Cluster.AdminPassword}}
+  local_repository: {{$p.Cluster.LocalRepository}}
+  hosts_file_dns: {{$p.Cluster.HostsFileDNS}}
+  networking:
+    type: {{$p.Cluster.Networking.Type}}
+    pod_cidr_block: {{$p.Cluster.Networking.PodCIDRBlock}}
+    service_cidr_block: {{$p.Cluster.Networking.ServiceCIDRBlock}}
+  certificates:
+    expiry: {{$p.Cluster.Certificates.Expiry}}
+    location_city: {{$p.Cluster.Certificates.LocationCity}}
+    location_state: {{$p.Cluster.Certificates.LocationState}}
+    location_country: {{$p.Cluster.Certificates.LocationCountry}}
+  ssh:
+    user: {{$p.Cluster.SSH.User}}
+    ssh_key: {{$p.Cluster.SSH.Key}}
+    ssh_port: {{$p.Cluster.SSH.Port}}
+#Another comment
+etcd:
+  expected_count: {{$p.Etcd.ExpectedCount}}
+  nodes:
+{{- range $n := $p.Etcd.Nodes}}
+  - host: {{$n.Host}}
+    ip: {{$n.IP}}
+    internalip: {{$n.InternalIP}}
+    labels: {{$n.Labels}}
+{{- end}}
+master:
+  expected_count: {{$p.Master.ExpectedCount}}
+  nodes:
+{{- range $n := $p.Master.Nodes}}
+  - host: {{$n.Host}}
+    ip: {{$n.IP}}
+    internalip: {{$n.InternalIP}}
+    labels: {{$n.Labels}}
+{{- end}}
+  load_balanced_fqdn: {{$p.Master.LoadBalancedFQDN}}
+  load_balanced_short_name: {{$p.Master.LoadBalancedShortName}}
+worker:
+  expected_count: {{$p.Worker.ExpectedCount}}
+  nodes:
+{{- range $n := $p.Worker.Nodes}}
+  - host: {{$n.Host}}
+    ip: {{$n.IP}}
+    internalip: {{$n.InternalIP}}
+    labels: {{$n.Labels}}
+{{- end}}`

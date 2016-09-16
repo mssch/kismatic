@@ -34,18 +34,17 @@ const planAWSOverlay = `cluster:
     ssh_key: {{.HomeDirectory}}/.ssh/kismatic-integration-testing.pem
     ssh_port: 22
 etcd:
-  expected_count: {{len .Etcd}} 
+  expected_count: {{len .Etcd}}
   nodes:
   {{range .Etcd}}- host: {{.Hostname}}
     ip: {{.Publicip}}
     internalip: {{.Privateip}}{{end}}
 master:
-  nodegroup:
-    expected_count: {{len .Master}}
-    nodes:
-    {{range .Master}}- host: {{.Hostname}}
-      ip: {{.Publicip}}
-      internalip: {{.Privateip}}{{end}}
+  expected_count: {{len .Master}}
+  nodes:
+  {{range .Master}}- host: {{.Hostname}}
+    ip: {{.Publicip}}
+    internalip: {{.Privateip}}{{end}}
   load_balanced_fqdn: {{.MasterNodeFQDN}}
   load_balanced_short_name: {{.MasterNodeShortName}}
 worker:

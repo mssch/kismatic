@@ -145,7 +145,13 @@ func (s *SSHConfig) validate() (bool, []error) {
 
 func (ng *NodeGroup) validate() (bool, []error) {
 	v := newValidator()
-	if len(ng.Nodes) != ng.ExpectedCount {
+	if ng == nil || len(ng.Nodes) <= 0 {
+		v.addError(fmt.Errorf("At least one node is required"))
+	}
+	if ng.ExpectedCount <= 0 {
+		v.addError(fmt.Errorf("Node count must be greater than 0"))
+	}
+	if len(ng.Nodes) != ng.ExpectedCount && (len(ng.Nodes) > 0 && ng.ExpectedCount > 0) {
 		v.addError(fmt.Errorf("Expected node count (%d) does not match the number of nodes provided (%d)", ng.ExpectedCount, len(ng.Nodes)))
 	}
 	for i, n := range ng.Nodes {
