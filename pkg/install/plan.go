@@ -51,6 +51,9 @@ func (fp *FilePlanner) Write(p *Plan) error {
 	}
 	var planBuffer bytes.Buffer
 	err = tmpl.Execute(&planBuffer, struct{ Plan Plan }{Plan: *p})
+	if err != nil {
+		return fmt.Errorf("error creating plan template: %v", err)
+	}
 
 	err = ioutil.WriteFile(fp.File, planBuffer.Bytes(), 0644)
 	if err != nil {

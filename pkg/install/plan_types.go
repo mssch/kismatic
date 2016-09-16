@@ -41,26 +41,18 @@ type Node struct {
 	Labels     []string
 }
 
-// MasterNodeGroup is the collection of master nodes
-type MasterNodeGroup struct {
-	ExpectedCount         int `yaml:"expected_count"`
-	Nodes                 []Node
-	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
-	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
-}
-
 // A NodeGroup is a collection of nodes
 type NodeGroup struct {
 	ExpectedCount int `yaml:"expected_count"`
 	Nodes         []Node
 }
 
-// // MasterNodeGroup is the collection of master nodes
-// type MasterNodeGroup struct {
-// 	NodeGroup
-// 	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
-// 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
-// }
+// MasterNodeGroup is the collection of master nodes
+type MasterNodeGroup struct {
+	NodeGroup             `yaml:",inline"`
+	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
+	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
+}
 
 // Plan is the installation plan that the user intends to execute
 type Plan struct {

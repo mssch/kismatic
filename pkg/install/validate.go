@@ -149,7 +149,7 @@ func (ng *NodeGroup) validate() (bool, []error) {
 		v.addError(fmt.Errorf("Atleast one node is required"))
 	}
 	if ng.ExpectedCount <= 0 {
-		v.addError(fmt.Errorf("Expected node count must be greater than 0"))
+		v.addError(fmt.Errorf("Node count must be greater than 0"))
 	}
 	if len(ng.Nodes) != ng.ExpectedCount && (len(ng.Nodes) > 0 && ng.ExpectedCount > 0) {
 		v.addError(fmt.Errorf("Expected node count (%d) does not match the number of nodes provided (%d)", ng.ExpectedCount, len(ng.Nodes)))
@@ -162,7 +162,7 @@ func (ng *NodeGroup) validate() (bool, []error) {
 
 func (mng *MasterNodeGroup) validate() (bool, []error) {
 	v := newValidator()
-	v.validate(&NodeGroup{mng.ExpectedCount, mng.Nodes})
+	v.validate(&mng.NodeGroup)
 
 	if mng.LoadBalancedFQDN == "" {
 		v.addError(fmt.Errorf("Load balanced FQDN is required"))
