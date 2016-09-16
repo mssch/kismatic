@@ -48,7 +48,7 @@ func (explainer *PreflightEventExplainer) ExplainEvent(e ansible.Event, verbose 
 			util.PrintOk(buf, "\n=> Successful pre-flight checks:")
 			for _, r := range results {
 				if r.Success {
-					buf.WriteString(fmt.Sprintf("   - %q\n", r.Name))
+					buf.WriteString(fmt.Sprintf("   - %s\n", r.Name))
 				}
 			}
 		}
