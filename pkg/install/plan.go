@@ -153,15 +153,14 @@ etcd:
     labels: {{$n.Labels}}
 {{- end}}
 master:
-  nodegroup:
-    expected_count: {{$p.Master.NodeGroup.ExpectedCount}}
-    nodes:
-	{{- range $n := $p.Master.NodeGroup.Nodes}}
-    - host: {{$n.Host}}
-      ip: {{$n.IP}}
-      internalip: {{$n.InternalIP}}
-      labels: {{$n.Labels}}
-	{{- end}}
+  expected_count: {{$p.Master.ExpectedCount}}
+  nodes:
+{{- range $n := $p.Master.Nodes}}
+  - host: {{$n.Host}}
+    ip: {{$n.IP}}
+    internalip: {{$n.InternalIP}}
+    labels: {{$n.Labels}}
+{{- end}}
   load_balanced_fqdn: {{$p.Master.LoadBalancedFQDN}}
   load_balanced_short_name: {{$p.Master.LoadBalancedShortName}}
 worker:

@@ -156,7 +156,7 @@ func (ng *NodeGroup) validate() (bool, []error) {
 
 func (mng *MasterNodeGroup) validate() (bool, []error) {
 	v := newValidator()
-	v.validate(&mng.NodeGroup)
+	v.validate(&NodeGroup{mng.ExpectedCount, mng.Nodes})
 
 	if mng.LoadBalancedFQDN == "" {
 		v.addError(fmt.Errorf("Load balanced FQDN is required"))
