@@ -3,9 +3,9 @@ package install
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"os"
+	"text/template"
 
 	"github.com/apprenda/kismatic-platform/pkg/util"
 
