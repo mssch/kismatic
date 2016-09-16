@@ -146,7 +146,7 @@ func (s *SSHConfig) validate() (bool, []error) {
 func (ng *NodeGroup) validate() (bool, []error) {
 	v := newValidator()
 	if ng == nil || len(ng.Nodes) <= 0 {
-		v.addError(fmt.Errorf("Atleast one node is required"))
+		v.addError(fmt.Errorf("At least one node is required"))
 	}
 	if ng.ExpectedCount <= 0 {
 		v.addError(fmt.Errorf("Node count must be greater than 0"))
