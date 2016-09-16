@@ -97,7 +97,7 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 // Install the cluster according to the installation plan
 func (ae *ansibleExecutor) Install(p *Plan) error {
 	start := time.Now()
-	runDirectory := filepath.Join(ae.options.RunsDirectory, start.Format("20060102030405"))
+	runDirectory := filepath.Join(ae.options.RunsDirectory, "install", start.Format("20060102030405"))
 	if err := os.MkdirAll(runDirectory, 0777); err != nil {
 		return fmt.Errorf("error creating working directory for installation: %v", err)
 	}
@@ -150,13 +150,12 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(p)
-
 	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
 		return fmt.Errorf("error getting DNS service IP: %v", err)
 	}
 
-	// Need absolute path for ansible. Otherwise it looks in the wrong place.
+	// Need absolute path for ansible. Otherwise ansible looks for it in the wrong place.
 	tlsDir, err := filepath.Abs(pki.GeneratedCertsDirectory)
 	if err != nil {
 		return fmt.Errorf("failed to determine absolute path to %s: %v", pki.GeneratedCertsDirectory, err)
@@ -183,15 +182,21 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		}
 	}
 
+	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
+	ansibleLogFile, err := os.Create(ansibleLogFilename)
+	if err != nil {
+		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
+	}
+
 	// Setup sinks for explainer and ansible stdout
 	var explainerOut, ansibleOut io.Writer
 	switch ae.consoleOutputFormat {
 	case ansible.JSONLinesFormat:
 		explainerOut = ae.stdout
-		ansibleOut = ioutil.Discard // TODO: Send to log file once we know where it is
+		ansibleOut = ansibleLogFile
 	case ansible.RawFormat:
 		explainerOut = ioutil.Discard
-		ansibleOut = ae.stdout // TODO: Also send to log file once we know where it is
+		ansibleOut = io.MultiWriter(ae.stdout, ansibleLogFile)
 	}
 
 	// Run the installation playbook
@@ -216,9 +221,27 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 }
 
 func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
-	// build inventory
-	inventory := buildInventoryFromPlan(p)
+	start := time.Now()
+	runDirectory := filepath.Join(ae.options.RunsDirectory, "preflight", start.Format("20060102030405"))
+	if err := os.MkdirAll(runDirectory, 0777); err != nil {
+		return fmt.Errorf("error creating working directory for preflight: %v", err)
+	}
 
+	// Save the plan file that was used for this execution
+	fp := FilePlanner{
+		File: filepath.Join(runDirectory, "kismatic-cluster.yaml"),
+	}
+	if err := fp.Write(p); err != nil {
+		return fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
+	}
+
+	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
+	ansibleLogFile, err := os.Create(ansibleLogFilename)
+	if err != nil {
+		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
+	}
+
+	inventory := buildInventoryFromPlan(p)
 	ev := ansible.ExtraVars{
 		// TODO: attempt to clean up these paths somehow...
 		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
@@ -231,10 +254,10 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 	switch ae.consoleOutputFormat {
 	case ansible.JSONLinesFormat:
 		explainerOut = ae.stdout
-		ansibleOut = ioutil.Discard // TODO: Send to log file once we know where it is
+		ansibleOut = ansibleLogFile
 	case ansible.RawFormat:
 		explainerOut = ioutil.Discard
-		ansibleOut = ae.stdout // TODO: Also send to log file once we know where it is
+		ansibleOut = io.MultiWriter(ae.stdout, ansibleLogFile)
 	}
 
 	// run pre-flight playbook
