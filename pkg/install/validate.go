@@ -89,7 +89,7 @@ func (n *NetworkConfig) validate() (bool, []error) {
 	if n.Type == "" {
 		v.addError(errors.New("Networking type cannot be empty"))
 	}
-	if n.Type != "bridged" && n.Type != "overlay" {
+	if n.Type != "routed" && n.Type != "overlay" {
 		v.addError(fmt.Errorf("Invalid networking type %q was provided", n.Type))
 	}
 	if n.PodCIDRBlock == "" {
