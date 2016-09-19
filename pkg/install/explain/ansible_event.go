@@ -11,23 +11,18 @@ import (
 
 // AnsibleEventStreamExplainer explains the incoming ansible event stream
 type AnsibleEventStreamExplainer struct {
-	// EventStream is a function that returns a channel of ansible Events
-	EventStream func(in io.Reader) <-chan ansible.Event
 	// Out is the destination where the explanations are written
 	Out io.Writer
 	// Verbose is used to control the output level
 	Verbose bool
-	// ExplainEvent returns a string explanation fo the ansible event.
-	// The function returns an empty string if the event should be ignored.
-	// ExplainEvent   func(e ansible.Event, verbose bool) string
+	// EventExplainer for processing ansible events
 	EventExplainer AnsibleEventExplainer
 }
 
 // Explain the incoming ansible event stream
-func (e *AnsibleEventStreamExplainer) Explain(in io.Reader) error {
-	events := e.EventStream(in)
-	for ev := range events {
-		exp := e.EventExplainer.ExplainEvent(ev, e.Verbose)
+func (e *AnsibleEventStreamExplainer) Explain(events <-chan ansible.Event) error {
+	for event := range events {
+		exp := e.EventExplainer.ExplainEvent(event, e.Verbose)
 		if exp != "" {
 			fmt.Fprint(e.Out, exp)
 		}

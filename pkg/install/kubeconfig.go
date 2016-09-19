@@ -45,25 +45,27 @@ users:
 `
 
 // GenerateKubeconfig generate a kubeconfig file for a specific user
-func GenerateKubeconfig(p *Plan, certPath string) error {
+func GenerateKubeconfig(p *Plan, generatedAssetsDir string) error {
 	user := "admin"
 	token := p.Cluster.AdminPassword
 	server := "https://" + p.Master.LoadBalancedFQDN + ":6443"
 	cluster := p.Cluster.Name
 	context := p.Cluster.Name + "-" + user
 
+	certsDir := filepath.Join(generatedAssetsDir, "keys")
+
 	// Base64 encoded ca
-	caEncoded, err := util.Base64String(filepath.Join(certPath, "ca.pem"))
+	caEncoded, err := util.Base64String(filepath.Join(certsDir, "ca.pem"))
 	if err != nil {
 		return fmt.Errorf("error reading ca file for kubeconfig: %v", err)
 	}
 	// Base64 encoded cert
-	certEncoded, err := util.Base64String(filepath.Join(certPath, user+".pem"))
+	certEncoded, err := util.Base64String(filepath.Join(certsDir, user+".pem"))
 	if err != nil {
 		return fmt.Errorf("error reading certificate file for kubeconfig: %v", err)
 	}
 	// Base64 encoded key
-	keyEncoded, err := util.Base64String(filepath.Join(certPath, user+"-key.pem"))
+	keyEncoded, err := util.Base64String(filepath.Join(certsDir, user+"-key.pem"))
 	if err != nil {
 		return fmt.Errorf("error reading certificate key file for kubeconfig: %v", err)
 	}
@@ -80,7 +82,7 @@ func GenerateKubeconfig(p *Plan, certPath string) error {
 		return fmt.Errorf("error processing config template: %v", err)
 	}
 	// Write config file
-	kubeconfigFile := "config"
+	kubeconfigFile := filepath.Join(generatedAssetsDir, "kubeconfig")
 	err = ioutil.WriteFile(kubeconfigFile, kubeconfig.Bytes(), 0644)
 	if err != nil {
 		return fmt.Errorf("error writing kubeconfig file: %v", err)

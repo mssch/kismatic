@@ -14,13 +14,11 @@ func TestApplyCmdInvalidPlanFound(t *testing.T) {
 		plan:   &install.Plan{},
 	}
 	fe := &fakeExecutor{}
-	fpki := &fakePKI{}
 
 	applyCmd := &applyCmd{
 		out:      out,
 		planner:  fp,
 		executor: fe,
-		pki:      fpki,
 	}
 
 	err := applyCmd.run()
@@ -32,10 +30,6 @@ func TestApplyCmdInvalidPlanFound(t *testing.T) {
 
 	if !fp.readCalled {
 		t.Error("the plan was not read")
-	}
-
-	if fpki.called {
-		t.Error("cert generation was called with an invalid plan")
 	}
 
 	if fe.installCalled {

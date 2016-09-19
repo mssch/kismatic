@@ -1,10 +1,10 @@
 package explain
 
-import "io"
+import "github.com/apprenda/kismatic-platform/pkg/ansible"
 
 // StreamExplainer wraps the Explain method, which reads the incoming stream, and explains to the user what is
 // happening
 type StreamExplainer interface {
 	// Explain the incoming stream
-	Explain(in io.Reader) error
+	Explain(events <-chan ansible.Event) error
 }
