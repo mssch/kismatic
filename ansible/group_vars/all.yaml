@@ -75,7 +75,7 @@ kubernetes_dns_service_ip: 10.3.0.10
 kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_master_secure_port}}
 kubernetes_services_cidr: 10.3.0.0/24
 kubernetes_pods_cidr: 10.2.0.0/16
-calico_network_type: overlay # Default to the overlay type. Must be 'bridged' or 'overlay'
+calico_network_type: overlay # Default to the overlay type. Must be 'routed' or 'overlay'
 #===============================================================================
 # kubernetes
 # directories
