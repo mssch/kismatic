@@ -24,7 +24,6 @@
   - name: force restart proxy
     command: /bin/true
     notify:
-      - reload services
       - enable kube-proxy
       - restart kube-proxy service
       - verify kube-proxy is running

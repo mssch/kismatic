@@ -41,6 +41,8 @@ type DefaultEventExplainer struct {
 	// printing output to the console... I am not a fan of this, but it'll
 	// do for now...
 	lastPlay          string
+	lastTask          string
+	firstTaskPrinted  bool
 	FirstErrorPrinted bool
 }
 
@@ -54,30 +56,42 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		}
 	case *ansible.PlayStartEvent:
 		if explainer.lastPlay != "" {
-			util.PrintOk(buf, "[OK]")
+			if verbose {
+				util.PrintOkf(buf, "%s Finished", explainer.lastPlay)
+			} else {
+				util.PrintOk(buf, "[OK]")
+			}
 		}
 		util.PrettyPrintf(buf, "%s\t", event.Name)
+
 		explainer.lastPlay = event.Name
+		explainer.firstTaskPrinted = false
 	case *ansible.RunnerUnreachableEvent:
-		util.PrintErrorf(buf, "[UNREACHABLE] %s", event.Host)
+		if !verbose {
+			util.PrintWarn(buf, "[WARNING]")
+			explainer.lastPlay = ""
+		}
+		util.PrettyPrintUnreachablef(buf, "  %s", event.Host)
 	case *ansible.RunnerFailedEvent:
 		if event.IgnoreErrors {
-			return ""
+			if !verbose {
+				util.PrintWarn(buf, "[WARNING]")
+				explainer.lastPlay = ""
+			}
+			util.PrettyPrintf(buf, "- Running task: %s\n", explainer.lastTask)
+			util.PrettyPrintErrorIgnoredf(buf, "  %s", event.Host)
+		} else {
+			util.PrettyPrintErrf(buf, "  %s %s", event.Host, event.Result.Message)
 		}
-		if !explainer.FirstErrorPrinted {
-			util.PrintError(buf, "[ERROR]\n")
-		}
-		util.PrintErrorf(buf, "Error from %s: %s", event.Host, event.Result.Message)
 		if event.Result.Stdout != "" {
-			util.PrettyPrintf(buf, "---- STDOUT ----\n%s\n", event.Result.Stdout)
+			util.PrintErrorf(buf, "---- STDOUT ----\n%s", event.Result.Stdout)
 		}
 		if event.Result.Stderr != "" {
-			util.PrettyPrintf(buf, "---- STDERR ----\n%s\n", event.Result.Stderr)
+			util.PrintErrorf(buf, "---- STDERR ----\n%s", event.Result.Stderr)
 		}
 		if event.Result.Stderr != "" || event.Result.Stdout != "" {
-			util.PrettyPrintf(buf, "---------------\n")
+			util.PrintErrorf(buf, "---------------")
 		}
-
 	// Do nothing with the following events
 	case *ansible.RunnerItemRetryEvent:
 		return ""
@@ -86,24 +100,34 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 			util.PrettyPrintf(buf, "Running playbook %s\n", event.Name)
 		}
 	case *ansible.TaskStartEvent:
+		explainer.lastTask = event.Name
 		if verbose {
+			if !explainer.firstTaskPrinted {
+				util.PrettyPrint(buf, "\n")
+				explainer.firstTaskPrinted = true
+			}
 			util.PrettyPrintf(buf, "- Running task: %s\n", event.Name)
 		}
 	case *ansible.HandlerTaskStartEvent:
+		explainer.lastTask = event.Name
 		if verbose {
+			if !explainer.firstTaskPrinted {
+				util.PrettyPrint(buf, "\n")
+				explainer.firstTaskPrinted = true
+			}
 			util.PrettyPrintf(buf, "- Running task: %s\n", event.Name)
 		}
 	case *ansible.RunnerItemOKEvent:
 		if verbose {
-			util.PrettyPrintf(buf, "   [OK] %s\n", event.Host)
+			util.PrettyPrintOkf(buf, "  %s", event.Host)
 		}
 	case *ansible.RunnerSkippedEvent:
 		if verbose {
-			util.PrettyPrintf(buf, "   [SKIPPED] %s\n", event.Host)
+			util.PrettyPrintSkippedf(buf, "  %s", event.Host)
 		}
 	case *ansible.RunnerOKEvent:
 		if verbose {
-			util.PrettyPrintf(buf, "   [OK] %s\n", event.Host)
+			util.PrettyPrintOkf(buf, "  %s", event.Host)
 		}
 	}
 	return buf.String()

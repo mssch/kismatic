@@ -34,7 +34,6 @@
   - name: force restart calico-node
     command: /bin/true
     notify:
-      - reload services
       - enable calico-node
       - restart calico-node service
     when: force_calico_node_restart is defined and force_calico_node_restart == "true"

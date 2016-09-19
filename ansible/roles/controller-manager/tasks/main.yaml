@@ -25,7 +25,6 @@
   - name: force restart controller-manager
     command: /bin/true
     notify:
-      - reload services
       - enable kube-controller-manager
       - restart kube-controller-manager service
       - verify kube-controller-manager is running

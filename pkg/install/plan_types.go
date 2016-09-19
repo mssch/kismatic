@@ -49,7 +49,7 @@ type NodeGroup struct {
 
 // MasterNodeGroup is the collection of master nodes
 type MasterNodeGroup struct {
-	NodeGroup
+	NodeGroup             `yaml:",inline"`
 	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
 }

@@ -134,7 +134,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	if ae.options.RestartServices {
-		services := []string{"etcd", "apiserver", "controller", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
+		services := []string{"etcd", "apiserver", "controller_manager", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
 		for _, s := range services {
 			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
 		}
