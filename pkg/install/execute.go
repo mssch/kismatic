@@ -108,6 +108,11 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(p)
+	invFilename := filepath.Join(runDirectory, "ansible-inventory.ini")
+	if err = ioutil.WriteFile(invFilename, inventory.ToINI(), 0644); err != nil {
+		return fmt.Errorf("error persisting inventory file %q: %v", invFilename, err)
+	}
+
 	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
 		return fmt.Errorf("error getting DNS service IP: %v", err)
