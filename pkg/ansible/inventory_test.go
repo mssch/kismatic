@@ -52,7 +52,7 @@ func TestInventoryINIGeneration(t *testing.T) {
 		},
 	}
 
-	ini := string(inv.toINI())
+	ini := string(inv.ToINI())
 
 	expected := `[etcd]
 etcd01 ansible_host=10.0.0.1 internal_ipv4=192.168.0.11 ansible_ssh_private_key_file=id_rsa ansible_port=2222 ansible_user=alice

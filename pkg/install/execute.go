@@ -176,7 +176,12 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
 	}
 
+	// Build inventory and save it in runs directory
 	inventory := buildInventoryFromPlan(p)
+	invFilename := filepath.Join(runDirectory, "ansible-inventory.ini")
+	if err = ioutil.WriteFile(invFilename, inventory.ToINI(), 0644); err != nil {
+		return fmt.Errorf("error persisting inventory file %q: %v", invFilename, err)
+	}
 	ev := ansible.ExtraVars{
 		// TODO: attempt to clean up these paths somehow...
 		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
@@ -197,7 +202,7 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 
 func (ae *ansibleExecutor) createRunDirectory(runName string) (string, error) {
 	start := time.Now()
-	runDirectory := filepath.Join(ae.options.RunsDirectory, runName, start.Format("20060102030405"))
+	runDirectory := filepath.Join(ae.options.RunsDirectory, runName, start.Format("2006-01-02-15-04-05"))
 	if err := os.MkdirAll(runDirectory, 0777); err != nil {
 		return "", fmt.Errorf("error creating directory: %v", err)
 	}

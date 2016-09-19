@@ -95,7 +95,7 @@ func (r *runner) StartPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	}
 
 	inventoryFile := filepath.Join(r.ansibleDir, "inventory.ini")
-	if err = ioutil.WriteFile(inventoryFile, inv.toINI(), 0644); err != nil {
+	if err = ioutil.WriteFile(inventoryFile, inv.ToINI(), 0644); err != nil {
 		return nil, fmt.Errorf("error writing inventory file to %q: %v", inventoryFile, err)
 	}
 

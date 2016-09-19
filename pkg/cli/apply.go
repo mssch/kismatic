@@ -93,6 +93,7 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error during pre-flight checks: %v", err)
 	}
+	fmt.Fprintf(c.out, "\n")
 
 	// Perform the installation
 	util.PrintHeader(c.out, "Installing Cluster")
