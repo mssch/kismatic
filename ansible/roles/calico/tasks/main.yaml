@@ -12,7 +12,7 @@
   # install calicoctl
   - name: download calicoctl - v{{ calico_ctl_version }}
     get_url:
-      url: "{{ local_repoository_path|default(calicoctl_binary_path) }}/calicoctl"
+      url: "{{ local_repository_path|default(calicoctl_binary_path) }}/calicoctl"
       dest: "{{ bin_dir }}"
       mode: "{{ calico_executable_mode }}"
   # pre-download Docker image
@@ -23,7 +23,7 @@
     template:
       src: calico-node.service.j2
       dest: "{{ kubernetes_service_dir }}/calico-node.service"
-      owner: "{{ kuberntes_owner }}"
+      owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kuberntes_service_mode }}"
     notify:
@@ -49,12 +49,12 @@
   # install calico binaries
   - name: download calico - v{{ calico_version }}
     get_url:
-      url: "{{ local_repoository_path|default(calico_cni_path) }}/calico"
+      url: "{{ local_repository_path|default(calico_cni_path) }}/calico"
       dest: "{{ network_plugin_bin_dir }}/calico"
       mode: "{{ calico_executable_mode }}"
   - name: download calico-ipam - v{{ calico_version }}
     get_url:
-      url: "{{ local_repoository_path|default(calico_cni_path) }}/calico-ipam"
+      url: "{{ local_repository_path|default(calico_cni_path) }}/calico-ipam"
       dest: "{{ network_plugin_bin_dir }}/calico-ipam"
       mode: "{{ calico_executable_mode }}"
   # configure calcico

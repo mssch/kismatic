@@ -3,6 +3,6 @@
     template:
       src: network-environment.j2
       dest: "{{ network_environment_path }}"
-      owner: "{{ kuberntes_owner }}"
+      owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ network_environment_mode }}"
