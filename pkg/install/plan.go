@@ -174,4 +174,5 @@ worker:
     ip: {{$n.IP}}
     internalip: {{$n.InternalIP}}
     labels: {{$n.Labels}}
-{{- end}}`
+{{- end}}
+`
