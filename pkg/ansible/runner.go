@@ -23,7 +23,7 @@ type OutputFormat string
 
 // Runner for running Ansible playbooks
 type Runner interface {
-	// StartPlaybook runs the playbook asynchronusly with the given inventory and extra vars.
+	// StartPlaybook runs the playbook asynchronously with the given inventory and extra vars.
 	// It returns a read-only channel that must be consumed for the playbook execution to proceed.
 	StartPlaybook(playbookFile string, inventory Inventory, vars ExtraVars) (<-chan Event, error)
 	// WaitPlaybook blocks until the execution of the playbook is complete. If an error occurred,
