@@ -88,7 +88,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	if p.Cluster.LocalRepository != "" {
-		ev["local_repoository_path"] = p.Cluster.LocalRepository
+		ev["local_repository_path"] = p.Cluster.LocalRepository
 	}
 
 	if ae.restartServices {

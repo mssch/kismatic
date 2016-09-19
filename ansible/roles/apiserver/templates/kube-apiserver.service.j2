@@ -4,7 +4,7 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
 Environment=INTERNAL_IP={{ internal_ipv4 }}
-Environment=APISERVER_COUNT={{ kubernetes_mater_apiserver_count }}
+Environment=APISERVER_COUNT={{ kubernetes_master_apiserver_count }}
 Environment=AUTHORIZATION_POLICY_FILE={{ kubernetes_authorization_policy_path }}
 Environment=ETCD_SERVERS={{ etcd_k8s_cluster_ip_list }}
 Environment=CA_FILE={{ kubernetes_certificates_ca_path }}
