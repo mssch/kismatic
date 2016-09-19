@@ -24,7 +24,7 @@ func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Comman
 }
 
 func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile string) error {
-	util.PrettyPrint(out, "Plan your Kismatic cluster:\n")
+	fmt.Fprintln(out, "Plan your Kismatic cluster:")
 
 	// etcd nodes
 	etcdNodes, err := util.PromptForInt(in, out, "Number of etcd nodes", 3)
@@ -51,7 +51,7 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 		return fmt.Errorf("The number of worker nodes must be greater than zero")
 	}
 
-	util.PrettyPrintf(out, "Generating installation plan file with %d etcd nodes, %d master nodes and %d worker nodes\n",
+	fmt.Fprintf(out, "Generating installation plan file with %d etcd nodes, %d master nodes and %d worker nodes\n",
 		etcdNodes, masterNodes, workerNodes)
 
 	plan := buildPlan(etcdNodes, masterNodes, workerNodes)
@@ -60,7 +60,7 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	if err != nil {
 		return fmt.Errorf("error planning installation: %v", err)
 	}
-	util.PrettyPrint(out, "Edit the file to further describe your cluster. Once ready, execute the \"install verify\" command to proceed\n")
+	fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the \"install verify\" command to proceed\n")
 
 	return nil
 }

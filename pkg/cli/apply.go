@@ -103,7 +103,7 @@ func (c *applyCmd) run() error {
 			return fmt.Errorf("error generating CA for the cluster: %v", err)
 		}
 	} else {
-		util.PrettyPrint(c.out, "Skipping Certificate Authority generation\n")
+		util.PrettyPrintOk(c.out, "Skipping Certificate Authority generation")
 		ca, err = c.pki.ReadClusterCA(plan)
 		if err != nil {
 			return fmt.Errorf("error reading cluster CA: %v", err)
@@ -115,7 +115,7 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
-	util.PrettyPrintOkf(c.out, "Generated cluster certificates at %q", c.certsDestination)
+	util.PrettyPrintOk(c.out, "Generated cluster certificates at %q", c.certsDestination)
 
 	// Perform the installation
 	util.PrintHeader(c.out, "Installing Cluster")

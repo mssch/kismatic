@@ -14,12 +14,12 @@ func main() {
 
 	cmd, err := cli.NewKismaticCommand(version, os.Stdin, os.Stdout)
 	if err != nil {
-		util.PrintErrorf(os.Stderr, "Error initializing command: %v", err)
+		util.PrintColor(os.Stderr, util.Red, "Error initializing command: %v\n", err)
 		os.Exit(1)
 	}
 
 	if err := cmd.Execute(); err != nil {
-		util.PrintErrorf(os.Stderr, "Error running command: %v", err)
+		util.PrintColor(os.Stderr, util.Red, "Error running command: %v\n", err)
 		os.Exit(1)
 	}
 

@@ -99,7 +99,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) er
 			continue
 		}
 		seenNodes = append(seenNodes, n.Host)
-		util.PrettyPrintOkf(lp.Log, "Generating certificates for %q", n.Host)
+		util.PrettyPrintOk(lp.Log, "Generating certificates for %q", n.Host)
 		nodeList := append(defaultCertHosts, n.Host, n.IP, n.InternalIP)
 		key, cert, err := generateCert(p.Cluster.Name, p, nodeList, ca)
 		if err != nil {
@@ -113,7 +113,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) er
 
 	// Finally, create certs for user
 	for _, user := range users {
-		util.PrettyPrintOkf(lp.Log, "Generating certificates for user %q", user)
+		util.PrettyPrintOk(lp.Log, "Generating certificates for user %q", user)
 		adminKey, adminCert, err := generateCert(user, p, []string{user}, ca)
 		if err != nil {
 			return fmt.Errorf("error during user cert generation: %v", err)

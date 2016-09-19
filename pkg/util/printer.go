@@ -3,135 +3,84 @@ package util
 import (
 	"fmt"
 	"io"
-	"strings"
 	"text/tabwriter"
 
 	"github.com/fatih/color"
 )
 
 const (
-	notype          = ""
-	oktype          = "[OK]"
-	errtype         = "[ERROR]"
-	skippedtype     = "[SKIPPED]"
-	warntype        = "[WARNING]"
-	unreachabletype = "[UNREACHABLE]"
-	errignoredtype  = "[ERROR IGNORED]"
+	NoType          = ""
+	OKType          = "[OK]"
+	ErrType         = "[ERROR]"
+	SkippedType     = "[SKIPPED]"
+	WarnType        = "[WARNING]"
+	UnreachableType = "[UNREACHABLE]"
+	ErrIgnoredType  = "[ERROR IGNORED]"
 )
 
-var green = color.New(color.FgGreen)
-var red = color.New(color.FgRed)
-var orange = color.New(color.FgRed, color.FgYellow)
-var blue = color.New(color.FgCyan)
+var Green = color.New(color.FgGreen)
+var Red = color.New(color.FgRed)
+var Orange = color.New(color.FgRed, color.FgYellow)
+var Blue = color.New(color.FgCyan)
 
-// PrettyPrintOkf [OK](Green) with formatted string
-func PrettyPrintOkf(out io.Writer, msg string, a ...interface{}) {
-	print(out, msg, oktype, a...)
+// PrettyPrintOk [OK](Green) with formatted string
+func PrettyPrintOk(out io.Writer, msg string, a ...interface{}) {
+	print(out, msg, OKType, a...)
 }
 
-// PrettyPrintOk [OK](Green)
-func PrettyPrintOk(out io.Writer, msg string) {
-	print(out, msg, oktype)
-}
-
-// PrettyPrintErrf [ERROR](Red) with formatted string
-func PrettyPrintErrf(out io.Writer, msg string, a ...interface{}) {
-	print(out, msg, errtype, a...)
-}
-
-// PrettyPrintErr [ERROR](Red)
-func PrettyPrintErr(out io.Writer, msg string) {
-	print(out, msg, errtype)
-}
-
-// PrettyPrintUnreachablef [UNREACHABLE](Red) with formatted string
-func PrettyPrintUnreachablef(out io.Writer, msg string, a ...interface{}) {
-	print(out, msg, unreachabletype, a...)
-}
-
-// PrettyPrintUnreachable [UNREACHABLE](Red)
-func PrettyPrintUnreachable(out io.Writer, msg string) {
-	print(out, msg, unreachabletype)
-}
-
-// PrettyPrintErrorIgnoredf [ERROR-IGNORED](Red) with formatted string
-func PrettyPrintErrorIgnoredf(out io.Writer, msg string, a ...interface{}) {
-	print(out, msg, errignoredtype, a...)
-}
-
-// PrettyPrintErrorIgnored [ERROR-IGNORED](Red)
-func PrettyPrintErrorIgnored(out io.Writer, msg string) {
-	print(out, msg, errignoredtype)
-}
-
-// PrettyPrintWarnf [WARNING](Orange) with formatted string
-func PrettyPrintWarnf(out io.Writer, msg string, a ...interface{}) {
-	print(out, msg, warntype, a...)
-}
-
-// PrettyPrintWarn [WARNING](Orange)
-func PrettyPrintWarn(out io.Writer, msg string) {
-	print(out, msg, warntype)
-}
-
-// PrettyPrintSkippedf [SKIPPED](blue) with formatted string
-func PrettyPrintSkippedf(out io.Writer, msg string, a ...interface{}) {
-	print(out, msg, skippedtype, a...)
-}
-
-// PrettyPrintSkipped [WARNING](Orange)
-func PrettyPrintSkipped(out io.Writer, msg string) {
-	print(out, msg, skippedtype)
-}
-
-// PrettyPrintf no type will be displayed, used for just single line printing
-func PrettyPrintf(out io.Writer, msg string, a ...interface{}) {
-	print(out, msg, notype, a...)
+// PrettyPrintErr [ERROR](Red) with formatted string
+func PrettyPrintErr(out io.Writer, msg string, a ...interface{}) {
+	print(out, msg, ErrType, a...)
 }
 
 // PrettyPrint no type will be displayed, used for just single line printing
-func PrettyPrint(out io.Writer, msg string) {
-	print(out, msg, notype)
+func PrettyPrint(out io.Writer, msg string, a ...interface{}) {
+	print(out, msg+"\t", NoType, a...)
 }
 
-// PrintErrorf print whole message in error(Red) format
-func PrintErrorf(out io.Writer, msg string, a ...interface{}) {
-	printColor(out, msg, red, a...)
+// PrettyPrintWarn [WARNING](Orange) with formatted string
+func PrettyPrintWarn(out io.Writer, msg string, a ...interface{}) {
+	print(out, msg, WarnType, a...)
 }
 
-// PrintError print whole message in error(Red)
-func PrintError(out io.Writer, msg string) {
-	printColor(out, msg, red)
+// PrettyPrintErrorIgnored [ERROR IGNORED](Red) with formatted string
+func PrettyPrintErrorIgnored(out io.Writer, msg string, a ...interface{}) {
+	print(out, msg, ErrIgnoredType, a...)
 }
 
-// PrintOkf print whole message in green(Red) format
-func PrintOkf(out io.Writer, msg string, a ...interface{}) {
-	printColor(out, msg, green, a...)
+// PrettyPrintUnreachable [UNREACHABLE](Red) with formatted string
+func PrettyPrintUnreachable(out io.Writer, msg string, a ...interface{}) {
+	print(out, msg, UnreachableType, a...)
 }
 
-// PrintOk print whole message in ok(Green)
-func PrintOk(out io.Writer, msg string) {
-	printColor(out, msg, green)
+// PrettyPrintSkipped [SKIPPED](blue) with formatted string
+func PrettyPrintSkipped(out io.Writer, msg string, a ...interface{}) {
+	print(out, msg, SkippedType, a...)
 }
 
-// PrintWarnf print whole message in warn(Orange) format
-func PrintWarnf(out io.Writer, msg string, a ...interface{}) {
-	printColor(out, msg, orange, a...)
+// PrintOk print whole message in green(Red) format
+func PrintOk(out io.Writer) {
+	PrintColor(out, Green, OKType)
 }
 
-// PrintWarn print whole message in warn(Orange)
-func PrintWarn(out io.Writer, msg string) {
-	printColor(out, msg, orange)
+// PrintOkln print whole message in green(Red) format
+func PrintOkln(out io.Writer) {
+	PrintColor(out, Green, OKType+"\n")
 }
 
-// PrintSkippedf print whole message in green(Red) format
-func PrintSkippedf(out io.Writer, msg string, a ...interface{}) {
-	printColor(out, msg, blue, a...)
+// PrintError print whole message in error(Red) format
+func PrintError(out io.Writer) {
+	PrintColor(out, Red, ErrType)
 }
 
-// PrintSkipped print whole message in ok(Green)
-func PrintSkipped(out io.Writer, msg string) {
-	printColor(out, msg, blue)
+// PrintWarn print whole message in warn(Orange) format
+func PrintWarn(out io.Writer) {
+	PrintColor(out, Orange, WarnType)
+}
+
+// PrintSkipped print whole message in green(Red) format
+func PrintSkipped(out io.Writer) {
+	PrintColor(out, Blue, SkippedType)
 }
 
 // PrintHeader will print header with predifined width
@@ -143,6 +92,13 @@ func PrintHeader(out io.Writer, msg string) {
 	w.Flush()
 }
 
+// PrintColor prints text in color
+func PrintColor(out io.Writer, clr *color.Color, msg string, a ...interface{}) {
+	// Remove any newline, results in only one \n
+	line := fmt.Sprintf("%s", clr.SprintfFunc()(msg, a...))
+	fmt.Fprint(out, line)
+}
+
 func print(out io.Writer, msg, status string, a ...interface{}) {
 	w := tabwriter.NewWriter(out, 80, 0, 0, ' ', 0)
 	// print message
@@ -150,18 +106,18 @@ func print(out io.Writer, msg, status string, a ...interface{}) {
 	fmt.Fprintf(w, format, a...)
 
 	// print status
-	if status != notype {
+	if status != NoType {
 		// get correct color
 		var clr *color.Color
 		switch status {
-		case oktype:
-			clr = green
-		case errtype, unreachabletype:
-			clr = red
-		case warntype, errignoredtype:
-			clr = orange
-		case skippedtype:
-			clr = blue
+		case OKType:
+			clr = Green
+		case ErrType, UnreachableType:
+			clr = Red
+		case WarnType, ErrIgnoredType:
+			clr = Orange
+		case SkippedType:
+			clr = Blue
 		}
 
 		sformat := "%s\n"
@@ -169,11 +125,4 @@ func print(out io.Writer, msg, status string, a ...interface{}) {
 
 	}
 	w.Flush()
-}
-
-func printColor(out io.Writer, msg string, clr *color.Color, a ...interface{}) {
-	format := "%s"
-	// Remove any newline, results in only one \n
-	line := strings.Trim(fmt.Sprintf(format, clr.SprintfFunc()(msg, a...)), "\n") + "\n"
-	fmt.Fprint(out, line)
 }
