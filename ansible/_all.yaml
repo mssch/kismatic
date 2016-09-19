@@ -1,8 +1,8 @@
 ---
   - hosts: all
     name: Configure Cluster Prerequisites
-    remote_user: root
-    become_method: sudo
+    gather_facts: no
+    become: yes
     vars_files:
       - group_vars/all.yaml
 
