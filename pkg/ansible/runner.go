@@ -72,11 +72,14 @@ func NewRunner(out, errOut io.Writer, ansibleDir string) (Runner, error) {
 // WaitPlaybook blocks until the ansible process running the playbook exits.
 // If the process exits with a non-zero status, it will return an error.
 func (r *runner) WaitPlaybook() error {
+	if r.waitPlaybook == nil {
+		return fmt.Errorf("wait called, but playbook not started")
+	}
 	execErr := r.waitPlaybook()
 	// Process exited, we can clean up named pipe
 	removeErr := os.Remove(r.namedPipe)
 	if removeErr != nil && execErr != nil {
-		fmt.Errorf("an error occurred running ansible: %v. Removing named pipe at %q failed: %v", execErr, r.namedPipe, removeErr)
+		return fmt.Errorf("an error occurred running ansible: %v. Removing named pipe at %q failed: %v", execErr, r.namedPipe, removeErr)
 	}
 	if removeErr != nil {
 		return fmt.Errorf("failed to clean up named pipe at %q: %v", r.namedPipe, removeErr)
