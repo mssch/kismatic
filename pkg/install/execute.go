@@ -164,6 +164,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	// Run the installation playbook
+	util.PrintHeader(ae.stdout, "Installing Cluster")
 	playbook := "kubernetes.yaml"
 	eventExplainer := &explain.DefaultEventExplainer{}
 	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, ev, ansibleLogFile); err != nil {
@@ -249,7 +250,7 @@ func (ae *ansibleExecutor) generateTLSAssets(p *Plan) (certsDir string, err erro
 			return "", fmt.Errorf("error generating CA for the cluster: %v", err)
 		}
 	} else {
-		util.PrettyPrint(ae.stdout, "Skipping Certificate Authority generation\n")
+		util.PrettyPrintOk(ae.stdout, "Skipping Certificate Authority generation\n")
 		ca, err = pki.ReadClusterCA(p)
 		if err != nil {
 			return "", fmt.Errorf("error reading cluster CA: %v", err)
@@ -261,7 +262,7 @@ func (ae *ansibleExecutor) generateTLSAssets(p *Plan) (certsDir string, err erro
 	if err != nil {
 		return "", fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
-	util.PrettyPrintOkf(ae.stdout, "Generated cluster certificates at %q", pki.GeneratedCertsDirectory)
+	util.PrettyPrintOk(ae.stdout, "Generated cluster certificates at %q", pki.GeneratedCertsDirectory)
 	return keysDir, nil
 }
 

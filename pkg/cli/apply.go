@@ -93,23 +93,21 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error during pre-flight checks: %v", err)
 	}
-	fmt.Fprintf(c.out, "\n")
 
 	// Perform the installation
-	util.PrintHeader(c.out, "Installing Cluster")
 	err = c.executor.Install(plan)
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
-	util.PrintOk(c.out, "\nThe cluster was installed successfully.")
+	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully\n")
 
 	// Generate kubeconfig
 	util.PrintHeader(c.out, "Generating Kubeconfig File")
 	err = install.GenerateKubeconfig(plan, c.generatedAssetsDir)
 	if err != nil {
-		util.PrettyPrintWarnf(c.out, "Error generating kubeconfig file: %v\n", err)
+		util.PrettyPrintWarn(c.out, "Error generating kubeconfig file: %v\n", err)
 	} else {
-		util.PrettyPrintOkf(c.out, "Generated kubeconfig file in the %q directory.", c.generatedAssetsDir)
+		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory.", c.generatedAssetsDir)
 		fmt.Fprintf(c.out, "\n")
 		msg := "To use the generated kubeconfig file with kubectl, you can use \"kubectl --kubeconfig %s/kubeconfig\"," +
 			" or you may copy the config file into your home directory: \"cp %[1]s/kubeconfig ~/.kube/config\"\n"

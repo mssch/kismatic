@@ -36,6 +36,15 @@ func (e *PlaybookStartEvent) Type() string {
 	return "Playbook Start"
 }
 
+// PlaybookEndEvent signals the beginning of a playbook
+type PlaybookEndEvent struct {
+	namedEvent
+}
+
+func (e *PlaybookEndEvent) Type() string {
+	return "Playbook End"
+}
+
 // PlayStartEvent signals the beginning of a play
 type PlayStartEvent struct {
 	namedEvent

@@ -52,6 +52,12 @@ func eventFromJSONLine(line []byte) (Event, error) {
 			return nil, fmt.Errorf("error reading event data: %v\nline was:\n%s\n", err, string(line))
 		}
 		return e, nil
+	case "PLAYBOOK_END":
+		e := &PlaybookEndEvent{}
+		if err := json.Unmarshal(data, e); err != nil {
+			return nil, fmt.Errorf("error reading event data: %v\nline was:\n%s\n", err, string(line))
+		}
+		return e, nil
 	case "PLAY_START":
 		e := &PlayStartEvent{}
 		if err := json.Unmarshal(data, e); err != nil {
