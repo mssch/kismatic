@@ -6,30 +6,28 @@ import (
 	"os"
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
-	"github.com/apprenda/kismatic-platform/pkg/tls"
 	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/spf13/cobra"
 )
 
 type applyCmd struct {
-	out              io.Writer
-	planner          install.Planner
-	executor         install.Executor
-	pki              install.PKI
-	planFile         string
-	skipCAGeneration bool
-	certsDestination string
+	out                io.Writer
+	planner            install.Planner
+	executor           install.Executor
+	planFile           string
+	skipCAGeneration   bool
+	generatedAssetsDir string
 }
 
 type applyOpts struct {
-	caCSR            string
-	caConfigFile     string
-	caSigningProfile string
-	certsDestination string
-	skipCAGeneration bool
-	restartServices  bool
-	verbose          bool
-	outputFormat     string
+	caCSR              string
+	caConfigFile       string
+	caSigningProfile   string
+	generatedAssetsDir string
+	skipCAGeneration   bool
+	restartServices    bool
+	verbose            bool
+	outputFormat       string
 }
 
 // NewCmdApply creates a cluter using the plan file
@@ -41,26 +39,29 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 		Short: "apply your plan file to create a Kismatic cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			planner := &install.FilePlanner{File: installOpts.planFilename}
+			executorOpts := install.ExecutorOptions{
+				CAConfigFile:             applyOpts.caConfigFile,
+				CASigningRequest:         applyOpts.caCSR,
+				CASigningProfile:         applyOpts.caSigningProfile,
+				SkipCAGeneration:         applyOpts.skipCAGeneration,
+				GeneratedAssetsDirectory: applyOpts.generatedAssetsDir,
+				RestartServices:          applyOpts.restartServices,
+				OutputFormat:             applyOpts.outputFormat,
+				Verbose:                  applyOpts.verbose,
+			}
 			// TODO: Do we want to parameterize stderr?
-			executor, err := install.NewExecutor(out, os.Stderr, applyOpts.certsDestination, applyOpts.restartServices, applyOpts.verbose, applyOpts.outputFormat)
+			executor, err := install.NewExecutor(out, os.Stderr, executorOpts)
 			if err != nil {
 				return err
 			}
-			pki := &install.LocalPKI{
-				CACsr:            applyOpts.caCSR,
-				CAConfigFile:     applyOpts.caConfigFile,
-				CASigningProfile: applyOpts.caSigningProfile,
-				DestinationDir:   applyOpts.certsDestination,
-				Log:              out,
-			}
+
 			applyCmd := &applyCmd{
 				out,
 				planner,
 				executor,
-				pki,
 				installOpts.planFilename,
 				skipCAGeneration,
-				applyOpts.certsDestination,
+				applyOpts.generatedAssetsDir,
 			}
 			return applyCmd.run()
 		},
@@ -70,7 +71,7 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	cmd.Flags().StringVar(&applyOpts.caCSR, "ca-csr", "ansible/playbooks/tls/ca-csr.json", "path to the Certificate Authority CSR")
 	cmd.Flags().StringVar(&applyOpts.caConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
 	cmd.Flags().StringVar(&applyOpts.caSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
-	cmd.Flags().StringVar(&applyOpts.certsDestination, "generated-certs-dir", "generated-certs", "path to the directory where generated cluster certificates will be stored")
+	cmd.Flags().StringVar(&applyOpts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process are to be stored")
 	cmd.Flags().BoolVar(&applyOpts.skipCAGeneration, "skip-ca-generation", false, "skip CA generation and use an existing file")
 	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart clusters services (Use with care)")
 	cmd.Flags().BoolVar(&applyOpts.verbose, "verbose", false, "enable verbose logging from the installation")
@@ -92,46 +93,28 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error during pre-flight checks: %v", err)
 	}
-
-	// Generate or read cluster Certificate Authority
-	util.PrintHeader(c.out, "Configuring Certificates")
-	var ca *tls.CA
-	if !c.skipCAGeneration {
-		util.PrettyPrintOk(c.out, "Generating cluster Certificate Authority")
-		ca, err = c.pki.GenerateClusterCA(plan)
-		if err != nil {
-			return fmt.Errorf("error generating CA for the cluster: %v", err)
-		}
-	} else {
-		util.PrettyPrintOk(c.out, "Skipping Certificate Authority generation")
-		ca, err = c.pki.ReadClusterCA(plan)
-		if err != nil {
-			return fmt.Errorf("error reading cluster CA: %v", err)
-		}
-	}
-
-	// Generate node and user certificates
-	err = c.pki.GenerateClusterCerts(plan, ca, []string{"admin"})
-	if err != nil {
-		return fmt.Errorf("error generating certificates for the cluster: %v", err)
-	}
-	util.PrettyPrintOk(c.out, "Generated cluster certificates at %q", c.certsDestination)
+	fmt.Fprintf(c.out, "\n")
 
 	// Perform the installation
-	util.PrintHeader(c.out, "Installing Cluster")
 	err = c.executor.Install(plan)
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
+	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully\n")
 
 	// Generate kubeconfig
-	util.PrintHeader(c.out, "Generating Cluster Config")
-	err = install.GenerateKubeconfig(plan, c.certsDestination)
+	util.PrintHeader(c.out, "Generating Kubeconfig File")
+	err = install.GenerateKubeconfig(plan, c.generatedAssetsDir)
 	if err != nil {
-		util.PrettyPrintWarn(c.out, "Kubeconfig generation error, you may need to setup kubectl manually\n")
+		util.PrettyPrintWarn(c.out, "Error generating kubeconfig file: %v\n", err)
 	} else {
-		util.PrettyPrintOk(c.out, "Generated kubecofnig file at \"config\", to use \"cp config ~/.kube/config\"")
+		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory.", c.generatedAssetsDir)
+		fmt.Fprintf(c.out, "\n")
+		msg := "To use the generated kubeconfig file with kubectl, you can use \"kubectl --kubeconfig %s/kubeconfig\"," +
+			" or you may copy the config file into your home directory: \"cp %[1]s/kubeconfig ~/.kube/config\"\n"
+		fmt.Fprintf(c.out, msg, c.generatedAssetsDir)
 	}
 
+	fmt.Fprintf(c.out, "\n")
 	return nil
 }

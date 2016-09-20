@@ -2,7 +2,7 @@
   # download binaries
   - name: download kube-proxy - v{{ kubernetes_version }}
     get_url:
-      url: "{{ local_repoository_path|default(kubernetes_binary_path) }}/kube-proxy"
+      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kube-proxy"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
   # kube-proxy
@@ -10,7 +10,7 @@
     template:
       src: kube-proxy.service.j2
       dest: "{{ kubernetes_service_dir }}/kube-proxy.service"
-      owner: "{{ kuberntes_owner }}"
+      owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kuberntes_service_mode }}"
     notify:

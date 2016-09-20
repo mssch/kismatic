@@ -75,7 +75,7 @@ kubernetes_dns_service_ip: 10.3.0.10
 kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_master_secure_port}}
 kubernetes_services_cidr: 10.3.0.0/24
 kubernetes_pods_cidr: 10.2.0.0/16
-calico_network_type: overlay # Default to the overlay type. Must be 'bridged' or 'overlay'
+calico_network_type: overlay # Default to the overlay type. Must be 'routed' or 'overlay'
 #===============================================================================
 # kubernetes
 # directories
@@ -94,14 +94,14 @@ kuberntes_service_mode: 0664
 kubernetes_certificates_mode: 0660
 network_environment_mode: 0660
 # owner/group
-kuberntes_owner: root
+kubernetes_owner: root
 kubernetes_group: root
 kubernetes_certificates_owner: root
 kubernetes_certificates_group: root
 # kubernetes cluster config
 kubernetes_cluster_name: kubernetes
 kubernetes_admin_password: admin_password
-kubernetes_mater_apiserver_count: "{{ groups['master'] | length }}"
+kubernetes_master_apiserver_count: "{{ groups['master'] | length }}"
 kubernetes_master_ip_list: "{% for host in groups['master'] %}https://{{ host }}:{{ kubernetes_master_secure_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 kubernetes_master_ip: https://{{ hostvars[groups['master'][0]].internal_ipv4 }}:{{ kubernetes_master_secure_port }} # TODO change to load balancer
 # kubernetes certificate config
@@ -132,7 +132,7 @@ repository_mode: 0775
 #TODO how to get from vars
 etcd_k8s_version: 3.0.4
 etcd_networking_version: 2.3.7
-#local_repoository_path: http://192.168.99.20:6080 pass this as a runtime parameter for local repository
+#local_repository_path: http://192.168.99.20:6080 pass this as a runtime parameter for local repository
 
 # Preflight check variables
 preflight_check_tcp_ports: "{{etcd_k8s_client_port}},{{etcd_networking_client_port}},{{kubernetes_master_secure_port}},{{kubernetes_master_insecure_port}}"

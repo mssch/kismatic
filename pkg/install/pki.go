@@ -19,16 +19,16 @@ type PKI interface {
 
 // LocalPKI is a file-based PKI
 type LocalPKI struct {
-	CACsr            string
-	CAConfigFile     string
-	CASigningProfile string
-	DestinationDir   string
-	Log              io.Writer
+	CACsr                   string
+	CAConfigFile            string
+	CASigningProfile        string
+	GeneratedCertsDirectory string
+	Log                     io.Writer
 }
 
 // ReadClusterCA read a Certificate Authority from a file
 func (lp *LocalPKI) ReadClusterCA(p *Plan) (*tls.CA, error) {
-	key, cert, err := tls.ReadCACert("ca", lp.DestinationDir)
+	key, cert, err := tls.ReadCACert("ca", lp.GeneratedCertsDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 		return nil, fmt.Errorf("failed to create CA Cert: %v", err)
 	}
 
-	err = tls.WriteCert(key, cert, "ca", lp.DestinationDir)
+	err = tls.WriteCert(key, cert, "ca", lp.GeneratedCertsDirectory)
 	if err != nil {
 		return nil, fmt.Errorf("error writing CA files: %v", err)
 	}
@@ -105,7 +105,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) er
 		if err != nil {
 			return fmt.Errorf("error during cluster cert generation: %v", err)
 		}
-		err = tls.WriteCert(key, cert, n.Host, lp.DestinationDir)
+		err = tls.WriteCert(key, cert, n.Host, lp.GeneratedCertsDirectory)
 		if err != nil {
 			return fmt.Errorf("error writing cert files for host %q: %v", n.Host, err)
 		}
@@ -118,7 +118,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) er
 		if err != nil {
 			return fmt.Errorf("error during user cert generation: %v", err)
 		}
-		err = tls.WriteCert(adminKey, adminCert, user, lp.DestinationDir)
+		err = tls.WriteCert(adminKey, adminCert, user, lp.GeneratedCertsDirectory)
 		if err != nil {
 			return fmt.Errorf("error writing cert files for user %q: %v", user, err)
 		}

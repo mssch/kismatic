@@ -33,7 +33,7 @@ type Node struct {
 }
 
 // WriteINI writes the inventory in INI format.
-func (i Inventory) toINI() []byte {
+func (i Inventory) ToINI() []byte {
 	w := &bytes.Buffer{}
 	for _, role := range i {
 		fmt.Fprintf(w, "[%s]\n", role.Name)

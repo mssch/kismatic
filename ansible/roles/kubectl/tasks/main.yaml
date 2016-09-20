@@ -2,6 +2,6 @@
   # download kubernetes binaries
   - name: download kubectl - v{{ kubernetes_version }}
     get_url:
-      url: "{{ local_repoository_path|default(kubernetes_binary_path) }}/kubectl"
+      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kubectl"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"

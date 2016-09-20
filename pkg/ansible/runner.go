@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 )
 
 const (
@@ -22,7 +23,12 @@ type OutputFormat string
 
 // Runner for running Ansible playbooks
 type Runner interface {
-	RunPlaybook(inventory Inventory, playbookFile string, vars ExtraVars, outputFormat OutputFormat, verbose bool) error
+	// StartPlaybook runs the playbook asynchronously with the given inventory and extra vars.
+	// It returns a read-only channel that must be consumed for the playbook execution to proceed.
+	StartPlaybook(playbookFile string, inventory Inventory, vars ExtraVars) (<-chan Event, error)
+	// WaitPlaybook blocks until the execution of the playbook is complete. If an error occurred,
+	// it is returned. Otherwise, returns nil to signal the completion of the playbook.
+	WaitPlaybook() error
 }
 
 type runner struct {
@@ -31,8 +37,10 @@ type runner struct {
 	// ErrOut is the stderr writer for the Ansible process
 	errOut io.Writer
 
-	pythonPath string
-	ansibleDir string
+	pythonPath   string
+	ansibleDir   string
+	waitPlaybook func() error
+	namedPipe    string
 }
 
 // ExtraVars is a map of variables that are used when executing a playbook
@@ -46,7 +54,7 @@ func (v ExtraVars) commandLineVars() (string, error) {
 	return string(b), nil
 }
 
-// NewRunner returns a new runner for executing Ansible commands.
+// NewRunner returns a new runner for running Ansible playbooks.
 func NewRunner(out, errOut io.Writer, ansibleDir string) (Runner, error) {
 	ppath, err := getPythonPath()
 	if err != nil {
@@ -61,16 +69,37 @@ func NewRunner(out, errOut io.Writer, ansibleDir string) (Runner, error) {
 	}, nil
 }
 
+// WaitPlaybook blocks until the ansible process running the playbook exits.
+// If the process exits with a non-zero status, it will return an error.
+func (r *runner) WaitPlaybook() error {
+	if r.waitPlaybook == nil {
+		return fmt.Errorf("wait called, but playbook not started")
+	}
+	execErr := r.waitPlaybook()
+	// Process exited, we can clean up named pipe
+	removeErr := os.Remove(r.namedPipe)
+	if removeErr != nil && execErr != nil {
+		return fmt.Errorf("an error occurred running ansible: %v. Removing named pipe at %q failed: %v", execErr, r.namedPipe, removeErr)
+	}
+	if removeErr != nil {
+		return fmt.Errorf("failed to clean up named pipe at %q: %v", r.namedPipe, removeErr)
+	}
+	if execErr != nil {
+		return fmt.Errorf("error running ansible: %v", execErr)
+	}
+	return nil
+}
+
 // RunPlaybook with the given inventory and extra vars
-func (r *runner) RunPlaybook(inv Inventory, playbookFile string, vars ExtraVars, outputFormat OutputFormat, verbose bool) error {
+func (r *runner) StartPlaybook(playbookFile string, inv Inventory, vars ExtraVars) (<-chan Event, error) {
 	extraVars, err := vars.commandLineVars()
 	if err != nil {
-		return fmt.Errorf("error building extra vars: %v", err)
+		return nil, fmt.Errorf("error building extra vars: %v", err)
 	}
 
 	inventoryFile := filepath.Join(r.ansibleDir, "inventory.ini")
-	if err := ioutil.WriteFile(inventoryFile, inv.toINI(), 0644); err != nil {
-		return fmt.Errorf("error writing inventory file to %q: %v", inventoryFile, err)
+	if err = ioutil.WriteFile(inventoryFile, inv.ToINI(), 0644); err != nil {
+		return nil, fmt.Errorf("error writing inventory file to %q: %v", inventoryFile, err)
 	}
 
 	playbook := filepath.Join(r.ansibleDir, "playbooks", playbookFile)
@@ -80,20 +109,34 @@ func (r *runner) RunPlaybook(inv Inventory, playbookFile string, vars ExtraVars,
 	os.Setenv("PYTHONPATH", r.pythonPath)
 	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
-	if outputFormat != RawFormat {
-		os.Setenv("ANSIBLE_STDOUT_CALLBACK", string(outputFormat))
-	}
+	os.Setenv("ANSIBLE_CALLBACK_WHITELIST", "json_lines")
 
-	if verbose {
-		cmd.Args = append(cmd.Args, "-vvvv")
-	}
+	// We always want the most verbose output from Ansible. If it's not going to
+	// stdout, it's going to a log file.
+	cmd.Args = append(cmd.Args, "-vvvv")
 
-	err = cmd.Run()
+	// Create named pipe for getting JSON lines event stream
+	r.namedPipe = filepath.Join(os.TempDir(), "ansible-pipe")
+	if err = syscall.Mkfifo(r.namedPipe, 0644); err != nil {
+		return nil, fmt.Errorf("error creating named pipe %q: %v", r.namedPipe, err)
+	}
+	os.Setenv("ANSIBLE_JSON_LINES_PIPE", r.namedPipe)
+
+	// Starts async execution of ansible, which will block until
+	// we start reading from the named pipe
+	err = cmd.Start()
 	if err != nil {
-		return fmt.Errorf("error running playbook: %v", err)
+		return nil, fmt.Errorf("error running playbook: %v", err)
 	}
+	r.waitPlaybook = cmd.Wait
 
-	return nil
+	// Create the event stream out of the named pipe
+	eventStreamFile, err := os.OpenFile(r.namedPipe, os.O_RDONLY, os.ModeNamedPipe)
+	if err != nil {
+		return nil, fmt.Errorf("error openning event stream pipe: %v", err)
+	}
+	eventStream := EventStream(eventStreamFile)
+	return eventStream, nil
 }
 
 func getPythonPath() (string, error) {

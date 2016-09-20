@@ -5,15 +5,16 @@ from ansible import constants as C
 import json
 import pprint
 from os.path import basename
+import os
 
 # JSON Lines STDOUT callback module for Ansible.
-# 
+#
 # This callback module prints Ansible events out to STDOUT as JSON Lines.
 # The event consists of a type and data. The data has a different structure
-# depending on the event type. 
+# depending on the event type.
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'stdout'
+    CALLBACK_TYPE = 'notification'
     CALLBACK_NAME = 'json-lines'
 
     # The following is a list of supported event types
@@ -31,6 +32,8 @@ class CallbackModule(CallbackBase):
     RUNNER_ITEM_SKIPPED = "RUNNER_ITEM_SKIPPED"
     RUNNER_ITEM_RETRY   = "RUNNER_ITEM_RETRY"
 
+    named_pipe = None
+
     def _new_event(self, eventType, eventData):
         return {
             'eventType': eventType,
@@ -44,10 +47,18 @@ class CallbackModule(CallbackBase):
         }
 
     def _print_event(self, event):
-        print(json.dumps(event, sort_keys = False))
+        self.named_pipe.write(json.dumps(event, sort_keys = False))
+        self.named_pipe.write("\n")
+        self.named_pipe.flush()
 
     def __init__(self):
+        named_pipe_file = os.environ["ANSIBLE_JSON_LINES_PIPE"]
+        self.named_pipe = open(named_pipe_file, 'w')
         super(CallbackModule, self).__init__()
+
+    # This gets called when the playbook ends. Close the pipe.
+    def v2_playbook_on_stats(self, stats):
+        self.named_pipe.close()
 
     # def v2_on_any(self, *args, **kwargs):
     #     self.on_any(args, kwargs)
@@ -96,7 +107,7 @@ class CallbackModule(CallbackBase):
         event_data = self._new_task(task)
         e = self._new_event(self.TASK_START, event_data)
         self._print_event(e)
-        
+
 
     def _on_runner_result(self, event_type, result):
         event_data = {
@@ -150,8 +161,6 @@ class CallbackModule(CallbackBase):
         e = self._new_event(self.PLAY_START, data)
         self._print_event(e)
 
-    # def v2_playbook_on_stats(self, stats):
-    #     self.playbook_on_stats(stats)
 
     # def v2_on_file_diff(self, result):
     #     if 'diff' in result._result:
@@ -172,4 +181,3 @@ class CallbackModule(CallbackBase):
 
     def v2_runner_retry(self, result):
         self._on_runner_result(self.RUNNER_ITEM_RETRY, result)
-

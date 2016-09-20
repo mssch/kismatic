@@ -2,7 +2,7 @@
   # download kubernetes binaries
   - name: download kube-apiserver - v{{ kubernetes_version }}
     get_url:
-      url: "{{ local_repoository_path|default(kubernetes_binary_path) }}/kube-apiserver"
+      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kube-apiserver"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
 
@@ -11,7 +11,7 @@
     template:
       src: kube-apiserver.service.j2
       dest: "{{ kubernetes_service_dir }}/kube-apiserver.service"
-      owner: "{{ kuberntes_owner }}"
+      owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kuberntes_service_mode }}"
     notify:

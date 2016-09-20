@@ -2,7 +2,7 @@
   # download binaries
   - name: download kubelet - v{{ kubernetes_version }}
     get_url:
-      url: "{{ local_repoository_path|default(kubernetes_binary_path) }}/kubelet"
+      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kubelet"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
   # kubelet
@@ -10,7 +10,7 @@
     template:
       src: kubelet.service.j2
       dest: "{{ kubernetes_service_dir }}/kubelet.service"
-      owner: "{{ kuberntes_owner }}"
+      owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kuberntes_service_mode }}"
     notify:

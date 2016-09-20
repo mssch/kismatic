@@ -12,7 +12,7 @@
   # install calicoctl
   - name: download calicoctl - v{{ calico_ctl_version }}
     get_url:
-      url: "{{ local_repoository_path|default(calicoctl_binary_path) }}/calicoctl"
+      url: "{{ local_repository_path|default(calicoctl_binary_path) }}/calicoctl"
       dest: "{{ bin_dir }}"
       mode: "{{ calico_executable_mode }}"
   # pre-download Docker image
@@ -23,7 +23,7 @@
     template:
       src: calico-node.service.j2
       dest: "{{ kubernetes_service_dir }}/calico-node.service"
-      owner: "{{ kuberntes_owner }}"
+      owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kuberntes_service_mode }}"
     notify:
@@ -49,12 +49,12 @@
   # install calico binaries
   - name: download calico - v{{ calico_version }}
     get_url:
-      url: "{{ local_repoository_path|default(calico_cni_path) }}/calico"
+      url: "{{ local_repository_path|default(calico_cni_path) }}/calico"
       dest: "{{ network_plugin_bin_dir }}/calico"
       mode: "{{ calico_executable_mode }}"
   - name: download calico-ipam - v{{ calico_version }}
     get_url:
-      url: "{{ local_repoository_path|default(calico_cni_path) }}/calico-ipam"
+      url: "{{ local_repository_path|default(calico_cni_path) }}/calico-ipam"
       dest: "{{ network_plugin_bin_dir }}/calico-ipam"
       mode: "{{ calico_executable_mode }}"
   # configure calcico
@@ -73,9 +73,9 @@
     ignore_errors: yes # TODO better way to handle when this is run more than once
     when: "'master' in group_names" # only run on masters
     run_once: true
-  # Two networking modes are supported: 'bridged' and 'overlay'. Depending on the mode
+  # Two networking modes are supported: 'routed' and 'overlay'. Depending on the mode
   # the pool flags change. Mainly, --ipip is added when 'overlay' is specified.
-  - name: add pods CIDR (Bridged mode) - {{ kubernetes_pods_cidr }}
+  - name: add pods CIDR (Routed mode) - {{ kubernetes_pods_cidr }}
     command: calicoctl pool add {{ kubernetes_pods_cidr }} --nat-outgoing
     environment:
       DEFAULT_IPV4: "{{ internal_ipv4 }}"
@@ -83,7 +83,7 @@
       ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
       ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
       ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
-    when: "'master' in group_names and calico_network_type == 'bridged'"
+    when: "'master' in group_names and calico_network_type == 'routed'"
     run_once: true
   - name: add pods CIDR (Overlay mode) - {{ kubernetes_pods_cidr }}
     command: calicoctl pool add {{ kubernetes_pods_cidr }} --nat-outgoing --ipip
