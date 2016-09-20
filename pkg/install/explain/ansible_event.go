@@ -51,6 +51,8 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 	buf := &bytes.Buffer{}
 	switch event := e.(type) {
 	case *ansible.PlayStartEvent:
+		// On a play start the previos play ends
+		// Print a success status, but only when there were no errors
 		if verbose {
 			// In verbose mode the status is printed as a whole line after all the tasks
 			// Dont print message before first play
