@@ -19,6 +19,7 @@ class CallbackModule(CallbackBase):
 
     # The following is a list of supported event types
     PLAYBOOK_START      = "PLAYBOOK_START"
+    PLAYBOOK_END        = "PLAYBOOK_END"
     PLAY_START          = "PLAY_START"
     TASK_START          = "TASK_START"
     RUNNER_OK           = "RUNNER_OK"
@@ -58,6 +59,7 @@ class CallbackModule(CallbackBase):
 
     # This gets called when the playbook ends. Close the pipe.
     def v2_playbook_on_stats(self, stats):
+        self._on_runner_result(self.PLAYBOOK_END, None)
         self.named_pipe.close()
 
     # def v2_on_any(self, *args, **kwargs):
@@ -110,11 +112,13 @@ class CallbackModule(CallbackBase):
 
 
     def _on_runner_result(self, event_type, result):
-        event_data = {
-            'host': result._host.name,
-            'result': result._result,
-            'ignoreErrors': result._task.ignore_errors
-        }
+        event_data = {}
+        if result is not None:
+            event_data = {
+                'host': result._host.name,
+                'result': result._result,
+                'ignoreErrors': result._task.ignore_errors
+            }
         e = self._new_event(event_type, event_data)
         self._print_event(e)
 

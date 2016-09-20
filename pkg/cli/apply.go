@@ -93,7 +93,6 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error during pre-flight checks: %v", err)
 	}
-	fmt.Fprintf(c.out, "\n")
 
 	// Perform the installation
 	err = c.executor.Install(plan)

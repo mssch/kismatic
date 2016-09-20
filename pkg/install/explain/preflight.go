@@ -3,6 +3,7 @@ package explain
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
 	"github.com/apprenda/kismatic-platform/pkg/preflight"
@@ -45,7 +46,8 @@ func (explainer *PreflightEventExplainer) ExplainEvent(e ansible.Event, verbose 
 				}
 			}
 		}
-		buf.WriteString("\n")
+		fmt.Fprintln(buf)
+		explainer.DefaultExplainer.printPlayStatus = false
 		return buf.String()
 	}
 }

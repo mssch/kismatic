@@ -135,6 +135,15 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		}
 		// Set current task name
 		explainer.currentTask = event.Name
+	case *ansible.PlaybookEndEvent:
+		// Playbook ends, print the last play status
+		if explainer.printPlayStatus {
+			if verbose {
+				util.PrintColor(buf, util.Green, "%s Finished\n", explainer.lastPlay)
+			} else {
+				util.PrintOkln(buf)
+			}
+		}
 	case *ansible.RunnerSkippedEvent:
 		if verbose {
 			util.PrettyPrintSkipped(buf, "  %s", event.Host)
