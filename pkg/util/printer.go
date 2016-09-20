@@ -114,7 +114,7 @@ func print(out io.Writer, msg, status string, a ...interface{}) {
 			clr = Green
 		case errType, unreachableType:
 			clr = Red
-		case warnType, ErrIgnoredType:
+		case warnType, errIgnoredType:
 			clr = Orange
 		case skippedType:
 			clr = Blue
