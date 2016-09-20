@@ -1,0 +1,12 @@
+---
+  # TODO notify user of the port, ingress
+  - name: copy policy-controller.yaml to remote
+    template:
+      src: policy-controller.yaml
+      dest: /tmp/policy-controller.yaml
+  - name: start calico policy controller
+    command: kubectl apply -f /tmp/policy-controller.yaml
+    ignore_errors: yes # will fail when run more than once
+    register: out
+
+  - debug: var=out.stdout_lines

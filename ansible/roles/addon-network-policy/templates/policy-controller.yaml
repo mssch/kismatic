@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: calico-policy-controller
+  namespace: kube-system
+  labels:
+    k8s-app: calico-policy
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  selector:
+    k8s-app: calico-policy
+  template:
+    metadata:
+      name: calico-policy-controller
+      namespace: kube-system
+      labels:
+        kubernetes.io/cluster-service: "true"
+        k8s-app: calico-policy
+    spec:
+      hostNetwork: true
+      volumes:
+        - name: "ssl-certs"
+          hostPath:
+            path: "{{kubernetes_install_dir}}"
+      containers:
+        - name: calico-policy-controller
+          image: calico/kube-policy-controller:latest
+          volumeMounts:
+            - mountPath: "{{kubernetes_install_dir}}"
+              name: "ssl-certs"
+          env:
+            # Configure the policy controller with the location of your etcd cluster.
+            - name: ETCD_ENDPOINTS
+              value: "{{etcd_networking_cluster_ip_list}}"
+            - name: ETCD_CA_CERT_FILE
+              value: "{{kubernetes_certificates_ca_path}}"
+            - name: ETCD_CERT_FILE
+              value: "{{kubernetes_certificates_cert_path}}"
+            - name: ETCD_KEY_FILE
+              value: "{{kubernetes_certificates_key_path}}"
+            - name: K8S_API
+              value: "https://kubernetes.default:443"
+            - name: CONFIGURE_ETC_HOSTS
+              value: "true"
