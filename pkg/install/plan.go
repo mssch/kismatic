@@ -153,7 +153,6 @@ etcd:
   - host: {{$n.Host}}
     ip: {{$n.IP}}
     internalip: {{$n.InternalIP}}
-    labels: {{$n.Labels}}
 {{- end}}
 master:
   expected_count: {{$p.Master.ExpectedCount}}
@@ -162,7 +161,6 @@ master:
   - host: {{$n.Host}}
     ip: {{$n.IP}}
     internalip: {{$n.InternalIP}}
-    labels: {{$n.Labels}}
 {{- end}}
   load_balanced_fqdn: {{$p.Master.LoadBalancedFQDN}}
   load_balanced_short_name: {{$p.Master.LoadBalancedShortName}}
@@ -173,6 +171,5 @@ worker:
   - host: {{$n.Host}}
     ip: {{$n.IP}}
     internalip: {{$n.InternalIP}}
-    labels: {{$n.Labels}}
 {{- end}}
 `

@@ -42,5 +42,4 @@ type NodePlan struct {
 	host       string
 	ip         string
 	internalip string
-	labels     []string
 }

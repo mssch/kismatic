@@ -38,7 +38,6 @@ type Node struct {
 	Host       string
 	IP         string
 	InternalIP string
-	Labels     []string
 }
 
 // A NodeGroup is a collection of nodes
