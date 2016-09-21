@@ -22,12 +22,15 @@ port is free on the local node.
 The utility can function both as the client and the server in this mode.
 
 ## Supported checks
-| Check               | Description                                           | Remote-Only |
-|---------------------|-------------------------------------------------------|-------------|
-| Binary Dependency   | Checks that a given binary is installed               |             |
-| Package Dependency  | Checks that a given package is installed              |             |
-| TCP Port Bindable   | Ensure that the TCP port is bindable on the node      |      X      |
-| TCP Port Accessible | Ensure that the TCP port is accessible on the network |      X      |
+| Check                | Description                                                                       | Remote-Only |
+|----------------------|-----------------------------------------------------------------------------------|-------------|
+| Binary Dependency    | Checks that a given binary is installed                                           |             |
+| Package Dependency   | Checks that a given package is installed using the OS's package manager           |             |
+| Package Availability | Checks that a given package can be downloaded using the OS's package manager      |             |
+| RegEx File Search    | Execute regex search against a file. (e.g. look for a config option in /etc/foo)  |             |
+| TCP Port Bindable    | Ensure that the TCP port is bindable on the node                                  |      X      |
+| TCP Port Accessible  | Ensure that the TCP port is accessible on the network                             |      X      |
+
 
 ## Usage
 
