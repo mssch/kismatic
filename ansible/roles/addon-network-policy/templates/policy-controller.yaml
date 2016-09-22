@@ -20,15 +20,25 @@ spec:
     spec:
       hostNetwork: true
       volumes:
-        - name: "ssl-certs"
+        - name: "ca"
           hostPath:
-            path: "{{kubernetes_install_dir}}"
+            path: "{{kubernetes_certificates_ca_path}}"
+        - name: "cert"
+          hostPath:
+            path: "{{kubernetes_certificates_cert_path}}"
+        - name: "key"
+          hostPath:
+            path: "{{kubernetes_certificates_key_path}}"
       containers:
         - name: calico-policy-controller
           image: calico/kube-policy-controller:latest
           volumeMounts:
-            - mountPath: "{{kubernetes_install_dir}}"
-              name: "ssl-certs"
+            - mountPath: "{{kubernetes_certificates_ca_path}}"
+              name: "ca"
+            - mountPath: "{{kubernetes_certificates_cert_path}}"
+              name: "cert"
+            - mountPath: "{{kubernetes_certificates_key_path}}"
+              name: "key"
           env:
             # Configure the policy controller with the location of your etcd cluster.
             - name: ETCD_ENDPOINTS
