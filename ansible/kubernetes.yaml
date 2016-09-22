@@ -9,8 +9,8 @@
   - include: _docker.yaml
   - include: _kubenode-cert.yaml
   # master:worker
-  - include: _kubectl.yaml
   - include: _calico.yaml
+  - include: _kubectl.yaml
   # master
   - include: _apiserver.yaml
   - include: _scheduler.yaml

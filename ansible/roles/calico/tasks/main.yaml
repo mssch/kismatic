@@ -10,14 +10,14 @@
       path: "{{ network_plugin_bin_dir }}"
       state: directory
   # install calicoctl
-  - name: download calicoctl - v{{ calico_ctl_version }}
+  - name: download calicoctl - {{ calico_ctl_version }}
     get_url:
       url: "{{ local_repository_path|default(calicoctl_binary_path) }}/calicoctl"
       dest: "{{ bin_dir }}"
       mode: "{{ calico_executable_mode }}"
   # pre-download Docker image
-  - name: download calico/node:v{{ calico_docker_version }} docker image
-    command: docker pull calico/node:v{{ calico_docker_version }}
+  - name: download calico/node:{{ calico_docker_version }} docker image
+    command: docker pull calico/node:{{ calico_docker_version }}
   # start calico-node service
   - name: copy calico-node.service to remote
     template:
@@ -40,19 +40,19 @@
   - meta: flush_handlers  #Run handlers
 
   # install cni binaries, TODO track with https://github.com/projectcalico/calico-containers/issues/1115
-  - name: download cni - v{{ cni_version }}
+  - name: download cni - {{ cni_version }}
     unarchive:
       src: "{{ cni_path }}"
       dest: "{{ network_plugin_bin_dir }}"
       remote_src: yes
       copy: no
   # install calico binaries
-  - name: download calico - v{{ calico_version }}
+  - name: download calico - {{ calico_version }}
     get_url:
       url: "{{ local_repository_path|default(calico_cni_path) }}/calico"
       dest: "{{ network_plugin_bin_dir }}/calico"
       mode: "{{ calico_executable_mode }}"
-  - name: download calico-ipam - v{{ calico_version }}
+  - name: download calico-ipam - {{ calico_version }}
     get_url:
       url: "{{ local_repository_path|default(calico_cni_path) }}/calico-ipam"
       dest: "{{ network_plugin_bin_dir }}/calico-ipam"

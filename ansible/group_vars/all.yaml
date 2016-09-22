@@ -13,19 +13,19 @@ tls_directory: ../../../generated-certs
 etcd_install_binary_download_name: etcd-{{ etcd_install_binary_version }}-linux-amd64.tar.gz
 etcd_install_binary_download_path: https://github.com/coreos/etcd/releases/download/{{ etcd_install_binary_version }}
 #kubernetes
-kubernetes_binary_path: https://storage.googleapis.com/kubernetes-release/release/v{{ kubernetes_version }}/bin/linux/amd64
+kubernetes_binary_path: https://storage.googleapis.com/kubernetes-release/release/{{ kubernetes_version }}/bin/linux/amd64
 #calico
-calicoctl_binary_path: https://github.com/projectcalico/calico-containers/releases/download/v{{ calico_ctl_version }}
-calico_cni_path: https://github.com/projectcalico/calico-cni/releases/download/v{{ calico_version }}
-cni_path: https://github.com/containernetworking/cni/releases/download/v{{ cni_version }}/cni-v{{ cni_version }}.tgz
+calicoctl_binary_path: https://github.com/projectcalico/calico-containers/releases/download/{{ calico_ctl_version }}
+calico_cni_path: https://github.com/projectcalico/calico-cni/releases/download/{{ calico_version }}
+cni_path: https://github.com/containernetworking/cni/releases/download/{{ cni_version }}/cni-{{ cni_version }}.tgz
 #===============================================================================
 # component versions
 #TODO move versions from etcd_k8s and etcd_networking
-kubernetes_version: 1.3.7
-calico_version: 1.4.2
-calico_ctl_version: 0.22.0
-calico_docker_version: 0.22.0
-cni_version: 0.3.0
+kubernetes_version: v1.3.7
+calico_version: v1.4.2
+calico_ctl_version: v0.22.0
+calico_docker_version: v0.22.0
+cni_version: v0.3.0
 #===============================================================================
 # service ports
 etcd_k8s_client_port: 2379

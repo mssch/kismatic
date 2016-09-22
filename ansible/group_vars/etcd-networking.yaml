@@ -9,8 +9,8 @@ etcd_certificates_key_file: "{{ etcd_install_dir }}/{{ etcd_certificates_key_fil
 # etcd-install
 etcd_install_dir: /etc/etcd_networking
 etcd_install_binary_version: v2.3.7
-etcd_install_bin_name: etcd2
-etcdctl_install_bin_name: etcdctl2
+etcd_install_bin_name: etcdnetworking
+etcdctl_install_bin_name: etcdctlnetworking
 # etcd-install:etcd.service.j2
 etcd_service_name: etcd_networking
 etcd_service_data_dir: /var/lib/etcd_networking
