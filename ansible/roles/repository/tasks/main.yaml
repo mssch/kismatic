@@ -70,7 +70,7 @@
   - name: check if nginx docker container is running
     shell: docker ps | grep nginx
     register: docker_ps_nginx
-    ignore_errors: true
+    ignore_errors: yes # dont fail, next task will start it if not running
     changed_when: false
 
   - name: start nginx docker container
