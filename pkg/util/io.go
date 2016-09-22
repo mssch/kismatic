@@ -12,7 +12,7 @@ import (
 
 // PromptForInt read command line input
 func PromptForInt(in io.Reader, out io.Writer, prompt string, defaultValue int) (int, error) {
-	fmt.Print(out, "=> %s [%d]: ", prompt, defaultValue)
+	fmt.Fprintf(out, "=> %s [%d]: ", prompt, defaultValue)
 	s := bufio.NewScanner(in)
 	// Scan the first token
 	s.Scan()
