@@ -26,12 +26,10 @@
 
   - name: create monitoring PVC
     command: kubectl apply -f /tmp/monitoring-pvc.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
   # TODO notify user of the port, ingress
   - name: start prometheus service
     command: kubectl apply -f /tmp/prometheus.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines

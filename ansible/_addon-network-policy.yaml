@@ -1,0 +1,9 @@
+---
+  - hosts: master[0]
+    name: Add-On Configure Calico Network Policy
+    remote_user: root
+    become_method: sudo
+    run_once: true
+
+    roles:
+      - addon-network-policy

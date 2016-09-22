@@ -38,42 +38,35 @@
   # start services
   - name: create logging PV
     command: kubectl apply -f /tmp/logging-pv.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
 
   - name: create logging PVC
     command: kubectl apply -f /tmp/logging-pvc.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
 
   - name: start es-controlle rc
     command: kubectl apply -f /tmp/es-controller.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
 
   - name: start es-service service
     command: kubectl apply -f /tmp/es-service.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
 
   - name: start kibana-controller rc
     command: kubectl apply -f /tmp/kibana-controller.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
   # TODO notify user of the port, ingress
   - name: start kibana-service service
     command: kubectl apply -f /tmp/kibana-service.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
 
   - name: start fluentd-es pod
     command: kubectl apply -f /tmp/fluentd-es.yaml
-    ignore_errors: yes # will fail when run more than once
     register: out
   - debug: var=out.stdout_lines
