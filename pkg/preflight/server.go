@@ -9,13 +9,6 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/preflight/check"
 )
 
-// CheckRequest contains the list of checks that should be run
-type CheckRequest struct {
-	BinaryDependencies  []string
-	PackageDependencies []string
-	TCPPorts            []int
-}
-
 // CheckResult contains the results of a check
 type CheckResult struct {
 	Name    string
