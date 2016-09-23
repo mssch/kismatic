@@ -60,7 +60,8 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	if err != nil {
 		return fmt.Errorf("error planning installation: %v", err)
 	}
-	fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the \"install verify\" command to proceed\n")
+
+	fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the \"install validate\" command to proceed\n")
 
 	return nil
 }
