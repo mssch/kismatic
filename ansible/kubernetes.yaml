@@ -13,14 +13,14 @@
   - include: _kubectl.yaml step="8/17...  "
   # master
   - include: _apiserver.yaml step="9/17...  "
-  - include: _scheduler.yaml step="10/17... "
-  - include: _controller-manager.yaml step="11/17... "
-  - include: _kubelet-master.yaml step="12/17... "
+  - include: _scheduler.yaml step="10/17..  "
+  - include: _controller-manager.yaml step="11/17..  "
+  - include: _kubelet-master.yaml step="12/17..  "
   # worker
-  - include: _kubelet-worker.yaml step="13/17... "
+  - include: _kubelet-worker.yaml step="13/17..  "
   # master:worker
-  - include: _proxy.yaml step="14/17... "
+  - include: _proxy.yaml step="14/17..  "
   # add ons
-  - include: _addon-network-policy.yaml step="15/17... "
-  - include: _addon-kubernetes-dashboard.yaml step="16/17... "
-  - include: _addon-kubernetes-dns.yaml step="17/17... "
+  - include: _addon-network-policy.yaml step="15/17..  "
+  - include: _addon-kubernetes-dashboard.yaml step="16/17..  "
+  - include: _addon-kubernetes-dns.yaml step="17/17..  "
