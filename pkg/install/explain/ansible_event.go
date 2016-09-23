@@ -65,15 +65,17 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 					util.PrintColor(buf, util.Green, "%s Finished\n", explainer.lastPlay)
 				}
 			}
+			// Print the play name in color
+			util.PrintColor(buf, util.White, event.Name)
 		} else {
 			// Do not print status on the first start event or when there is an ERROR
 			if explainer.printPlayStatus {
 				// In regular mode print the status
 				util.PrintOkln(buf)
 			}
+			// Print the play name
+			util.PrettyPrint(buf, event.Name)
 		}
-		// Print the play name
-		util.PrettyPrint(buf, event.Name)
 		// Set default state for the play
 		explainer.lastPlay = event.Name
 		explainer.printPlayStatus = true

@@ -22,6 +22,7 @@ var Green = color.New(color.FgGreen)
 var Red = color.New(color.FgRed)
 var Orange = color.New(color.FgRed, color.FgYellow)
 var Blue = color.New(color.FgCyan)
+var White = color.New(color.FgHiWhite)
 
 // PrettyPrintOk [OK](Green) with formatted string
 func PrettyPrintOk(out io.Writer, msg string, a ...interface{}) {
