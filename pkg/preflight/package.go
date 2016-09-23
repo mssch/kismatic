@@ -12,7 +12,7 @@ type PackageInstalledCheck struct {
 
 // Check returns nil if the package is installed. Otherwise, returns an error message indicating the package was not found.
 func (c *PackageInstalledCheck) Check() error {
-	cmd, err := getPackageCheckCommand(c.PackageName) //exec.Command("yum", "list", "installed", c.PackageName)
+	cmd, err := getPackageCheckCommand(c.PackageName)
 	if err != nil {
 		return err
 	}

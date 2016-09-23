@@ -17,11 +17,11 @@ type packageManager interface {
 	isAvailable(pkg) (bool, error)
 }
 
-type yumManager struct {
+type rpmManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m yumManager) isInstalled(p pkg) (bool, error) {
+func (m rpmManager) isInstalled(p pkg) (bool, error) {
 	out, err := m.run("yum", "list", "installed", "-q", p.name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
@@ -29,7 +29,22 @@ func (m yumManager) isInstalled(p pkg) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.name, p.version, err)
 	}
-	s := bufio.NewScanner(bytes.NewReader(out))
+	return m.isPackageListed(p, out), nil
+}
+
+func (m rpmManager) isAvailable(p pkg) (bool, error) {
+	out, err := m.run("yum", "list", "-q", p.name)
+	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("unable to determine if %s %s is available for download: %v", p.name, p.version, err)
+	}
+	return m.isPackageListed(p, out), nil
+}
+
+func (m rpmManager) isPackageListed(p pkg, list []byte) bool {
+	s := bufio.NewScanner(bytes.NewReader(list))
 	for s.Scan() {
 		line := s.Text()
 		f := strings.Fields(line)
@@ -38,17 +53,17 @@ func (m yumManager) isInstalled(p pkg) (bool, error) {
 			continue
 		}
 		if p.name == f[0] && p.version == f[1] {
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
 
-type aptManager struct {
+type debManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m aptManager) isInstalled(p pkg) (bool, error) {
+func (m debManager) isInstalled(p pkg) (bool, error) {
 	out, err := m.run("dpkg", "-l", p.name)
 	if err != nil && strings.Contains(string(out), "no packages found matching") {
 		return false, nil
@@ -60,7 +75,6 @@ func (m aptManager) isInstalled(p pkg) (bool, error) {
 	for s.Scan() {
 		line := s.Text()
 		f := strings.Fields(line)
-		fmt.Println(f)
 		if len(f) < 5 {
 			// Ignore lines with unexpected format
 			continue
@@ -70,4 +84,11 @@ func (m aptManager) isInstalled(p pkg) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func (m debManager) isAvailable(p pkg) (bool, error) {
+	// Attempt to install using --dry-run. If exit status is zero, we
+	// know the package is available for download
+	_, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.name, p.version))
+	return err == nil, err
 }
