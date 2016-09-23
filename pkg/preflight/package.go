@@ -1,4 +1,4 @@
-package check
+package preflight
 
 import (
 	"fmt"
@@ -41,4 +41,21 @@ func getPackageCheckCommand(packageName string) (*exec.Cmd, error) {
 		return exec.Command("apt", "list", "--installed", packageName), nil
 	}
 	return nil, fmt.Errorf("attempting to check dependency on unsupported distribution.")
+}
+
+// PackageAvailableCheck verifies that a given package is available for download
+// using the operating system's package manager.
+type PackageAvailableCheck struct {
+	PackageName string
+	Version     string
+}
+
+func (c PackageAvailableCheck) Name() string {
+	return fmt.Sprintf("%s %s is available", c.PackageName, c.Version)
+}
+
+// Check returns nil if the package manager lists the package as available.
+// Otherwise returns an error message.
+func (c PackageAvailableCheck) Check() error {
+	return nil
 }

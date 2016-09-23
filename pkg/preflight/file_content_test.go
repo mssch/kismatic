@@ -1,4 +1,4 @@
-package check
+package preflight
 
 import (
 	"io/ioutil"

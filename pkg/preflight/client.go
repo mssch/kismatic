@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-
-	"github.com/apprenda/kismatic-platform/pkg/preflight/check"
 )
 
 // The Client executes preflight checks against a remote node. The client expects a Server listening
@@ -43,7 +41,7 @@ func (c Client) RunChecks(cr *CheckRequest) ([]CheckResult, error) {
 	// Run TCP checks if any
 	for _, p := range cr.TCPPorts {
 		// Build check
-		tcpCheck := check.TCPPortClientCheck{p, node}
+		tcpCheck := TCPPortClientCheck{p, node}
 		err := tcpCheck.Check()
 		// Build result
 		r := CheckResult{
