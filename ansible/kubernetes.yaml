@@ -1,26 +1,26 @@
 ---
   # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
-  - include: _all.yaml
-  - include: _hosts.yaml
+  - include: _all.yaml step="1/17...  "
+  - include: _hosts.yaml step="2/17...  "
   # etcd
-  - include: _etcd-k8s.yaml
-  - include: _etcd-networking.yaml
+  - include: _etcd-k8s.yaml step="3/17...  "
+  - include: _etcd-networking.yaml step="4/17...  "
   # common prereqs
-  - include: _docker.yaml
-  - include: _kubenode-cert.yaml
+  - include: _docker.yaml step="5/17...  "
+  - include: _kubenode-cert.yaml step="6/17...  "
   # master:worker
-  - include: _calico.yaml
-  - include: _kubectl.yaml
+  - include: _calico.yaml step="7/17...  "
+  - include: _kubectl.yaml step="8/17...  "
   # master
-  - include: _apiserver.yaml
-  - include: _scheduler.yaml
-  - include: _controller-manager.yaml
-  - include: _kubelet-master.yaml
+  - include: _apiserver.yaml step="9/17...  "
+  - include: _scheduler.yaml step="10/17... "
+  - include: _controller-manager.yaml step="11/17... "
+  - include: _kubelet-master.yaml step="12/17... "
   # worker
-  - include: _kubelet-worker.yaml
+  - include: _kubelet-worker.yaml step="13/17... "
   # master:worker
-  - include: _proxy.yaml
+  - include: _proxy.yaml step="14/17... "
   # add ons
-  - include: _addon-network-policy.yaml
-  - include: _addon-kubernetes-dashboard.yaml
-  - include: _addon-kubernetes-dns.yaml
+  - include: _addon-network-policy.yaml step="15/17... "
+  - include: _addon-kubernetes-dashboard.yaml step="16/17... "
+  - include: _addon-kubernetes-dns.yaml step="17/17... "

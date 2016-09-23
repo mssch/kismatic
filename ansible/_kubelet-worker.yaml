@@ -1,6 +1,6 @@
 ---
   - hosts: worker
-    name: Install Kubernetes Kubelet on Worker Nodes
+    name: "{{step | default()}}Install Kubernetes Kubelet on Worker Nodes"
     remote_user: root
     become_method: sudo
     vars_files:
