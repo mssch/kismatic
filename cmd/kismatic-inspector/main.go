@@ -23,21 +23,15 @@ var output = pflag.StringP("output", "o", "table", "set the result output type. 
 func main() {
 	pflag.Parse()
 
-	distro, err := preflight.DetectDistro()
+	_, err := preflight.DetectDistro()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to detect OS distribution: %v", err)
+		fmt.Fprintf(os.Stderr, "Failed to detect OS distribution: %v\n", err)
+		os.Exit(1)
 	}
 
 	cr := &preflight.CheckRequest{
 		BinaryDependencies:  []string{"iptables", "iptables-save", "iptables-restore", "ip", "nsenter", "mount", "umount"},
 		PackageDependencies: []string{},
-	}
-
-	switch distro {
-	case preflight.CentOS, preflight.RHEL:
-		cr.PackageDependencies = append(cr.PackageDependencies, "glibc")
-	case preflight.Ubuntu:
-		cr.PackageDependencies = append(cr.PackageDependencies, "lib6c")
 	}
 
 	s := preflight.Server{ListenPort: *serverPort}
