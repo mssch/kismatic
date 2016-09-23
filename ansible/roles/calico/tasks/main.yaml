@@ -30,13 +30,17 @@
       - reload services
       - enable calico-node
       - restart calico-node service
+      - verify calico-node is running
+
   # force_calico_node_restart=true to force restart
   - name: force restart calico-node
     command: /bin/true
     notify:
       - enable calico-node
       - restart calico-node service
+      - verify calico-node is running
     when: force_calico_node_restart is defined and force_calico_node_restart == "true"
+
   - meta: flush_handlers  #Run handlers
 
   # install cni binaries, TODO track with https://github.com/projectcalico/calico-containers/issues/1115

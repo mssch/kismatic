@@ -19,7 +19,6 @@
       - enable kube-apiserver
       - restart kube-apiserver service
       - verify kube-apiserver is running
-      - report status of kube-apiserver
 
   # force_apiserver_restart=true to force restart
   - name: force restart kube-apiserver
@@ -28,5 +27,4 @@
       - enable kube-apiserver
       - restart kube-apiserver service
       - verify kube-apiserver is running
-      - report status of kube-apiserver
     when: force_apiserver_restart is defined and force_apiserver_restart == "true"

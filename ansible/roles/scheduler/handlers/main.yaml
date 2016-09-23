@@ -12,14 +12,4 @@
   # verify service
   - name: verify kube-scheduler is running
     command: systemctl status kube-scheduler
-    ignore_errors: yes
     changed_when: false
-    register: service_kube_scheduler_status
-  - name: report status of kube-scheduler
-    fail:
-      msg: |
-        Service kube-scheduler is not running.
-        Output of `systemctl status kube-scheduler`:
-          {{ service_kube_scheduler_status.stdout }}
-          {{ service_kube_scheduler_status.stderr }}
-    when: service_kube_scheduler_status | failed

@@ -19,7 +19,6 @@
       - enable kube-scheduler
       - restart kube-scheduler service
       - verify kube-scheduler is running
-      - report status of kube-scheduler
 
   # force_scheduler_restart=true to force restart
   - name: force restart scheduler
@@ -28,5 +27,4 @@
       - enable kube-scheduler
       - restart kube-scheduler service
       - verify kube-scheduler is running
-      - report status of kube-scheduler
     when: force_scheduler_restart is defined and force_scheduler_restart == "true"

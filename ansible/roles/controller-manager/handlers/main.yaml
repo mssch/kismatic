@@ -12,14 +12,4 @@
   # verify service
   - name: verify kube-controller-manager is running
     command: systemctl status kube-controller-manager
-    ignore_errors: yes
     changed_when: false
-    register: service_kube_controller_manager_status
-  - name: report status of kube-controller-manager
-    fail:
-      msg: |
-        Service kube-controller-manager is not running.
-        Output of `systemctl status kube-controller-manager`:
-          {{ service_kube_controller_manager_status.stdout }}
-          {{ service_kube_controller_manager_status.stderr }}
-    when: service_kube_controller_manager_status | failed
