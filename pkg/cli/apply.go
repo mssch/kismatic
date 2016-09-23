@@ -109,8 +109,9 @@ func (c *applyCmd) run() error {
 	} else {
 		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory.", c.generatedAssetsDir)
 		fmt.Fprintf(c.out, "\n")
-		msg := "To use the generated kubeconfig file with kubectl, you can use \"kubectl --kubeconfig %s/kubeconfig\"," +
-			" or you may copy the config file into your home directory: \"cp %[1]s/kubeconfig ~/.kube/config\"\n"
+		msg := "To use the generated kubeconfig file with kubectl:" +
+			"\n  * use \"kubectl --kubeconfig %s/kubeconfig\"" +
+			"\n  * or copy the config file \"cp %[1]s/kubeconfig ~/.kube/config\"\n"
 		fmt.Fprintf(c.out, msg, c.generatedAssetsDir)
 	}
 
