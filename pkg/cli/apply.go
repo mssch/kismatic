@@ -107,7 +107,7 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		util.PrettyPrintWarn(c.out, "Error generating kubeconfig file: %v\n", err)
 	} else {
-		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory.", c.generatedAssetsDir)
+		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory", c.generatedAssetsDir)
 		fmt.Fprintf(c.out, "\n")
 		msg := "To use the generated kubeconfig file with kubectl:" +
 			"\n  * use \"kubectl --kubeconfig %s/kubeconfig\"" +
