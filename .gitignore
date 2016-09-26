@@ -45,6 +45,5 @@ _testmain.go
 /ansible/inventory-repo.ini
 
 kismatic-cluster.yaml
-Vagrantfile
 .vagrant
 vendor/*
