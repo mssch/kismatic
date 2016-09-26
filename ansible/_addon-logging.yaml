@@ -1,6 +1,6 @@
 ---
   - hosts: master[0]
-    name: "{{step | default()}}Add-On Configure Logging"
+    name: "{{step | default()}}Add-On Logging"
     remote_user: root
     become_method: sudo
     run_once: true
