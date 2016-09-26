@@ -60,6 +60,28 @@ func rightPadToLen(s string, padStr string, overallLen int) string {
 	return retStr[:overallLen]
 }
 
+func (explainer *DefaultEventExplainer) writePlayStatus(buf io.Writer) {
+	// Do not print status on the first start event or when there is an ERROR
+	if explainer.printPlayStatus {
+		// In regular mode print the status
+		util.PrintOkln(buf)
+	}
+}
+func (explainer *DefaultEventExplainer) writePlayStatusVerbose(buf io.Writer) {
+	// In verbose mode the status is printed as a whole line after all the tasks
+	// Do not print message before first play
+	if explainer.printPlayMessage {
+		// No tasks were printed, add a new line: something is wrong
+		if explainer.printPlayStatus {
+			fmt.Fprintln(buf)
+			util.PrintColor(buf, util.Red, "%s  %s Finished with no tasks, are hosts reachable?\n", explainer.getCount(), explainer.lastPlay)
+		} else {
+			util.PrintColor(buf, util.Green, "%s  %s Finished\n", explainer.getCount(), explainer.lastPlay)
+		}
+		explainer.currentPlayCount = explainer.currentPlayCount + 1
+	}
+}
+
 // ExplainEvent returns an explanation for the given event
 func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bool) string {
 	buf := &bytes.Buffer{}
@@ -68,26 +90,11 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		// On a play start the previos play ends
 		// Print a success status, but only when there were no errors
 		if verbose {
-			// In verbose mode the status is printed as a whole line after all the tasks
-			// Dont print message before first play
-			if explainer.printPlayMessage {
-				// No tasks were printed, add a new line: something is wrong
-				if explainer.printPlayStatus {
-					fmt.Fprintln(buf)
-					util.PrintColor(buf, util.Red, "%s  %s Finished with no tasks, are hosts reachable?\n", explainer.getCount(), explainer.lastPlay)
-				} else {
-					util.PrintColor(buf, util.Green, "%s  %s Finished\n", explainer.getCount(), explainer.lastPlay)
-				}
-				explainer.currentPlayCount = explainer.currentPlayCount + 1
-			}
+			explainer.writePlayStatusVerbose(buf)
 			// Print the play name in color
 			util.PrintColor(buf, util.White, "%s  %s", explainer.getCount(), event.Name)
 		} else {
-			// Do not print status on the first start event or when there is an ERROR
-			if explainer.printPlayStatus {
-				// In regular mode print the status
-				util.PrintOkln(buf)
-			}
+			explainer.writePlayStatus(buf)
 			// Print the play name
 			util.PrettyPrint(buf, "%s  %s", explainer.getCount(), event.Name)
 			explainer.currentPlayCount = explainer.currentPlayCount + 1
@@ -157,12 +164,10 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		explainer.currentTask = event.Name
 	case *ansible.PlaybookEndEvent:
 		// Playbook ends, print the last play status
-		if explainer.printPlayStatus {
-			if verbose {
-				util.PrintColor(buf, util.Green, "%s Finished\n", explainer.lastPlay)
-			} else {
-				util.PrintOkln(buf)
-			}
+		if verbose {
+			explainer.writePlayStatusVerbose(buf)
+		} else {
+			explainer.writePlayStatus(buf)
 		}
 	case *ansible.RunnerSkippedEvent:
 		if verbose {
