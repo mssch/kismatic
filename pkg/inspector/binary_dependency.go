@@ -1,4 +1,4 @@
-package preflight
+package inspector
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type BinaryDependencyCheck struct {
 }
 
 // Check returns true if the binary dependency was found. Otherwise, returns false with an error message that includes remediation information.
-func (c *BinaryDependencyCheck) Check() error {
+func (c BinaryDependencyCheck) Check() error {
 	// Need to explicitly use bash when running against Ubuntu
 	cmd := exec.Command("bash", "-c", fmt.Sprintf("command -v %s", c.BinaryName))
 	if err := cmd.Run(); err != nil {
@@ -20,6 +20,6 @@ func (c *BinaryDependencyCheck) Check() error {
 	return nil
 }
 
-func (c *BinaryDependencyCheck) Name() string {
+func (c BinaryDependencyCheck) Name() string {
 	return fmt.Sprintf("%s exists", c.BinaryName)
 }

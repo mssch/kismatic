@@ -1,4 +1,4 @@
-package preflight
+package inspector
 
 import (
 	"bufio"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -13,6 +14,7 @@ const (
 	Ubuntu      Distro = "ubuntu"
 	RHEL        Distro = "rhel"
 	CentOS      Distro = "centos"
+	Darwin      Distro = "darwin"
 	Unsupported Distro = ""
 )
 
@@ -21,6 +23,9 @@ type Distro string
 
 // DetectDistro uses the /etc/os-release file to get distro information.
 func DetectDistro() (Distro, error) {
+	if runtime.GOOS == "darwin" {
+		return Darwin, nil
+	}
 	f, err := os.Open("/etc/os-release")
 	if err != nil {
 		return Unsupported, fmt.Errorf("error reading /etc/os-release file: %v", err)

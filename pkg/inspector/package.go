@@ -1,4 +1,4 @@
-package preflight
+package inspector
 
 import "fmt"
 
@@ -18,7 +18,7 @@ type PackageInstalledCheck struct {
 }
 
 // Check returns nil if the package is installed. Otherwise, returns an error message indicating the package was not found.
-func (c *PackageInstalledCheck) Check() error {
+func (c PackageInstalledCheck) Check() error {
 	ok, err := c.packageManager.isInstalled(c.pkgQuery)
 	if !ok || err != nil {
 		return fmt.Errorf("Install %q, as it was not found on the system.", c.pkgQuery)
@@ -26,7 +26,7 @@ func (c *PackageInstalledCheck) Check() error {
 	return nil
 }
 
-func (c *PackageInstalledCheck) Name() string {
+func (c PackageInstalledCheck) Name() string {
 	return fmt.Sprintf("%s is intalled", c.pkgQuery)
 }
 

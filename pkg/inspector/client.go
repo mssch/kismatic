@@ -1,4 +1,4 @@
-package preflight
+package inspector
 
 import (
 	"bytes"
@@ -16,8 +16,8 @@ type Client struct {
 }
 
 // RunChecks runs the checks against a remote node
-func (c Client) RunChecks(cr *CheckRequest) ([]CheckResult, error) {
-	d, err := json.Marshal(cr)
+func (c Client) RunChecks(m *Manifest) ([]CheckResult, error) {
+	d, err := json.Marshal(m)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling check request: %v", err)
 	}
@@ -39,7 +39,7 @@ func (c Client) RunChecks(cr *CheckRequest) ([]CheckResult, error) {
 	}
 
 	// Run TCP checks if any
-	for _, p := range cr.TCPPorts {
+	for _, p := range m.OpenTCPPorts {
 		// Build check
 		tcpCheck := TCPPortClientCheck{p, node}
 		err := tcpCheck.Check()

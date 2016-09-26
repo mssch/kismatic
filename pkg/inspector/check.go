@@ -1,4 +1,4 @@
-package preflight
+package inspector
 
 // A Check is a preflight check that verifies some condition on the node.
 type Check interface {
@@ -13,11 +13,4 @@ type Check interface {
 type ClosableCheck interface {
 	Check
 	Close() error
-}
-
-// CheckRequest contains the list of checks that should be run
-type CheckRequest struct {
-	BinaryDependencies  []string
-	PackageDependencies []string
-	TCPPorts            []int
 }

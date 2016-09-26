@@ -1,4 +1,4 @@
-package preflight
+package inspector
 
 import (
 	"encoding/json"
@@ -30,15 +30,15 @@ func (s *Server) Start() error {
 			return
 		}
 
-		cr := &CheckRequest{}
-		err := json.NewDecoder(req.Body).Decode(cr)
+		m := &Manifest{}
+		err := json.NewDecoder(req.Body).Decode(m)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		defer req.Body.Close()
 
-		results := s.RunChecks(cr)
+		results := s.RunChecks(m)
 		json.NewEncoder(w).Encode(results)
 	})
 
@@ -58,14 +58,20 @@ func (s *Server) Start() error {
 }
 
 // RunChecks according to the check request and return the collection of results.
-func (s *Server) RunChecks(cr *CheckRequest) []CheckResult {
+func (s *Server) RunChecks(m *Manifest) []CheckResult {
 	checks := []Check{}
-	for _, b := range cr.BinaryDependencies {
-		checks = append(checks, &BinaryDependencyCheck{b})
+	for _, c := range m.AvailablePackageDependencies {
+		checks = append(checks, c)
+	}
+	for _, c := range m.InstalledPackageDependencies {
+		checks = append(checks, c)
+	}
+	for _, c := range m.BinaryDependencies {
+		checks = append(checks, c)
 	}
 
 	closable := []ClosableCheck{}
-	for _, p := range cr.TCPPorts {
+	for _, p := range m.OpenTCPPorts {
 		c := &TCPPortServerCheck{PortNumber: p}
 		checks = append(checks, c)
 		closable = append(closable, c)

@@ -1,4 +1,4 @@
-package preflight
+package inspector
 
 import (
 	"crypto/x509"
