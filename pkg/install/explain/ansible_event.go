@@ -92,7 +92,7 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		if verbose {
 			explainer.writePlayStatusVerbose(buf)
 			// Print the play name in color
-			util.PrintColor(buf, util.White, "%s  %s", explainer.getCount(), event.Name)
+			fmt.Fprintf(buf, "%s  %s", explainer.getCount(), event.Name)
 		} else {
 			explainer.writePlayStatus(buf)
 			// Print the play name
