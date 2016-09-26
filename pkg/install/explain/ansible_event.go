@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
 	"github.com/apprenda/kismatic-platform/pkg/util"
@@ -44,6 +45,19 @@ type DefaultEventExplainer struct {
 	printPlayStatus  bool
 	lastPlay         string
 	currentTask      string
+	playCount        int
+	currentPlayCount int
+}
+
+func (explainer *DefaultEventExplainer) getCount() string {
+	return rightPadToLen(fmt.Sprintf("%d/%d", explainer.currentPlayCount, explainer.playCount), ".", 7)
+}
+
+func rightPadToLen(s string, padStr string, overallLen int) string {
+	var padCountInt int
+	padCountInt = 1 + ((overallLen - len(padStr)) / len(padStr))
+	var retStr = s + strings.Repeat(padStr, padCountInt)
+	return retStr[:overallLen]
 }
 
 // ExplainEvent returns an explanation for the given event
@@ -60,13 +74,14 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 				// No tasks were printed, add a new line: something is wrong
 				if explainer.printPlayStatus {
 					fmt.Fprintln(buf)
-					util.PrintColor(buf, util.Red, "%s Finished with no tasks, are hosts reachable?\n", explainer.lastPlay)
+					util.PrintColor(buf, util.Red, "%s  %s Finished with no tasks, are hosts reachable?\n", explainer.getCount(), explainer.lastPlay)
 				} else {
-					util.PrintColor(buf, util.Green, "%s Finished\n", explainer.lastPlay)
+					util.PrintColor(buf, util.Green, "%s  %s Finished\n", explainer.getCount(), explainer.lastPlay)
 				}
+				explainer.currentPlayCount = explainer.currentPlayCount + 1
 			}
 			// Print the play name in color
-			util.PrintColor(buf, util.White, event.Name)
+			util.PrintColor(buf, util.White, "%s  %s", explainer.getCount(), event.Name)
 		} else {
 			// Do not print status on the first start event or when there is an ERROR
 			if explainer.printPlayStatus {
@@ -74,7 +89,8 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 				util.PrintOkln(buf)
 			}
 			// Print the play name
-			util.PrettyPrint(buf, event.Name)
+			util.PrettyPrint(buf, "%s  %s", explainer.getCount(), event.Name)
+			explainer.currentPlayCount = explainer.currentPlayCount + 1
 		}
 		// Set default state for the play
 		explainer.lastPlay = event.Name
@@ -163,6 +179,8 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 	case *ansible.RunnerItemRetryEvent:
 		return ""
 	case *ansible.PlaybookStartEvent:
+		explainer.playCount = event.Count
+		explainer.currentPlayCount = 1
 		return ""
 	default:
 		if verbose {
