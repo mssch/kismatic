@@ -144,6 +144,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
 		"kubernetes_dns_service_ip": dnsIP,
 		"modify_hosts_file":         strconv.FormatBool(p.Cluster.HostsFileDNS),
+		"enable_docker_registry":    strconv.FormatBool(p.DockerRegistry.UseInternal),
 	}
 
 	if p.Cluster.LocalRepository != "" {

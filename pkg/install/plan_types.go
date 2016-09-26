@@ -53,10 +53,16 @@ type MasterNodeGroup struct {
 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
 }
 
+// DockerRegistry details for docker registry, either confgiured by the cli or customer provided
+type DockerRegistry struct {
+	UseInternal bool `yaml:"use_internal"`
+}
+
 // Plan is the installation plan that the user intends to execute
 type Plan struct {
-	Cluster Cluster
-	Etcd    NodeGroup
-	Master  MasterNodeGroup
-	Worker  NodeGroup
+	Cluster        Cluster
+	DockerRegistry DockerRegistry `yaml:"docker_registry"`
+	Etcd           NodeGroup
+	Master         MasterNodeGroup
+	Worker         NodeGroup
 }

@@ -146,6 +146,8 @@ cluster:
     ssh_key: {{$p.Cluster.SSH.Key}}
     ssh_port: {{$p.Cluster.SSH.Port}}
 #Another comment
+docker_registry:
+  use_internal: {{$p.DockerRegistry.UseInternal}}
 etcd:
   expected_count: {{$p.Etcd.ExpectedCount}}
   nodes:

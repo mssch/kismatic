@@ -62,6 +62,7 @@ func (p *Plan) validate() (bool, []error) {
 	v := newValidator()
 
 	v.validate(&p.Cluster)
+	v.validate(&p.DockerRegistry)
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
@@ -186,5 +187,11 @@ func (n *Node) validate() (bool, []error) {
 	if ip := net.ParseIP(n.IP); ip == nil {
 		v.addError(fmt.Errorf("Invalid IP provided"))
 	}
+	return v.valid()
+}
+
+func (dr *DockerRegistry) validate() (bool, []error) {
+	v := newValidator()
+	// TODO add validation when there are more options
 	return v.valid()
 }
