@@ -1,6 +1,6 @@
 ---
   # setup directories
-  - name: create
+  - name: create directory for certificates 
     file:
       path: "{{ kubernetes_install_dir }}"
       state: directory

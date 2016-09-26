@@ -8,7 +8,7 @@
     file:
       path: "{{ docker_install_dir }}"
       state: directory
-  - name: create
+  - name: create directory for certificates
     file:
       path: "{{ docker_self_signed_cert_dir }}"
       state: directory
