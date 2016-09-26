@@ -64,10 +64,6 @@ func (s *Server) RunChecks(cr *CheckRequest) []CheckResult {
 		checks = append(checks, &BinaryDependencyCheck{b})
 	}
 
-	for _, p := range cr.PackageDependencies {
-		checks = append(checks, &PackageInstalledCheck{p})
-	}
-
 	closable := []ClosableCheck{}
 	for _, p := range cr.TCPPorts {
 		c := &TCPPortServerCheck{PortNumber: p}

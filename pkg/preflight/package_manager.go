@@ -4,24 +4,38 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"os/exec"
 	"strings"
 )
 
-type pkg struct {
-	name    string
-	version string
+type packageManager interface {
+	isInstalled(packageQuery) (bool, error)
+	isAvailable(packageQuery) (bool, error)
 }
 
-type packageManager interface {
-	isInstalled(pkg) (bool, error)
-	isAvailable(pkg) (bool, error)
+func newPackageManager(distro Distro) (packageManager, error) {
+	run := func(name string, arg ...string) ([]byte, error) {
+		return exec.Command(name, arg...).CombinedOutput()
+	}
+	switch distro {
+	case RHEL, CentOS:
+		return &rpmManager{
+			run: run,
+		}, nil
+	case Ubuntu:
+		return &debManager{
+			run: run,
+		}, nil
+	default:
+		return nil, fmt.Errorf("%s is not supported", distro)
+	}
 }
 
 type rpmManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m rpmManager) isInstalled(p pkg) (bool, error) {
+func (m rpmManager) isInstalled(p packageQuery) (bool, error) {
 	out, err := m.run("yum", "list", "installed", "-q", p.name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
@@ -32,7 +46,7 @@ func (m rpmManager) isInstalled(p pkg) (bool, error) {
 	return m.isPackageListed(p, out), nil
 }
 
-func (m rpmManager) isAvailable(p pkg) (bool, error) {
+func (m rpmManager) isAvailable(p packageQuery) (bool, error) {
 	out, err := m.run("yum", "list", "-q", p.name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
@@ -43,7 +57,7 @@ func (m rpmManager) isAvailable(p pkg) (bool, error) {
 	return m.isPackageListed(p, out), nil
 }
 
-func (m rpmManager) isPackageListed(p pkg, list []byte) bool {
+func (m rpmManager) isPackageListed(p packageQuery, list []byte) bool {
 	s := bufio.NewScanner(bytes.NewReader(list))
 	for s.Scan() {
 		line := s.Text()
@@ -63,7 +77,7 @@ type debManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m debManager) isInstalled(p pkg) (bool, error) {
+func (m debManager) isInstalled(p packageQuery) (bool, error) {
 	out, err := m.run("dpkg", "-l", p.name)
 	if err != nil && strings.Contains(string(out), "no packages found matching") {
 		return false, nil
@@ -86,7 +100,7 @@ func (m debManager) isInstalled(p pkg) (bool, error) {
 	return false, nil
 }
 
-func (m debManager) isAvailable(p pkg) (bool, error) {
+func (m debManager) isAvailable(p packageQuery) (bool, error) {
 	// Attempt to install using --dry-run. If exit status is zero, we
 	// know the package is available for download
 	_, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.name, p.version))
