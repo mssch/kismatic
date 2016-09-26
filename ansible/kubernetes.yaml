@@ -24,3 +24,4 @@
   - include: _addon-network-policy.yaml
   - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml
+  - include: _addon-docker-registry.yaml
