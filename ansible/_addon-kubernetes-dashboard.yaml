@@ -1,6 +1,6 @@
 ---
   - hosts: master[0]
-    name: "{{step | default()}}Configure Kubernetes Dashboard"
+    name: "Configure Kubernetes Dashboard"
     remote_user: root
     become_method: sudo
     run_once: true

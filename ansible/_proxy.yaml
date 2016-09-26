@@ -1,6 +1,6 @@
 ---
   - hosts: "{{ hosts | default('master:worker') }}"
-    name: "{{step | default()}}Install Kubernetes Proxy"
+    name: "Install Kubernetes Proxy"
     remote_user: root
     become_method: sudo
     vars_files:

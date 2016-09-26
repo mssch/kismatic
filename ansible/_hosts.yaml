@@ -1,7 +1,7 @@
 ---
   # update hosts files of all nodes
   - hosts: all
-    name: "{{step | default()}}Update Hosts File"
+    name: "Update Hosts File"
     remote_user: root
     become_method: sudo
 

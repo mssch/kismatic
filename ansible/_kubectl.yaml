@@ -1,6 +1,6 @@
 ---
   - hosts: master
-    name: "{{step | default()}}Install Kubectl"
+    name: "Install Kubectl"
     remote_user: root
     become_method: sudo
     vars_files:
