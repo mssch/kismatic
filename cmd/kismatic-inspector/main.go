@@ -23,12 +23,6 @@ var output = pflag.StringP("output", "o", "table", "set the result output type. 
 func main() {
 	pflag.Parse()
 
-	_, err := preflight.DetectDistro()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to detect OS distribution: %v\n", err)
-		os.Exit(1)
-	}
-
 	cr := &preflight.CheckRequest{
 		BinaryDependencies:  []string{"iptables", "iptables-save", "iptables-restore", "ip", "nsenter", "mount", "umount"},
 		PackageDependencies: []string{},
