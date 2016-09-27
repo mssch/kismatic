@@ -85,8 +85,8 @@ func PrintSkipped(out io.Writer) {
 }
 
 // PrintHeader will print header with predifined width
-func PrintHeader(out io.Writer, msg string) {
-	w := tabwriter.NewWriter(out, 84, 0, 0, '=', 0)
+func PrintHeader(out io.Writer, msg string, padding byte) {
+	w := tabwriter.NewWriter(out, 84, 0, 0, padding, 0)
 	fmt.Fprintln(w, "")
 	format := msg + "\t\n"
 	fmt.Fprintf(w, format)

@@ -91,7 +91,6 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		// Print a success status, but only when there were no errors
 		if verbose {
 			explainer.writePlayStatusVerbose(buf)
-			// Print the play name in color
 			fmt.Fprintf(buf, "%s  %s", explainer.getCount(), event.Name)
 		} else {
 			explainer.writePlayStatus(buf)

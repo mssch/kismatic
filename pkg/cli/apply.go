@@ -102,7 +102,7 @@ func (c *applyCmd) run() error {
 	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully\n")
 
 	// Generate kubeconfig
-	util.PrintHeader(c.out, "Generating Kubeconfig File")
+	util.PrintHeader(c.out, "Generating Kubeconfig File", '=')
 	err = install.GenerateKubeconfig(plan, c.generatedAssetsDir)
 	if err != nil {
 		util.PrettyPrintWarn(c.out, "Error generating kubeconfig file: %v\n", err)
