@@ -1,5 +1,6 @@
 ---
   - hosts: "{{ hosts | default('master:worker') }}"
+    any_errors_fatal: true
     name: "Install Kubernetes Proxy"
     remote_user: root
     become_method: sudo

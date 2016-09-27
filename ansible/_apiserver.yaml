@@ -1,5 +1,6 @@
 ---
   - hosts: master
+    any_errors_fatal: true
     name: "Install Kubernetes API Server"
     remote_user: root
     become_method: sudo

@@ -1,5 +1,6 @@
 ---
   - hosts: master[0]
+    any_errors_fatal: true
     name: "Configure Kubernetes Dashboard"
     remote_user: root
     become_method: sudo

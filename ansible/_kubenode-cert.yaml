@@ -1,5 +1,6 @@
 ---
   - hosts: worker:master
+    any_errors_fatal: true
     name: "Deploy Cluster Certificates"
     remote_user: root
     become_method: sudo

@@ -1,5 +1,6 @@
 ---
   - hosts: master:!worker
+    any_errors_fatal: true
     name: "Install Kubernetes Kubelet on Master Nodes"
     remote_user: root
     become_method: sudo
