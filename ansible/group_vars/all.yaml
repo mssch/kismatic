@@ -21,7 +21,7 @@ cni_path: https://github.com/containernetworking/cni/releases/download/{{ cni_ve
 #===============================================================================
 # component versions
 #TODO move versions from etcd_k8s and etcd_networking
-kubernetes_version: v1.3.7
+kubernetes_version: v1.4.0
 calico_version: v1.4.2
 calico_ctl_version: v0.22.0
 calico_docker_version: v0.22.0
