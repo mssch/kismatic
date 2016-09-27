@@ -95,11 +95,11 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Calling installer with a plan targetting AWS", func() {
-		Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallKismatic(AMIUbuntu1604USEAST, "ubuntu")
-			})
-		})
+		// Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
+		// 	It("should result in a working cluster", func() {
+		// 		InstallKismatic(AMIUbuntu1604USEAST, "ubuntu")
+		// 	})
+		// })
 		Context("Using a 1/1/1 CentOS 7 layout", func() {
 			It("should result in a working cluster", func() {
 				InstallKismatic(AMICentos7UsEast, "centos")
