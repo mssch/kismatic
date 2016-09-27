@@ -2,10 +2,9 @@ package integration
 
 type ClusterPlan struct {
 	Cluster struct {
-		Name            string
-		AdminPassword   string `yaml:"admin_password"`
-		LocalRepository string `yaml:"local_repository"`
-		Networking      struct {
+		Name          string
+		AdminPassword string `yaml:"admin_password"`
+		Networking    struct {
 			Type             string
 			PodCIDRBlock     string `yaml:"pod_cidr_block"`
 			ServiceCIDRBlock string `yaml:"service_cidr_block"`

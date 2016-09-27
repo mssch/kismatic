@@ -2,7 +2,7 @@
   # download kubernetes binaries
   - name: download kube-apiserver - {{ kubernetes_version }}
     get_url:
-      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kube-apiserver"
+      url: "{{ kubernetes_binary_path }}/kube-apiserver"
       dest: "{{ bin_dir }}"
       mode: "{{ kubernetes_executable_mode }}"
 

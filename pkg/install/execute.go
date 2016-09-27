@@ -146,10 +146,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"modify_hosts_file":         strconv.FormatBool(p.Cluster.HostsFileDNS),
 	}
 
-	if p.Cluster.LocalRepository != "" {
-		ev["local_repository_path"] = p.Cluster.LocalRepository
-	}
-
 	if ae.options.RestartServices {
 		services := []string{"etcd", "apiserver", "controller_manager", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
 		for _, s := range services {

@@ -24,13 +24,12 @@ type SSHConfig struct {
 
 // Cluster describes a Kismatic cluster
 type Cluster struct {
-	Name            string
-	AdminPassword   string `yaml:"admin_password"`
-	LocalRepository string `yaml:"local_repository"`
-	HostsFileDNS    bool   `yaml:"hosts_file_dns"`
-	Networking      NetworkConfig
-	Certificates    CertsConfig
-	SSH             SSHConfig
+	Name          string
+	AdminPassword string `yaml:"admin_password"`
+	HostsFileDNS  bool   `yaml:"hosts_file_dns"`
+	Networking    NetworkConfig
+	Certificates  CertsConfig
+	SSH           SSHConfig
 }
 
 // A Node is a compute unit, virtual or physical, that is part of the cluster

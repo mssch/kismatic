@@ -130,7 +130,6 @@ const planTemplate = `{{ $p := .Plan }}#Multi line comment
 cluster:
   name: {{$p.Cluster.Name}}  #inline comment
   admin_password: {{$p.Cluster.AdminPassword}}
-  local_repository: {{$p.Cluster.LocalRepository}}
   hosts_file_dns: {{$p.Cluster.HostsFileDNS}}
   networking:
     type: {{$p.Cluster.Networking.Type}}

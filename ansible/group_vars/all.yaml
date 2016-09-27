@@ -125,14 +125,5 @@ etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{
 #pv_logging_nfs_dir: "/kubernetes/logging"
 #pv_logging_storage_size: "10Gi"
 #===============================================================================
-# nginx to host binaries
-repository_port: 6080
-repository_dir: /etc/nginx
-repository_mode: 0775
-#TODO how to get from vars
-etcd_k8s_version: 3.0.4
-etcd_networking_version: 2.3.7
-#local_repository_path: http://192.168.99.20:6080 pass this as a runtime parameter for local repository
-
 # Preflight check variables
 preflight_check_tcp_ports: "{{etcd_k8s_client_port}},{{etcd_networking_client_port}},{{kubernetes_master_secure_port}},{{kubernetes_master_insecure_port}}"
