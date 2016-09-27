@@ -71,10 +71,11 @@ func (explainer *DefaultEventExplainer) writePlayStatusVerbose(buf io.Writer) {
 	// In verbose mode the status is printed as a whole line after all the tasks
 	// Do not print message before first play
 	if explainer.printPlayMessage {
-		// No tasks were printed, add a new line: something is wrong
+		// No tasks were printed, no nodes match the selector
+		// This is OK and a valid scenario
 		if explainer.printPlayStatus {
 			fmt.Fprintln(buf)
-			util.PrintColor(buf, util.Red, "%s  %s Finished with no tasks, are hosts reachable?\n", explainer.getCount(), explainer.lastPlay)
+			util.PrintColor(buf, util.Green, "%s Finished With No Tasks\n", explainer.lastPlay)
 		} else {
 			util.PrintColor(buf, util.Green, "%s  %s Finished\n", explainer.getCount(), explainer.lastPlay)
 		}
