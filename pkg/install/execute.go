@@ -164,7 +164,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	// Run the installation playbook
-	util.PrintHeader(ae.stdout, "Installing Cluster")
+	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
 	playbook := "kubernetes.yaml"
 	eventExplainer := &explain.DefaultEventExplainer{}
 	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, ev, ansibleLogFile); err != nil {
@@ -241,7 +241,7 @@ func (ae *ansibleExecutor) generateTLSAssets(p *Plan) (certsDir string, err erro
 	}
 
 	// Generate or read cluster Certificate Authority
-	util.PrintHeader(ae.stdout, "Configuring Certificates")
+	util.PrintHeader(ae.stdout, "Configuring Certificates", '=')
 	var ca *tls.CA
 	if !ae.options.SkipCAGeneration {
 		util.PrettyPrintOk(ae.stdout, "Generating cluster Certificate Authority")

@@ -1,6 +1,6 @@
 ---
   - hosts: worker:master
-    name: Deploy Cluster Certificates
+    name: "Deploy Cluster Certificates"
     remote_user: root
     become_method: sudo
     vars_files:

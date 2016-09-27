@@ -1,6 +1,6 @@
 ---
   - hosts: master
-    name: Install Kubernetes Scheduler
+    name: "Install Kubernetes Scheduler"
     remote_user: root
     become_method: sudo
     vars_files:

@@ -22,6 +22,7 @@ var Green = color.New(color.FgGreen)
 var Red = color.New(color.FgRed)
 var Orange = color.New(color.FgRed, color.FgYellow)
 var Blue = color.New(color.FgCyan)
+var White = color.New(color.FgHiWhite)
 
 // PrettyPrintOk [OK](Green) with formatted string
 func PrettyPrintOk(out io.Writer, msg string, a ...interface{}) {
@@ -84,8 +85,8 @@ func PrintSkipped(out io.Writer) {
 }
 
 // PrintHeader will print header with predifined width
-func PrintHeader(out io.Writer, msg string) {
-	w := tabwriter.NewWriter(out, 84, 0, 0, '=', 0)
+func PrintHeader(out io.Writer, msg string, padding byte) {
+	w := tabwriter.NewWriter(out, 84, 0, 0, padding, 0)
 	fmt.Fprintln(w, "")
 	format := msg + "\t\n"
 	fmt.Fprintf(w, format)

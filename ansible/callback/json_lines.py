@@ -90,7 +90,8 @@ class CallbackModule(CallbackBase):
 
     def v2_playbook_on_start(self, playbook):
         data = {
-            'name': basename(playbook._file_name)
+            'name': basename(playbook._file_name),
+            'count': len(playbook._entries)
         }
         e = self._new_event(self.PLAYBOOK_START, data)
         self._print_event(e)

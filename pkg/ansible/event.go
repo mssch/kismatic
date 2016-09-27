@@ -30,6 +30,7 @@ type runnerResultEvent struct {
 // PlaybookStartEvent signals the beginning of a playbook
 type PlaybookStartEvent struct {
 	namedEvent
+	Count int
 }
 
 func (e *PlaybookStartEvent) Type() string {
