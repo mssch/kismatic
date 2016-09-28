@@ -14,12 +14,12 @@ func (p packageQuery) String() string {
 // PackageInstalledCheck verifies that a given package is installed on the host
 type PackageInstalledCheck struct {
 	pkgQuery       packageQuery
-	packageManager packageManager
+	packageManager PackageManager
 }
 
 // Check returns nil if the package is installed. Otherwise, returns an error message indicating the package was not found.
 func (c PackageInstalledCheck) Check() error {
-	ok, err := c.packageManager.isInstalled(c.pkgQuery)
+	ok, err := c.packageManager.IsInstalled(c.pkgQuery)
 	if !ok || err != nil {
 		return fmt.Errorf("Install %q, as it was not found on the system.", c.pkgQuery)
 	}
@@ -34,7 +34,7 @@ func (c PackageInstalledCheck) Name() string {
 // using the operating system's package manager.
 type PackageAvailableCheck struct {
 	pkgQuery       packageQuery
-	packageManager packageManager
+	packageManager PackageManager
 }
 
 func (c PackageAvailableCheck) Name() string {
@@ -44,7 +44,7 @@ func (c PackageAvailableCheck) Name() string {
 // Check returns nil if the package manager lists the package as available.
 // Otherwise returns an error message.
 func (c PackageAvailableCheck) Check() error {
-	ok, err := c.packageManager.isAvailable(c.pkgQuery)
+	ok, err := c.packageManager.IsAvailable(c.pkgQuery)
 	if !ok || err != nil {
 		return fmt.Errorf("%s is not available from the operating system's package manager", c.pkgQuery)
 	}

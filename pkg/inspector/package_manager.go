@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-type packageManager interface {
-	isInstalled(packageQuery) (bool, error)
-	isAvailable(packageQuery) (bool, error)
+type PackageManager interface {
+	IsInstalled(packageQuery) (bool, error)
+	IsAvailable(packageQuery) (bool, error)
 }
 
-func newPackageManager(distro Distro) (packageManager, error) {
+func NewPackageManager(distro Distro) (PackageManager, error) {
 	run := func(name string, arg ...string) ([]byte, error) {
 		return exec.Command(name, arg...).CombinedOutput()
 	}
@@ -35,7 +35,7 @@ type rpmManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m rpmManager) isInstalled(p packageQuery) (bool, error) {
+func (m rpmManager) IsInstalled(p packageQuery) (bool, error) {
 	out, err := m.run("yum", "list", "installed", "-q", p.name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
@@ -46,7 +46,7 @@ func (m rpmManager) isInstalled(p packageQuery) (bool, error) {
 	return m.isPackageListed(p, out), nil
 }
 
-func (m rpmManager) isAvailable(p packageQuery) (bool, error) {
+func (m rpmManager) IsAvailable(p packageQuery) (bool, error) {
 	out, err := m.run("yum", "list", "-q", p.name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
@@ -77,7 +77,7 @@ type debManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m debManager) isInstalled(p packageQuery) (bool, error) {
+func (m debManager) IsInstalled(p packageQuery) (bool, error) {
 	out, err := m.run("dpkg", "-l", p.name)
 	if err != nil && strings.Contains(string(out), "no packages found matching") {
 		return false, nil
@@ -100,7 +100,7 @@ func (m debManager) isInstalled(p packageQuery) (bool, error) {
 	return false, nil
 }
 
-func (m debManager) isAvailable(p packageQuery) (bool, error) {
+func (m debManager) IsAvailable(p packageQuery) (bool, error) {
 	// Attempt to install using --dry-run. If exit status is zero, we
 	// know the package is available for download
 	_, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.name, p.version))

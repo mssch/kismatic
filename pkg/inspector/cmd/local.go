@@ -37,12 +37,14 @@ func runLocal(out io.Writer, outputType string) error {
 	if err != nil {
 		return fmt.Errorf("error running checks locally: %v", err)
 	}
-	m, err := inspector.BuildManifest(d)
+	pkgMgr, err := inspector.NewPackageManager(d)
 	if err != nil {
-		return fmt.Errorf("error building the check manifest: %v", err)
+		return err
 	}
-	s := inspector.Server{}
-	results := s.RunChecks(m)
+	m := inspector.DefaultRules()
+	e := inspector.Engine{PackageManager: pkgMgr}
+	labels := []string{"centos", "worker"}
+	results := e.ExecuteRules(m, labels)
 	printResults(out, results)
 	for _, r := range results {
 		if !r.Success {

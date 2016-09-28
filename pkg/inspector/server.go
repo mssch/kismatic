@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sync"
 )
 
 // CheckResult contains the results of a check
@@ -16,9 +15,9 @@ type CheckResult struct {
 
 // Server stands up an HTTP server that handles pre-flight checking.
 type Server struct {
-	ListenPort     int
-	mu             sync.Mutex
-	closableChecks []ClosableCheck
+	ListenPort  int
+	NodeLabels  []string
+	rulesEngine Engine
 }
 
 // Start the CheckServer
@@ -30,27 +29,21 @@ func (s *Server) Start() error {
 			return
 		}
 
-		m := &Manifest{}
-		err := json.NewDecoder(req.Body).Decode(m)
+		rules := []Rule{}
+		err := json.NewDecoder(req.Body).Decode(rules)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		defer req.Body.Close()
 
-		results := s.RunChecks(m)
+		results := s.RunChecks(rules)
 		json.NewEncoder(w).Encode(results)
 	})
 
 	mux.HandleFunc("/close-checks", func(w http.ResponseWriter, req *http.Request) {
-		s.mu.Lock()
-		defer s.mu.Unlock()
-
-		for _, c := range s.closableChecks {
-			// TODO: What to do with error here?
-			c.Close()
-		}
-
+		// TODO: Handle errors when closing
+		s.rulesEngine.CloseChecks()
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -58,43 +51,7 @@ func (s *Server) Start() error {
 }
 
 // RunChecks according to the check request and return the collection of results.
-func (s *Server) RunChecks(m *Manifest) []CheckResult {
-	checks := []Check{}
-	for _, c := range m.AvailablePackageDependencies {
-		checks = append(checks, c)
-	}
-	for _, c := range m.InstalledPackageDependencies {
-		checks = append(checks, c)
-	}
-	for _, c := range m.BinaryDependencies {
-		checks = append(checks, c)
-	}
-
-	closable := []ClosableCheck{}
-	for _, p := range m.OpenTCPPorts {
-		c := &TCPPortServerCheck{PortNumber: p}
-		checks = append(checks, c)
-		closable = append(closable, c)
-	}
-
-	results := []CheckResult{}
-	for _, c := range checks {
-		// Run the check
-		err := c.Check()
-		// Build result
-		r := CheckResult{
-			Name:    c.Name(),
-			Success: err == nil,
-		}
-		if err != nil {
-			r.Error = fmt.Sprintf("%v", c.Check())
-		}
-		results = append(results, r)
-	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.closableChecks = closable
-
-	return results
+func (s *Server) RunChecks(rules []Rule) []RuleResult {
+	res := s.rulesEngine.ExecuteRules(rules, s.NodeLabels)
+	return res
 }
