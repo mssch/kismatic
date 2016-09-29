@@ -23,7 +23,7 @@ func NewCmdServer(out io.Writer) *cobra.Command {
 
 func runServer(out io.Writer, port int, commandName string) error {
 	s := inspector.Server{
-		ListenPort: port,
+		Port: port,
 	}
 	fmt.Fprintf(out, "Inspector is listening on port %d\n", port)
 	fmt.Fprintf(out, "Run %s from another node to run checks remotely: %[1]s client [NODE_IP]:%d\n", commandName, port)

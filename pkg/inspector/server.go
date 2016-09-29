@@ -3,6 +3,7 @@ package inspector
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -13,17 +14,23 @@ type CheckResult struct {
 	Error   string
 }
 
-// Server stands up an HTTP server that handles pre-flight checking.
+// Server supports the execution of inspector rules from a remote node
 type Server struct {
-	ListenPort  int
-	NodeLabels  []string
+	// The Port the server will listen on
+	Port int
+	// NodeFacts are the facts that are passed to the rules engine
+	NodeFacts   []string
 	rulesEngine Engine
 }
 
-// Start the CheckServer
+type serverError struct {
+	Error string
+}
+
+// Start the server
 func (s *Server) Start() error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/run-checks", func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/execute", func(w http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
@@ -37,21 +44,30 @@ func (s *Server) Start() error {
 		}
 		defer req.Body.Close()
 
-		results := s.RunChecks(rules)
-		json.NewEncoder(w).Encode(results)
+		results, err := s.rulesEngine.ExecuteRules(rules, s.NodeFacts)
+		if err != nil {
+			err = json.NewEncoder(w).Encode(serverError{Error: err.Error()})
+			if err != nil {
+				log.Printf("error writing server response: %v\n", err)
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		err = json.NewEncoder(w).Encode(results)
+		if err != nil {
+			log.Printf("error writing server response: %v\n", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 
-	mux.HandleFunc("/close-checks", func(w http.ResponseWriter, req *http.Request) {
-		// TODO: Handle errors when closing
-		s.rulesEngine.CloseChecks()
+	mux.HandleFunc("/close", func(w http.ResponseWriter, req *http.Request) {
+		err := s.rulesEngine.CloseChecks()
+		if err != nil {
+			log.Printf("error closing checks: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		w.WriteHeader(http.StatusOK)
 	})
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", s.ListenPort), mux)
-}
-
-// RunChecks according to the check request and return the collection of results.
-func (s *Server) RunChecks(rules []Rule) []RuleResult {
-	res := s.rulesEngine.ExecuteRules(rules, s.NodeLabels)
-	return res
+	return http.ListenAndServe(fmt.Sprintf(":%d", s.Port), mux)
 }

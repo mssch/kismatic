@@ -8,11 +8,14 @@ import (
 	"strings"
 )
 
+// PackageManager runs queries against the underlying operating system's
+// package manager
 type PackageManager interface {
 	IsInstalled(packageQuery) (bool, error)
 	IsAvailable(packageQuery) (bool, error)
 }
 
+// NewPackageManager returns a package manager for the given distribution
 func NewPackageManager(distro Distro) (PackageManager, error) {
 	run := func(name string, arg ...string) ([]byte, error) {
 		return exec.Command(name, arg...).CombinedOutput()
