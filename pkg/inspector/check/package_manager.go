@@ -1,4 +1,4 @@
-package inspector
+package check
 
 import (
 	"bufio"
@@ -11,8 +11,8 @@ import (
 // PackageManager runs queries against the underlying operating system's
 // package manager
 type PackageManager interface {
-	IsInstalled(packageQuery) (bool, error)
-	IsAvailable(packageQuery) (bool, error)
+	IsInstalled(PackageQuery) (bool, error)
+	IsAvailable(PackageQuery) (bool, error)
 }
 
 // NewPackageManager returns a package manager for the given distribution
@@ -38,29 +38,29 @@ type rpmManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m rpmManager) IsInstalled(p packageQuery) (bool, error) {
-	out, err := m.run("yum", "list", "installed", "-q", p.name)
+func (m rpmManager) IsInstalled(p PackageQuery) (bool, error) {
+	out, err := m.run("yum", "list", "installed", "-q", p.Name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.name, p.version, err)
+		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.Name, p.Version, err)
 	}
 	return m.isPackageListed(p, out), nil
 }
 
-func (m rpmManager) IsAvailable(p packageQuery) (bool, error) {
-	out, err := m.run("yum", "list", "-q", p.name)
+func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
+	out, err := m.run("yum", "list", "-q", p.Name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is available for download: %v", p.name, p.version, err)
+		return false, fmt.Errorf("unable to determine if %s %s is available for download: %v", p.Name, p.Version, err)
 	}
 	return m.isPackageListed(p, out), nil
 }
 
-func (m rpmManager) isPackageListed(p packageQuery, list []byte) bool {
+func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 	s := bufio.NewScanner(bytes.NewReader(list))
 	for s.Scan() {
 		line := s.Text()
@@ -69,7 +69,7 @@ func (m rpmManager) isPackageListed(p packageQuery, list []byte) bool {
 			// Ignore lines that don't match the expected format
 			continue
 		}
-		if p.name == f[0] && p.version == f[1] {
+		if p.Name == f[0] && p.Version == f[1] {
 			return true
 		}
 	}
@@ -80,13 +80,13 @@ type debManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m debManager) IsInstalled(p packageQuery) (bool, error) {
-	out, err := m.run("dpkg", "-l", p.name)
+func (m debManager) IsInstalled(p PackageQuery) (bool, error) {
+	out, err := m.run("dpkg", "-l", p.Name)
 	if err != nil && strings.Contains(string(out), "no packages found matching") {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.name, p.version, err)
+		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.Name, p.Version, err)
 	}
 	s := bufio.NewScanner(bytes.NewReader(out))
 	for s.Scan() {
@@ -96,16 +96,16 @@ func (m debManager) IsInstalled(p packageQuery) (bool, error) {
 			// Ignore lines with unexpected format
 			continue
 		}
-		if p.name == f[1] && p.version == f[2] {
+		if p.Name == f[1] && p.Version == f[2] {
 			return true, nil
 		}
 	}
 	return false, nil
 }
 
-func (m debManager) IsAvailable(p packageQuery) (bool, error) {
+func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
 	// Attempt to install using --dry-run. If exit status is zero, we
 	// know the package is available for download
-	_, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.name, p.version))
+	_, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.Name, p.Version))
 	return err == nil, err
 }

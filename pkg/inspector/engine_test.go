@@ -4,6 +4,8 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+
+	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
 )
 
 type fakeCheck struct {
@@ -23,11 +25,11 @@ type fakeRule struct {
 func (r fakeRule) Name() string { return r.name }
 
 type fakeRuleCheckMapper struct {
-	check Check
+	check check.Check
 	err   error
 }
 
-func (m fakeRuleCheckMapper) GetCheckForRule(Rule) (Check, error) {
+func (m fakeRuleCheckMapper) GetCheckForRule(Rule) (check.Check, error) {
 	return m.check, m.err
 }
 

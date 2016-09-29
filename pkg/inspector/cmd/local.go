@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/apprenda/kismatic-platform/pkg/inspector"
+	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
 	"github.com/spf13/cobra"
 )
 
@@ -33,11 +34,11 @@ func runLocal(out io.Writer, outputType string) error {
 	default:
 		return fmt.Errorf("output type %q not supported", outputType)
 	}
-	d, err := inspector.DetectDistro()
+	d, err := check.DetectDistro()
 	if err != nil {
 		return fmt.Errorf("error running checks locally: %v", err)
 	}
-	_, err = inspector.NewPackageManager(d)
+	_, err = check.NewPackageManager(d)
 	if err != nil {
 		return err
 	}

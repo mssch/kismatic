@@ -1,4 +1,4 @@
-package inspector
+package check
 
 // A Check implements a workflow that validates a condition. If an error
 // occurs while running the check, it returns false and the error. If the

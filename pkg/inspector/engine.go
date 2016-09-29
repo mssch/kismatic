@@ -3,41 +3,43 @@ package inspector
 import (
 	"fmt"
 	"sync"
+
+	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
 )
 
 // RuleCheckMapper implements a mapping between a
 // rule and a check.
 type RuleCheckMapper interface {
-	GetCheckForRule(Rule) (Check, error)
+	GetCheckForRule(Rule) (check.Check, error)
 }
 
 // The DefaultCheckMapper contains the mappings for all
 // supported rules and checks.
 type DefaultCheckMapper struct {
-	PackageManager PackageManager
+	PackageManager check.PackageManager
 }
 
 // GetCheckForRule returns the check for the given rule. If the rule
 // is unknown to the mapper, it returns an error.
-func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (Check, error) {
-	var c Check
+func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
+	var c check.Check
 	switch r := rule.(type) {
 	default:
 		return nil, fmt.Errorf("Rule of type %T is not supported", r)
 	case PackageInstalled:
-		pkgQuery := packageQuery{name: r.PackageName, version: r.PackageVersion}
-		c = &PackageInstalledCheck{pkgQuery, m.PackageManager}
+		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion}
+		c = &check.PackageInstalledCheck{pkgQuery, m.PackageManager}
 	case PackageAvailable:
-		pkgQuery := packageQuery{name: r.PackageName, version: r.PackageVersion}
-		c = &PackageAvailableCheck{pkgQuery, m.PackageManager}
+		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion}
+		c = &check.PackageAvailableCheck{pkgQuery, m.PackageManager}
 	case ExecutableInPath:
-		c = &BinaryDependencyCheck{r.Executable}
+		c = &check.BinaryDependencyCheck{r.Executable}
 	case FileContentMatches:
-		c = FileContentCheck{File: r.File, SearchString: r.ContentRegex}
+		c = check.FileContentCheck{File: r.File, SearchString: r.ContentRegex}
 	case TCPPortAvailable:
-		c = &TCPPortServerCheck{PortNumber: r.Port}
+		c = &check.TCPPortServerCheck{PortNumber: r.Port}
 	case TCPPortAccessible:
-		c = &TCPPortClientCheck{PortNumber: r.Port}
+		c = &check.TCPPortClientCheck{PortNumber: r.Port}
 	}
 	return c, nil
 }
@@ -46,7 +48,7 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (Check, error) {
 type Engine struct {
 	RuleCheckMapper RuleCheckMapper
 	mu              sync.Mutex
-	closableChecks  []ClosableCheck
+	closableChecks  []check.ClosableCheck
 }
 
 // ExecuteRules runs the rules that should be executed according to the facts,
@@ -67,7 +69,7 @@ func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]RuleResult, error
 
 		// We update the closables as we go to avoid leaking closables
 		// in the event where we have to return an error from within the loop.
-		if closeable, ok := c.(ClosableCheck); ok {
+		if closeable, ok := c.(check.ClosableCheck); ok {
 			e.mu.Lock()
 			e.closableChecks = append(e.closableChecks, closeable)
 			e.mu.Unlock()
