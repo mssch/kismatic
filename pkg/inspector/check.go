@@ -1,15 +1,14 @@
 package inspector
 
-// A Check is a preflight check that verifies some condition on the node.
+// A Check implements a workflow that validates a condition. If an error
+// occurs while running the check, it returns false and the error. If the
+// check is able to successfully determine the condition, it returns true
+// if satisfied, or false otherwise.
 type Check interface {
-	// Check returns nil if the check was successful. Otherwise, returns an error message
-	// describing the problem, and potential remediation steps.
-	Check() error
-	// Name returns the name of the check
-	Name() string
+	Check() (bool, error)
 }
 
-// A ClosableCheck is a preflight check that needs to be closed.
+// A ClosableCheck implements a long-running check workflow that requires closing
 type ClosableCheck interface {
 	Check
 	Close() error

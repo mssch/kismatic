@@ -4,74 +4,79 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"net"
+	"time"
 )
 
-// TCPPortClientCheck is a client that can be used to verify the TCPPortServerCheck
+// TCPPortClientCheck verifies that a given port on a remote node
+// is accessible through the network
 type TCPPortClientCheck struct {
+	// IPAddress is the IP of the remote node
+	IPAddress string
+	// PortNumber is the target service port
 	PortNumber int
-	IPAddress  string
+	// Timeout is the maximum amount of time the check will
+	// wait when connecting to the server before bailing out
+	Timeout time.Duration
 }
 
-// Check returns nil if the TCP connection is established, and the TCPPortServerCheck is running on the other side.
-// Otherwise, returns an error message indicating the problem.
-func (c *TCPPortClientCheck) Check() error {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", c.IPAddress, c.PortNumber))
+// Check returns true if the TCP connection is established and the server
+// returns the expected response. Otherwise, returns false and an error message
+func (c *TCPPortClientCheck) Check() (bool, error) {
+	timeout := c.Timeout
+	if timeout == 0 {
+		timeout = 5 * time.Second
+	}
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", c.IPAddress, c.PortNumber), timeout)
 	if err != nil {
-		return fmt.Errorf("Port %d on host %q is unreachable. This might mean there is a firewall blocking access to the port,"+
-			"or there is nothing listening on the other end. Error was: %v", c.PortNumber, c.IPAddress, err)
+		return false, fmt.Errorf("Port %d on host %q is unreachable. Error was: %v", c.PortNumber, c.IPAddress, err)
 	}
 
 	testMsg := "ECHO\n"
 	fmt.Fprint(conn, testMsg)
 	resp, err := bufio.NewReader(conn).ReadString('\n')
 	if resp != testMsg {
-		return fmt.Errorf("Port %d on host %q did not send the expected response. Response was %q", c.PortNumber, c.IPAddress, resp)
+		return false, fmt.Errorf("Port %d on host %q did not send the expected response. Response was %q", c.PortNumber, c.IPAddress, resp)
 	}
-	return nil
+	return true, nil
 }
 
-func (c *TCPPortClientCheck) Name() string {
-	return fmt.Sprintf("TCP Port %d accessible", c.PortNumber)
-}
-
-// tcpPortServerCheck ensures that the given port is free, and stands up a TCP server that can be used to
+// TCPPortServerCheck ensures that the given port is free, and stands up a TCP server that can be used to
 // check TCP connectivity to the host using TCPPortClientCheck
 type TCPPortServerCheck struct {
 	PortNumber   int
 	serverCloser func() error
 }
 
-// Check returns nil if the port is available, and the TCP listener is up and running.
-// Otherwise, returns an error message indicating the failure.
-func (c *TCPPortServerCheck) Check() error {
+// Check returns true if the port is available for the server. Otherwise returns false
+// and an error message
+func (c *TCPPortServerCheck) Check() (bool, error) {
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", c.PortNumber))
 	if err != nil {
 		// TODO: We could check if the port is being used here..
-		return fmt.Errorf("Attempted to bind port %d but failed. This might mean the port is in use by another process. Error was: %v", c.PortNumber, err)
+		return false, fmt.Errorf("Failed to bind port %d. This could mean the port is in use by another process. Error was: %v", c.PortNumber, err)
 	}
 	c.serverCloser = ln.Close
+	// Setup go routine for accepting connections
 	go func() {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
-				return
+				log.Println(fmt.Sprintf("error occurred accepting request: %v", err))
+				continue // keep accepting connections
 			}
+			// Setup go routine that behaves as an echo server
 			go func(c net.Conn) {
 				io.Copy(c, c)
 				c.Close()
 			}(conn)
 		}
 	}()
-	return nil
+	return true, nil
 }
 
 // Close the TCP server
 func (c *TCPPortServerCheck) Close() error {
 	return c.serverCloser()
-}
-
-// Name of the check
-func (c *TCPPortServerCheck) Name() string {
-	return fmt.Sprintf("TCP Port %d bindable", c.PortNumber)
 }

@@ -74,10 +74,10 @@ func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]RuleResult, error
 		}
 
 		// Run the check and report result
-		err = c.Check()
+		ok, err := c.Check()
 		res := RuleResult{
 			Name:        rule.Name(),
-			Success:     err == nil,
+			Success:     ok,
 			Error:       err,
 			Remediation: "",
 		}

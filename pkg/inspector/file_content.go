@@ -15,26 +15,19 @@ type FileContentCheck struct {
 	SearchString string
 }
 
-// Name of the check
-func (c FileContentCheck) Name() string {
-	return fmt.Sprintf("Contents of %q match %q", c.File, c.SearchString)
-}
-
-// Check returns nil if the search string was found in the file.
-func (c FileContentCheck) Check() error {
+// Check returns true if file contents match the regular expression. Otherwise,
+// returns false. If an error occurrs, returns false and the error.
+func (c FileContentCheck) Check() (bool, error) {
 	if _, err := os.Stat(c.File); os.IsNotExist(err) {
-		return fmt.Errorf("Attempted to validate file %q, but it doesn't exist.", c.File)
+		return false, fmt.Errorf("Attempted to validate file %q, but it doesn't exist.", c.File)
 	}
 	r, err := regexp.Compile(c.SearchString)
 	if err != nil {
-		return fmt.Errorf("Invalid search string provided %q: %v", c.SearchString, err)
+		return false, fmt.Errorf("Invalid search string provided %q: %v", c.SearchString, err)
 	}
 	b, err := ioutil.ReadFile(c.File)
 	if err != nil {
-		return fmt.Errorf("Attempted to validate %q, but got an error: %v", c.File, err)
+		return false, fmt.Errorf("Error reading file %q: %v", c.File, err)
 	}
-	if !r.Match(b) {
-		return fmt.Errorf("Searched %q with the expression %q, but no matches were found.", c.File, c.SearchString)
-	}
-	return nil
+	return r.Match(b), nil
 }

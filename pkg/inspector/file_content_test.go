@@ -10,9 +10,12 @@ func TestFileContentCheckFileDoesntExist(t *testing.T) {
 		File:         "doesntExist",
 		SearchString: "foo",
 	}
-	err := c.Check()
+	ok, err := c.Check()
 	if err == nil {
-		t.Errorf("Expected an error, but didn't get one")
+		t.Errorf("expected an error but didn't get one")
+	}
+	if ok {
+		t.Errorf("check returned true for a non-existent file")
 	}
 }
 
@@ -27,7 +30,11 @@ func TestFileContentCheck(t *testing.T) {
 		File:         f.Name(),
 		SearchString: "^hello w.*",
 	}
-	if c.Check() != nil {
-		t.Errorf("The check failed when we were expecting success. File content: %s\n Search String: %s", fileConts, c.SearchString)
+	ok, err := c.Check()
+	if err != nil {
+		t.Errorf("Unexpected error when running check: %v", err)
+	}
+	if !ok {
+		t.Errorf("Expected check OK, but check failed. Search string was: %q\nFile contents: \n%s\n", c.SearchString, fileConts)
 	}
 }

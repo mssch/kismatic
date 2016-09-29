@@ -17,17 +17,14 @@ type PackageInstalledCheck struct {
 	packageManager PackageManager
 }
 
-// Check returns nil if the package is installed. Otherwise, returns an error message indicating the package was not found.
-func (c PackageInstalledCheck) Check() error {
+// Check returns true if the package is installed. If an error occurrs,
+// returns false and the error.
+func (c PackageInstalledCheck) Check() (bool, error) {
 	ok, err := c.packageManager.IsInstalled(c.pkgQuery)
-	if !ok || err != nil {
-		return fmt.Errorf("Install %q, as it was not found on the system.", c.pkgQuery)
+	if err != nil {
+		return false, fmt.Errorf("Failed to determine if %q is installed on the system: %v", c.pkgQuery, err)
 	}
-	return nil
-}
-
-func (c PackageInstalledCheck) Name() string {
-	return fmt.Sprintf("%s is intalled", c.pkgQuery)
+	return ok, nil
 }
 
 // PackageAvailableCheck verifies that a given package is available for download
@@ -37,16 +34,12 @@ type PackageAvailableCheck struct {
 	packageManager PackageManager
 }
 
-func (c PackageAvailableCheck) Name() string {
-	return fmt.Sprintf("%s is available for download.", c.pkgQuery)
-}
-
-// Check returns nil if the package manager lists the package as available.
-// Otherwise returns an error message.
-func (c PackageAvailableCheck) Check() error {
+// Check returns true if the package is available. Otherwise returns false, or an error
+// if the check is unable to determine the condition.
+func (c PackageAvailableCheck) Check() (bool, error) {
 	ok, err := c.packageManager.IsAvailable(c.pkgQuery)
-	if !ok || err != nil {
-		return fmt.Errorf("%s is not available from the operating system's package manager", c.pkgQuery)
+	if err != nil {
+		return false, fmt.Errorf("failed to determine if %s is available from the operating system's package manager: %v", c.pkgQuery, err)
 	}
-	return nil
+	return ok, nil
 }

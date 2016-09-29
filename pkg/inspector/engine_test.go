@@ -7,14 +7,12 @@ import (
 )
 
 type fakeCheck struct {
+	ok  bool
 	err error
 }
 
-func (c fakeCheck) Check() error {
-	return c.err
-}
-func (c fakeCheck) Name() string {
-	return "mockCheck"
+func (c fakeCheck) Check() (bool, error) {
+	return c.ok, c.err
 }
 
 type fakeRule struct {
@@ -46,7 +44,7 @@ func TestEngine(t *testing.T) {
 		// Single rule that passes
 		{
 			mapper: fakeRuleCheckMapper{
-				check: fakeCheck{err: nil},
+				check: fakeCheck{ok: true},
 			},
 			rule: fakeRule{
 				name: "SuccessRule",
@@ -62,7 +60,7 @@ func TestEngine(t *testing.T) {
 		// Single rule that fails
 		{
 			mapper: fakeRuleCheckMapper{
-				check: fakeCheck{err: dummyError},
+				check: fakeCheck{ok: false, err: dummyError},
 			},
 			rule: fakeRule{
 				name: "FailRule",
@@ -79,7 +77,7 @@ func TestEngine(t *testing.T) {
 		// Single rule that should run due to facts
 		{
 			mapper: fakeRuleCheckMapper{
-				check: fakeCheck{err: dummyError},
+				check: fakeCheck{ok: false, err: dummyError},
 			},
 			rule: fakeRule{
 				name: "FailRule",
@@ -97,7 +95,7 @@ func TestEngine(t *testing.T) {
 		// Single rule that should not run due to facts
 		{
 			mapper: fakeRuleCheckMapper{
-				check: fakeCheck{err: dummyError},
+				check: fakeCheck{ok: false, err: dummyError},
 			},
 			rule: fakeRule{
 				name: "FailRule",
@@ -109,7 +107,7 @@ func TestEngine(t *testing.T) {
 		// Single rule that should run regardless of facts
 		{
 			mapper: fakeRuleCheckMapper{
-				check: fakeCheck{err: dummyError},
+				check: fakeCheck{ok: false, err: dummyError},
 			},
 			rule: fakeRule{
 				name: "FailRule",
@@ -162,8 +160,7 @@ type fakeClosableCheck struct {
 	closeCalled bool
 }
 
-func (*fakeClosableCheck) Check() error { return nil }
-func (*fakeClosableCheck) Name() string { return "" }
+func (*fakeClosableCheck) Check() (bool, error) { return false, nil }
 
 func (c *fakeClosableCheck) Close() error {
 	c.closeCalled = true
