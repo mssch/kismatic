@@ -19,7 +19,7 @@ func (c Client) ExecuteRules(rules []Rule) ([]RuleResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling check request: %v", err)
 	}
-	resp, err := http.Post(fmt.Sprintf("http://%s/execute", c.TargetNode), "application/json", bytes.NewReader(d))
+	resp, err := http.Post(fmt.Sprintf("http://%s/%s", c.TargetNode, executeEndpoint), "application/json", bytes.NewReader(d))
 	if err != nil {
 		return nil, fmt.Errorf("error posting request to server: %v", err)
 	}
@@ -66,7 +66,7 @@ func (c Client) ExecuteRules(rules []Rule) ([]RuleResult, error) {
 	// }
 
 	// TODO: add retry logic here?
-	resp, err = http.Get(fmt.Sprintf("http://%s/close", c.TargetNode))
+	resp, err = http.Get(fmt.Sprintf("http://%s/%s", c.TargetNode, closeEndpoint))
 	if err != nil {
 		// TODO: Handle this error? Or just log it
 	}

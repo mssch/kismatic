@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewCmdClient returns the "client" command
 func NewCmdClient(out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "client",
