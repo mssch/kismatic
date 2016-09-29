@@ -56,9 +56,17 @@ etcd_service_cluster_string: "{% for host in groups['etcd'] %}{{ host }}=https:/
 #===============================================================================
 # docker-install
 docker_install_dir: /etc/docker
+docker_self_signed_cert_dir: "{{ docker_install_dir }}/certs.d/{{ groups['master'][0] }}:5000"
 docker_installed_path: "{{ docker_install_dir }}/docker.installed"
 docker_service_file: "docker.{{ init_system_file_extenstion }}"
 docker_service_path: "{{ init_system_dir }}/{{ docker_service_file }}"
+docker_certificates_ca_file_name: ca.pem
+docker_certificates_cert_file_name: docker.pem
+docker_certificates_key_file_name: docker-key.pem
+docker_certificates_ca_path: "{{ docker_install_dir }}/{{ docker_certificates_ca_file_name }}"
+docker_registry_ca_path: "{{ docker_install_dir }}/"
+docker_certificates_cert_path: "{{ docker_install_dir }}/{{ docker_certificates_cert_file_name }}"
+docker_certificates_key_path: "{{ docker_install_dir }}/{{ docker_certificates_key_file_name }}"
 #===============================================================================
 # calico
 # directories
@@ -92,12 +100,15 @@ kubernetes_kubeconfig_path: "{{kubelet_lib_dir}}/kubeconfig"
 kubernetes_executable_mode: 0775
 kuberntes_service_mode: 0664
 kubernetes_certificates_mode: 0660
+docker_certificate_mode: 0660
 network_environment_mode: 0660
 # owner/group
 kubernetes_owner: root
 kubernetes_group: root
 kubernetes_certificates_owner: root
 kubernetes_certificates_group: root
+docker_certificates_owner: root
+docker_certificates_group: root
 # kubernetes cluster config
 kubernetes_cluster_name: kubernetes
 kubernetes_admin_password: admin_password
@@ -116,6 +127,8 @@ kubernetes_certificates_key_path: "{{ kubernetes_install_dir }}/{{ kubernetes_ce
 #etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}{% if hostvars[host]['inventory_hostname'] is defined %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
 etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
+# Add On
+enable_docker_registry: "false"
 #===============================================================================
 # PV configs for monitoring and logging
 #pv_monitoring_nfs_server_ip: "192.168.99.20"

@@ -99,7 +99,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) er
 			continue
 		}
 		seenNodes = append(seenNodes, n.Host)
-		util.PrettyPrintOk(lp.Log, "Generating certificates for %q", n.Host)
+		util.PrettyPrintOk(lp.Log, "Generating certificates for host %q", n.Host)
 		nodeList := append(defaultCertHosts, n.Host, n.IP, n.InternalIP)
 		key, cert, err := generateCert(p.Cluster.Name, p, nodeList, ca)
 		if err != nil {
@@ -108,6 +108,20 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) er
 		err = tls.WriteCert(key, cert, n.Host, lp.GeneratedCertsDirectory)
 		if err != nil {
 			return fmt.Errorf("error writing cert files for host %q: %v", n.Host, err)
+		}
+	}
+
+	// Create certs for docker registry
+	if p.DockerRegistry.UseInternal {
+		util.PrettyPrintOk(lp.Log, "Generating certificates for docker registry")
+		// Default registry will be deployed on the first master
+		dockerKey, dockerCert, err := generateCert(p.Master.Nodes[0].Host, p, []string{"*"}, ca)
+		if err != nil {
+			return fmt.Errorf("error during user cert generation: %v", err)
+		}
+		err = tls.WriteCert(dockerKey, dockerCert, "docker", lp.GeneratedCertsDirectory)
+		if err != nil {
+			return fmt.Errorf("error writing cert files for docker registry")
 		}
 	}
 
