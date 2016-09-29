@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
 )
 
 // The Client executes rules against a remote inspector
@@ -14,7 +16,7 @@ type Client struct {
 }
 
 // ExecuteRules against the target inspector server
-func (c Client) ExecuteRules(rules []Rule) ([]RuleResult, error) {
+func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.RuleResult, error) {
 	d, err := json.Marshal(rules)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling check request: %v", err)
@@ -38,7 +40,7 @@ func (c Client) ExecuteRules(rules []Rule) ([]RuleResult, error) {
 	}
 
 	// we got an OK - handle the response
-	results := []RuleResult{}
+	results := []rule.RuleResult{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding server response: %v", err)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
+	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
 )
 
 // Server supports the execution of inspector rules from a remote node
@@ -16,7 +17,7 @@ type Server struct {
 	// NodeFacts are the facts that apply to the node where the server is running
 	NodeFacts []string
 	// RulesEngine for running inspector rules
-	rulesEngine *Engine
+	rulesEngine *rule.Engine
 }
 
 type serverError struct {
@@ -41,8 +42,8 @@ func NewServer(nodeRole string, port int) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building server: %v", err)
 	}
-	engine := &Engine{
-		RuleCheckMapper: DefaultCheckMapper{
+	engine := &rule.Engine{
+		RuleCheckMapper: rule.DefaultCheckMapper{
 			PackageManager: pkgMgr,
 		},
 	}
@@ -60,7 +61,7 @@ func (s *Server) Start() error {
 			return
 		}
 		// Decode rules
-		rules := []Rule{}
+		rules := []rule.Rule{}
 		err := json.NewDecoder(req.Body).Decode(rules)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)

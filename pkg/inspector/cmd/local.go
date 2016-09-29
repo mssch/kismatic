@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector"
 	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
+	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
 	"github.com/spf13/cobra"
 )
 
@@ -55,9 +55,9 @@ func runLocal(out io.Writer, outputType, nodeRole string) error {
 	if err != nil {
 		return err
 	}
-	m := inspector.DefaultRules()
-	e := inspector.Engine{
-		RuleCheckMapper: inspector.DefaultCheckMapper{
+	m := rule.DefaultRules()
+	e := rule.Engine{
+		RuleCheckMapper: rule.DefaultCheckMapper{
 			PackageManager: pkgMgr,
 		},
 	}

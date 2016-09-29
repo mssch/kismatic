@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
-	"github.com/apprenda/kismatic-platform/pkg/inspector"
+	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
 	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
@@ -27,7 +27,7 @@ func (explainer *PreflightEventExplainer) ExplainEvent(e ansible.Event, verbose 
 			return ""
 		}
 		buf := &bytes.Buffer{}
-		results := []inspector.RuleResult{}
+		results := []rule.RuleResult{}
 		if err := json.Unmarshal([]byte(event.Result.Stdout), &results); err != nil {
 			// Something actually went wrong running the play... use the default explainer
 			return explainer.DefaultExplainer.ExplainEvent(event, verbose)
