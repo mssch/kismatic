@@ -7,13 +7,6 @@ import (
 	"net/http"
 )
 
-// CheckResult contains the results of a check
-type CheckResult struct {
-	Name    string
-	Success bool
-	Error   string
-}
-
 // Server supports the execution of inspector rules from a remote node
 type Server struct {
 	// The Port the server will listen on
