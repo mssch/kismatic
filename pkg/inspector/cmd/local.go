@@ -10,23 +10,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type localOpts struct {
+	outputType string
+	nodeRole   string
+	rulesFile  string
+}
+
 // NewCmdLocal returns the "local" command
 func NewCmdLocal(out io.Writer) *cobra.Command {
-	var outputType string
-	var nodeRole string
+	opts := localOpts{}
 	cmd := &cobra.Command{
 		Use:   "local",
 		Short: "run the inspector checks locally",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runLocal(out, outputType, nodeRole)
+			return runLocal(out, opts)
 		},
 	}
-	cmd.Flags().StringVarP(&outputType, "output", "o", "table", "set the result output type. Options are 'json', 'table'")
-	cmd.Flags().StringVar(&nodeRole, "node-role", "", "the node's role in the cluster. Options are 'etcd', 'master', 'worker'")
+	cmd.Flags().StringVarP(&opts.outputType, "output", "o", "table", "set the result output type. Options are 'json', 'table'")
+	cmd.Flags().StringVar(&opts.nodeRole, "node-role", "", "the node's role in the cluster. Options are 'etcd', 'master', 'worker'")
+	cmd.Flags().StringVarP(&opts.rulesFile, "file", "f", "", "the path to an inspector rules file. If blank, the inspector uses the default rules")
 	return cmd
 }
 
-func runLocal(out io.Writer, outputType, nodeRole string) error {
+func runLocal(out io.Writer, opts localOpts) error {
+	nodeRole := opts.nodeRole
 	if nodeRole == "" {
 		return fmt.Errorf("node role is required")
 	}
@@ -35,14 +42,26 @@ func runLocal(out io.Writer, outputType, nodeRole string) error {
 	}
 	// Get the printer
 	var printResults resultPrinter
-	switch outputType {
+	switch opts.outputType {
 	case "json":
 		printResults = printResultsAsJSON
 	case "table":
 		printResults = printResultsAsTable
 	default:
-		return fmt.Errorf("output type %q not supported", outputType)
+		return fmt.Errorf("output type %q not supported", opts.outputType)
 	}
+	// Gather rules
+	var rules []rule.Rule
+	var err error
+	if opts.rulesFile != "" {
+		rules, err = rule.ReadFromFile(opts.rulesFile)
+		if err != nil {
+			return err
+		}
+	} else {
+		rules = rule.DefaultRules()
+	}
+	// Set up engine dependencies
 	distro, err := check.DetectDistro()
 	if err != nil {
 		return fmt.Errorf("error running checks locally: %v", err)
@@ -55,14 +74,14 @@ func runLocal(out io.Writer, outputType, nodeRole string) error {
 	if err != nil {
 		return err
 	}
-	m := rule.DefaultRules()
+	// Create rule engine
 	e := rule.Engine{
 		RuleCheckMapper: rule.DefaultCheckMapper{
 			PackageManager: pkgMgr,
 		},
 	}
 	labels := []string{string(distro), nodeRole}
-	results, err := e.ExecuteRules(m, labels)
+	results, err := e.ExecuteRules(rules, labels)
 	if err != nil {
 		return fmt.Errorf("error running local rules: %v", err)
 	}
