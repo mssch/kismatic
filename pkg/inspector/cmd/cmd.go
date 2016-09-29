@@ -24,5 +24,6 @@ func NewCmdKismaticInspector(out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdClient(out))
 	cmd.AddCommand(NewCmdServer(out))
 	cmd.AddCommand(NewCmdLocal(out))
+	cmd.AddCommand(NewCmdRules(out))
 	return cmd
 }

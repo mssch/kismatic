@@ -1,8 +1,8 @@
 package rule
 
 import (
-	"fmt"
-	"io/ioutil"
+	"io"
+	"strings"
 )
 
 // DefaultRuleSet is the list of rules that are built into the inspector
@@ -35,10 +35,10 @@ func DefaultRules() []Rule {
 }
 
 // DumpDefaultRules writes the default rule set to a file
-func DumpDefaultRules(file string) error {
-	err := ioutil.WriteFile(file, []byte(defaultRuleSet), 0644)
+func DumpDefaultRules(writer io.Writer) error {
+	_, err := io.Copy(writer, strings.NewReader(defaultRuleSet))
 	if err != nil {
-		return fmt.Errorf("error writing default rule set to %q: %v", file, err)
+		return err
 	}
 	return nil
 }

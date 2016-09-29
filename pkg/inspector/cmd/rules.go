@@ -1,0 +1,49 @@
+package cmd
+
+import (
+	"fmt"
+	"io"
+	"os"
+
+	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
+	"github.com/spf13/cobra"
+)
+
+// NewCmdRules returns the "rules" command
+func NewCmdRules(out io.Writer) *cobra.Command {
+	var file string
+	cmd := &cobra.Command{
+		Use:   "rules",
+		Short: "manipualte the inspector's rules",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Help()
+		},
+	}
+	cmd.Flags().StringVarP(&file, "file", "f", "inspector-rules.yaml", "file where inspector rules are to be written")
+	cmd.AddCommand(NewCmdDumpRules(out, file))
+	return cmd
+}
+
+// NewCmdDumpRules returns the "dump" command
+func NewCmdDumpRules(out io.Writer, file string) *cobra.Command {
+	var overwrite bool
+	cmd := &cobra.Command{
+		Use:   "dump",
+		Short: "dump the inspector rules to a file",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if _, err := os.Stat(file); err == nil && !overwrite {
+				return fmt.Errorf("%q already exists. Use --overwrite to overwrite it", file)
+			}
+			f, err := os.Create(file)
+			if err != nil {
+				return fmt.Errorf("error creating %q: %v", file, err)
+			}
+			if err := rule.DumpDefaultRules(f); err != nil {
+				return fmt.Errorf("error dumping rules: %v", err)
+			}
+			return nil
+		},
+	}
+	cmd.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite the destination file if it exists")
+	return cmd
+}
