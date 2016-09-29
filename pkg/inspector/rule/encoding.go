@@ -1,6 +1,7 @@
 package rule
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -18,7 +19,7 @@ func ReadFromFile(file string) ([]Rule, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading rules from %q: %v", file, err)
 	}
-	rules, err := unmarshalRules(rawRules)
+	rules, err := UnmarshalRulesYAML(rawRules)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling rules from %q: %v", file, err)
 	}
@@ -36,11 +37,25 @@ type catchAllRule struct {
 	ContentRegex   string `yaml:"contentRegex"`
 }
 
-func unmarshalRules(data []byte) ([]Rule, error) {
+// UnmarshalRulesYAML unmarshals the data into a list of rules
+func UnmarshalRulesYAML(data []byte) ([]Rule, error) {
 	catchAllRules := []catchAllRule{}
 	if err := yaml.Unmarshal(data, &catchAllRules); err != nil {
 		return nil, err
 	}
+	return rulesFromCatchAllRules(catchAllRules)
+}
+
+// UnmarshalRulesJSON unmarshals the JSON rules into a list of rules
+func UnmarshalRulesJSON(data []byte) ([]Rule, error) {
+	catchAllRules := []catchAllRule{}
+	if err := json.Unmarshal(data, &catchAllRules); err != nil {
+		return nil, err
+	}
+	return rulesFromCatchAllRules(catchAllRules)
+}
+
+func rulesFromCatchAllRules(catchAllRules []catchAllRule) ([]Rule, error) {
 	rules := []Rule{}
 	for _, catchAllRule := range catchAllRules {
 		r, err := buildRule(catchAllRule)
@@ -54,6 +69,10 @@ func unmarshalRules(data []byte) ([]Rule, error) {
 
 func buildRule(catchAll catchAllRule) (Rule, error) {
 	kind := strings.ToLower(strings.TrimSpace(catchAll.Kind))
+	meta := RuleMeta{
+		Kind: kind,
+		When: catchAll.When,
+	}
 	switch kind {
 	default:
 		return nil, fmt.Errorf("invalid rule kind %q was provided", kind)
@@ -62,39 +81,39 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 			PackageName:    catchAll.PackageName,
 			PackageVersion: catchAll.PackageVersion,
 		}
-		r.When = catchAll.When
+		r.RuleMeta = meta
 		return r, nil
 	case "packageinstalled":
 		r := PackageInstalled{
 			PackageName:    catchAll.PackageName,
 			PackageVersion: catchAll.PackageVersion,
 		}
-		r.When = catchAll.When
+		r.RuleMeta = meta
 		return r, nil
 	case "executableinpath":
 		r := ExecutableInPath{
 			Executable: catchAll.Executable,
 		}
-		r.When = catchAll.When
+		r.RuleMeta = meta
 		return r, nil
 	case "tcpportavailable":
 		r := TCPPortAvailable{
 			Port: catchAll.Port,
 		}
-		r.When = catchAll.When
+		r.RuleMeta = meta
 		return r, nil
 	case "tcpportaccessible":
 		r := TCPPortAccessible{
 			Port: catchAll.Port,
 		}
-		r.When = catchAll.When
+		r.RuleMeta = meta
 		return r, nil
 	case "filecontentmatches":
 		r := FileContentMatches{
 			File:         catchAll.File,
 			ContentRegex: catchAll.ContentRegex,
 		}
-		r.When = catchAll.When
+		r.RuleMeta = meta
 		return r, nil
 	}
 }

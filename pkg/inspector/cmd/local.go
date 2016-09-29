@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io"
 
@@ -40,15 +39,8 @@ func runLocal(out io.Writer, opts localOpts) error {
 	if nodeRole != "etcd" && nodeRole != "master" && nodeRole != "worker" {
 		return fmt.Errorf("%s is not a valid node role", nodeRole)
 	}
-	// Get the printer
-	var printResults resultPrinter
-	switch opts.outputType {
-	case "json":
-		printResults = printResultsAsJSON
-	case "table":
-		printResults = printResultsAsTable
-	default:
-		return fmt.Errorf("output type %q not supported", opts.outputType)
+	if err := validateOutputType(opts.outputType); err != nil {
+		return err
 	}
 	// Gather rules
 	var rules []rule.Rule
@@ -85,11 +77,8 @@ func runLocal(out io.Writer, opts localOpts) error {
 	if err != nil {
 		return fmt.Errorf("error running local rules: %v", err)
 	}
-	printResults(out, results)
-	for _, r := range results {
-		if !r.Success {
-			return errors.New("inspector found checks that failed")
-		}
+	if err := printResults(out, results, opts.outputType); err != nil {
+		return fmt.Errorf("error printing results: %v", err)
 	}
 	return nil
 }

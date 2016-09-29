@@ -3,6 +3,7 @@ package inspector
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -61,14 +62,19 @@ func (s *Server) Start() error {
 			return
 		}
 		// Decode rules
-		rules := []rule.Rule{}
-		err := json.NewDecoder(req.Body).Decode(rules)
+		data, err := ioutil.ReadAll(req.Body)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 			log.Printf("error decoding rules when processing request: %v", err)
 			return
 		}
 		defer req.Body.Close()
+		rules, err := rule.UnmarshalRulesJSON(data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			log.Printf("error unmarshaling rules from JSON: %v", err)
+			return
+		}
 		// Run the rules that we received
 		results, err := s.rulesEngine.ExecuteRules(rules, s.NodeFacts)
 		if err != nil {

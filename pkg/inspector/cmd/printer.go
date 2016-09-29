@@ -9,7 +9,23 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
 )
 
-type resultPrinter func(out io.Writer, results []rule.RuleResult) error
+func validateOutputType(outputType string) error {
+	if outputType != "json" && outputType != "table" {
+		return fmt.Errorf("output type %q not supported", outputType)
+	}
+	return nil
+}
+
+func printResults(out io.Writer, results []rule.RuleResult, outputType string) error {
+	switch outputType {
+	case "json":
+		return printResultsAsJSON(out, results)
+	case "table":
+		return printResultsAsTable(out, results)
+	default:
+		return fmt.Errorf("output type %q not supported", outputType)
+	}
+}
 
 func printResultsAsJSON(out io.Writer, results []rule.RuleResult) error {
 	err := json.NewEncoder(out).Encode(results)

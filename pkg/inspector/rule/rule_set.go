@@ -25,7 +25,7 @@ const defaultRuleSet = `---
 
 // DefaultRules returns the list of rules that are built into the inspector
 func DefaultRules() []Rule {
-	rules, err := unmarshalRules([]byte(defaultRuleSet))
+	rules, err := UnmarshalRulesYAML([]byte(defaultRuleSet))
 	if err != nil {
 		// The default rules should not contain errors
 		// If they do, panic so that we catch them during tests
