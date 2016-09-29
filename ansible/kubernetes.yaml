@@ -21,6 +21,6 @@
   # master:worker
   - include: _proxy.yaml
   # add ons
-  - include: _addon-network-policy.yaml
+  #- include: _addon-network-policy.yaml
   - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml
