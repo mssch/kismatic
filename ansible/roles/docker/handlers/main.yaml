@@ -4,7 +4,7 @@
   - name: reload services
     command: systemctl daemon-reload
   - name: enable docker
-    command: systemctl enable {{ docker_service_file }}
+    command: systemctl enable "docker.service"
   - name: restart docker service
     service:
       name: "docker"

@@ -7,6 +7,7 @@
   - include: _etcd-networking.yaml
   # common prereqs
   - include: _docker.yaml
+  - include: _addon-docker-registry.yaml
   - include: _kubenode-cert.yaml
   # master:worker
   - include: _calico.yaml
@@ -21,7 +22,6 @@
   # master:worker
   - include: _proxy.yaml
   # add ons
-  - include: _addon-docker-registry.yaml
   - include: _addon-network-policy.yaml
   - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml

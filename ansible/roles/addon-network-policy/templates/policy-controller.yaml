@@ -31,7 +31,7 @@ spec:
             path: "{{kubernetes_certificates_key_path}}"
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:latest
+          image: {% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{hostvars[groups['master'][0]].inventory_hostname}}:5000/{% endif %}calico/kube-policy-controller:latest
           volumeMounts:
             - mountPath: "{{kubernetes_certificates_ca_path}}"
               name: "ca"

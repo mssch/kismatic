@@ -19,9 +19,14 @@
         owner: "{{ docker_certificates_owner }}"
         group: "{{ docker_certificates_group }}"
         mode: "{{ docker_certificate_mode }}"
+    - name: restart docker service
+      service:
+        name: "docker"
+        state: restarted
+        enabled: yes
 
     # Setup Docker Registry
-    - name: verify if docker registry container is running # TODO replace with RPM
+    - name: verify if docker registry container is running
       shell: docker ps | grep registry
       register: docker_ps_registry
       ignore_errors: yes # dont fail, next task will start it if not running
@@ -38,3 +43,36 @@
     - name: start docker registry container
       command: docker run -d -p 5000:5000 --restart=always --name registry -v {{docker_install_dir}}:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/{{docker_certificates_cert_file_name}} -e REGISTRY_HTTP_TLS_KEY=/certs/{{docker_certificates_key_file_name}} registry:2
       when: docker_ps_registry|failed
+
+    - name: load docker images
+      command: docker load -i /opt/images/{{ item }}.tar
+      with_items:
+       - calico
+       - kube-policy-controller
+       - kubedns
+       - kube-dnsmasq
+       - exechealthz
+       - kubernetes-dashboard
+       - pause
+
+    - name: tag docker images
+      command: docker tag {{ item }}
+      with_items:
+        - calico/node:{{calico_docker_version}} {{ hostvars[groups['master'][0]].inventory_hostname }}:5000/calico/node:{{calico_docker_version}}
+        - calico/kube-policy-controller {{ hostvars[groups['master'][0]].inventory_hostname }}:5000/calico/kube-policy-controller
+        - gcr.io/google_containers/kubedns-amd64:1.7 {{ hostvars[groups['master'][0]].inventory_hostname }}:5000/kubedns-amd64:1.7
+        - gcr.io/google_containers/kube-dnsmasq-amd64:1.3 {{ hostvars[groups['master'][0]].inventory_hostname }}:5000/kube-dnsmasq-amd64:1.3
+        - gcr.io/google_containers/exechealthz-amd64:1.0 {{ hostvars[groups['master'][0]].inventory_hostname }}:5000/exechealthz-amd64:1.0
+        - gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.0 {{ hostvars[groups['master'][0]].inventory_hostname }}:5000/kubernetes-dashboard-amd64:v1.4.0
+        - gcr.io/google_containers/pause-amd64:3.0 {{ hostvars[groups['master'][0]].inventory_hostname }}:5000/pause-amd64:3.0
+
+    - name: push docker image to private registry
+      command: docker push {{ item }}
+      with_items:
+        - "{{ hostvars[groups['master'][0]].inventory_hostname }}:5000/calico/node:{{calico_docker_version}}"
+        - "{{ hostvars[groups['master'][0]].inventory_hostname }}:5000/calico/kube-policy-controller"
+        - "{{ hostvars[groups['master'][0]].inventory_hostname }}:5000/kubedns-amd64:1.7"
+        - "{{ hostvars[groups['master'][0]].inventory_hostname }}:5000/kube-dnsmasq-amd64:1.3"
+        - "{{ hostvars[groups['master'][0]].inventory_hostname }}:5000/exechealthz-amd64:1.0"
+        - "{{ hostvars[groups['master'][0]].inventory_hostname }}:5000/kubernetes-dashboard-amd64:v1.4.0"
+        - "{{ hostvars[groups['master'][0]].inventory_hostname }}:5000/pause-amd64:3.0"

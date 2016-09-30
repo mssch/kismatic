@@ -6,25 +6,23 @@
   #   file:
   #     path: "{{ docker_install_dir }}"
   #     state: directory
-  - name: start docker service # create a signal file after successful install
-    command: /bin/true #docker.sh creates={{ docker_installed_path }}
-    notify:
-      #- docker installed
-      - reload services
-      - enable docker
-      - restart docker service
+  # - name: start docker service # create a signal file after successful install
+  #   command: /bin/true #docker.sh creates={{ docker_installed_path }}
+  #   notify:
+  #     #- docker installed
+  #     - reload services
+  #     - enable docker
+  #     - restart docker service
 
-  # force_docker_restart=true to force restart
-  - name: force restart docker
-    command: /bin/true
-    notify:
-      #- docker installed
-      - reload services
-      - enable docker
-      - restart docker service
-    when: force_docker_restart is defined and force_docker_restart == "true"
-
-  - meta: flush_handlers
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable docker
+    command: systemctl enable "docker.service"
+  - name: restart docker service
+    service:
+      name: "docker"
+      state: restarted
+      enabled: yes
 
   # verify that Docker installed succesfully and is running
   - name: verify docker is installed
