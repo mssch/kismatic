@@ -1,0 +1,8 @@
+---
+  - name: copy Kuberang to node
+    copy:
+      src: "{{ kuberang_path }}"
+      dest: "{{ bin_dir }}/kuberang"
+      mode: 0744
+  - name: run smoke test checks using Kuberang
+    command: "{{ bin_dir }}/kuberang"

@@ -82,6 +82,8 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 	p.Cluster.Networking.Type = "overlay"
 	p.Cluster.Networking.PodCIDRBlock = "172.16.0.0/16"
 	p.Cluster.Networking.ServiceCIDRBlock = "172.17.0.0/16"
+	p.Cluster.Networking.UpdateHostsFiles = false
+	p.Cluster.Networking.PolicyEnabled = false
 
 	// Set Certificate defaults
 	p.Cluster.Certificates.Expiry = "17520h"
@@ -125,17 +127,17 @@ func getDNSServiceIP(p *Plan) (string, error) {
 	return ip.To4().String(), nil
 }
 
-const planTemplate = `{{ $p := .Plan }}#Multi line comment
-#Another line goes here
+const planTemplate = `{{ $p := .Plan }}
 cluster:
   name: {{$p.Cluster.Name}}  #inline comment
   admin_password: {{$p.Cluster.AdminPassword}}
   local_repository: {{$p.Cluster.LocalRepository}}
-  hosts_file_dns: {{$p.Cluster.HostsFileDNS}}
   networking:
     type: {{$p.Cluster.Networking.Type}}
     pod_cidr_block: {{$p.Cluster.Networking.PodCIDRBlock}}
     service_cidr_block: {{$p.Cluster.Networking.ServiceCIDRBlock}}
+    policy_enabled: {{$p.Cluster.Networking.PolicyEnabled}}
+    update_hosts_files: {{$p.Cluster.Networking.UpdateHostsFiles}}
   certificates:
     expiry: {{$p.Cluster.Certificates.Expiry}}
     location_city: {{$p.Cluster.Certificates.LocationCity}}
@@ -145,7 +147,6 @@ cluster:
     user: {{$p.Cluster.SSH.User}}
     ssh_key: {{$p.Cluster.SSH.Key}}
     ssh_port: {{$p.Cluster.SSH.Port}}
-#Another comment
 etcd:
   expected_count: {{$p.Etcd.ExpectedCount}}
   nodes:

@@ -49,6 +49,13 @@ vendor-cfssl/out:
 	curl -L https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64 -o vendor-cfssl/out/cfssl_darwin-amd64
 	curl -L https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64 -o vendor-cfssl/out/cfssljson_darwin-amd64
 
+vendor-cfssl/out:
+	mkdir -p vendor-cfssl/out/
+	curl -L https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -o vendor-cfssl/out/cfssl_linux-amd64
+	curl -L https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -o vendor-cfssl/out/cfssljson_linux-amd64
+	curl -L https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64 -o vendor-cfssl/out/cfssl_darwin-amd64
+	curl -L https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64 -o vendor-cfssl/out/cfssljson_darwin-amd64
+
 dist: vendor-ansible/out vendor-cfssl/out build
 	mkdir -p out
 	cp bin/kismatic out
@@ -58,6 +65,8 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	cp -r ansible out/ansible/playbooks
 	mkdir -p out/ansible/playbooks/inspector
 	cp -r bin/inspector/* out/ansible/playbooks/inspector
+	mkdir -p out/ansible/playbooks/kuberang/linux/amd64/
+	curl https://s3.amazonaws.com/kismatic-installer/latest/kuberang -o out/ansible/playbooks/kuberang/linux/amd64/kuberang
 	mkdir -p out/cfssl
 	cp -r vendor-cfssl/out/* out/cfssl
 	rm -f out/kismatic.tar.gz

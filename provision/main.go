@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	integration "github.com/apprenda/kismatic-platform/integration"
+	"github.com/apprenda/kismatic-platform/integration"
 )
 
 func main() {
@@ -25,7 +25,21 @@ func main() {
 	}
 	os.Chdir(kisPath)
 
-	defer os.RemoveAll(kisPath)
+	//defer os.RemoveAll(kisPath)
 
-	integration.InstallKismatic(integration.AMICentos7UsEast, "centos")
+	cluster := integration.InstallKismatic(integration.AMIUbuntu1604USEAST, "ubuntu")
+
+	fmt.Println("Your cluster is ready.\n")
+	fmt.Println("Etcd Nodes:")
+	for _, etcd := range cluster.Etcd {
+		fmt.Println(etcd.Publicip)
+	}
+	fmt.Println("Master Nodes:")
+	for _, master := range cluster.Master {
+		fmt.Println(master.Publicip)
+	}
+	fmt.Println("Worker Nodes:")
+	for _, worker := range cluster.Worker {
+		fmt.Println(worker.Publicip)
+	}
 }

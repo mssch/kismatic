@@ -31,7 +31,7 @@ func bailBeforeAnsible() bool {
 	return os.Getenv("BAIL_BEFORE_ANSIBLE") != ""
 }
 
-func InstallKismatic(nodeType string, user string) {
+func InstallKismatic(nodeType string, user string) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
@@ -83,7 +83,7 @@ func InstallKismatic(nodeType string, user string) {
 	FailIfError(verErr, "Error validating plan", verText)
 
 	if bailBeforeAnsible() == true {
-		return
+		return nodes
 	}
 
 	By("Punch it Chewie!")
@@ -93,6 +93,7 @@ func InstallKismatic(nodeType string, user string) {
 	appErr := app.Run()
 
 	FailIfError(appErr, "Error applying plan")
+	return nodes
 }
 
 func FailIfError(err error, message ...string) {
