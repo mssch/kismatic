@@ -1,6 +1,6 @@
 ---
-  - name: docker installed
-    file: path={{ docker_installed_path }} state=touch
+  # - name: docker installed
+  #   file: path={{ docker_installed_path }} state=touch
   - name: reload services
     command: systemctl daemon-reload
   - name: enable docker

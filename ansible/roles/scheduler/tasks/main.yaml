@@ -1,10 +1,10 @@
 ---
   # download kubernetes binaries
-  - name: download kube-scheduler - {{ kubernetes_version }}
-    get_url:
-      url: "{{ kubernetes_binary_path }}/kube-scheduler"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
+  # - name: download kube-scheduler - {{ kubernetes_version }}
+  #   get_url:
+  #     url: "{{ kubernetes_binary_path }}/kube-scheduler"
+  #     dest: "{{ bin_dir }}"
+  #     mode: "{{ kubernetes_executable_mode }}"
 
   # kube-scheduler
   - name: copy kube-scheduler.service to remote

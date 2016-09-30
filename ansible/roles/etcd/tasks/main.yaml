@@ -1,28 +1,28 @@
 ---
   # download and install etcd and etcdctl
   # download binaries
-  - name: download and untar {{ etcd_install_bin_name }}
-    unarchive:
-      src: "{{ etcd_install_binary_download_path }}/{{etcd_install_binary_download_name}}"
-      dest: "{{ temprary_download_dir }}"
-      remote_src: yes
-      copy: no
-  - name: copy {{ etcd_install_bin_name }} binaries
-    copy:
-      src: "{{ etcd_install_binary_untared_dir }}/etcd"
-      dest: "{{ bin_dir }}/{{ etcd_install_bin_name }}"
-      remote_src: True
-      owner: "{{ etcd_install_executable_owner }}"
-      group: "{{ etcd_install_executable_group }}"
-      mode: "{{ etcd_install_executable_mode }}"
-  - name: copy {{ etcdctl_install_bin_name }} binaries
-    copy:
-      src: "{{ etcd_install_binary_untared_dir }}/etcdctl"
-      dest: "{{ bin_dir }}/{{ etcdctl_install_bin_name }}"
-      remote_src: True
-      owner: "{{ etcd_install_executable_owner }}"
-      group: "{{ etcd_install_executable_group }}"
-      mode: "{{ etcd_install_executable_mode }}"
+  # - name: download and untar {{ etcd_install_bin_name }}
+  #   unarchive:
+  #     src: "{{ etcd_install_binary_download_path }}/{{etcd_install_binary_download_name}}"
+  #     dest: "{{ temprary_download_dir }}"
+  #     remote_src: yes
+  #     copy: no
+  # - name: copy {{ etcd_install_bin_name }} binaries
+  #   copy:
+  #     src: "{{ etcd_install_binary_untared_dir }}/etcd"
+  #     dest: "{{ bin_dir }}/{{ etcd_install_bin_name }}"
+  #     remote_src: True
+  #     owner: "{{ etcd_install_executable_owner }}"
+  #     group: "{{ etcd_install_executable_group }}"
+  #     mode: "{{ etcd_install_executable_mode }}"
+  # - name: copy {{ etcdctl_install_bin_name }} binaries
+  #   copy:
+  #     src: "{{ etcd_install_binary_untared_dir }}/etcdctl"
+  #     dest: "{{ bin_dir }}/{{ etcdctl_install_bin_name }}"
+  #     remote_src: True
+  #     owner: "{{ etcd_install_executable_owner }}"
+  #     group: "{{ etcd_install_executable_group }}"
+  #     mode: "{{ etcd_install_executable_mode }}"
 
   # install and start etcd service
   - name: copy {{ etcd_service_file }} to remote

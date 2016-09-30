@@ -1,10 +1,10 @@
 ---
   # download binaries
-  - name: download kubelet - {{ kubernetes_version }}
-    get_url:
-      url: "{{ kubernetes_binary_path }}/kubelet"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
+  # - name: download kubelet - {{ kubernetes_version }}
+  #   get_url:
+  #     url: "{{ kubernetes_binary_path }}/kubelet"
+  #     dest: "{{ bin_dir }}"
+  #     mode: "{{ kubernetes_executable_mode }}"
   # kubelet
   - name: copy kubelet.service to remote
     template:

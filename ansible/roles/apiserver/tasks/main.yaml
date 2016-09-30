@@ -1,10 +1,10 @@
 ---
   # download kubernetes binaries
-  - name: download kube-apiserver - {{ kubernetes_version }}
-    get_url:
-      url: "{{ kubernetes_binary_path }}/kube-apiserver"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
+  # - name: download kube-apiserver - {{ kubernetes_version }}
+  #   get_url:
+  #     url: "{{ kubernetes_binary_path }}/kube-apiserver"
+  #     dest: "{{ bin_dir }}"
+  #     mode: "{{ kubernetes_executable_mode }}"
 
   # kube-apiserver
   - name: copy kube-apiserver.service to remote

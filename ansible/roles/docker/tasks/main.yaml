@@ -1,15 +1,15 @@
 ---
-  - name: install the latest version of bridge-utils
-    package: name=bridge-utils state=latest
-  # install Docker using official https://get.docker.com/ script
-  - name: create {{ docker_install_dir }} directory
-    file:
-      path: "{{ docker_install_dir }}"
-      state: directory
-  - name: install lastest version of docker # create a signal file after successful install
-    script: docker.sh creates={{ docker_installed_path }}
+  # - name: install the latest version of bridge-utils
+  #   package: name=bridge-utils state=latest
+  # # install Docker using official https://get.docker.com/ script
+  # - name: create {{ docker_install_dir }} directory
+  #   file:
+  #     path: "{{ docker_install_dir }}"
+  #     state: directory
+  - name: start docker service # create a signal file after successful install
+    command: /bin/true #docker.sh creates={{ docker_installed_path }}
     notify:
-      - docker installed
+      #- docker installed
       - reload services
       - enable docker
       - restart docker service
@@ -18,7 +18,7 @@
   - name: force restart docker
     command: /bin/true
     notify:
-      - docker installed
+      #- docker installed
       - reload services
       - enable docker
       - restart docker service

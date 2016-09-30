@@ -1,10 +1,10 @@
 ---
   # download binaries
-  - name: download kube-proxy - {{ kubernetes_version }}
-    get_url:
-      url: "{{ kubernetes_binary_path }}/kube-proxy"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
+  # - name: download kube-proxy - {{ kubernetes_version }}
+  #   get_url:
+  #     url: "{{ kubernetes_binary_path }}/kube-proxy"
+  #     dest: "{{ bin_dir }}"
+  #     mode: "{{ kubernetes_executable_mode }}"
   # kube-proxy
   - name: copy kube-proxy.service to remote
     template:

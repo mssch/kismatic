@@ -27,12 +27,12 @@
       ignore_errors: yes # dont fail, next task will start it if not running
       changed_when: false
 
-    - name: download docker.registry
-      command: curl https://www.dropbox.com/s/qtpor9ok3rylk1y/registry.tar?dl=1 --output /tmp/registry.tar -L
-      when: docker_ps_registry|failed
+    # - name: download docker.registry
+    #   command: curl https://www.dropbox.com/s/qtpor9ok3rylk1y/registry.tar?dl=1 --output /tmp/registry.tar -L
+    #   when: docker_ps_registry|failed
 
     - name: load docker registry from file
-      command: docker load --input /tmp/registry.tar
+      command: docker load --input /opt/images/registry.tar
       when: docker_ps_registry|failed
 
     - name: start docker registry container
