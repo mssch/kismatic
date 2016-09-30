@@ -1,11 +1,4 @@
 ---
-  # download kubernetes binaries
-  # - name: download kube-controller-manager - {{ kubernetes_version }}
-  #   get_url:
-  #     url: "{{ kubernetes_binary_path }}/kube-controller-manager"
-  #     dest: "{{ bin_dir }}"
-  #     mode: "{{ kubernetes_executable_mode }}"
-
   # kube-controller-manager
   - name: copy kube-controller-manager.service to remote
     template:

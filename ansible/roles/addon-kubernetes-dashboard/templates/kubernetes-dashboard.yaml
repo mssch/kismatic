@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
       - name: kubernetes-dashboard
-        image: {% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ hostvars[groups['master'][0]].inventory_hostname }}:5000{% else %}gcr.io/google_containers{% endif %}/kubernetes-dashboard-amd64:v1.4.0
+        image: "{{ kubernetes_dashboard_img }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 9090
