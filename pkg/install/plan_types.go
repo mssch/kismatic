@@ -5,6 +5,8 @@ type NetworkConfig struct {
 	Type             string
 	PodCIDRBlock     string `yaml:"pod_cidr_block"`
 	ServiceCIDRBlock string `yaml:"service_cidr_block"`
+	PolicyEnabled    bool   `yaml:"policy_enabled"`
+	UpdateHostsFiles bool   `yaml:"update_hosts_files"`
 }
 
 // CertsConfig describes the cluster's trust and certificate configuration
@@ -26,7 +28,6 @@ type SSHConfig struct {
 type Cluster struct {
 	Name          string
 	AdminPassword string `yaml:"admin_password"`
-	HostsFileDNS  bool   `yaml:"hosts_file_dns"`
 	Networking    NetworkConfig
 	Certificates  CertsConfig
 	SSH           SSHConfig
@@ -52,16 +53,10 @@ type MasterNodeGroup struct {
 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
 }
 
-// DockerRegistry details for docker registry, either confgiured by the cli or customer provided
-type DockerRegistry struct {
-	UseInternal bool `yaml:"use_internal"`
-}
-
 // Plan is the installation plan that the user intends to execute
 type Plan struct {
-	Cluster        Cluster
-	DockerRegistry DockerRegistry `yaml:"docker_registry"`
-	Etcd           NodeGroup
-	Master         MasterNodeGroup
-	Worker         NodeGroup
+	Cluster Cluster
+	Etcd    NodeGroup
+	Master  MasterNodeGroup
+	Worker  NodeGroup
 }

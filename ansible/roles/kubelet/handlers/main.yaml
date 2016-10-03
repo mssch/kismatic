@@ -12,4 +12,6 @@
   # verify service
   - name: verify kubelet is running
     command: systemctl status kubelet
+    retries: 12
+    delay: 10
     changed_when: false

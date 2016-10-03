@@ -19,11 +19,13 @@ type AWSNodeDeets struct {
 
 const planAWSOverlay = `cluster:
   name: kubernetes
-  admin_password: "abbazabba"
+  admin_password: abbazabba
   networking:
     type: overlay
     pod_cidr_block: 172.16.0.0/16
     service_cidr_block: 172.17.0.0/16
+    policy_enabled: false
+    update_hosts_files: false
   certificates:
     expiry: 17520h
     location_city: Troy

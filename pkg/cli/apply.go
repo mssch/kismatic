@@ -99,6 +99,10 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
+
+	if err := c.executor.RunSmokeTest(plan); err != nil {
+		return fmt.Errorf("error during smoke test: %v", err)
+	}
 	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully\n")
 
 	// Generate kubeconfig

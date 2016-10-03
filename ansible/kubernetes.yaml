@@ -22,5 +22,6 @@
   - include: _proxy.yaml
   # add ons
   - include: _addon-network-policy.yaml
+    when: enable_calico_policy == "true"
   - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml
