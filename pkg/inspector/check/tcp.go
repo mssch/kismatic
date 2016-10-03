@@ -45,8 +45,9 @@ func (c *TCPPortClientCheck) Check() (bool, error) {
 // TCPPortServerCheck ensures that the given port is free, and stands up a TCP server that can be used to
 // check TCP connectivity to the host using TCPPortClientCheck
 type TCPPortServerCheck struct {
-	PortNumber   int
-	serverCloser func() error
+	PortNumber     int
+	closeListener  func() error
+	listenerClosed chan interface{}
 }
 
 // Check returns true if the port is available for the server. Otherwise returns false
@@ -57,14 +58,22 @@ func (c *TCPPortServerCheck) Check() (bool, error) {
 		// TODO: We could check if the port is being used here..
 		return false, fmt.Errorf("Failed to bind port %d. This could mean the port is in use by another process. Error was: %v", c.PortNumber, err)
 	}
-	c.serverCloser = ln.Close
+	c.closeListener = ln.Close
 	// Setup go routine for accepting connections
-	go func() {
+	c.listenerClosed = make(chan interface{})
+	go func(closed <-chan interface{}) {
 		for {
 			conn, err := ln.Accept()
 			if err != nil {
-				log.Println(fmt.Sprintf("error occurred accepting request: %v", err))
-				continue // keep accepting connections
+				select {
+				case <-closed:
+					// don't log the error, as we have closed the server and the error
+					// is related to that.
+					return
+				default:
+					log.Println(fmt.Sprintf("error occurred accepting request: %v", err))
+					continue
+				}
 			}
 			// Setup go routine that behaves as an echo server
 			go func(c net.Conn) {
@@ -72,11 +81,12 @@ func (c *TCPPortServerCheck) Check() (bool, error) {
 				c.Close()
 			}(conn)
 		}
-	}()
+	}(c.listenerClosed)
 	return true, nil
 }
 
 // Close the TCP server
 func (c *TCPPortServerCheck) Close() error {
-	return c.serverCloser()
+	close(c.listenerClosed)
+	return c.closeListener()
 }

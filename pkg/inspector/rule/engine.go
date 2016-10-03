@@ -106,6 +106,7 @@ func (e *Engine) CloseChecks() error {
 			// TODO: Figure out what to do with the error here
 		}
 	}
+	e.closableChecks = []check.ClosableCheck{}
 	return nil
 }
 
