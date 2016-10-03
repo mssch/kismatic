@@ -7,9 +7,9 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
 )
 
-// RuleCheckMapper implements a mapping between a
+// CheckMapper implements a mapping between a
 // rule and a check.
-type RuleCheckMapper interface {
+type CheckMapper interface {
 	GetCheckForRule(Rule) (check.Check, error)
 }
 
@@ -17,6 +17,8 @@ type RuleCheckMapper interface {
 // supported rules and checks.
 type DefaultCheckMapper struct {
 	PackageManager check.PackageManager
+	// IP of the remote node that is being inspected when in client mode
+	TargetNodeIP string
 }
 
 // GetCheckForRule returns the check for the given rule. If the rule
@@ -28,25 +30,25 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
 		return nil, fmt.Errorf("Rule of type %T is not supported", r)
 	case PackageInstalled:
 		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion}
-		c = &check.PackageInstalledCheck{pkgQuery, m.PackageManager}
+		c = &check.PackageInstalledCheck{PackageQuery: pkgQuery, PackageManager: m.PackageManager}
 	case PackageAvailable:
 		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion}
-		c = &check.PackageAvailableCheck{pkgQuery, m.PackageManager}
+		c = &check.PackageAvailableCheck{PackageQuery: pkgQuery, PackageManager: m.PackageManager}
 	case ExecutableInPath:
-		c = &check.BinaryDependencyCheck{r.Executable}
+		c = &check.BinaryDependencyCheck{BinaryName: r.Executable}
 	case FileContentMatches:
 		c = check.FileContentCheck{File: r.File, SearchString: r.ContentRegex}
 	case TCPPortAvailable:
 		c = &check.TCPPortServerCheck{PortNumber: r.Port}
 	case TCPPortAccessible:
-		c = &check.TCPPortClientCheck{PortNumber: r.Port}
+		c = &check.TCPPortClientCheck{PortNumber: r.Port, IPAddress: m.TargetNodeIP}
 	}
 	return c, nil
 }
 
 // The Engine executes rules and reports the results
 type Engine struct {
-	RuleCheckMapper RuleCheckMapper
+	RuleCheckMapper CheckMapper
 	mu              sync.Mutex
 	closableChecks  []check.ClosableCheck
 }
@@ -80,8 +82,10 @@ func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]RuleResult, error
 		res := RuleResult{
 			Name:        rule.Name(),
 			Success:     ok,
-			Error:       err,
 			Remediation: "",
+		}
+		if err != nil {
+			res.Error = err.Error()
 		}
 		results = append(results, res)
 	}

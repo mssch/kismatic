@@ -19,10 +19,12 @@ func (c fakeCheck) Check() (bool, error) {
 
 type fakeRule struct {
 	RuleMeta
-	name string
+	name     string
+	isRemote bool
 }
 
-func (r fakeRule) Name() string { return r.name }
+func (r fakeRule) Name() string       { return r.name }
+func (r fakeRule) IsRemoteRule() bool { return r.isRemote }
 
 type fakeRuleCheckMapper struct {
 	check check.Check
@@ -72,7 +74,7 @@ func TestEngine(t *testing.T) {
 				{
 					Name:    "FailRule",
 					Success: false,
-					Error:   dummyError,
+					Error:   dummyError.Error(),
 				},
 			},
 		},
@@ -90,7 +92,7 @@ func TestEngine(t *testing.T) {
 				{
 					Name:    "FailRule",
 					Success: false,
-					Error:   dummyError,
+					Error:   dummyError.Error(),
 				},
 			},
 		},
@@ -120,7 +122,7 @@ func TestEngine(t *testing.T) {
 				{
 					Name:    "FailRule",
 					Success: false,
-					Error:   dummyError,
+					Error:   dummyError.Error(),
 				},
 			},
 		},

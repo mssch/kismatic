@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 
 	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
@@ -13,11 +14,34 @@ import (
 type Client struct {
 	// TargetNode is the ip:port of the inspector running on the remote node
 	TargetNode string
+	// TargetNodeRole is the role of the node we are inspecting
+	TargetNodeRole string
+	engine         *rule.Engine
+}
+
+// NewClient returns an inspector client for running checks against remote nodes.
+func NewClient(targetNode string, nodeRole string) (*Client, error) {
+	host, _, err := net.SplitHostPort(targetNode)
+	if err != nil {
+		return nil, err
+	}
+	engine := &rule.Engine{
+		RuleCheckMapper: rule.DefaultCheckMapper{
+			PackageManager: nil, // Use a no-op pkg manager here instead
+			TargetNodeIP:   host,
+		},
+	}
+	return &Client{
+		TargetNode:     targetNode,
+		TargetNodeRole: nodeRole,
+		engine:         engine,
+	}, nil
 }
 
 // ExecuteRules against the target inspector server
 func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.RuleResult, error) {
-	d, err := json.Marshal(rules)
+	serverSideRules := getServerSideRules(rules)
+	d, err := json.Marshal(serverSideRules)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling check request: %v", err)
 	}
@@ -45,26 +69,14 @@ func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.RuleResult, error) {
 		return nil, fmt.Errorf("error decoding server response: %v", err)
 	}
 
-	// TODO: Run remote rules here...
-	// node, _, err := net.SplitHostPort(c.TargetNode)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error getting host from %q: %v", c.TargetNode, err)
-	// }
-	// // Run TCP checks if any
-	// for _, p := range m.OpenTCPPorts {
-	// 	// Build check
-	// 	tcpCheck := TCPPortClientCheck{p, node}
-	// 	err := tcpCheck.Check()
-	// 	// Build result
-	// 	r := CheckResult{
-	// 		Name:    tcpCheck.Name(),
-	// 		Success: err == nil,
-	// 	}
-	// 	if err != nil {
-	// 		r.Error = fmt.Sprintf("%v", tcpCheck.Check())
-	// 	}
-	// 	results = append(results, r)
-	// }
+	// Execute the rules that should run from a remote node
+	clientSideRules := getClientSideRules(rules)
+	facts := []string{c.TargetNodeRole}
+	remoteResults, err := c.engine.ExecuteRules(clientSideRules, facts)
+	if err != nil {
+		return nil, err
+	}
+	results = append(results, remoteResults...)
 
 	// TODO: add retry logic here?
 	resp, err = http.Get(fmt.Sprintf("http://%s%s", c.TargetNode, closeEndpoint))
@@ -73,4 +85,24 @@ func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.RuleResult, error) {
 	}
 
 	return results, nil
+}
+
+func getServerSideRules(rules []rule.Rule) []rule.Rule {
+	localRules := []rule.Rule{}
+	for _, r := range rules {
+		if !r.IsRemoteRule() {
+			localRules = append(localRules, r)
+		}
+	}
+	return localRules
+}
+
+func getClientSideRules(rules []rule.Rule) []rule.Rule {
+	remoteRules := []rule.Rule{}
+	for _, r := range rules {
+		if r.IsRemoteRule() {
+			remoteRules = append(remoteRules, r)
+		}
+	}
+	return remoteRules
 }

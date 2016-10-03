@@ -30,11 +30,11 @@ func NewCmdClient(out io.Writer) *cobra.Command {
 			if err := validateOutputType(opts.outputType); err != nil {
 				return err
 			}
-			c := inspector.Client{
-				TargetNode: opts.targetNode,
+			c, err := inspector.NewClient(opts.targetNode, opts.nodeRole)
+			if err != nil {
+				return fmt.Errorf("error creating inspector client: %v", err)
 			}
 			var rules []rule.Rule
-			var err error
 			if opts.rulesFile != "" {
 				rules, err = rule.ReadFromFile(opts.rulesFile)
 				if err != nil {
