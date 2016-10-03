@@ -8,4 +8,3 @@
 
     roles:
       - role: hosts
-        when: modify_hosts_file is defined and modify_hosts_file == "true"

@@ -7,4 +7,3 @@
 
     roles:
       - role: addon-docker-registry
-        when: enable_docker_registry is defined and enable_docker_registry == "true"

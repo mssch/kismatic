@@ -142,6 +142,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"kubernetes_dns_service_ip": dnsIP,
 		"modify_hosts_file":         strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
 		"enable_calico_policy":      strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
+		"enable_docker_registry":    strconv.FormatBool(p.DockerRegistry.UseInternal),
 	}
 
 	if ae.options.RestartServices {

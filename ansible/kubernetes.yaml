@@ -2,12 +2,14 @@
   # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
   - include: _all.yaml
   - include: _hosts.yaml
+    when: modify_hosts_file is defined and modify_hosts_file == "true"
   # etcd
   - include: _etcd-k8s.yaml
   - include: _etcd-networking.yaml
   # common prereqs
   - include: _docker.yaml
   - include: _addon-docker-registry.yaml
+    when: enable_docker_registry is defined and enable_docker_registry == "true"
   - include: _kubenode-cert.yaml
   # master:worker
   - include: _calico.yaml
@@ -22,6 +24,6 @@
   - include: _proxy.yaml
   # add ons
   - include: _addon-network-policy.yaml
-    when: enable_calico_policy == "true"
+    when: enable_calico_policy is defined and enable_calico_policy == "true"
   - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml
