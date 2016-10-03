@@ -3,6 +3,7 @@ package rule
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
 )
@@ -41,7 +42,11 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
 	case TCPPortAvailable:
 		c = &check.TCPPortServerCheck{PortNumber: r.Port}
 	case TCPPortAccessible:
-		c = &check.TCPPortClientCheck{PortNumber: r.Port, IPAddress: m.TargetNodeIP}
+		timeout, err := time.ParseDuration(r.Timeout)
+		if err != nil {
+			return nil, fmt.Errorf("invalid value %q provided for the timeout field of the TCPPortAccessible rule: %v", r.Timeout, err)
+		}
+		c = &check.TCPPortClientCheck{PortNumber: r.Port, IPAddress: m.TargetNodeIP, Timeout: timeout}
 	}
 	return c, nil
 }

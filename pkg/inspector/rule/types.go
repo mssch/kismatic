@@ -77,7 +77,8 @@ func (p TCPPortAvailable) IsRemoteRule() bool { return false }
 
 type TCPPortAccessible struct {
 	RuleMeta
-	Port int
+	Port    int
+	Timeout string
 }
 
 func (p TCPPortAccessible) Name() string {

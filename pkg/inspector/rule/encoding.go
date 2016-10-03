@@ -35,6 +35,7 @@ type catchAllRule struct {
 	Port           int    `yaml:"port"`
 	File           string `yaml:"file"`
 	ContentRegex   string `yaml:"contentRegex"`
+	Timeout        string `yaml:"timeout"`
 }
 
 // UnmarshalRulesYAML unmarshals the data into a list of rules
@@ -104,7 +105,8 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 		return r, nil
 	case "tcpportaccessible":
 		r := TCPPortAccessible{
-			Port: catchAll.Port,
+			Port:    catchAll.Port,
+			Timeout: catchAll.Timeout,
 		}
 		r.RuleMeta = meta
 		return r, nil
