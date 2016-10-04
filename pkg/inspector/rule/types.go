@@ -36,7 +36,7 @@ type PackageAvailable struct {
 
 // Name returns the name of the rule
 func (p PackageAvailable) Name() string {
-	return fmt.Sprintf("%s %s is available", p.PackageName, p.PackageVersion)
+	return fmt.Sprintf("Package Available: %s %s", p.PackageName, p.PackageVersion)
 }
 
 // IsRemoteRule returns true if the rule is to be run from outside of the node
@@ -66,7 +66,7 @@ type PackageInstalled struct {
 
 // Name is the name of the rule
 func (p PackageInstalled) Name() string {
-	return fmt.Sprintf("%s %s is installed", p.PackageName, p.PackageVersion)
+	return fmt.Sprintf("Package Installed: %s %s", p.PackageName, p.PackageVersion)
 }
 
 // IsRemoteRule returns true if the rule is to be run from outside the node
@@ -96,7 +96,7 @@ type ExecutableInPath struct {
 
 // Name is the name of the rule
 func (e ExecutableInPath) Name() string {
-	return fmt.Sprintf("%s is in the executable path", e.Executable)
+	return fmt.Sprintf("Executable In Path: %s", e.Executable)
 }
 
 // IsRemoteRule returns true if the rule is to be run from outside of the node
@@ -120,7 +120,7 @@ type FileContentMatches struct {
 
 // Name is the name of the rule
 func (f FileContentMatches) Name() string {
-	return fmt.Sprintf("Contents of %q match the regular expression %s", f.File, f.ContentRegex)
+	return fmt.Sprintf("Contents of %q match: %s", f.File, f.ContentRegex)
 }
 
 // IsRemoteRule returns true if the rule is to be run from outside of the node
@@ -156,7 +156,7 @@ type TCPPortAvailable struct {
 
 // Name is the name of the rule
 func (p TCPPortAvailable) Name() string {
-	return fmt.Sprintf("Port %d is available", p.Port)
+	return fmt.Sprintf("Port Available: %d", p.Port)
 }
 
 // IsRemoteRule returns true if the rule is to be run from outside the node
@@ -180,7 +180,7 @@ type TCPPortAccessible struct {
 
 // Name returns the name of the rule
 func (p TCPPortAccessible) Name() string {
-	return fmt.Sprintf("Port %d is accessible via the network", p.Port)
+	return fmt.Sprintf("Port Accessible: %d", p.Port)
 }
 
 // IsRemoteRule returns true if the rule is to be run from a remote node

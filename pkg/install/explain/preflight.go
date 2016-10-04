@@ -32,10 +32,14 @@ func (explainer *PreflightEventExplainer) ExplainEvent(e ansible.Event, verbose 
 			// Something actually went wrong running the play... use the default explainer
 			return explainer.DefaultExplainer.ExplainEvent(event, verbose)
 		}
-		util.PrintColor(buf, util.Red, "\n=> Pre-Flight Checks failed on %q:\n", event.Host)
+		// print info about pre-flight checks that failed
+		util.PrintColor(buf, util.Red, "\n=> The following checks failed on %q:\n", event.Host)
 		for _, r := range results {
+			if !r.Success && r.Error != "" {
+				util.PrintColor(buf, util.Red, "   - Error occurred when trying to verify rule %s: %v\n", r.Name, r.Error)
+			}
 			if !r.Success {
-				util.PrintColor(buf, util.Red, "   - %s\n", r.Error)
+				util.PrintColor(buf, util.Red, "   - %s\n", r.Name)
 			}
 		}
 		if verbose {

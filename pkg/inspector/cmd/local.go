@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -73,6 +74,11 @@ func runLocal(out io.Writer, opts localOpts) error {
 	}
 	if err := printResults(out, results, opts.outputType); err != nil {
 		return fmt.Errorf("error printing results: %v", err)
+	}
+	for _, r := range results {
+		if !r.Success {
+			return errors.New("inspector rules failed")
+		}
 	}
 	return nil
 }

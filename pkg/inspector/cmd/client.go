@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -61,6 +62,11 @@ func runClient(out io.Writer, opts clientOpts) error {
 	}
 	if err := printResults(out, results, opts.outputType); err != nil {
 		return err
+	}
+	for _, r := range results {
+		if !r.Success {
+			return errors.New("inspector rules failed")
+		}
 	}
 	return nil
 }
