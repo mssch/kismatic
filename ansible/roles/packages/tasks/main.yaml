@@ -1,0 +1,29 @@
+---
+  - name: add Kismatic YUM repository
+    yum_repository:
+      name: kismatic
+      description: Kismatic Packages
+      baseurl: "{{ yum_repository_url }}"
+      gpgkey: "{{ yum_gpg_key_url }}"
+      gpgcheck: yes
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  - name: add Kismatic DEB repository
+    yum_repository:
+      apt_repository: repo='deb {{ deb_repository_url }} kismatic main'
+    when: ansible_distribution == 'Ubuntu'
+
+  - name: install etcd pacakge
+    package: name=kismatic-etcd state=latest
+    when: "'etcd' in group_names"
+
+  - name: install docker pacakge
+    package: name=kismatic-docker-engine state=latest
+    when: "'worker' in group_names or 'master' in group_names"
+
+  - name: install kubernetes master pacakge
+    package: name=kismatic-kubernetes-master state=latest
+    when: "'master' in group_names"
+
+  - name: install kubernetes worker pacakge
+    package: name=kismatic-kubernetes-node state=latest
+    when: "'worker' in group_names and 'master' not in group_names"

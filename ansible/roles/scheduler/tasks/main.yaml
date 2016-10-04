@@ -20,4 +20,4 @@
       - enable kube-scheduler
       - restart kube-scheduler service
       - verify kube-scheduler is running
-    when: force_scheduler_restart is defined and force_scheduler_restart == "true"
+    when: force_scheduler_restart is defined and force_scheduler_restart|bool == true

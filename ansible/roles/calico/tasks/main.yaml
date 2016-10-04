@@ -35,7 +35,7 @@
       - enable calico-node
       - restart calico-node service
       - verify calico-node is running
-    when: force_calico_node_restart is defined and force_calico_node_restart == "true"
+    when: force_calico_node_restart is defined and force_calico_node_restart|bool == true
 
   - meta: flush_handlers  #Run handlers
 
@@ -44,12 +44,6 @@
     template:
       src: 10-calico.conf.j2
       dest: "{{ network_plugin_dir }}/10-calico.conf"
-    when: enable_calico_policy == "false"
-  - name: copy 10-calico.conf to remote
-    template:
-      src: 10-calico.conf.j2.policy
-      dest: "{{ network_plugin_dir }}/10-calico.conf"
-    when: enable_calico_policy == "true"
   - name: remove default CIDR - {{ dafault_cidr }}
     command: calicoctl pool remove {{ dafault_cidr }}
     environment:

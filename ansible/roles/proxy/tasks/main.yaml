@@ -20,4 +20,4 @@
       - enable kube-proxy
       - restart kube-proxy service
       - verify kube-proxy is running
-    when: force_proxy_restart is defined and force_proxy_restart == "true"
+    when: force_proxy_restart is defined and force_proxy_restart|bool == true

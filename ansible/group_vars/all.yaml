@@ -84,7 +84,7 @@ kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_
 kubernetes_services_cidr: 10.3.0.0/24
 kubernetes_pods_cidr: 10.2.0.0/16
 calico_network_type: overlay # Default to the overlay type. Must be 'routed' or 'overlay'
-enable_calico_policy: false 
+enable_calico_policy: false
 #===============================================================================
 # kubernetes
 # directories
@@ -130,37 +130,43 @@ etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ hos
 etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 #===============================================================================
 # docker registry
-enable_docker_registry: "false"
+enable_docker_registry: false
 docker_registry_port: 5000
 
 calico_node_orig_img: calico/node:{{calico_docker_version}}
 calico_node_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/calico/node:{{calico_docker_version}}"
-calico_node_img: '{% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ calico_node_priv_img }}{% else %}{{ calico_node_orig_img }}{% endif %}'
+calico_node_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ calico_node_priv_img }}{% else %}{{ calico_node_orig_img }}{% endif %}'
 
 calico_kube_policy_controller_orig_img: calico/kube-policy-controller
 calico_kube_policy_controller_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/calico/kube-policy-controller"
-calico_kube_policy_controller_img: '{% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ calico_kube_policy_controller_priv_img }}{% else %}{{ calico_kube_policy_controller_orig_img }}{% endif %}'
+calico_kube_policy_controller_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ calico_kube_policy_controller_priv_img }}{% else %}{{ calico_kube_policy_controller_orig_img }}{% endif %}'
 
 kubedns_orig_img: gcr.io/google_containers/kubedns-amd64:1.7
 kubedns_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/kubedns-amd64:1.7"
-kubedns_img: '{% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ kubedns_priv_img }}{% else %}{{ kubedns_orig_img }}{% endif %}'
+kubedns_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ kubedns_priv_img }}{% else %}{{ kubedns_orig_img }}{% endif %}'
 
 kube_dnsmasq_orig_img: gcr.io/google_containers/kube-dnsmasq-amd64:1.3
 kube_dnsmasq_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/kube-dnsmasq-amd64:1.3"
-kube_dnsmasq_img: '{% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ kube_dnsmasq_priv_img }}{% else %}{{ kube_dnsmasq_orig_img }}{% endif %}'
+kube_dnsmasq_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ kube_dnsmasq_priv_img }}{% else %}{{ kube_dnsmasq_orig_img }}{% endif %}'
 
 exechealthz_orig_img: gcr.io/google_containers/exechealthz-amd64:1.0
 exechealthz_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/exechealthz-amd64:1.0"
-exechealthz_img: '{% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ exechealthz_priv_img }}{% else %}{{ exechealthz_orig_img }}{% endif %}'
+exechealthz_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ exechealthz_priv_img }}{% else %}{{ exechealthz_orig_img }}{% endif %}'
 
 kubernetes_dashboard_orig_img: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.0
 kubernetes_dashboard_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/kubernetes-dashboard-amd64:v1.4.0"
-kubernetes_dashboard_img: '{% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ kubernetes_dashboard_priv_img }}{% else %}{{ kubernetes_dashboard_orig_img }}{% endif %}'
+kubernetes_dashboard_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ kubernetes_dashboard_priv_img }}{% else %}{{ kubernetes_dashboard_orig_img }}{% endif %}'
 
 pause_orig_img: gcr.io/google_containers/pause-amd64:3.0
 pause_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/pause-amd64:3.0"
-pause_img: '{% if enable_docker_registry is defined and enable_docker_registry == "true" %}{{ pause_priv_img }}{% else %}{{ pause_orig_img }}{% endif %}'
+pause_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ pause_priv_img }}{% else %}{{ pause_orig_img }}{% endif %}'
+#===============================================================================
+# kismatic packages
+install_packages_from_public_repo: true
+yum_repository_url: https://s3.amazonaws.com/kismatic-rpm/
+yum_gpg_key_url: https://s3.amazonaws.com/kismatic-rpm/RPM-GPG-KEY-kismatic
 
+deb_repository_url: https://kismatic-deb.amazonaws.com
 #===============================================================================
 # PV configs for monitoring and logging
 #pv_monitoring_nfs_server_ip: "192.168.99.20"

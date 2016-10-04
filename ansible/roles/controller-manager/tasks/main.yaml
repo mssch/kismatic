@@ -20,4 +20,4 @@
       - enable kube-controller-manager
       - restart kube-controller-manager service
       - verify kube-controller-manager is running
-    when: force_controller_manager_restart is defined and force_controller_manager_restart == "true"
+    when: force_controller_manager_restart is defined and force_controller_manager_restart|bool == true

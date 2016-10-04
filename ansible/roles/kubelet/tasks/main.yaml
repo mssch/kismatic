@@ -20,14 +20,14 @@
       - enable kubelet
       - restart kubelet service
       - verify kubelet is running
-    when: force_kubelet_restart is defined and force_kubelet_restart == "true"
+    when: force_kubelet_restart is defined and force_kubelet_restart|bool == true
 
   # k8s relies on gcr.io/google_containers/pause-amd64
   # all worker nodes need to pull this image from private registry and retag it
   - name: pull gcr.io/google_containers/pause-amd64
     command: docker pull {{hostvars[groups['master'][0]].inventory_hostname}}:{{ docker_registry_port }}/pause-amd64:3.0
-    when: enable_docker_registry is defined and enable_docker_registry == "true"
+    when: enable_docker_registry is defined and enable_docker_registry|bool == true
 
   - name: tag gcr.io/google_containers/pause-amd64
     command: docker tag {{hostvars[groups['master'][0]].inventory_hostname}}:{{ docker_registry_port }}/pause-amd64:3.0 gcr.io/google_containers/pause-amd64:3.0
-    when: enable_docker_registry is defined and enable_docker_registry == "true"
+    when: enable_docker_registry is defined and enable_docker_registry|bool == true
