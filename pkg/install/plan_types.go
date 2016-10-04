@@ -5,6 +5,8 @@ type NetworkConfig struct {
 	Type             string
 	PodCIDRBlock     string `yaml:"pod_cidr_block"`
 	ServiceCIDRBlock string `yaml:"service_cidr_block"`
+	PolicyEnabled    bool   `yaml:"policy_enabled"`
+	UpdateHostsFiles bool   `yaml:"update_hosts_files"`
 }
 
 // CertsConfig describes the cluster's trust and certificate configuration
@@ -27,7 +29,6 @@ type Cluster struct {
 	Name            string
 	AdminPassword   string `yaml:"admin_password"`
 	LocalRepository string `yaml:"local_repository"`
-	HostsFileDNS    bool   `yaml:"hosts_file_dns"`
 	Networking      NetworkConfig
 	Certificates    CertsConfig
 	SSH             SSHConfig

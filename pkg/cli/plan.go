@@ -13,7 +13,7 @@ import (
 func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plan",
-		Short: "plan your Kismatic cluster and gerenate a plan file",
+		Short: "plan your Kismatic cluster and generate a plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			planner := &install.FilePlanner{File: options.planFilename}
 			return doPlan(in, out, planner, options.planFilename)

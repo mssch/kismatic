@@ -66,6 +66,12 @@
     template:
       src: 10-calico.conf.j2
       dest: "{{ network_plugin_dir }}/10-calico.conf"
+    when: enable_calico_policy == "false"
+  - name: copy 10-calico.conf to remote
+    template:
+      src: 10-calico.conf.j2.policy
+      dest: "{{ network_plugin_dir }}/10-calico.conf"
+    when: enable_calico_policy == "true"
   - name: remove default CIDR - {{ dafault_cidr }}
     command: calicoctl pool remove {{ dafault_cidr }}
     environment:

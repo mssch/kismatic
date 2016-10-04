@@ -20,6 +20,7 @@ import (
 type Executor interface {
 	Install(p *Plan) error
 	RunPreflightCheck(*Plan) error
+	RunSmokeTest(*Plan) error
 }
 
 // ExecutorOptions are used to configure the executor
@@ -120,10 +121,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(p)
-	invFilename := filepath.Join(runDirectory, "ansible-inventory.ini")
-	if err = ioutil.WriteFile(invFilename, inventory.ToINI(), 0644); err != nil {
-		return fmt.Errorf("error persisting inventory file %q: %v", invFilename, err)
-	}
 
 	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
@@ -143,7 +140,8 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
 		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
 		"kubernetes_dns_service_ip": dnsIP,
-		"modify_hosts_file":         strconv.FormatBool(p.Cluster.HostsFileDNS),
+		"modify_hosts_file":         strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
+		"enable_calico_policy":      strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
 	}
 
 	if p.Cluster.LocalRepository != "" {
@@ -164,13 +162,43 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 
 	// Run the installation playbook
-	util.PrintHeader(ae.stdout, "Installing Cluster")
+	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
 	playbook := "kubernetes.yaml"
 	eventExplainer := &explain.DefaultEventExplainer{}
 	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, ev, ansibleLogFile); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (ae *ansibleExecutor) RunSmokeTest(p *Plan) error {
+	runDirectory, err := ae.createRunDirectory("smoketest")
+	if err != nil {
+		return fmt.Errorf("error creating working directory for smoke test: %v", err)
+	}
+
+	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
+	ansibleLogFile, err := os.Create(ansibleLogFilename)
+	if err != nil {
+		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
+	}
+
+	ev := ansible.ExtraVars{
+		"kuberang_path":     filepath.Join("kuberang", "linux", "amd64", "kuberang"),
+		"modify_hosts_file": strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
+	}
+	inventory := buildInventoryFromPlan(p)
+
+	// run the preflight playbook with preflight explainer
+	util.PrintHeader(ae.stdout, "Running Smoke Test", '=')
+	playbook := "smoketest.yaml"
+	explainer := &explain.PreflightEventExplainer{
+		DefaultExplainer: &explain.DefaultEventExplainer{},
+	}
+	if err = ae.runPlaybookWithExplainer(playbook, explainer, inventory, ev, ansibleLogFile); err != nil {
+		return fmt.Errorf("error running smoketest: %v", err)
+	}
 	return nil
 }
 
@@ -196,15 +224,13 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 
 	// Build inventory and save it in runs directory
 	inventory := buildInventoryFromPlan(p)
-	invFilename := filepath.Join(runDirectory, "ansible-inventory.ini")
-	if err = ioutil.WriteFile(invFilename, inventory.ToINI(), 0644); err != nil {
-		return fmt.Errorf("error persisting inventory file %q: %v", invFilename, err)
-	}
+
+	pwd, _ := os.Getwd()
 	ev := ansible.ExtraVars{
 		// TODO: attempt to clean up these paths somehow...
 		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
-		"kismatic_preflight_checker_local": filepath.Join("ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector"),
-		"modify_hosts_file":                strconv.FormatBool(p.Cluster.HostsFileDNS),
+		"kismatic_preflight_checker_local": filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector"),
+		"modify_hosts_file":                strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
 	}
 
 	// run the preflight playbook with preflight explainer
@@ -241,7 +267,7 @@ func (ae *ansibleExecutor) generateTLSAssets(p *Plan) (certsDir string, err erro
 	}
 
 	// Generate or read cluster Certificate Authority
-	util.PrintHeader(ae.stdout, "Configuring Certificates")
+	util.PrintHeader(ae.stdout, "Configuring Certificates", '=')
 	var ca *tls.CA
 	if !ae.options.SkipCAGeneration {
 		util.PrettyPrintOk(ae.stdout, "Generating cluster Certificate Authority")

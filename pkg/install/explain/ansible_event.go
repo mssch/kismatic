@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
 	"github.com/apprenda/kismatic-platform/pkg/util"
@@ -44,6 +45,42 @@ type DefaultEventExplainer struct {
 	printPlayStatus  bool
 	lastPlay         string
 	currentTask      string
+	playCount        int
+	currentPlayCount int
+}
+
+func (explainer *DefaultEventExplainer) getCount() string {
+	return rightPadToLen(fmt.Sprintf("%d/%d", explainer.currentPlayCount, explainer.playCount), ".", 7)
+}
+
+func rightPadToLen(s string, padStr string, overallLen int) string {
+	var padCountInt int
+	padCountInt = 1 + ((overallLen - len(padStr)) / len(padStr))
+	var retStr = s + strings.Repeat(padStr, padCountInt)
+	return retStr[:overallLen]
+}
+
+func (explainer *DefaultEventExplainer) writePlayStatus(buf io.Writer) {
+	// Do not print status on the first start event or when there is an ERROR
+	if explainer.printPlayStatus {
+		// In regular mode print the status
+		util.PrintOkln(buf)
+	}
+}
+func (explainer *DefaultEventExplainer) writePlayStatusVerbose(buf io.Writer) {
+	// In verbose mode the status is printed as a whole line after all the tasks
+	// Do not print message before first play
+	if explainer.printPlayMessage {
+		// No tasks were printed, no nodes match the selector
+		// This is OK and a valid scenario
+		if explainer.printPlayStatus {
+			fmt.Fprintln(buf)
+			util.PrintColor(buf, util.Green, "%s Finished With No Tasks\n", explainer.lastPlay)
+		} else {
+			util.PrintColor(buf, util.Green, "%s  %s Finished\n", explainer.getCount(), explainer.lastPlay)
+		}
+		explainer.currentPlayCount = explainer.currentPlayCount + 1
+	}
 }
 
 // ExplainEvent returns an explanation for the given event
@@ -54,26 +91,14 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		// On a play start the previos play ends
 		// Print a success status, but only when there were no errors
 		if verbose {
-			// In verbose mode the status is printed as a whole line after all the tasks
-			// Dont print message before first play
-			if explainer.printPlayMessage {
-				// No tasks were printed, add a new line: something is wrong
-				if explainer.printPlayStatus {
-					fmt.Fprintln(buf)
-					util.PrintColor(buf, util.Red, "%s Finished with no tasks, are hosts reachable?\n", explainer.lastPlay)
-				} else {
-					util.PrintColor(buf, util.Green, "%s Finished\n", explainer.lastPlay)
-				}
-			}
+			explainer.writePlayStatusVerbose(buf)
+			fmt.Fprintf(buf, "%s  %s", explainer.getCount(), event.Name)
 		} else {
-			// Do not print status on the first start event or when there is an ERROR
-			if explainer.printPlayStatus {
-				// In regular mode print the status
-				util.PrintOkln(buf)
-			}
+			explainer.writePlayStatus(buf)
+			// Print the play name
+			util.PrettyPrint(buf, "%s  %s", explainer.getCount(), event.Name)
+			explainer.currentPlayCount = explainer.currentPlayCount + 1
 		}
-		// Print the play name
-		util.PrettyPrint(buf, event.Name)
 		// Set default state for the play
 		explainer.lastPlay = event.Name
 		explainer.printPlayStatus = true
@@ -139,12 +164,10 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		explainer.currentTask = event.Name
 	case *ansible.PlaybookEndEvent:
 		// Playbook ends, print the last play status
-		if explainer.printPlayStatus {
-			if verbose {
-				util.PrintColor(buf, util.Green, "%s Finished\n", explainer.lastPlay)
-			} else {
-				util.PrintOkln(buf)
-			}
+		if verbose {
+			explainer.writePlayStatusVerbose(buf)
+		} else {
+			explainer.writePlayStatus(buf)
 		}
 	case *ansible.RunnerSkippedEvent:
 		if verbose {
@@ -161,6 +184,8 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 	case *ansible.RunnerItemRetryEvent:
 		return ""
 	case *ansible.PlaybookStartEvent:
+		explainer.playCount = event.Count
+		explainer.currentPlayCount = 1
 		return ""
 	default:
 		if verbose {

@@ -24,7 +24,7 @@ func NewCmdValidate(out io.Writer, options *installOpts) *cobra.Command {
 }
 
 func doValidate(out io.Writer, planner install.Planner, planFile string) error {
-	util.PrintHeader(out, "Validating")
+	util.PrintHeader(out, "Validating", '=')
 	// Check if plan file exists
 	if !planner.PlanExists() {
 		util.PrettyPrintErr(out, "Reading installation plan file [ERROR]")

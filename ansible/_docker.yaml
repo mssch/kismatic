@@ -1,6 +1,7 @@
 ---
   - hosts: master:worker
-    name: Install Docker
+    any_errors_fatal: true
+    name: "Install Docker"
     remote_user: root
     become_method: sudo
     vars_files:

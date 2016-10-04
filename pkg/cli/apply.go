@@ -99,18 +99,23 @@ func (c *applyCmd) run() error {
 	if err != nil {
 		return fmt.Errorf("error installing: %v", err)
 	}
+
+	if err := c.executor.RunSmokeTest(plan); err != nil {
+		return fmt.Errorf("error during smoke test: %v", err)
+	}
 	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully\n")
 
 	// Generate kubeconfig
-	util.PrintHeader(c.out, "Generating Kubeconfig File")
+	util.PrintHeader(c.out, "Generating Kubeconfig File", '=')
 	err = install.GenerateKubeconfig(plan, c.generatedAssetsDir)
 	if err != nil {
 		util.PrettyPrintWarn(c.out, "Error generating kubeconfig file: %v\n", err)
 	} else {
-		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory.", c.generatedAssetsDir)
+		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory", c.generatedAssetsDir)
 		fmt.Fprintf(c.out, "\n")
-		msg := "To use the generated kubeconfig file with kubectl, you can use \"kubectl --kubeconfig %s/kubeconfig\"," +
-			" or you may copy the config file into your home directory: \"cp %[1]s/kubeconfig ~/.kube/config\"\n"
+		msg := "To use the generated kubeconfig file with kubectl:" +
+			"\n  * use \"kubectl --kubeconfig %s/kubeconfig\"" +
+			"\n  * or copy the config file \"cp %[1]s/kubeconfig ~/.kube/config\"\n"
 		fmt.Fprintf(c.out, msg, c.generatedAssetsDir)
 	}
 

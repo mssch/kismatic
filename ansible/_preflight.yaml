@@ -1,5 +1,6 @@
 ---
   - hosts: all
+    any_errors_fatal: true
     name: Run Cluster Pre-Flight Checks
     remote_user: root
     become_method: sudo

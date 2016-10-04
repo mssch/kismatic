@@ -1,6 +1,7 @@
 ---
   - hosts: master[0]
-    name: Add-On Configure Logging
+    any_errors_fatal: true
+    name: "Add-On Logging"
     remote_user: root
     become_method: sudo
     run_once: true

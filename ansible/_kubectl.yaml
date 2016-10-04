@@ -1,6 +1,7 @@
 ---
   - hosts: master
-    name: Install Kubectl
+    any_errors_fatal: true
+    name: "Install Kubectl"
     remote_user: root
     become_method: sudo
     vars_files:
