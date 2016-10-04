@@ -53,12 +53,13 @@ func validateRules(out io.Writer, rules []rule.Rule) bool {
 	allOK := true
 	for i, r := range rules {
 		errs := r.Validate()
-		for _, e := range errs {
-			fmt.Fprintf(out, "- %s (Rule #%d): %v\n", r.GetRuleMeta().Kind, i, e)
-		}
-		fmt.Fprintln(out, "")
 		if len(errs) > 0 {
 			allOK = false
+			fmt.Fprintf(out, "%s (Rule #%d):\n", r.GetRuleMeta().Kind, i+1)
+			for _, e := range errs {
+				fmt.Fprintf(out, "- %v\n", e)
+			}
+			fmt.Fprintln(out, "")
 		}
 	}
 	return allOK

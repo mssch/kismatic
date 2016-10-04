@@ -20,7 +20,7 @@ func NewCmdServer(out io.Writer) *cobra.Command {
 		},
 	}
 	cmd.Flags().IntVar(&port, "port", 8080, "The port number for standing up the Inspector server")
-	cmd.Flags().StringVar(&nodeRole, "node-role", "", "the node's role in the cluster. Options are 'etcd', 'master', 'worker'")
+	cmd.Flags().StringVar(&nodeRole, "node-role", "", "The node's role in the cluster. Options are 'etcd', 'master', 'worker'")
 	return cmd
 }
 

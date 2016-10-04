@@ -13,7 +13,7 @@ import (
 // ReadFromFile returns the list of rules contained in the specified file
 func ReadFromFile(file string) ([]Rule, error) {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
-		return nil, fmt.Errorf("attempted to read rules from non-existent file %q", file)
+		return nil, fmt.Errorf("%q does not exist", file)
 	}
 	rawRules, err := ioutil.ReadFile(file)
 	if err != nil {
