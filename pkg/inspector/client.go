@@ -78,10 +78,10 @@ func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.RuleResult, error) {
 	}
 	results = append(results, remoteResults...)
 
-	// TODO: add retry logic here?
-	resp, err = http.Get(fmt.Sprintf("http://%s%s", c.TargetNode, closeEndpoint))
+	endpoint := fmt.Sprintf("http://%s%s", c.TargetNode, closeEndpoint)
+	resp, err = http.Get(endpoint)
 	if err != nil {
-		// TODO: Handle this error? Or just log it
+		return nil, fmt.Errorf("GET request to %q failed. You might have to restart the inspector server. Error was: %v", endpoint, err)
 	}
 
 	return results, nil

@@ -40,6 +40,9 @@ func NewCmdClient(out io.Writer) *cobra.Command {
 				if err != nil {
 					return fmt.Errorf("error reading rules from %q: %v", opts.rulesFile, err)
 				}
+				if ok := validateRules(out, rules); !ok {
+					return fmt.Errorf("rules read from %q did not pass validation", opts.rulesFile)
+				}
 			} else {
 				rules = rule.DefaultRules()
 			}

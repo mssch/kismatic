@@ -50,6 +50,9 @@ func runLocal(out io.Writer, opts localOpts) error {
 		if err != nil {
 			return err
 		}
+		if ok := validateRules(out, rules); !ok {
+			return fmt.Errorf("rules read from %q did not pass validation", opts.rulesFile)
+		}
 	} else {
 		rules = rule.DefaultRules()
 	}

@@ -47,3 +47,19 @@ func NewCmdDumpRules(out io.Writer, file string) *cobra.Command {
 	cmd.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite the destination file if it exists")
 	return cmd
 }
+
+// validates rules, printing error messages to the console
+func validateRules(out io.Writer, rules []rule.Rule) bool {
+	allOK := true
+	for i, r := range rules {
+		errs := r.Validate()
+		for _, e := range errs {
+			fmt.Fprintf(out, "- %s (Rule #%d): %v\n", r.GetRuleMeta().Kind, i, e)
+		}
+		fmt.Fprintln(out, "")
+		if len(errs) > 0 {
+			allOK = false
+		}
+	}
+	return allOK
+}

@@ -25,6 +25,7 @@ type fakeRule struct {
 
 func (r fakeRule) Name() string       { return r.name }
 func (r fakeRule) IsRemoteRule() bool { return r.isRemote }
+func (r fakeRule) Validate() []error  { return nil }
 
 type fakeRuleCheckMapper struct {
 	check check.Check
