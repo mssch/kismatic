@@ -39,7 +39,7 @@ func NewClient(targetNode string, nodeRole string) (*Client, error) {
 }
 
 // ExecuteRules against the target inspector server
-func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.RuleResult, error) {
+func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.Result, error) {
 	serverSideRules := getServerSideRules(rules)
 	d, err := json.Marshal(serverSideRules)
 	if err != nil {
@@ -63,7 +63,7 @@ func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.RuleResult, error) {
 	}
 
 	// we got an OK - handle the response
-	results := []rule.RuleResult{}
+	results := []rule.Result{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding server response: %v", err)

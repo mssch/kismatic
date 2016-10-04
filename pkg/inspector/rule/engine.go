@@ -61,8 +61,8 @@ type Engine struct {
 // ExecuteRules runs the rules that should be executed according to the facts,
 // and returns a collection of results. The number of results is not guaranteed
 // to equal the number of rules.
-func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]RuleResult, error) {
-	results := []RuleResult{}
+func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]Result, error) {
+	results := []Result{}
 	for _, rule := range rules {
 		if !shouldExecuteRule(rule, facts) {
 			continue
@@ -84,7 +84,7 @@ func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]RuleResult, error
 
 		// Run the check and report result
 		ok, err := c.Check()
-		res := RuleResult{
+		res := Result{
 			Name:        rule.Name(),
 			Success:     ok,
 			Remediation: "",

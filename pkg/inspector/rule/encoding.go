@@ -27,8 +27,14 @@ func ReadFromFile(file string) ([]Rule, error) {
 	return rules, nil
 }
 
+// This catch all rule is used for unmarshaling
+// The reason for having this is that we don't know the Kind
+// of the rule we are reading before unmarshaling, so we
+// unmarshal into this catch all, where all fields are captured.
+// There might be a better way of doing this, but taking this
+// approach for now...
 type catchAllRule struct {
-	RuleMeta       `yaml:",inline"`
+	Meta           `yaml:",inline"`
 	PackageName    string `yaml:"packageName"`
 	PackageVersion string `yaml:"packageVersion"`
 	Executable     string `yaml:"executable"`
@@ -70,7 +76,7 @@ func rulesFromCatchAllRules(catchAllRules []catchAllRule) ([]Rule, error) {
 
 func buildRule(catchAll catchAllRule) (Rule, error) {
 	kind := strings.ToLower(strings.TrimSpace(catchAll.Kind))
-	meta := RuleMeta{
+	meta := Meta{
 		Kind: kind,
 		When: catchAll.When,
 	}
@@ -82,40 +88,40 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 			PackageName:    catchAll.PackageName,
 			PackageVersion: catchAll.PackageVersion,
 		}
-		r.RuleMeta = meta
+		r.Meta = meta
 		return r, nil
 	case "packageinstalled":
 		r := PackageInstalled{
 			PackageName:    catchAll.PackageName,
 			PackageVersion: catchAll.PackageVersion,
 		}
-		r.RuleMeta = meta
+		r.Meta = meta
 		return r, nil
 	case "executableinpath":
 		r := ExecutableInPath{
 			Executable: catchAll.Executable,
 		}
-		r.RuleMeta = meta
+		r.Meta = meta
 		return r, nil
 	case "tcpportavailable":
 		r := TCPPortAvailable{
 			Port: catchAll.Port,
 		}
-		r.RuleMeta = meta
+		r.Meta = meta
 		return r, nil
 	case "tcpportaccessible":
 		r := TCPPortAccessible{
 			Port:    catchAll.Port,
 			Timeout: catchAll.Timeout,
 		}
-		r.RuleMeta = meta
+		r.Meta = meta
 		return r, nil
 	case "filecontentmatches":
 		r := FileContentMatches{
 			File:         catchAll.File,
 			ContentRegex: catchAll.ContentRegex,
 		}
-		r.RuleMeta = meta
+		r.Meta = meta
 		return r, nil
 	}
 }

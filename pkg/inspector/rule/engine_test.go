@@ -18,7 +18,7 @@ func (c fakeCheck) Check() (bool, error) {
 }
 
 type fakeRule struct {
-	RuleMeta
+	Meta
 	name     string
 	isRemote bool
 }
@@ -43,7 +43,7 @@ func TestEngine(t *testing.T) {
 		rule            fakeRule
 		ruleWhen        []string
 		facts           []string
-		expectedResults []RuleResult
+		expectedResults []Result
 		expectErr       bool
 	}{
 		// Single rule that passes
@@ -55,7 +55,7 @@ func TestEngine(t *testing.T) {
 				name: "SuccessRule",
 			},
 			facts: []string{},
-			expectedResults: []RuleResult{
+			expectedResults: []Result{
 				{
 					Name:    "SuccessRule",
 					Success: true,
@@ -71,7 +71,7 @@ func TestEngine(t *testing.T) {
 				name: "FailRule",
 			},
 			facts: []string{},
-			expectedResults: []RuleResult{
+			expectedResults: []Result{
 				{
 					Name:    "FailRule",
 					Success: false,
@@ -89,7 +89,7 @@ func TestEngine(t *testing.T) {
 			},
 			ruleWhen: []string{"ubuntu", "worker"},
 			facts:    []string{"ubuntu", "worker", "otherFact"},
-			expectedResults: []RuleResult{
+			expectedResults: []Result{
 				{
 					Name:    "FailRule",
 					Success: false,
@@ -107,7 +107,7 @@ func TestEngine(t *testing.T) {
 			},
 			ruleWhen:        []string{"ubuntu"},
 			facts:           []string{"otherFact"},
-			expectedResults: []RuleResult{},
+			expectedResults: []Result{},
 		},
 		// Single rule that should run regardless of facts
 		{
@@ -119,7 +119,7 @@ func TestEngine(t *testing.T) {
 			},
 			ruleWhen: []string{},
 			facts:    []string{"ubuntu"},
-			expectedResults: []RuleResult{
+			expectedResults: []Result{
 				{
 					Name:    "FailRule",
 					Success: false,

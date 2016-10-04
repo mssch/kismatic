@@ -16,7 +16,7 @@ func validateOutputType(outputType string) error {
 	return nil
 }
 
-func printResults(out io.Writer, results []rule.RuleResult, outputType string) error {
+func printResults(out io.Writer, results []rule.Result, outputType string) error {
 	switch outputType {
 	case "json":
 		return printResultsAsJSON(out, results)
@@ -27,7 +27,7 @@ func printResults(out io.Writer, results []rule.RuleResult, outputType string) e
 	}
 }
 
-func printResultsAsJSON(out io.Writer, results []rule.RuleResult) error {
+func printResultsAsJSON(out io.Writer, results []rule.Result) error {
 	err := json.NewEncoder(out).Encode(results)
 	if err != nil {
 		return fmt.Errorf("error marshaling results as JSON: %v", err)
@@ -35,7 +35,7 @@ func printResultsAsJSON(out io.Writer, results []rule.RuleResult) error {
 	return nil
 }
 
-func printResultsAsTable(out io.Writer, results []rule.RuleResult) error {
+func printResultsAsTable(out io.Writer, results []rule.Result) error {
 	w := tabwriter.NewWriter(out, 1, 8, 4, '\t', 0)
 	fmt.Fprintf(w, "CHECK\tSUCCESS\tMSG\n")
 	for _, r := range results {
