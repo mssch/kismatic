@@ -30,16 +30,5 @@ func main() {
 	cluster := integration.InstallKismatic(integration.AMIUbuntu1604USEAST, "ubuntu")
 
 	fmt.Println("Your cluster is ready.\n")
-	fmt.Println("Etcd Nodes:")
-	for _, etcd := range cluster.Etcd {
-		fmt.Println(etcd.Publicip)
-	}
-	fmt.Println("Master Nodes:")
-	for _, master := range cluster.Master {
-		fmt.Println(master.Publicip)
-	}
-	fmt.Println("Worker Nodes:")
-	for _, worker := range cluster.Worker {
-		fmt.Println(worker.Publicip)
-	}
+	integration.PrintNodes(&cluster)
 }

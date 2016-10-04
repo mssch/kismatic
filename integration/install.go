@@ -31,6 +31,77 @@ func bailBeforeAnsible() bool {
 	return os.Getenv("BAIL_BEFORE_ANSIBLE") != ""
 }
 
+type NodeCount struct {
+	Etcd   uint16
+	Master uint16
+	Worker uint16
+}
+
+func (nc NodeCount) Total() uint16 {
+	return nc.Etcd + nc.Master + nc.Worker
+}
+
+func InstallKismaticMini(nodeType string, user string) PlanAWS {
+	By("Building a template")
+	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
+	FailIfError(err, "Couldn't parse template")
+
+	By("Making infrastructure")
+	etcdNode, etcErr := MakeWorkerNode(nodeType)
+	FailIfError(etcErr, "Error making etcd node")
+
+	defer TerminateInstances(etcdNode.Instanceid)
+	descErr := WaitForInstanceToStart(&etcdNode)
+	masterNode := etcdNode
+	workerNode := etcdNode
+	FailIfError(descErr, "Error waiting for nodes")
+	log.Printf("Created etcd nodes: %v (%v), master nodes %v (%v), workerNodes %v (%v)",
+		etcdNode.Instanceid, etcdNode.Publicip,
+		masterNode.Instanceid, masterNode.Publicip,
+		workerNode.Instanceid, workerNode.Publicip)
+
+	By("Building a plan to set up an overlay network cluster on this hardware")
+	nodes := PlanAWS{
+		Etcd:                []AWSNodeDeets{etcdNode},
+		Master:              []AWSNodeDeets{masterNode},
+		Worker:              []AWSNodeDeets{workerNode},
+		MasterNodeFQDN:      masterNode.Hostname,
+		MasterNodeShortName: masterNode.Hostname,
+		User:                user,
+	}
+	var hdErr error
+	nodes.HomeDirectory, hdErr = homedir.Dir()
+	FailIfError(hdErr, "Error getting home directory")
+
+	f, fileErr := os.Create("kismatic-testing.yaml")
+	FailIfError(fileErr, "Error waiting for nodes")
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	execErr := template.Execute(w, &nodes)
+	FailIfError(execErr, "Error filling in plan template")
+	w.Flush()
+
+	By("Validing our plan")
+	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
+	verbytes, verErr := ver.CombinedOutput()
+	verText := string(verbytes)
+
+	FailIfError(verErr, "Error validating plan", verText)
+
+	if bailBeforeAnsible() == true {
+		return nodes
+	}
+
+	By("Punch it Chewie!")
+	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	app.Stdout = os.Stdout
+	app.Stderr = os.Stderr
+	appErr := app.Run()
+
+	FailIfError(appErr, "Error applying plan")
+	return nodes
+}
+
 func InstallKismatic(nodeType string, user string) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
@@ -94,6 +165,106 @@ func InstallKismatic(nodeType string, user string) PlanAWS {
 
 	FailIfError(appErr, "Error applying plan")
 	return nodes
+}
+
+func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
+	By("Building a template")
+	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
+	FailIfError(err, "Couldn't parse template")
+	if count.Etcd < 1 || count.Master < 1 || count.Worker < 1 {
+		Fail("Must have at least 1 of ever node type")
+	}
+
+	By("Making infrastructure")
+
+	allInstanceIDs := make([]string, count.Total())
+	etcdNodes := make([]AWSNodeDeets, count.Etcd)
+	masterNodes := make([]AWSNodeDeets, count.Master)
+	workerNodes := make([]AWSNodeDeets, count.Worker)
+
+	for i := uint16(0); i < count.Etcd; i++ {
+		var etcErr error
+		etcdNodes[i], etcErr = MakeETCDNode(nodeType)
+		FailIfError(etcErr, "Error making etcd node")
+		allInstanceIDs[i] = etcdNodes[i].Instanceid
+	}
+
+	for i := uint16(0); i < count.Master; i++ {
+		var masterErr error
+		masterNodes[i], masterErr = MakeMasterNode(nodeType)
+		FailIfError(masterErr, "Error making master node")
+		allInstanceIDs[i+count.Etcd] = masterNodes[i].Instanceid
+	}
+
+	for i := uint16(0); i < count.Worker; i++ {
+		var workerErr error
+		workerNodes[i], workerErr = MakeWorkerNode(nodeType)
+		FailIfError(workerErr, "Error making worker node")
+		allInstanceIDs[i+count.Etcd+count.Master] = workerNodes[i].Instanceid
+	}
+
+	defer TerminateInstances(allInstanceIDs...)
+	nodes := PlanAWS{
+		Etcd:                etcdNodes,
+		Master:              masterNodes,
+		Worker:              workerNodes,
+		MasterNodeFQDN:      masterNodes[0].Hostname,
+		MasterNodeShortName: masterNodes[0].Hostname,
+		User:                user,
+	}
+	descErr := WaitForAllInstancesToStart(&nodes)
+	FailIfError(descErr, "Error waiting for nodes")
+	log.Printf("%v", nodes.Etcd[0].Publicip)
+	PrintNodes(&nodes)
+
+	By("Building a plan to set up an overlay network cluster on this hardware")
+	var hdErr error
+	nodes.HomeDirectory, hdErr = homedir.Dir()
+	FailIfError(hdErr, "Error getting home directory")
+
+	f, fileErr := os.Create("kismatic-testing.yaml")
+	FailIfError(fileErr, "Error waiting for nodes")
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	execErr := template.Execute(w, &nodes)
+	FailIfError(execErr, "Error filling in plan template")
+	w.Flush()
+
+	By("Validing our plan")
+	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
+	verbytes, verErr := ver.CombinedOutput()
+	verText := string(verbytes)
+
+	FailIfError(verErr, "Error validating plan", verText)
+
+	if bailBeforeAnsible() == true {
+		return nodes
+	}
+
+	By("Punch it Chewie!")
+	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	app.Stdout = os.Stdout
+	app.Stderr = os.Stderr
+	appErr := app.Run()
+
+	FailIfError(appErr, "Error applying plan")
+
+	return nodes
+}
+
+func PrintNodes(plan *PlanAWS) {
+	log.Printf("Created etcd nodes:")
+	printNode(&plan.Etcd)
+	log.Printf("Created master nodes:")
+	printNode(&plan.Master)
+	log.Printf("Created worker nodes:")
+	printNode(&plan.Worker)
+}
+
+func printNode(aws *[]AWSNodeDeets) {
+	for _, node := range *aws {
+		log.Printf("\t%v (%v)", node.Instanceid, node.Publicip)
+	}
 }
 
 func FailIfError(err error, message ...string) {
@@ -241,6 +412,26 @@ func TerminateInstances(instanceids ...string) {
 		log.Printf("Could not terminate: %v", resp)
 		return
 	}
+}
+
+func WaitForAllInstancesToStart(plan *PlanAWS) error {
+	for i := 0; i < len(plan.Etcd); i++ {
+		if err := WaitForInstanceToStart(&plan.Etcd[i]); err != nil {
+			return err
+		}
+	}
+	for i := 0; i < len(plan.Master); i++ {
+		if err := WaitForInstanceToStart(&plan.Master[i]); err != nil {
+			return err
+		}
+	}
+	for i := 0; i < len(plan.Worker); i++ {
+		if err := WaitForInstanceToStart(&plan.Worker[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func WaitForInstanceToStart(nodes ...*AWSNodeDeets) error {
