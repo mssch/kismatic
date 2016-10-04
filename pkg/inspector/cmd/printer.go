@@ -9,13 +9,6 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
 )
 
-func validateOutputType(outputType string) error {
-	if outputType != "json" && outputType != "table" {
-		return fmt.Errorf("output type %q not supported", outputType)
-	}
-	return nil
-}
-
 func printResults(out io.Writer, results []rule.Result, outputType string) error {
 	switch outputType {
 	case "json":

@@ -15,12 +15,12 @@ type Client struct {
 	// TargetNode is the ip:port of the inspector running on the remote node
 	TargetNode string
 	// TargetNodeRole is the role of the node we are inspecting
-	TargetNodeRole string
-	engine         *rule.Engine
+	TargetNodeFacts []string
+	engine          *rule.Engine
 }
 
 // NewClient returns an inspector client for running checks against remote nodes.
-func NewClient(targetNode string, nodeRole string) (*Client, error) {
+func NewClient(targetNode string, targetNodeFacts []string) (*Client, error) {
 	host, _, err := net.SplitHostPort(targetNode)
 	if err != nil {
 		return nil, err
@@ -32,9 +32,9 @@ func NewClient(targetNode string, nodeRole string) (*Client, error) {
 		},
 	}
 	return &Client{
-		TargetNode:     targetNode,
-		TargetNodeRole: nodeRole,
-		engine:         engine,
+		TargetNode:      targetNode,
+		TargetNodeFacts: targetNodeFacts,
+		engine:          engine,
 	}, nil
 }
 
@@ -71,8 +71,7 @@ func (c Client) ExecuteRules(rules []rule.Rule) ([]rule.Result, error) {
 
 	// Execute the rules that should run from a remote node
 	clientSideRules := getClientSideRules(rules)
-	facts := []string{c.TargetNodeRole}
-	remoteResults, err := c.engine.ExecuteRules(clientSideRules, facts)
+	remoteResults, err := c.engine.ExecuteRules(clientSideRules, c.TargetNodeFacts)
 	if err != nil {
 		return nil, err
 	}

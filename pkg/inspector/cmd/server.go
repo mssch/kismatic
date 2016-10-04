@@ -11,27 +11,28 @@ import (
 // NewCmdServer returns the "server" command
 func NewCmdServer(out io.Writer) *cobra.Command {
 	var port int
-	var nodeRole string
+	var nodeRoles string
 	cmd := &cobra.Command{
 		Use:   "server",
 		Short: "stand up the inspector server for running checks remotely",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runServer(out, cmd.Parent().Name(), port, nodeRole)
+			return runServer(out, cmd.Parent().Name(), port, nodeRoles)
 		},
 	}
-	cmd.Flags().IntVar(&port, "port", 8080, "The port number for standing up the Inspector server")
-	cmd.Flags().StringVar(&nodeRole, "node-role", "", "The node's role in the cluster. Options are 'etcd', 'master', 'worker'")
+	cmd.Flags().IntVar(&port, "port", 8080, "the port number for standing up the Inspector server")
+	cmd.Flags().StringVar(&nodeRoles, "node-roles", "", "comma-separated list of the node's roles. Valid roles are 'etcd', 'master', 'worker'")
 	return cmd
 }
 
-func runServer(out io.Writer, commandName string, port int, nodeRole string) error {
-	if nodeRole == "" {
-		return fmt.Errorf("node role is required")
+func runServer(out io.Writer, commandName string, port int, nodeRoles string) error {
+	if nodeRoles == "" {
+		return fmt.Errorf("--node-roles is required")
 	}
-	if nodeRole != "etcd" && nodeRole != "master" && nodeRole != "worker" {
-		return fmt.Errorf("%s is not a valid node role", nodeRole)
+	roles, err := getNodeRoles(nodeRoles)
+	if err != nil {
+		return err
 	}
-	s, err := inspector.NewServer(nodeRole, port)
+	s, err := inspector.NewServer(roles, port)
 	if err != nil {
 		return fmt.Errorf("error starting up inspector server: %v", err)
 	}

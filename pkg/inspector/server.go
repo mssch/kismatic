@@ -30,7 +30,7 @@ var closeEndpoint = "/close"
 
 // NewServer returns an inspector server that has been initialized
 // with the default rules engine
-func NewServer(nodeRole string, port int) (*Server, error) {
+func NewServer(nodeFacts []string, port int) (*Server, error) {
 	s := &Server{
 		Port: port,
 	}
@@ -38,7 +38,7 @@ func NewServer(nodeRole string, port int) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building server: %v", err)
 	}
-	s.NodeFacts = []string{nodeRole, string(distro)}
+	s.NodeFacts = append(nodeFacts, string(distro))
 	pkgMgr, err := check.NewPackageManager(distro)
 	if err != nil {
 		return nil, fmt.Errorf("error building server: %v", err)

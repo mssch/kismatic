@@ -11,7 +11,7 @@ import (
 
 type localOpts struct {
 	outputType string
-	nodeRole   string
+	nodeRoles  string
 	rulesFile  string
 }
 
@@ -26,35 +26,26 @@ func NewCmdLocal(out io.Writer) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&opts.outputType, "output", "o", "table", "set the result output type. Options are 'json', 'table'")
-	cmd.Flags().StringVar(&opts.nodeRole, "node-role", "", "the node's role in the cluster. Options are 'etcd', 'master', 'worker'")
+	cmd.Flags().StringVar(&opts.nodeRoles, "node-roles", "", "comma-separated list of the node's roles. Valid roles are 'etcd', 'master', 'worker'")
 	cmd.Flags().StringVarP(&opts.rulesFile, "file", "f", "", "the path to an inspector rules file. If blank, the inspector uses the default rules")
 	return cmd
 }
 
 func runLocal(out io.Writer, opts localOpts) error {
-	nodeRole := opts.nodeRole
-	if nodeRole == "" {
+	if opts.nodeRoles == "" {
 		return fmt.Errorf("node role is required")
 	}
-	if nodeRole != "etcd" && nodeRole != "master" && nodeRole != "worker" {
-		return fmt.Errorf("%s is not a valid node role", nodeRole)
+	roles, err := getNodeRoles(opts.nodeRoles)
+	if err != nil {
+		return err
 	}
-	if err := validateOutputType(opts.outputType); err != nil {
+	if err = validateOutputType(opts.outputType); err != nil {
 		return err
 	}
 	// Gather rules
-	var rules []rule.Rule
-	var err error
-	if opts.rulesFile != "" {
-		rules, err = rule.ReadFromFile(opts.rulesFile)
-		if err != nil {
-			return err
-		}
-		if ok := validateRules(out, rules); !ok {
-			return fmt.Errorf("rules read from %q did not pass validation", opts.rulesFile)
-		}
-	} else {
-		rules = rule.DefaultRules()
+	rules, err := getRulesFromFileOrDefault(out, opts.rulesFile)
+	if err != nil {
+		return err
 	}
 	// Set up engine dependencies
 	distro, err := check.DetectDistro()
@@ -75,7 +66,7 @@ func runLocal(out io.Writer, opts localOpts) error {
 			PackageManager: pkgMgr,
 		},
 	}
-	labels := []string{string(distro), nodeRole}
+	labels := append(roles, string(distro))
 	results, err := e.ExecuteRules(rules, labels)
 	if err != nil {
 		return fmt.Errorf("error running local rules: %v", err)
