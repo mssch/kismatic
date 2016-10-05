@@ -1,15 +1,19 @@
 package integration
 
 import (
+	"bufio"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
+	"time"
 
 	yaml "gopkg.in/yaml.v2"
 
 	"os"
 	"os/exec"
 
+	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -71,6 +75,18 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		})
 	})
 
+	Describe("Calling installer with a plan targeting bad infrastructure", func() {
+		//TODO: Fix timeout that causes us to comment this out.
+		//
+		// Context("Using a 1/1/1 Ubtunu 16.04 layout pointing to bad ip addresses", func() {
+		// 	It("should bomb validate and apply", func() {
+		// 		if !completesInTime(InstallKismaticWithABadNode, 30*time.Second) {
+		// 			Fail("It shouldn't take 30 seconds for Kismatic to fail with bad nodes.")
+		// 		}
+		// 	})
+		// })
+	})
+
 	Describe("Calling installer with a plan targetting AWS", func() {
 		Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
 			It("should result in a working cluster", func() {
@@ -100,3 +116,75 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		})
 	})
 })
+
+func InstallKismaticWithABadNode() {
+	By("Building a template")
+	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
+	FailIfError(err, "Couldn't parse template")
+
+	By("Faking infrastructure")
+	fakeNode := AWSNodeDeets{
+		Instanceid: "FakeId",
+		Publicip:   "10.0.0.0",
+		Hostname:   "FakeHostname",
+	}
+
+	By("Building a plan to set up an overlay network cluster on this hardware")
+	nodes := PlanAWS{
+		Etcd:                []AWSNodeDeets{fakeNode},
+		Master:              []AWSNodeDeets{fakeNode},
+		Worker:              []AWSNodeDeets{fakeNode},
+		MasterNodeFQDN:      "yep.nope",
+		MasterNodeShortName: "yep",
+		User:                "Billy Rubin",
+	}
+	var hdErr error
+	nodes.HomeDirectory, hdErr = homedir.Dir()
+	FailIfError(hdErr, "Error getting home directory")
+
+	f, fileErr := os.Create("kismatic-testing.yaml")
+	FailIfError(fileErr, "Error waiting for nodes")
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	execErr := template.Execute(w, &nodes)
+	FailIfError(execErr, "Error filling in plan template")
+	w.Flush()
+
+	f.Close()
+
+	// By("Validing our plan")
+	// ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
+	// ver.Stdout = os.Stdout
+	// ver.Stderr = os.Stderr
+	// verErr := ver.Run()
+
+	// if verErr == nil {
+	// 	// This should really be a failure but at the moment validation does not run tests against target nodes
+	// 	// Fail("Validation succeeeded even though it shouldn't have")
+	// }
+
+	By("Well, try it anyway")
+	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	app.Stdout = os.Stdout
+	app.Stderr = os.Stderr
+	appErr := app.Run()
+
+	if appErr == nil {
+		Fail("Application succeeeded even though it shouldn't have")
+	}
+}
+
+func completesInTime(dothis func(), howLong time.Duration) bool {
+	c1 := make(chan string, 1)
+	go func() {
+		dothis()
+		c1 <- "completed"
+	}()
+
+	select {
+	case <-c1:
+		return true
+	case <-time.After(howLong):
+		return false
+	}
+}
