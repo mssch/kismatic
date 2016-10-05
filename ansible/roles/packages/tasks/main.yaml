@@ -11,8 +11,7 @@
 
   # DEB repo
   - name: ping Kismatic deb repository
-    #uri: url="{{ deb_gpg_key_url }}"
-    uri: url="asdasds"
+    uri: url="{{ deb_gpg_key_url }}"
     notify:
       - install apt-transport-https package
       - add Kismatic deb repository
