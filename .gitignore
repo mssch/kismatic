@@ -47,4 +47,5 @@ _testmain.go
 kismatic-cluster.yaml
 .vagrant
 vendor/*
-packaging/*
+package/source
+package/out
