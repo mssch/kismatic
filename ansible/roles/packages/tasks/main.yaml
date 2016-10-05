@@ -1,40 +1,43 @@
 ---
-  - name: add Kismatic YUM repository
-    yum_repository:
-      name: kismatic
-      description: Kismatic Packages
-      baseurl: "{{ yum_repository_url }}"
-      gpgkey: "{{ yum_gpg_key_url }}"
-      gpgcheck: yes
+  # YUM repo
+  - name: ping Kismatic yum repository
+    uri: url="{{ yum_gpg_key_url }}"
+    notify:
+      - add Kismatic yum repository
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    ignore_errors: yes
+    register: result
+    changed_when: "result.status is defined and result.status == 200"
 
-  - name: add Kismatic DEB repository
-    apt_repository:
-      repo: 'deb {{ deb_repository_url }} xenial main'
-      validate_certs: no
+  # DEB repo
+  - name: ping Kismatic deb repository
+    #uri: url="{{ deb_gpg_key_url }}"
+    uri: url="asdasds"
+    notify:
+      - install apt-transport-https package
+      - add Kismatic deb repository
+      - add Kismatic deb key
+      - apt-get update
     when: ansible_distribution == 'Ubuntu'
-  - name: add Kismatic DEB key
-    apt_key:
-      url: "{{ deb_gpg_key_url }}"
-      validate_certs: no
-    when: ansible_distribution == 'Ubuntu'
-  - name: update apt
-    apt:
-      update_cache: yes
-    when: ansible_distribution == 'Ubuntu'
+    ignore_errors: yes
+    register: result
+    changed_when: "result.status is defined and result.status == 200"
 
-  - name: install etcd pacakge
+  - meta: flush_handlers  #Run handlers
+
+  # isntall packages
+  - name: install etcd package
     package: name=kismatic-etcd state=latest
     when: "'etcd' in group_names"
 
-  - name: install docker pacakge
+  - name: install docker package
     package: name=kismatic-docker-engine state=latest
     when: "'worker' in group_names or 'master' in group_names"
 
-  - name: install kubernetes master pacakge
+  - name: install kubernetes master package
     package: name=kismatic-kubernetes-master state=latest
     when: "'master' in group_names"
 
-  - name: install kubernetes worker pacakge
+  - name: install kubernetes worker package
     package: name=kismatic-kubernetes-node state=latest
     when: "'worker' in group_names and 'master' not in group_names"

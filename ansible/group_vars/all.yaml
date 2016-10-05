@@ -163,10 +163,10 @@ pause_img: '{% if enable_docker_registry is defined and enable_docker_registry|b
 #===============================================================================
 # kismatic packages
 install_packages_from_public_repo: true
-yum_repository_url: https://s3.amazonaws.com/kismatic-rpm/
-yum_gpg_key_url: https://s3.amazonaws.com/kismatic-rpm/RPM-GPG-KEY-kismatic
-deb_repository_url: https://s3.amazonaws.com/kismatic-deb/
-deb_gpg_key_url: https://s3.amazonaws.com/kismatic-deb/RPM-GPG-KEY-kismatic
+yum_repository_url: https://kismatic-rpm.s3.amazonaws.com/
+yum_gpg_key_url: https://kismatic-rpm.s3.amazonaws.com/RPM-GPG-KEY-kismatic
+deb_repository_url: https://kismatic-deb.s3.amazonaws.com/
+deb_gpg_key_url: https://kismatic-deb.s3.amazonaws.com/RPM-GPG-KEY-kismatic
 #===============================================================================
 # PV configs for monitoring and logging
 #pv_monitoring_nfs_server_ip: "192.168.99.20"

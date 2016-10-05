@@ -1,0 +1,27 @@
+---
+  - name: add Kismatic yum repository
+    yum_repository:
+      name: kismatic
+      description: Kismatic Packages
+      baseurl: "{{ yum_repository_url }}"
+      gpgkey: "{{ yum_gpg_key_url }}"
+      gpgcheck: yes
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+  - name: install apt-transport-https package
+    package: name=apt-transport-https state=latest
+    when: ansible_distribution == 'Ubuntu'
+  - name: add Kismatic deb repository
+    apt_repository:
+      repo: 'deb {{ deb_repository_url }} xenial main'
+      validate_certs: no
+    when: ansible_distribution == 'Ubuntu'
+  - name: add Kismatic deb key
+    apt_key:
+      url: "{{ deb_gpg_key_url }}"
+      validate_certs: no
+    when: ansible_distribution == 'Ubuntu'
+  - name: apt-get update
+    apt:
+      update_cache: yes
+    when: ansible_distribution == 'Ubuntu'
