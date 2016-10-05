@@ -7,9 +7,20 @@
       gpgkey: "{{ yum_gpg_key_url }}"
       gpgcheck: yes
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
   - name: add Kismatic DEB repository
-    yum_repository:
-      apt_repository: repo='deb {{ deb_repository_url }} kismatic main'
+    apt_repository:
+      repo: 'deb {{ deb_repository_url }} xenial main'
+      validate_certs: no
+    when: ansible_distribution == 'Ubuntu'
+  - name: add Kismatic DEB key
+    apt_key:
+      url: "{{ deb_gpg_key_url }}"
+      validate_certs: no
+    when: ansible_distribution == 'Ubuntu'
+  - name: update apt
+    apt:
+      update_cache: yes
     when: ansible_distribution == 'Ubuntu'
 
   - name: install etcd pacakge
