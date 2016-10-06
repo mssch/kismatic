@@ -21,6 +21,7 @@ func NewCmdRules(out io.Writer) *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&file, "file", "f", "inspector-rules.yaml", "file where inspector rules are to be written")
 	cmd.AddCommand(NewCmdDumpRules(out, file))
+	cmd.AddCommand(NewCmdValidateRules(out, file))
 	return cmd
 }
 
@@ -45,6 +46,28 @@ func NewCmdDumpRules(out io.Writer, file string) *cobra.Command {
 		},
 	}
 	cmd.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite the destination file if it exists")
+	return cmd
+}
+
+func NewCmdValidateRules(out io.Writer, file string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "validate",
+		Short: "validate the inspector rules",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if _, err := os.Stat(file); os.IsNotExist(err) {
+				return fmt.Errorf("%q does not exist", file)
+			}
+			rules, err := rule.ReadFromFile(file)
+			if err != nil {
+				return err
+			}
+			if !validateRules(out, rules) {
+				return fmt.Errorf("invalid rules found in %q", file)
+			}
+			fmt.Fprintf(out, "Rules are valid\n")
+			return nil
+		},
+	}
 	return cmd
 }
 
