@@ -56,4 +56,4 @@ EOT
 reprepro -b $TARGET_DIR/ includedeb xenial $SOURCE_DIR/*.deb
 
 # sync the repo state back to s3
-aws --region "${REGION}" s3 sync $TARGET_DIR s3://$TARGET_BUCKET
+aws --region "${REGION}" s3 sync $TARGET_DIR s3://$TARGET_BUCKET --exact-timestamps
