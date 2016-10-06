@@ -43,6 +43,8 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
 			return nil, fmt.Errorf("invalid value %q provided for the timeout field of the TCPPortAccessible rule: %v", r.Timeout, err)
 		}
 		c = &check.TCPPortClientCheck{PortNumber: r.Port, IPAddress: m.TargetNodeIP, Timeout: timeout}
+	case Python2Version:
+		c = &check.Python2Check{SupportedVersions: r.SupportedVersions}
 	}
 	return c, nil
 }

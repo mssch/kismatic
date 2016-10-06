@@ -34,14 +34,15 @@ func ReadFromFile(file string) ([]Rule, error) {
 // There might be a better way of doing this, but taking this
 // approach for now...
 type catchAllRule struct {
-	Meta           `yaml:",inline"`
-	PackageName    string `yaml:"packageName"`
-	PackageVersion string `yaml:"packageVersion"`
-	Executable     string `yaml:"executable"`
-	Port           int    `yaml:"port"`
-	File           string `yaml:"file"`
-	ContentRegex   string `yaml:"contentRegex"`
-	Timeout        string `yaml:"timeout"`
+	Meta              `yaml:",inline"`
+	PackageName       string   `yaml:"packageName"`
+	PackageVersion    string   `yaml:"packageVersion"`
+	Executable        string   `yaml:"executable"`
+	Port              int      `yaml:"port"`
+	File              string   `yaml:"file"`
+	ContentRegex      string   `yaml:"contentRegex"`
+	Timeout           string   `yaml:"timeout"`
+	SupportedVersions []string `yaml:"supportedVersions"`
 }
 
 // UnmarshalRulesYAML unmarshals the data into a list of rules
@@ -82,7 +83,7 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 	}
 	switch kind {
 	default:
-		return nil, fmt.Errorf("invalid rule kind %q was provided", kind)
+		return nil, fmt.Errorf("rule with kind %q is not supported", catchAll.Kind)
 	case "packageavailable":
 		r := PackageAvailable{
 			PackageName:    catchAll.PackageName,
@@ -113,6 +114,12 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 		r := FileContentMatches{
 			File:         catchAll.File,
 			ContentRegex: catchAll.ContentRegex,
+		}
+		r.Meta = meta
+		return r, nil
+	case "python2version":
+		r := Python2Version{
+			SupportedVersions: catchAll.SupportedVersions,
 		}
 		r.Meta = meta
 		return r, nil

@@ -7,6 +7,15 @@ import (
 
 // DefaultRuleSet is the list of rules that are built into the inspector
 const defaultRuleSet = `---
+# Python 2.5+ is installed on all nodes
+# This is required by ansible
+- kind: Python2Version
+  when: []
+  supportedVersions:
+   - Python 2.5
+   - Python 2.6
+   - Python 2.7
+
 # Executables required by kubelet
 - kind: ExecutableInPath
   when: ["worker"]
