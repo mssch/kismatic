@@ -2,6 +2,7 @@ package check
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -46,6 +47,7 @@ func (c *TCPPortClientCheck) Check() (bool, error) {
 // check TCP connectivity to the host using TCPPortClientCheck
 type TCPPortServerCheck struct {
 	PortNumber     int
+	started        bool
 	closeListener  func() error
 	listenerClosed chan interface{}
 }
@@ -82,11 +84,15 @@ func (c *TCPPortServerCheck) Check() (bool, error) {
 			}(conn)
 		}
 	}(c.listenerClosed)
+	c.started = true
 	return true, nil
 }
 
 // Close the TCP server
 func (c *TCPPortServerCheck) Close() error {
-	close(c.listenerClosed)
-	return c.closeListener()
+	if c.started {
+		close(c.listenerClosed)
+		return c.closeListener()
+	}
+	return errors.New("called close on a TCPPortServerCheck that is not started")
 }

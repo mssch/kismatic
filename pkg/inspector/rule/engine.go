@@ -74,14 +74,6 @@ func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]Result, error) {
 			return nil, err
 		}
 
-		// We update the closables as we go to avoid leaking closables
-		// in the event where we have to return an error from within the loop.
-		if closeable, ok := c.(check.ClosableCheck); ok {
-			e.mu.Lock()
-			e.closableChecks = append(e.closableChecks, closeable)
-			e.mu.Unlock()
-		}
-
 		// Run the check and report result
 		ok, err := c.Check()
 		res := Result{
@@ -92,6 +84,15 @@ func (e *Engine) ExecuteRules(rules []Rule, facts []string) ([]Result, error) {
 		if err != nil {
 			res.Error = err.Error()
 		}
+
+		// We update the closables as we go to avoid leaking closables
+		// in the event where we have to return an error from within the loop.
+		if closeable, ok := c.(check.ClosableCheck); ok && res.Success {
+			e.mu.Lock()
+			e.closableChecks = append(e.closableChecks, closeable)
+			e.mu.Unlock()
+		}
+
 		results = append(results, res)
 	}
 	return results, nil

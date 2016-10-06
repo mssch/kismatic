@@ -162,18 +162,19 @@ func TestEngine(t *testing.T) {
 }
 
 type fakeClosableCheck struct {
+	success     bool
 	closeCalled bool
 }
 
-func (*fakeClosableCheck) Check() (bool, error) { return false, nil }
+func (c *fakeClosableCheck) Check() (bool, error) { return c.success, nil }
 
 func (c *fakeClosableCheck) Close() error {
 	c.closeCalled = true
 	return nil
 }
 
-func TestEngineClosableCheck(t *testing.T) {
-	fakeCheck := &fakeClosableCheck{}
+func TestEngineClosableCheckSuccess(t *testing.T) {
+	fakeCheck := &fakeClosableCheck{success: true}
 	mapper := fakeRuleCheckMapper{
 		check: fakeCheck,
 	}
@@ -192,5 +193,28 @@ func TestEngineClosableCheck(t *testing.T) {
 
 	if !fakeCheck.closeCalled {
 		t.Errorf("The check was not closed")
+	}
+}
+
+func TestEngineClosableCheckFail(t *testing.T) {
+	fakeCheck := &fakeClosableCheck{success: false}
+	mapper := fakeRuleCheckMapper{
+		check: fakeCheck,
+	}
+	e := Engine{
+		RuleCheckMapper: mapper,
+	}
+	rule := fakeRule{}
+	_, err := e.ExecuteRules([]Rule{rule}, []string{})
+	if err != nil {
+		t.Errorf("unexpected error when executing closable check: %v", err)
+	}
+
+	if err := e.CloseChecks(); err != nil {
+		t.Errorf("unexpected error when closing checks: %v", err)
+	}
+
+	if fakeCheck.closeCalled {
+		t.Errorf("The check failed, and close was called on it")
 	}
 }
