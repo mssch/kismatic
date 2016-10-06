@@ -8,18 +8,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var serverExample = `# Run the inspector in server mode
+kismatic-inspector server --node-roles master,worker
+
+# Run the inspector in server mode, in a specific port
+kismatic-inspector server --port 9000 --node-roles master
+`
+
 // NewCmdServer returns the "server" command
 func NewCmdServer(out io.Writer) *cobra.Command {
 	var port int
 	var nodeRoles string
 	cmd := &cobra.Command{
-		Use:   "server",
-		Short: "stand up the inspector server for running checks remotely",
+		Use:     "server",
+		Short:   "Stand up the inspector server for running checks remotely",
+		Example: serverExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runServer(out, cmd.Parent().Name(), port, nodeRoles)
 		},
 	}
-	cmd.Flags().IntVar(&port, "port", 8080, "the port number for standing up the Inspector server")
+	cmd.Flags().IntVar(&port, "port", 9090, "the port number for standing up the Inspector server")
 	cmd.Flags().StringVar(&nodeRoles, "node-roles", "", "comma-separated list of the node's roles. Valid roles are 'etcd', 'master', 'worker'")
 	return cmd
 }

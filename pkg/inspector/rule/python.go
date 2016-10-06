@@ -19,7 +19,7 @@ func (p Python2Version) IsRemoteRule() bool { return false }
 
 func (p Python2Version) Validate() []error {
 	if len(p.SupportedVersions) == 0 {
-		return []error{errors.New("Python2Version rule: at least one supported version is required")}
+		return []error{errors.New("List of supported versions is empty")}
 	}
 	return nil
 }

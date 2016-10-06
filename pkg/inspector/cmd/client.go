@@ -16,16 +16,27 @@ type clientOpts struct {
 	targetNode string
 }
 
+var clientExample = `# Run the inspector against an etcd node
+kismatic-inspector client 10.0.1.24:9090 --node-roles etcd
+
+# Run the inspector against a remote node, and ask for JSON output
+kismatic-inspector client 10.0.1.24:9090 --node-roles etcd -o json
+
+# Run the inspector against a remote node using a custom rules file
+kismatic-inspector client 10.0.1.24:9090 -f inspector-rules.yaml --node-roles etcd`
+
 // NewCmdClient returns the "client" command
 func NewCmdClient(out io.Writer) *cobra.Command {
 	opts := clientOpts{}
 	cmd := &cobra.Command{
-		Use:   "client TARGET_NODE_IP",
-		Short: "run the inspector against a remote inspector server",
+		Use:     "client HOST:PORT",
+		Short:   "Run the inspector against a remote inspector server.",
+		Example: clientExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
 			}
+			// Set the target node as the first argument
 			opts.targetNode = args[0]
 			return runClient(out, opts)
 		},
@@ -33,7 +44,6 @@ func NewCmdClient(out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.outputType, "output", "o", "table", "set the result output type. Options are 'json', 'table'")
 	cmd.Flags().StringVar(&opts.nodeRoles, "node-roles", "", "comma-separated list of the node's roles. Valid roles are 'etcd', 'master', 'worker'")
 	cmd.Flags().StringVarP(&opts.rulesFile, "file", "f", "", "the path to an inspector rules file. If blank, the inspector uses the default rules")
-	cmd.Flags().StringVar(&opts.targetNode, "target", "", "the node ip:port that is running the inspector in server mode")
 	return cmd
 }
 

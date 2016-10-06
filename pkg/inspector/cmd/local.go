@@ -16,12 +16,17 @@ type localOpts struct {
 	rulesFile  string
 }
 
+var localExample = `# Run with a custom rules file
+kismatic-inspector local --node-roles master -f inspector-rules.yaml
+`
+
 // NewCmdLocal returns the "local" command
 func NewCmdLocal(out io.Writer) *cobra.Command {
 	opts := localOpts{}
 	cmd := &cobra.Command{
-		Use:   "local",
-		Short: "run the inspector checks locally",
+		Use:     "local",
+		Short:   "Run the inspector checks against the local host",
+		Example: localExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runLocal(out, opts)
 		},

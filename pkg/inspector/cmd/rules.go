@@ -14,7 +14,7 @@ func NewCmdRules(out io.Writer) *cobra.Command {
 	var file string
 	cmd := &cobra.Command{
 		Use:   "rules",
-		Short: "manipualte the inspector's rules",
+		Short: "Manipulate the inspector's rules",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -30,7 +30,7 @@ func NewCmdDumpRules(out io.Writer, file string) *cobra.Command {
 	var overwrite bool
 	cmd := &cobra.Command{
 		Use:   "dump",
-		Short: "dump the inspector rules to a file",
+		Short: "Dump the inspector rules to a file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if _, err := os.Stat(file); err == nil && !overwrite {
 				return fmt.Errorf("%q already exists. Use --overwrite to overwrite it", file)
@@ -52,7 +52,7 @@ func NewCmdDumpRules(out io.Writer, file string) *cobra.Command {
 func NewCmdValidateRules(out io.Writer, file string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate",
-		Short: "validate the inspector rules",
+		Short: "Validate the inspector rules",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if _, err := os.Stat(file); os.IsNotExist(err) {
 				return fmt.Errorf("%q does not exist", file)
