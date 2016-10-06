@@ -32,7 +32,7 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
 		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion}
 		c = &check.PackageAvailableCheck{PackageQuery: pkgQuery, PackageManager: m.PackageManager}
 	case ExecutableInPath:
-		c = &check.BinaryDependencyCheck{BinaryName: r.Executable}
+		c = &check.ExecutableInPathCheck{Name: r.Executable}
 	case FileContentMatches:
 		c = check.FileContentCheck{File: r.File, SearchString: r.ContentRegex}
 	case TCPPortAvailable:

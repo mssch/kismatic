@@ -2,9 +2,9 @@ package check
 
 import "testing"
 
-func TestBinaryDependencyExists(t *testing.T) {
-	c := BinaryDependencyCheck{
-		BinaryName: "ls",
+func TestExecutableInPathExists(t *testing.T) {
+	c := ExecutableInPathCheck{
+		Name: "ls",
 	}
 	ok, err := c.Check()
 	if err != nil {
@@ -15,9 +15,9 @@ func TestBinaryDependencyExists(t *testing.T) {
 	}
 }
 
-func TestBinaryDependency(t *testing.T) {
-	c := BinaryDependencyCheck{
-		BinaryName: "non-existent-binary",
+func TestExecutableMissingFromPath(t *testing.T) {
+	c := ExecutableInPathCheck{
+		Name: "non-existent-binary",
 	}
 	ok, err := c.Check()
 	if err != nil {
@@ -28,18 +28,18 @@ func TestBinaryDependency(t *testing.T) {
 	}
 }
 
-func TestBinaryDependencyBadBinary(t *testing.T) {
+func TestExecutableInPathBadName(t *testing.T) {
 	tests := []struct {
-		binaryName string
+		name string
 	}{
-		{binaryName: "echo; exit 0"},
-		{binaryName: "1234"},
-		{binaryName: "hello$?"},
-		{binaryName: "!echo"},
+		{name: "echo; exit 0"},
+		{name: "1234"},
+		{name: "hello$?"},
+		{name: "!echo"},
 	}
 	for _, test := range tests {
-		c := BinaryDependencyCheck{
-			BinaryName: test.binaryName,
+		c := ExecutableInPathCheck{
+			Name: test.name,
 		}
 		ok, err := c.Check()
 		if err == nil {
