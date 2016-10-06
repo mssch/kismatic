@@ -62,10 +62,10 @@ fpm -s dir -n "kismatic-etcd" \
 --vendor "Apprenda" \
 --description "Etcd kubernetes and networking binaries" \
 --url "https://apprenda.com/" \
-etcd/k8s/bin/etcdk8s=/usr/bin/etcdk8s \
-etcd/k8s/bin/etcdctlk8s=/usr/bin/etcdctlk8s \
-etcd/networking/bin/etcdnetworking=/usr/bin/etcdnetworking \
-etcd/networking/bin/etcdctlnetworking=/usr/bin/etcdctlnetworking
+etcd/k8s/bin/etcd=/usr/bin/etcd \
+etcd/k8s/bin/etcdctl=/usr/bin/etcdctl \
+etcd/networking/bin/etcd2=/usr/bin/etcd2 \
+etcd/networking/bin/etcdctl2=/usr/bin/etcdctl2
 
 # build docker
 #RPMS
