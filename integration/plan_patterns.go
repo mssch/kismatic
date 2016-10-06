@@ -37,22 +37,22 @@ const planAWSOverlay = `cluster:
     ssh_port: 22
 etcd:
   expected_count: {{len .Etcd}}
-  nodes:
-  {{range .Etcd}}- host: {{.Hostname}}
+  nodes:{{range .Etcd}}
+  - host: {{.Hostname}}
     ip: {{.Publicip}}
     internalip: {{.Privateip}}{{end}}
 master:
   expected_count: {{len .Master}}
-  nodes:
-  {{range .Master}}- host: {{.Hostname}}
+  nodes:{{range .Master}}
+  - host: {{.Hostname}}
     ip: {{.Publicip}}
     internalip: {{.Privateip}}{{end}}
   load_balanced_fqdn: {{.MasterNodeFQDN}}
   load_balanced_short_name: {{.MasterNodeShortName}}
 worker:
   expected_count: {{len .Worker}}
-  nodes:
-  {{range .Worker}}- host: {{.Hostname}}
+  nodes:{{range .Worker}}
+  - host: {{.Hostname}}
     ip: {{.Publicip}}
     internalip: {{.Privateip}}{{end}}
 `
