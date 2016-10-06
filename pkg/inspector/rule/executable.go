@@ -3,6 +3,7 @@ package rule
 import (
 	"errors"
 	"fmt"
+	"regexp"
 )
 
 // ExecutableInPath is a rule that ensures the given executable is in
@@ -24,6 +25,10 @@ func (e ExecutableInPath) IsRemoteRule() bool { return false }
 func (e ExecutableInPath) Validate() []error {
 	if e.Executable == "" {
 		return []error{errors.New("Executable cannot be empty")}
+	}
+	r := regexp.MustCompile("^[a-zA-Z-]+$")
+	if !r.MatchString(e.Executable) {
+		return []error{fmt.Errorf("Executable name %q is not valid. Name must match %s", e.Executable, r.String())}
 	}
 	return nil
 }
