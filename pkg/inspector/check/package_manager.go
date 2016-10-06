@@ -82,8 +82,14 @@ func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
 	// If it's not installed, ensure that it is available via the
 	// package manager. We attempt to install using --dry-run. If exit status is zero, we
 	// know the package is available for download
-	_, err = m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.Name, p.Version))
-	return err == nil, err
+	out, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.Name, p.Version))
+	if err != nil && strings.Contains(string(out), "Unable to locate package") {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (m debManager) isInstalled(p PackageQuery) (bool, error) {
