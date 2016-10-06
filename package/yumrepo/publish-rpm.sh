@@ -45,6 +45,7 @@ fi
 TARGET_DIR="/tmp/${TARGET_BUCKET}"
 
 # copy the RPM in and update the repo
+rm -rf $TARGET_DIR
 mkdir -pv $TARGET_DIR/packages
 cp -rv $SOURCE_DIR/*.rpm $TARGET_DIR/packages
 createrepo -v $TARGET_DIR

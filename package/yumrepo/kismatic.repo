@@ -2,5 +2,5 @@
 name=Kismatic Packages
 baseurl=https://kismatic-rpm.s3.amazonaws.com/
 enabled=1
-gpgkey=https://kismatic-rpm.s3.amazonaws.com/RPM-GPG-KEY-kismatic
+gpgkey=https://kismatic-rpm.s3.amazonaws.com/public.key
 gpgcheck=1

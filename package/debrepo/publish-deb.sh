@@ -44,6 +44,7 @@ fi
 
 TARGET_DIR="/tmp/${TARGET_BUCKET}"
 # copy the DEB in and update the repo
+rm -rf $TARGET_DIR
 mkdir -pv $TARGET_DIR/conf
 touch $TARGET_DIR/conf/distributions
 cat <<EOT >> $TARGET_DIR/conf/distributions
