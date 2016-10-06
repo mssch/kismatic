@@ -11,7 +11,6 @@ import (
 // PackageManager runs queries against the underlying operating system's
 // package manager
 type PackageManager interface {
-	IsInstalled(PackageQuery) (bool, error)
 	IsAvailable(PackageQuery) (bool, error)
 }
 
@@ -34,19 +33,9 @@ func NewPackageManager(distro Distro) (PackageManager, error) {
 	}
 }
 
+// package manager for EL-based distributions
 type rpmManager struct {
 	run func(string, ...string) ([]byte, error)
-}
-
-func (m rpmManager) IsInstalled(p PackageQuery) (bool, error) {
-	out, err := m.run("yum", "list", "installed", "-q", p.Name)
-	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
-		return false, nil
-	}
-	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.Name, p.Version, err)
-	}
-	return m.isPackageListed(p, out), nil
 }
 
 func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
@@ -55,7 +44,7 @@ func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is available for download: %v", p.Name, p.Version, err)
+		return false, fmt.Errorf("unable to determine if %s %s is available: %v", p.Name, p.Version, err)
 	}
 	return m.isPackageListed(p, out), nil
 }
@@ -76,11 +65,28 @@ func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 	return false
 }
 
+// package manager for debian-based distributions
 type debManager struct {
 	run func(string, ...string) ([]byte, error)
 }
 
-func (m debManager) IsInstalled(p PackageQuery) (bool, error) {
+func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
+	// First check if the package is installed
+	installed, err := m.isInstalled(p)
+	if err != nil {
+		return false, err
+	}
+	if installed {
+		return true, nil
+	}
+	// If it's not installed, ensure that it is available via the
+	// package manager. We attempt to install using --dry-run. If exit status is zero, we
+	// know the package is available for download
+	_, err = m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.Name, p.Version))
+	return err == nil, err
+}
+
+func (m debManager) isInstalled(p PackageQuery) (bool, error) {
 	out, err := m.run("dpkg", "-l", p.Name)
 	if err != nil && strings.Contains(string(out), "no packages found matching") {
 		return false, nil
@@ -101,11 +107,4 @@ func (m debManager) IsInstalled(p PackageQuery) (bool, error) {
 		}
 	}
 	return false, nil
-}
-
-func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
-	// Attempt to install using --dry-run. If exit status is zero, we
-	// know the package is available for download
-	_, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.Name, p.Version))
-	return err == nil, err
 }

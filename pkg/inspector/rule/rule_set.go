@@ -19,21 +19,21 @@ const defaultRuleSet = `---
   executable: iptables-restore
 
 # Kubelet depends on glibc
-- kind: PackageInstalled
+- kind: PackageAvailable
   when: ["ubuntu", "worker"]
   packageName: libc6
   packageVersion: ".*"
-- kind: PackageInstalled
+- kind: PackageAvailable
   when: ["centos", "worker"]
   packageName: glibc.x86_64
   packageVersion: ".*"
 
 # Ensure python 2.7+ is installed
-- kind: PackageInstalled
+- kind: PackageAvailable
   when: ["centos"]
   packageName: python.x86_64
   packageVersion: "^2\\.7"
-- kind: PackageInstalled
+- kind: PackageAvailable
   when: ["ubuntu"]
   packageName: "^python2\\.7$"
   packageVersion: ".*"

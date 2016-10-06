@@ -90,13 +90,6 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 		}
 		r.Meta = meta
 		return r, nil
-	case "packageinstalled":
-		r := PackageInstalled{
-			PackageName:    catchAll.PackageName,
-			PackageVersion: catchAll.PackageVersion,
-		}
-		r.Meta = meta
-		return r, nil
 	case "executableinpath":
 		r := ExecutableInPath{
 			Executable: catchAll.Executable,

@@ -20,7 +20,7 @@ NetworkManager.x86_64           1:1.0.6-30.el7_2               @koji-override-1`
 		run: runMock(out, nil),
 	}
 	p := PackageQuery{"NetworkManager.x86_64", "1:1.0.6-30.el7_2"}
-	ok, _ := m.IsInstalled(p)
+	ok, _ := m.IsAvailable(p)
 	if !ok {
 		t.Error("expected true, but got false")
 	}
@@ -32,7 +32,7 @@ func TestRPMPackageManagerPackageNotFound(t *testing.T) {
 		run: runMock(out, nil),
 	}
 	p := PackageQuery{"NonExistent", "1.0"}
-	ok, err := m.IsInstalled(p)
+	ok, err := m.IsAvailable(p)
 	if ok {
 		t.Error("expected false, but got true")
 	}
@@ -48,7 +48,7 @@ NetworkManager.x86_64           1:1.0.6-30.el7_2               @koji-override-1`
 		run: runMock(out, nil),
 	}
 	p := PackageQuery{"NonExistent", "1.0"}
-	ok, err := m.IsInstalled(p)
+	ok, err := m.IsAvailable(p)
 	if ok {
 		t.Error("expected false, but got true")
 	}
@@ -62,7 +62,7 @@ func TestRPMPackageManagerExecError(t *testing.T) {
 		run: runMock("", fmt.Errorf("some error")),
 	}
 	p := PackageQuery{"SomePkg", "1.0"}
-	ok, err := m.IsInstalled(p)
+	ok, err := m.IsAvailable(p)
 	if ok {
 		t.Error("expected false, but got true")
 	}
@@ -124,7 +124,7 @@ ii  libc6:amd64                                           2.23-0ubuntu3         
 		run: runMock(out, nil),
 	}
 	p := PackageQuery{"libc6:amd64", "2.23-0ubuntu3"}
-	ok, _ := m.IsInstalled(p)
+	ok, _ := m.IsAvailable(p)
 	if !ok {
 		t.Errorf("expected true, but got false")
 	}
@@ -132,15 +132,15 @@ ii  libc6:amd64                                           2.23-0ubuntu3         
 
 func TestDebPackageManagerPackageNotFound(t *testing.T) {
 	m := debManager{
-		run: runMock("dpkg-query: no packages found matching libc6a", nil),
+		run: runMock("dpkg-query: no packages found matching libc6a", errors.New("error")),
 	}
 	p := PackageQuery{"", ""}
-	ok, err := m.IsInstalled(p)
+	ok, err := m.IsAvailable(p)
 	if ok {
 		t.Errorf("expected false, but got true")
 	}
-	if err != nil {
-		t.Errorf("unexpected error returned: %v", err)
+	if err == nil {
+		t.Errorf("expected an error, but didn't get one")
 	}
 }
 
@@ -149,7 +149,7 @@ func TestDebPackageManagerExecError(t *testing.T) {
 		run: runMock("", errors.New("Some error happened...")),
 	}
 	p := PackageQuery{"", ""}
-	ok, err := m.IsInstalled(p)
+	ok, err := m.IsAvailable(p)
 	if ok {
 		t.Error("expected false, but got true")
 	}
