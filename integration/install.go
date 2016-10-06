@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"net"
 	"regexp"
 	"strconv"
+	"strings"
 	"text/template"
 	"time"
 
@@ -20,6 +20,7 @@ import (
 
 	"github.com/jmcvetta/guid"
 	homedir "github.com/mitchellh/go-homedir"
+	"golang.org/x/crypto/ssh"
 )
 
 var guidMaker = guid.SimpleGenerator()
@@ -471,13 +472,21 @@ func WaitForInstanceToStart(nodes ...*AWSNodeDeets) error {
 }
 
 func BlockUntilSSHOpen(node *AWSNodeDeets) {
-	conn, err := net.Dial("tcp", node.Publicip+":22")
-	fmt.Print("?")
-	if err != nil {
-		time.Sleep(5 & time.Second)
-		BlockUntilSSHOpen(node)
-	} else {
-		conn.Close()
+	config := &ssh.ClientConfig{
+		User: "dummyUser",
+	}
+	for {
+		client, err := ssh.Dial("tcp", node.Publicip+":22", config)
+		if err != nil && strings.Contains(err.Error(), "ssh: handshake failed") {
+			// SSH server is up and running
+			return
+		}
+		if err != nil {
+			fmt.Print("?")
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		client.Close()
 		return
 	}
 }
