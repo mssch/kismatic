@@ -12,9 +12,10 @@ import (
 )
 
 type validateOpts struct {
-	planFile     string
-	verbose      bool
-	outputFormat string
+	planFile      string
+	verbose       bool
+	outputFormat  string
+	skipPreFlight bool
 }
 
 // NewCmdValidate creates a new install validate command
@@ -31,6 +32,7 @@ func NewCmdValidate(out io.Writer, installOpts *installOpts) *cobra.Command {
 	}
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
+	cmd.Flags().BoolVar(&opts.skipPreFlight, "skip-preflight", false, "skip pre-flight checks")
 	return cmd
 }
 
@@ -68,6 +70,9 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	e, err := install.NewPreFlightExecutor(out, os.Stderr, options)
 	if err != nil {
 		return err
+	}
+	if opts.skipPreFlight {
+		return nil
 	}
 	if err = e.RunPreFlightCheck(plan); err != nil {
 		return err

@@ -21,7 +21,7 @@ func TestApplyCmdInvalidPlanFound(t *testing.T) {
 		executor: fe,
 	}
 
-	err := applyCmd.run(false, "table")
+	err := applyCmd.run()
 
 	// expect an error here... we don't care about testing validation
 	if err == nil {

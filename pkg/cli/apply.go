@@ -17,6 +17,9 @@ type applyCmd struct {
 	planFile           string
 	skipCAGeneration   bool
 	generatedAssetsDir string
+	verbose            bool
+	outputFormat       string
+	skipPreFlight      bool
 }
 
 type applyOpts struct {
@@ -28,6 +31,7 @@ type applyOpts struct {
 	restartServices    bool
 	verbose            bool
 	outputFormat       string
+	skipPreFlight      bool
 }
 
 // NewCmdApply creates a cluter using the plan file
@@ -56,14 +60,17 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 			}
 
 			applyCmd := &applyCmd{
-				out,
-				planner,
-				executor,
-				installOpts.planFilename,
-				skipCAGeneration,
-				applyOpts.generatedAssetsDir,
+				out:                out,
+				planner:            planner,
+				executor:           executor,
+				planFile:           installOpts.planFilename,
+				skipCAGeneration:   skipCAGeneration,
+				generatedAssetsDir: applyOpts.generatedAssetsDir,
+				verbose:            applyOpts.verbose,
+				outputFormat:       applyOpts.outputFormat,
+				skipPreFlight:      applyOpts.skipPreFlight,
 			}
-			return applyCmd.run(applyOpts.verbose, applyOpts.outputFormat)
+			return applyCmd.run()
 		},
 	}
 
@@ -76,16 +83,18 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart clusters services (Use with care)")
 	cmd.Flags().BoolVar(&applyOpts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&applyOpts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
+	cmd.Flags().BoolVar(&applyOpts.skipPreFlight, "skip-preflight", false, "skip pre-flight checks")
 
 	return cmd
 }
 
-func (c *applyCmd) run(verbose bool, outputFormat string) error {
+func (c *applyCmd) run() error {
 	// Validate and run pre-flight
 	opts := &validateOpts{
-		planFile:     c.planFile,
-		verbose:      verbose,
-		outputFormat: outputFormat,
+		planFile:      c.planFile,
+		verbose:       c.verbose,
+		outputFormat:  c.outputFormat,
+		skipPreFlight: c.skipPreFlight,
 	}
 	err := doValidate(c.out, c.planner, opts)
 	if err != nil {
