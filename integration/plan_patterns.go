@@ -6,8 +6,8 @@ type PlanAWS struct {
 	Worker              []AWSNodeDeets
 	MasterNodeFQDN      string
 	MasterNodeShortName string
-	User                string
-	HomeDirectory       string
+	SSHUser             string
+	SSHKeyFile          string
 }
 
 type AWSNodeDeets struct {
@@ -32,8 +32,8 @@ const planAWSOverlay = `cluster:
     location_state: New York
     location_country: US
   ssh:
-    user: {{.User}}
-    ssh_key: {{.HomeDirectory}}/.ssh/kismatic-integration-testing.pem
+    user: {{.SSHUser}}
+    ssh_key: {{.SSHKeyFile}}
     ssh_port: 22
 etcd:
   expected_count: {{len .Etcd}}

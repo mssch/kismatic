@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 
-	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -128,17 +127,19 @@ func InstallKismaticWithABadNode() {
 	}
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
+
+	sshKey, err := GetSSHKeyFile()
+	FailIfError(err, "Error getting SSH Key file")
+
 	nodes := PlanAWS{
 		Etcd:                []AWSNodeDeets{fakeNode},
 		Master:              []AWSNodeDeets{fakeNode},
 		Worker:              []AWSNodeDeets{fakeNode},
 		MasterNodeFQDN:      "yep.nope",
 		MasterNodeShortName: "yep",
-		User:                "Billy Rubin",
+		SSHUser:             "Billy Rubin",
+		SSHKeyFile:          sshKey,
 	}
-	var hdErr error
-	nodes.HomeDirectory, hdErr = homedir.Dir()
-	FailIfError(hdErr, "Error getting home directory")
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")

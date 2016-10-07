@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 	"text/template"
 	"time"
 
@@ -20,7 +20,6 @@ import (
 
 	"github.com/jmcvetta/guid"
 	homedir "github.com/mitchellh/go-homedir"
-	"golang.org/x/crypto/ssh"
 )
 
 var guidMaker = guid.SimpleGenerator()
@@ -42,6 +41,14 @@ func (nc NodeCount) Total() uint16 {
 	return nc.Etcd + nc.Master + nc.Worker
 }
 
+func GetSSHKeyFile() (string, error) {
+	dir, err := homedir.Dir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, ".ssh", "kismatic-integration-testing.pem"), nil
+}
+
 func InstallKismaticMini(nodeType string, user string) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
@@ -52,7 +59,11 @@ func InstallKismaticMini(nodeType string, user string) PlanAWS {
 	FailIfError(etcErr, "Error making etcd node")
 
 	defer TerminateInstances(etcdNode.Instanceid)
-	descErr := WaitForInstanceToStart(&etcdNode)
+
+	sshKey, err := GetSSHKeyFile()
+	FailIfError(err, "Error getting SSH Key file")
+
+	descErr := WaitForInstanceToStart(user, sshKey, &etcdNode)
 	masterNode := etcdNode
 	workerNode := etcdNode
 	FailIfError(descErr, "Error waiting for nodes")
@@ -68,11 +79,9 @@ func InstallKismaticMini(nodeType string, user string) PlanAWS {
 		Worker:              []AWSNodeDeets{workerNode},
 		MasterNodeFQDN:      masterNode.Hostname,
 		MasterNodeShortName: masterNode.Hostname,
-		User:                user,
+		SSHUser:             user,
+		SSHKeyFile:          sshKey,
 	}
-	var hdErr error
-	nodes.HomeDirectory, hdErr = homedir.Dir()
-	FailIfError(hdErr, "Error getting home directory")
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")
@@ -119,7 +128,11 @@ func InstallKismatic(nodeType string, user string) PlanAWS {
 	FailIfError(workerErr, "Error making worker node")
 
 	defer TerminateInstances(etcdNode.Instanceid, masterNode.Instanceid, workerNode.Instanceid)
-	descErr := WaitForInstanceToStart(&etcdNode, &masterNode, &workerNode)
+
+	sshKey, err := GetSSHKeyFile()
+	FailIfError(err, "Error getting SSH Key file")
+
+	descErr := WaitForInstanceToStart(user, sshKey, &etcdNode, &masterNode, &workerNode)
 	FailIfError(descErr, "Error waiting for nodes")
 	log.Printf("Created etcd nodes: %v (%v), master nodes %v (%v), workerNodes %v (%v)",
 		etcdNode.Instanceid, etcdNode.Publicip,
@@ -133,11 +146,9 @@ func InstallKismatic(nodeType string, user string) PlanAWS {
 		Worker:              []AWSNodeDeets{workerNode},
 		MasterNodeFQDN:      masterNode.Hostname,
 		MasterNodeShortName: masterNode.Hostname,
-		User:                user,
+		SSHUser:             user,
+		SSHKeyFile:          sshKey,
 	}
-	var hdErr error
-	nodes.HomeDirectory, hdErr = homedir.Dir()
-	FailIfError(hdErr, "Error getting home directory")
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")
@@ -205,13 +216,17 @@ func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
 	}
 
 	defer TerminateInstances(allInstanceIDs...)
+
+	sshKey, err := GetSSHKeyFile()
+	FailIfError(err, "Error getting SSH Key file")
 	nodes := PlanAWS{
 		Etcd:                etcdNodes,
 		Master:              masterNodes,
 		Worker:              workerNodes,
 		MasterNodeFQDN:      masterNodes[0].Hostname,
 		MasterNodeShortName: masterNodes[0].Hostname,
-		User:                user,
+		SSHUser:             user,
+		SSHKeyFile:          sshKey,
 	}
 	descErr := WaitForAllInstancesToStart(&nodes)
 	FailIfError(descErr, "Error waiting for nodes")
@@ -219,9 +234,6 @@ func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
 	PrintNodes(&nodes)
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
-	var hdErr error
-	nodes.HomeDirectory, hdErr = homedir.Dir()
-	FailIfError(hdErr, "Error getting home directory")
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")
@@ -417,17 +429,17 @@ func TerminateInstances(instanceids ...string) {
 
 func WaitForAllInstancesToStart(plan *PlanAWS) error {
 	for i := 0; i < len(plan.Etcd); i++ {
-		if err := WaitForInstanceToStart(&plan.Etcd[i]); err != nil {
+		if err := WaitForInstanceToStart(plan.SSHUser, plan.SSHKeyFile, &plan.Etcd[i]); err != nil {
 			return err
 		}
 	}
 	for i := 0; i < len(plan.Master); i++ {
-		if err := WaitForInstanceToStart(&plan.Master[i]); err != nil {
+		if err := WaitForInstanceToStart(plan.SSHUser, plan.SSHKeyFile, &plan.Master[i]); err != nil {
 			return err
 		}
 	}
 	for i := 0; i < len(plan.Worker); i++ {
-		if err := WaitForInstanceToStart(&plan.Worker[i]); err != nil {
+		if err := WaitForInstanceToStart(plan.SSHUser, plan.SSHKeyFile, &plan.Worker[i]); err != nil {
 			return err
 		}
 	}
@@ -435,7 +447,7 @@ func WaitForAllInstancesToStart(plan *PlanAWS) error {
 	return nil
 }
 
-func WaitForInstanceToStart(nodes ...*AWSNodeDeets) error {
+func WaitForInstanceToStart(sshUser, sshKey string, nodes ...*AWSNodeDeets) error {
 	sess, err := session.NewSession()
 
 	if err != nil {
@@ -462,7 +474,7 @@ func WaitForInstanceToStart(nodes ...*AWSNodeDeets) error {
 			if *descResult.Reservations[0].Instances[0].State.Name == ec2.InstanceStateNameRunning &&
 				descResult.Reservations[0].Instances[0].PublicIpAddress != nil {
 				deets.Publicip = *descResult.Reservations[0].Instances[0].PublicIpAddress
-				BlockUntilSSHOpen(deets)
+				BlockUntilSSHOpen(deets, sshUser, sshKey)
 			} else {
 				time.Sleep(1 * time.Second)
 			}
@@ -471,22 +483,19 @@ func WaitForInstanceToStart(nodes ...*AWSNodeDeets) error {
 	return nil
 }
 
-func BlockUntilSSHOpen(node *AWSNodeDeets) {
-	config := &ssh.ClientConfig{
-		User: "dummyUser",
-	}
+func BlockUntilSSHOpen(node *AWSNodeDeets, sshUser, sshKey string) {
 	for {
-		client, err := ssh.Dial("tcp", node.Publicip+":22", config)
-		if err != nil && strings.Contains(err.Error(), "ssh: handshake failed") {
-			// SSH server is up and running
+		cmd := exec.Command("ssh")
+		cmd.Args = append(cmd.Args, "-i", sshKey)
+		cmd.Args = append(cmd.Args, "-o", "ConnectTimeout=5")
+		cmd.Args = append(cmd.Args, "-o", "BatchMode=yes")
+		cmd.Args = append(cmd.Args, "-o", "StrictHostKeyChecking=no")
+		cmd.Args = append(cmd.Args, fmt.Sprintf("%s@%s", sshUser, node.Publicip), "exit") // just call exit if we are able to connect
+		if err := cmd.Run(); err == nil {
+			// command succeeded
 			return
 		}
-		if err != nil {
-			fmt.Print("?")
-			time.Sleep(1 * time.Second)
-			continue
-		}
-		client.Close()
-		return
+		fmt.Printf("?")
+		time.Sleep(1 * time.Second)
 	}
 }
