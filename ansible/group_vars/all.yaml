@@ -35,7 +35,7 @@ etcd_service_cluster_string: "{% for host in groups['etcd'] %}{{ host }}=https:/
 #===============================================================================
 # docker-install
 docker_install_dir: /etc/docker
-docker_self_signed_cert_dir: "{{ docker_install_dir }}/certs.d/{{ groups['master'][0] }}:{{ docker_registry_port }}"
+docker_self_signed_cert_dir: "{{ docker_install_dir }}/certs.d/{{ hostvars[groups['master'][0]].ansible_host }}"
 docker_installed_path: "{{ docker_install_dir }}/docker.installed"
 docker_service_file: "docker.{{ init_system_file_extenstion }}"
 docker_service_path: "{{ init_system_dir }}/{{ docker_service_file }}"
@@ -110,35 +110,35 @@ etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{
 #===============================================================================
 # docker registry
 enable_docker_registry: false
-docker_registry_port: 5000
+docker_registry_port: 443
 
 calico_docker_version: v0.22.0
 calico_node_orig_img: calico/node:{{calico_docker_version}}
-calico_node_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/calico/node:{{calico_docker_version}}"
+calico_node_priv_img: "{{ hostvars[groups['master'][0]].ansible_host }}/calico/node:{{calico_docker_version}}"
 calico_node_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ calico_node_priv_img }}{% else %}{{ calico_node_orig_img }}{% endif %}'
 
 calico_kube_policy_controller_orig_img: calico/kube-policy-controller
-calico_kube_policy_controller_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/calico/kube-policy-controller"
+calico_kube_policy_controller_priv_img: "{{ hostvars[groups['master'][0]].ansible_host }}/calico/kube-policy-controller"
 calico_kube_policy_controller_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ calico_kube_policy_controller_priv_img }}{% else %}{{ calico_kube_policy_controller_orig_img }}{% endif %}'
 
 kubedns_orig_img: gcr.io/google_containers/kubedns-amd64:1.7
-kubedns_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/kubedns-amd64:1.7"
+kubedns_priv_img: "{{ hostvars[groups['master'][0]].ansible_host }}/kubedns-amd64:1.7"
 kubedns_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ kubedns_priv_img }}{% else %}{{ kubedns_orig_img }}{% endif %}'
 
 kube_dnsmasq_orig_img: gcr.io/google_containers/kube-dnsmasq-amd64:1.3
-kube_dnsmasq_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/kube-dnsmasq-amd64:1.3"
+kube_dnsmasq_priv_img: "{{ hostvars[groups['master'][0]].ansible_host }}/kube-dnsmasq-amd64:1.3"
 kube_dnsmasq_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ kube_dnsmasq_priv_img }}{% else %}{{ kube_dnsmasq_orig_img }}{% endif %}'
 
 exechealthz_orig_img: gcr.io/google_containers/exechealthz-amd64:1.0
-exechealthz_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/exechealthz-amd64:1.0"
+exechealthz_priv_img: "{{ hostvars[groups['master'][0]].ansible_host }}/exechealthz-amd64:1.0"
 exechealthz_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ exechealthz_priv_img }}{% else %}{{ exechealthz_orig_img }}{% endif %}'
 
 kubernetes_dashboard_orig_img: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.0
-kubernetes_dashboard_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/kubernetes-dashboard-amd64:v1.4.0"
+kubernetes_dashboard_priv_img: "{{ hostvars[groups['master'][0]].ansible_host }}/kubernetes-dashboard-amd64:v1.4.0"
 kubernetes_dashboard_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ kubernetes_dashboard_priv_img }}{% else %}{{ kubernetes_dashboard_orig_img }}{% endif %}'
 
 pause_orig_img: gcr.io/google_containers/pause-amd64:3.0
-pause_priv_img: "{{ hostvars[groups['master'][0]].inventory_hostname }}:{{ docker_registry_port }}/pause-amd64:3.0"
+pause_priv_img: "{{ hostvars[groups['master'][0]].ansible_host }}/pause-amd64:3.0"
 pause_img: '{% if enable_docker_registry is defined and enable_docker_registry|bool == true %}{{ pause_priv_img }}{% else %}{{ pause_orig_img }}{% endif %}'
 #===============================================================================
 # kismatic packages
