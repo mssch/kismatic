@@ -62,6 +62,9 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	}
 	util.PrettyPrintOk(out, "Validating installation plan file")
 
+	if opts.skipPreFlight {
+		return nil
+	}
 	// Run pre-flight
 	options := install.ExecutorOptions{
 		OutputFormat: opts.outputFormat,
@@ -70,9 +73,6 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	e, err := install.NewPreFlightExecutor(out, os.Stderr, options)
 	if err != nil {
 		return err
-	}
-	if opts.skipPreFlight {
-		return nil
 	}
 	if err = e.RunPreFlightCheck(plan); err != nil {
 		return err
