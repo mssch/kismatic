@@ -12,7 +12,12 @@ func TestValidateCmdPlanNotFound(t *testing.T) {
 	fp := &fakePlanner{
 		exists: false,
 	}
-	err := doValidate(out, fp, "planFile")
+	opts := &validateOpts{
+		planFile:     "planFile",
+		verbose:      false,
+		outputFormat: "table",
+	}
+	err := doValidate(out, fp, opts)
 	if err == nil {
 		t.Errorf("validate did not return an error when the plan does not exist")
 	}
@@ -28,7 +33,12 @@ func TestValidateCmdPlanInvalid(t *testing.T) {
 		exists: true,
 		plan:   &install.Plan{},
 	}
-	err := doValidate(out, fp, "planFile")
+	opts := &validateOpts{
+		planFile:     "planFile",
+		verbose:      false,
+		outputFormat: "table",
+	}
+	err := doValidate(out, fp, opts)
 	if err == nil {
 		t.Errorf("did not return an error with an invalid plan")
 	}
