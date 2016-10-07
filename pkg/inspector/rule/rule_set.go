@@ -18,13 +18,13 @@ const defaultRuleSet = `---
 
 # Executables required by kubelet
 - kind: ExecutableInPath
-  when: ["worker"]
+  when: ["master","worker"]
   executable: iptables
 - kind: ExecutableInPath
-  when: ["worker"]
+  when: ["master","worker"]
   executable: iptables-save
 - kind: ExecutableInPath
-  when: ["worker"]
+  when: ["master","worker"]
   executable: iptables-restore
 
 # Ports used by etcd are available
