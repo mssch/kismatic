@@ -37,6 +37,7 @@ func (explainer *PreflightEventExplainer) ExplainEvent(e ansible.Event, verbose 
 		for _, r := range results {
 			if !r.Success && r.Error != "" {
 				util.PrintColor(buf, util.Red, "   - Error occurred when trying to verify rule %s: %v\n", r.Name, r.Error)
+				continue
 			}
 			if !r.Success {
 				util.PrintColor(buf, util.Red, "   - %s\n", r.Name)

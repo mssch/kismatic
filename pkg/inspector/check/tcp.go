@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -37,8 +38,14 @@ func (c *TCPPortClientCheck) Check() (bool, error) {
 	testMsg := "ECHO\n"
 	fmt.Fprint(conn, testMsg)
 	resp, err := bufio.NewReader(conn).ReadString('\n')
+	if err == io.EOF {
+		return false, nil // The server sent an empty response
+	}
+	if err != nil {
+		return false, fmt.Errorf("error reading from TCP socket: %v", err)
+	}
 	if resp != testMsg {
-		return false, fmt.Errorf("Port %d on host %q did not send the expected response. Response was %q", c.PortNumber, c.IPAddress, resp)
+		return false, nil
 	}
 	return true, nil
 }
@@ -56,9 +63,12 @@ type TCPPortServerCheck struct {
 // and an error message
 func (c *TCPPortServerCheck) Check() (bool, error) {
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", c.PortNumber))
+	if err != nil && strings.Contains(err.Error(), "address already in use") {
+		return false, nil
+	}
 	if err != nil {
 		// TODO: We could check if the port is being used here..
-		return false, fmt.Errorf("Failed to bind port %d. This could mean the port is in use by another process. Error was: %v", c.PortNumber, err)
+		return false, fmt.Errorf("error listening on port %d", c.PortNumber)
 	}
 	c.closeListener = ln.Close
 	// Setup go routine for accepting connections

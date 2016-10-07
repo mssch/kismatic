@@ -68,13 +68,10 @@ const defaultRuleSet = `---
   port: 8080
 
 # Ports used by K8s master are accessible
+# Port 8080 is not accessible from outside
 - kind: TCPPortAccessible
   when: ["master"]
   port: 6443
-  timeout: 5s
-- kind: TCPPortAccessible
-  when: ["master"]
-  port: 8080
   timeout: 5s
 
 # TODO: Add kismatic package checks
