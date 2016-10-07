@@ -131,7 +131,7 @@ func (r *runner) StartPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	r.waitPlaybook = cmd.Wait
 
 	// Create the event stream out of the named pipe
-	eventStreamFile, err := os.OpenFile(r.namedPipe, os.O_RDONLY, os.ModeNamedPipe)
+	eventStreamFile, err := os.OpenFile(r.namedPipe, os.O_RDWR, os.ModeNamedPipe)
 	if err != nil {
 		return nil, fmt.Errorf("error openning event stream pipe: %v", err)
 	}
