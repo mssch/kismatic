@@ -63,7 +63,7 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 				skipCAGeneration,
 				applyOpts.generatedAssetsDir,
 			}
-			return applyCmd.run()
+			return applyCmd.run(applyOpts.verbose, applyOpts.outputFormat)
 		},
 	}
 
@@ -80,19 +80,18 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	return cmd
 }
 
-func (c *applyCmd) run() error {
-	// Check if plan file exists
-	err := doValidate(c.out, c.planner, c.planFile)
+func (c *applyCmd) run(verbose bool, outputFormat string) error {
+	// Validate and run pre-flight
+	opts := &validateOpts{
+		planFile:     c.planFile,
+		verbose:      verbose,
+		outputFormat: outputFormat,
+	}
+	err := doValidate(c.out, c.planner, opts)
 	if err != nil {
 		return fmt.Errorf("error validating plan: %v", err)
 	}
 	plan, err := c.planner.Read()
-
-	// Run pre-flight check
-	err = c.executor.RunPreflightCheck(plan)
-	if err != nil {
-		return fmt.Errorf("error during pre-flight checks: %v", err)
-	}
 
 	// Perform the installation
 	err = c.executor.Install(plan)

@@ -4,26 +4,37 @@ import (
 	"fmt"
 	"io"
 
+	"os"
+
 	"github.com/apprenda/kismatic-platform/pkg/install"
 	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/spf13/cobra"
 )
 
+type validateOpts struct {
+	planFile     string
+	verbose      bool
+	outputFormat string
+}
+
 // NewCmdValidate creates a new install validate command
-func NewCmdValidate(out io.Writer, options *installOpts) *cobra.Command {
+func NewCmdValidate(out io.Writer, installOpts *installOpts) *cobra.Command {
+	opts := &validateOpts{}
 	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "validate your plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			planner := &install.FilePlanner{File: options.planFilename}
-			return doValidate(out, planner, options.planFilename)
+			planner := &install.FilePlanner{File: installOpts.planFilename}
+			opts.planFile = installOpts.planFilename
+			return doValidate(out, planner, opts)
 		},
 	}
-
+	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
 	return cmd
 }
 
-func doValidate(out io.Writer, planner install.Planner, planFile string) error {
+func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) error {
 	util.PrintHeader(out, "Validating", '=')
 	// Check if plan file exists
 	if !planner.PlanExists() {
@@ -33,10 +44,10 @@ func doValidate(out io.Writer, planner install.Planner, planFile string) error {
 	}
 	plan, err := planner.Read()
 	if err != nil {
-		util.PrettyPrintErr(out, "Reading installation plan file %q", planFile)
+		util.PrettyPrintErr(out, "Reading installation plan file %q", opts.planFile)
 		return fmt.Errorf("error reading plan file: %v", err)
 	}
-	util.PrettyPrintOk(out, "Reading installation plan file %q", planFile)
+	util.PrettyPrintOk(out, "Reading installation plan file %q", opts.planFile)
 
 	// Verify plan file
 	ok, errs := install.ValidatePlan(plan)
@@ -49,5 +60,17 @@ func doValidate(out io.Writer, planner install.Planner, planFile string) error {
 	}
 	util.PrettyPrintOk(out, "Validating installation plan file")
 
+	// Run pre-flight
+	options := install.ExecutorOptions{
+		OutputFormat: opts.outputFormat,
+		Verbose:      opts.verbose,
+	}
+	e, err := install.NewPreFlightExecutor(out, os.Stderr, options)
+	if err != nil {
+		return err
+	}
+	if err = e.RunPreFlightCheck(plan); err != nil {
+		return err
+	}
 	return nil
 }
