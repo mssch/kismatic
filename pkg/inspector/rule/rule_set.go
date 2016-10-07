@@ -74,6 +74,15 @@ const defaultRuleSet = `---
   port: 6443
   timeout: 5s
 
+# Port used by Docker registry
+- kind: TCPPortAvailable
+  when: ["master"]
+  port: 443
+- kind: TCPPortAccessible
+  when: ["master"]
+  port: 443
+  timeout: 5s
+  
 # TODO: Add kismatic package checks
 `
 
