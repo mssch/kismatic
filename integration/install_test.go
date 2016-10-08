@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 
-	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -92,15 +91,13 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Calling installer with a plan targeting bad infrastructure", func() {
-		//TODO: Fix timeout that causes us to comment this out.
-		//
-		// Context("Using a 1/1/1 Ubtunu 16.04 layout pointing to bad ip addresses", func() {
-		// 	It("should bomb validate and apply", func() {
-		// 		if !completesInTime(InstallKismaticWithABadNode, 30*time.Second) {
-		// 			Fail("It shouldn't take 30 seconds for Kismatic to fail with bad nodes.")
-		// 		}
-		// 	})
-		// })
+		Context("Using a 1/1/1 Ubtunu 16.04 layout pointing to bad ip addresses", func() {
+			It("should bomb validate and apply", func() {
+				if !completesInTime(InstallKismaticWithABadNode, 30*time.Second) {
+					Fail("It shouldn't take 30 seconds for Kismatic to fail with bad nodes.")
+				}
+			})
+		})
 	})
 
 	Describe("Calling installer with a plan targetting AWS", func() {
@@ -146,17 +143,19 @@ func InstallKismaticWithABadNode() {
 	}
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
+
+	sshKey, err := GetSSHKeyFile()
+	FailIfError(err, "Error getting SSH Key file")
+
 	nodes := PlanAWS{
 		Etcd:                []AWSNodeDeets{fakeNode},
 		Master:              []AWSNodeDeets{fakeNode},
 		Worker:              []AWSNodeDeets{fakeNode},
 		MasterNodeFQDN:      "yep.nope",
 		MasterNodeShortName: "yep",
-		User:                "Billy Rubin",
+		SSHUser:             "Billy Rubin",
+		SSHKeyFile:          sshKey,
 	}
-	var hdErr error
-	nodes.HomeDirectory, hdErr = homedir.Dir()
-	FailIfError(hdErr, "Error getting home directory")
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")

@@ -32,7 +32,7 @@ type Node struct {
 	SSHUser string
 }
 
-// WriteINI writes the inventory in INI format.
+// ToINI converts the inventory into INI format
 func (i Inventory) ToINI() []byte {
 	w := &bytes.Buffer{}
 	for _, role := range i {
@@ -42,7 +42,7 @@ func (i Inventory) ToINI() []byte {
 			if n.InternalIP != "" {
 				internalIP = n.InternalIP
 			}
-			fmt.Fprintf(w, "%s ansible_host=%s internal_ipv4=%s ansible_ssh_private_key_file=%s ansible_port=%d ansible_user=%s\n", n.Host, n.PublicIP, internalIP, n.SSHPrivateKey, n.SSHPort, n.SSHUser)
+			fmt.Fprintf(w, "%q ansible_host=%q internal_ipv4=%q ansible_ssh_private_key_file=%q ansible_port=%d ansible_user=%q\n", n.Host, n.PublicIP, internalIP, n.SSHPrivateKey, n.SSHPort, n.SSHUser)
 		}
 	}
 	return w.Bytes()
