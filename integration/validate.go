@@ -7,42 +7,39 @@ import (
 	"os"
 	"os/exec"
 
-	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 )
 
+// ValidateKismaticMini runs validation against a mini kismatic cluster
 func ValidateKismaticMini(nodeType string, user string) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
 
 	By("Making infrastructure")
-	etcdNode, etcErr := MakeWorkerNode(nodeType)
-	FailIfError(etcErr, "Error making etcd node")
+	node, err := MakeWorkerNode(nodeType)
+	FailIfError(err, "Error making etcd node")
+	defer TerminateInstances(node.Instanceid)
 
-	defer TerminateInstances(etcdNode.Instanceid)
-	descErr := WaitForInstanceToStart(&etcdNode)
-	masterNode := etcdNode
-	workerNode := etcdNode
+	sshKey, err := GetSSHKeyFile()
+	FailIfError(err, "Error getting SSH Key")
+
+	descErr := WaitForInstanceToStart(user, sshKey, &node)
 	FailIfError(descErr, "Error waiting for nodes")
-	log.Printf("Created etcd nodes: %v (%v), master nodes %v (%v), workerNodes %v (%v)",
-		etcdNode.Instanceid, etcdNode.Publicip,
-		masterNode.Instanceid, masterNode.Publicip,
-		workerNode.Instanceid, workerNode.Publicip)
 
+	log.Printf("Created single node for Kismatic Mini: %s (%s)", node.Instanceid, node.Publicip)
 	By("Building a plan to set up an overlay network cluster on this hardware")
 	nodes := PlanAWS{
-		Etcd:                []AWSNodeDeets{etcdNode},
-		Master:              []AWSNodeDeets{masterNode},
-		Worker:              []AWSNodeDeets{workerNode},
-		MasterNodeFQDN:      masterNode.Hostname,
-		MasterNodeShortName: masterNode.Hostname,
-		User:                user,
+		Etcd:                []AWSNodeDeets{node},
+		Master:              []AWSNodeDeets{node},
+		Worker:              []AWSNodeDeets{node},
+		MasterNodeFQDN:      node.Hostname,
+		MasterNodeShortName: node.Hostname,
+		SSHUser:             user,
+		SSHKeyFile:          sshKey,
 	}
-	var hdErr error
-	nodes.HomeDirectory, hdErr = homedir.Dir()
-	FailIfError(hdErr, "Error getting home directory")
 
+	// Create template file
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")
 	defer f.Close()
@@ -51,16 +48,12 @@ func ValidateKismaticMini(nodeType string, user string) PlanAWS {
 	FailIfError(execErr, "Error filling in plan template")
 	w.Flush()
 
+	// Run validation
 	By("Validate our plan")
 	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
 	ver.Stdout = os.Stdout
 	ver.Stderr = os.Stderr
 	err = ver.Run()
-
 	FailIfError(err, "Error validating plan")
-
-	if bailBeforeAnsible() == true {
-		return nodes
-	}
 	return nodes
 }
