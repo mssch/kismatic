@@ -1,11 +1,4 @@
 ---
-  # download kubernetes binaries
-  - name: download kube-scheduler - {{ kubernetes_version }}
-    get_url:
-      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kube-scheduler"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
-
   # kube-scheduler
   - name: copy kube-scheduler.service to remote
     template:
@@ -27,4 +20,4 @@
       - enable kube-scheduler
       - restart kube-scheduler service
       - verify kube-scheduler is running
-    when: force_scheduler_restart is defined and force_scheduler_restart == "true"
+    when: force_scheduler_restart is defined and force_scheduler_restart|bool == true

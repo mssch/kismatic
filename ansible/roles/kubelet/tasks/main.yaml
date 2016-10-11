@@ -1,10 +1,4 @@
 ---
-  # download binaries
-  - name: download kubelet - {{ kubernetes_version }}
-    get_url:
-      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kubelet"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
   # kubelet
   - name: copy kubelet.service to remote
     template:
@@ -26,4 +20,4 @@
       - enable kubelet
       - restart kubelet service
       - verify kubelet is running
-    when: force_kubelet_restart is defined and force_kubelet_restart == "true"
+    when: force_kubelet_restart is defined and force_kubelet_restart|bool == true

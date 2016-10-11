@@ -1,11 +1,4 @@
 ---
-  # download kubernetes binaries
-  - name: download kube-controller-manager - {{ kubernetes_version }}
-    get_url:
-      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kube-controller-manager"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
-
   # kube-controller-manager
   - name: copy kube-controller-manager.service to remote
     template:
@@ -27,4 +20,4 @@
       - enable kube-controller-manager
       - restart kube-controller-manager service
       - verify kube-controller-manager is running
-    when: force_controller_manager_restart is defined and force_controller_manager_restart == "true"
+    when: force_controller_manager_restart is defined and force_controller_manager_restart|bool == true

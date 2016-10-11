@@ -31,7 +31,7 @@ spec:
             path: "{{kubernetes_certificates_key_path}}"
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:latest
+          image: "{{ calico_kube_policy_controller_img }}"
           volumeMounts:
             - mountPath: "{{kubernetes_certificates_ca_path}}"
               name: "ca"

@@ -1,0 +1,9 @@
+---
+  - hosts: master[0]
+    name: Add-On Docker Registry
+    remote_user: root
+    become_method: sudo
+    run_once: true
+
+    roles:
+      - role: addon-docker-registry

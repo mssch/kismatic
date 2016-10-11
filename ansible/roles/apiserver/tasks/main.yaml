@@ -1,11 +1,4 @@
 ---
-  # download kubernetes binaries
-  - name: download kube-apiserver - {{ kubernetes_version }}
-    get_url:
-      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kube-apiserver"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
-
   # kube-apiserver
   - name: copy kube-apiserver.service to remote
     template:
@@ -27,4 +20,4 @@
       - enable kube-apiserver
       - restart kube-apiserver service
       - verify kube-apiserver is running
-    when: force_apiserver_restart is defined and force_apiserver_restart == "true"
+    when: force_apiserver_restart is defined and force_apiserver_restart|bool == true

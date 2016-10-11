@@ -26,12 +26,11 @@ type SSHConfig struct {
 
 // Cluster describes a Kismatic cluster
 type Cluster struct {
-	Name            string
-	AdminPassword   string `yaml:"admin_password"`
-	LocalRepository string `yaml:"local_repository"`
-	Networking      NetworkConfig
-	Certificates    CertsConfig
-	SSH             SSHConfig
+	Name          string
+	AdminPassword string `yaml:"admin_password"`
+	Networking    NetworkConfig
+	Certificates  CertsConfig
+	SSH           SSHConfig
 }
 
 // A Node is a compute unit, virtual or physical, that is part of the cluster
@@ -54,10 +53,16 @@ type MasterNodeGroup struct {
 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
 }
 
+// DockerRegistry details for docker registry, either confgiured by the cli or customer provided
+type DockerRegistry struct {
+	UseInternal bool `yaml:"use_internal"`
+}
+
 // Plan is the installation plan that the user intends to execute
 type Plan struct {
-	Cluster Cluster
-	Etcd    NodeGroup
-	Master  MasterNodeGroup
-	Worker  NodeGroup
+	Cluster        Cluster
+	DockerRegistry DockerRegistry `yaml:"docker_registry"`
+	Etcd           NodeGroup
+	Master         MasterNodeGroup
+	Worker         NodeGroup
 }

@@ -131,7 +131,6 @@ const planTemplate = `{{ $p := .Plan }}
 cluster:
   name: {{$p.Cluster.Name}}  #inline comment
   admin_password: {{$p.Cluster.AdminPassword}}
-  local_repository: {{$p.Cluster.LocalRepository}}
   networking:
     type: {{$p.Cluster.Networking.Type}}
     pod_cidr_block: {{$p.Cluster.Networking.PodCIDRBlock}}
@@ -147,6 +146,8 @@ cluster:
     user: {{$p.Cluster.SSH.User}}
     ssh_key: {{$p.Cluster.SSH.Key}}
     ssh_port: {{$p.Cluster.SSH.Port}}
+docker_registry:
+    use_internal: {{$p.DockerRegistry.UseInternal}}
 etcd:
   expected_count: {{$p.Etcd.ExpectedCount}}
   nodes:

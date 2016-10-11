@@ -1,30 +1,22 @@
 ---
-  - name: install the latest version of bridge-utils
-    package: name=bridge-utils state=latest
-  # install Docker using official https://get.docker.com/ script
-  - name: create {{ docker_install_dir }} directory
-    file:
-      path: "{{ docker_install_dir }}"
-      state: directory
-  - name: install lastest version of docker # create a signal file after successful install
-    script: docker.sh creates={{ docker_installed_path }}
-    notify:
-      - docker installed
-      - reload services
-      - enable docker
-      - restart docker service
+  - name: reload services
+    command: systemctl daemon-reload
+  - name: enable docker
+    command: systemctl enable "docker.service"
+  - name: start docker service
+    service:
+      name: "docker"
+      state: started
+      enabled: yes
 
   # force_docker_restart=true to force restart
   - name: force restart docker
     command: /bin/true
     notify:
-      - docker installed
       - reload services
       - enable docker
       - restart docker service
-    when: force_docker_restart is defined and force_docker_restart == "true"
-
-  - meta: flush_handlers
+    when: force_docker_restart is defined and force_docker_restart|bool == true
 
   # verify that Docker installed succesfully and is running
   - name: verify docker is installed

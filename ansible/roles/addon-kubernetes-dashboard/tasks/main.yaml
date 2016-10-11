@@ -1,7 +1,7 @@
 ---
   # TODO notify user of the port, ingress
   - name: copy kubernetes-dashboard.yaml to remote
-    copy:
+    template:
       src: kubernetes-dashboard.yaml
       dest: /tmp/kubernetes-dashboard.yaml
   - name: start kubernetes-dashboard service

@@ -1,10 +1,4 @@
 ---
-  # download binaries
-  - name: download kube-proxy - {{ kubernetes_version }}
-    get_url:
-      url: "{{ local_repository_path|default(kubernetes_binary_path) }}/kube-proxy"
-      dest: "{{ bin_dir }}"
-      mode: "{{ kubernetes_executable_mode }}"
   # kube-proxy
   - name: copy kube-proxy.service to remote
     template:
@@ -26,4 +20,4 @@
       - enable kube-proxy
       - restart kube-proxy service
       - verify kube-proxy is running
-    when: force_proxy_restart is defined and force_proxy_restart == "true"
+    when: force_proxy_restart is defined and force_proxy_restart|bool == true

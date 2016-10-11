@@ -9,15 +9,11 @@
     file:
       path: "{{ network_plugin_bin_dir }}"
       state: directory
+
   # install calicoctl
-  - name: download calicoctl - {{ calico_ctl_version }}
-    get_url:
-      url: "{{ local_repository_path|default(calicoctl_binary_path) }}/calicoctl"
-      dest: "{{ bin_dir }}"
-      mode: "{{ calico_executable_mode }}"
   # pre-download Docker image
-  - name: download calico/node:{{ calico_docker_version }} docker image
-    command: docker pull calico/node:{{ calico_docker_version }}
+  - name: download {{ calico_node_img }}
+    command: docker pull {{ calico_node_img }}
   # start calico-node service
   - name: copy calico-node.service to remote
     template:
@@ -39,39 +35,15 @@
       - enable calico-node
       - restart calico-node service
       - verify calico-node is running
-    when: force_calico_node_restart is defined and force_calico_node_restart == "true"
+    when: force_calico_node_restart is defined and force_calico_node_restart|bool == true
 
   - meta: flush_handlers  #Run handlers
 
-  # install cni binaries, TODO track with https://github.com/projectcalico/calico-containers/issues/1115
-  - name: download cni - {{ cni_version }}
-    unarchive:
-      src: "{{ cni_path }}"
-      dest: "{{ network_plugin_bin_dir }}"
-      remote_src: yes
-      copy: no
-  # install calico binaries
-  - name: download calico - {{ calico_version }}
-    get_url:
-      url: "{{ local_repository_path|default(calico_cni_path) }}/calico"
-      dest: "{{ network_plugin_bin_dir }}/calico"
-      mode: "{{ calico_executable_mode }}"
-  - name: download calico-ipam - {{ calico_version }}
-    get_url:
-      url: "{{ local_repository_path|default(calico_cni_path) }}/calico-ipam"
-      dest: "{{ network_plugin_bin_dir }}/calico-ipam"
-      mode: "{{ calico_executable_mode }}"
   # configure calcico
   - name: copy 10-calico.conf to remote
     template:
       src: 10-calico.conf.j2
       dest: "{{ network_plugin_dir }}/10-calico.conf"
-    when: enable_calico_policy == "false"
-  - name: copy 10-calico.conf to remote
-    template:
-      src: 10-calico.conf.j2.policy
-      dest: "{{ network_plugin_dir }}/10-calico.conf"
-    when: enable_calico_policy == "true"
   - name: remove default CIDR - {{ dafault_cidr }}
     command: calicoctl pool remove {{ dafault_cidr }}
     environment:

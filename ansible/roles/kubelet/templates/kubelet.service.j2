@@ -10,6 +10,7 @@ Environment=MASTER_LIST={{ kubernetes_master_ip_list }}
 Environment=CLUSTER_DNS={{ kubernetes_dns_service_ip }}
 Environment=HOSTNAME={{ inventory_hostname }}
 Environment=KUBECONFIG={{ kubernetes_kubeconfig_path }}
+Environment=INFRA_IMG={{ pause_img }}
 Environment=REGISTER_SCHEDULABLE={{ kubernetes_schedulable }}
 Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
 Environment=KEY_FILE={{ kubernetes_certificates_key_path }}
@@ -25,6 +26,7 @@ ExecStart=/usr/bin/kubelet \
   --docker=unix:///var/run/docker.sock \
   --hostname-override=${HOSTNAME} \
   --kubeconfig=${KUBECONFIG} \
+  --pod-infra-container-image=${INFRA_IMG} \
   --register-schedulable=${REGISTER_SCHEDULABLE} \
   --serialize-image-pulls=false \
   --tls-cert-file=${CERT_FILE} \
