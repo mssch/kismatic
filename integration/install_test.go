@@ -74,6 +74,22 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		})
 	})
 
+	Describe("Calling installer with 'install validate'", func() {
+		Context("using a Minikube Ubuntu 16/04 layout", func() {
+			It("should return successfully with a valid plan", func() {
+				ValidateKismaticMini(AMIUbuntu1604USEAST, "ubuntu")
+			})
+		})
+	})
+
+	Describe("Calling installer with 'install validate'", func() {
+		Context("using a Minikube CentOS 7 layout", func() {
+			It("should return successfully with a valid plan", func() {
+				ValidateKismaticMini(AMICentos7UsEast, "centos")
+			})
+		})
+	})
+
 	Describe("Calling installer with a plan targeting bad infrastructure", func() {
 		Context("Using a 1/1/1 Ubtunu 16.04 layout pointing to bad ip addresses", func() {
 			It("should bomb validate and apply", func() {

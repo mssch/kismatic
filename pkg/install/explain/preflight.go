@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
-	"github.com/apprenda/kismatic-platform/pkg/preflight"
+	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
 	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
@@ -27,15 +27,20 @@ func (explainer *PreflightEventExplainer) ExplainEvent(e ansible.Event, verbose 
 			return ""
 		}
 		buf := &bytes.Buffer{}
-		results := []preflight.CheckResult{}
+		results := []rule.Result{}
 		if err := json.Unmarshal([]byte(event.Result.Stdout), &results); err != nil {
 			// Something actually went wrong running the play... use the default explainer
 			return explainer.DefaultExplainer.ExplainEvent(event, verbose)
 		}
-		util.PrintColor(buf, util.Red, "\n=> Pre-Flight Checks failed on %q:\n", event.Host)
+		// print info about pre-flight checks that failed
+		util.PrintColor(buf, util.Red, "\n=> The following checks failed on %q:\n", event.Host)
 		for _, r := range results {
+			if !r.Success && r.Error != "" {
+				util.PrintColor(buf, util.Red, "   - Error occurred when trying to verify rule %s: %v\n", r.Name, r.Error)
+				continue
+			}
 			if !r.Success {
-				util.PrintColor(buf, util.Red, "   - %s\n", r.Error)
+				util.PrintColor(buf, util.Red, "   - %s\n", r.Name)
 			}
 		}
 		if verbose {

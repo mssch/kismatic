@@ -16,10 +16,16 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
+// The PreFlightExecutor will run pre-flight checks against the
+// environment defined in the plan file
+type PreFlightExecutor interface {
+	RunPreFlightCheck(*Plan) error
+}
+
 // The Executor will carry out the installation plan
 type Executor interface {
+	PreFlightExecutor
 	Install(p *Plan) error
-	RunPreflightCheck(*Plan) error
 	RunSmokeTest(*Plan) error
 }
 
@@ -72,6 +78,30 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 		options.RunsDirectory = "./runs"
 	}
 
+	// Setup the console output format
+	var outFormat ansible.OutputFormat
+	switch options.OutputFormat {
+	case "raw":
+		outFormat = ansible.RawFormat
+	case "simple":
+		outFormat = ansible.JSONLinesFormat
+	default:
+		return nil, fmt.Errorf("Output format %q is not supported", options.OutputFormat)
+	}
+
+	return &ansibleExecutor{
+		options:             options,
+		stdout:              stdout,
+		consoleOutputFormat: outFormat,
+		ansibleDir:          ansibleDir,
+	}, nil
+}
+
+func NewPreFlightExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (PreFlightExecutor, error) {
+	ansibleDir := "ansible"
+	if options.RunsDirectory == "" {
+		options.RunsDirectory = "./runs"
+	}
 	// Setup the console output format
 	var outFormat ansible.OutputFormat
 	switch options.OutputFormat {
@@ -200,7 +230,7 @@ func (ae *ansibleExecutor) RunSmokeTest(p *Plan) error {
 }
 
 // RunPreflightCheck against the nodes defined in the plan
-func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
+func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	runDirectory, err := ae.createRunDirectory("preflight")
 	if err != nil {
 		return fmt.Errorf("error creating working directory for preflight: %v", err)
@@ -230,7 +260,7 @@ func (ae *ansibleExecutor) RunPreflightCheck(p *Plan) error {
 		"modify_hosts_file":                strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
 	}
 
-	// run the preflight playbook with preflight explainer
+	// run the pre-flight playbook with pre-flight explainer
 	playbook := "preflight.yaml"
 	explainer := &explain.PreflightEventExplainer{
 		DefaultExplainer: &explain.DefaultEventExplainer{},

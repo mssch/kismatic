@@ -32,7 +32,7 @@ func (fe *fakeExecutor) Install(p *install.Plan) error {
 	return fe.err
 }
 
-func (fe *fakeExecutor) RunPreflightCheck(p *install.Plan) error {
+func (fe *fakeExecutor) RunPreFlightCheck(p *install.Plan) error {
 	return nil
 }
 

@@ -1,4 +1,4 @@
-package preflight
+package check
 
 import (
 	"strings"

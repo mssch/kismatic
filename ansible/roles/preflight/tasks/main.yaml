@@ -18,7 +18,7 @@
       dest: "{{ bin_dir }}/kismatic-inspector"
       mode: 0744
   - name: start the Kismatic Inspector in server mode
-    command: "{{ bin_dir }}/kismatic-inspector"
+    command: "{{ bin_dir }}/kismatic-inspector server --node-roles {{ \",\".join(group_names) }} --port 8888"
     async: 300
     register: start_inspector
   - name: ensure Kismatic Inspector server is running
@@ -27,7 +27,7 @@
   # Run the pre-flights checks, and always stop the checker regardless of result
   - block:
     - name: run pre-flight checks using Kismatic Inspector
-      local_action: command {{ kismatic_preflight_checker_local | default(kismatic_preflight_checker) }} --node {{ ansible_host }}:8081 -o json --check-tcp-ports {{preflight_check_tcp_ports}}
+      local_action: command {{ kismatic_preflight_checker_local | default(kismatic_preflight_checker) }} client {{ ansible_host }}:8888 -o json --node-roles {{ ",".join(group_names) }}
       become: no
     always:
       - name: stop the inspector
