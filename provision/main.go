@@ -27,7 +27,7 @@ func main() {
 
 	//defer os.RemoveAll(kisPath)
 
-	cluster := integration.InstallKismatic(integration.AMIUbuntu1604USEAST, "ubuntu")
+	cluster := integration.InstallKismatic(integration.UbuntuEast)
 
 	fmt.Println("Your cluster is ready.\n")
 	integration.PrintNodes(&cluster)

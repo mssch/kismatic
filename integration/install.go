@@ -49,13 +49,13 @@ func GetSSHKeyFile() (string, error) {
 	return filepath.Join(dir, ".ssh", "kismatic-integration-testing.pem"), nil
 }
 
-func InstallKismaticMini(nodeType string, user string) PlanAWS {
+func InstallKismaticMini(awsos AWSOSDetails) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
 
 	By("Making infrastructure")
-	etcdNode, etcErr := MakeWorkerNode(nodeType)
+	etcdNode, etcErr := MakeWorkerNode(awsos.AWSAMI)
 	FailIfError(etcErr, "Error making etcd node")
 
 	defer TerminateInstances(etcdNode.Instanceid)
@@ -63,7 +63,7 @@ func InstallKismaticMini(nodeType string, user string) PlanAWS {
 	sshKey, err := GetSSHKeyFile()
 	FailIfError(err, "Error getting SSH Key file")
 
-	descErr := WaitForInstanceToStart(user, sshKey, &etcdNode)
+	descErr := WaitForInstanceToStart(awsos.AWSUser, sshKey, &etcdNode)
 	masterNode := etcdNode
 	workerNode := etcdNode
 	FailIfError(descErr, "Error waiting for nodes")
@@ -79,8 +79,8 @@ func InstallKismaticMini(nodeType string, user string) PlanAWS {
 		Worker:              []AWSNodeDeets{workerNode},
 		MasterNodeFQDN:      masterNode.Hostname,
 		MasterNodeShortName: masterNode.Hostname,
-		SSHUser:             user,
 		SSHKeyFile:          sshKey,
+		SSHUser:             awsos.AWSUser,
 	}
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
@@ -112,43 +112,71 @@ func InstallKismaticMini(nodeType string, user string) PlanAWS {
 	return nodes
 }
 
-func InstallKismatic(nodeType string, user string) PlanAWS {
+func InstallKismatic(awsos AWSOSDetails) PlanAWS {
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos)
+}
+
+func InstallKismaticWithDeps(awsos AWSOSDetails) PlanAWS {
+	return InstallBigKismaticWithDeps(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos)
+}
+
+func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
+	if count.Etcd < 1 || count.Master < 1 || count.Worker < 1 {
+		Fail("Must have at least 1 of ever node type")
+	}
 
 	By("Making infrastructure")
-	etcdNode, etcErr := MakeETCDNode(nodeType)
-	FailIfError(etcErr, "Error making etcd node")
 
-	masterNode, masterErr := MakeMasterNode(nodeType)
-	FailIfError(masterErr, "Error making master node")
+	allInstanceIDs := make([]string, count.Total())
+	etcdNodes := make([]AWSNodeDeets, count.Etcd)
+	masterNodes := make([]AWSNodeDeets, count.Master)
+	workerNodes := make([]AWSNodeDeets, count.Worker)
 
-	workerNode, workerErr := MakeWorkerNode(nodeType)
-	FailIfError(workerErr, "Error making worker node")
+	for i := uint16(0); i < count.Etcd; i++ {
+		var etcdErr error
+		etcdNodes[i], etcdErr = MakeETCDNode(awsos.AWSAMI)
+		FailIfError(etcdErr, "Error making etcd node")
+		allInstanceIDs[i] = etcdNodes[i].Instanceid
+	}
 
-	defer TerminateInstances(etcdNode.Instanceid, masterNode.Instanceid, workerNode.Instanceid)
+	for i := uint16(0); i < count.Master; i++ {
+		var masterErr error
+		masterNodes[i], masterErr = MakeMasterNode(awsos.AWSAMI)
+		FailIfError(masterErr, "Error making master node")
+		allInstanceIDs[i+count.Etcd] = masterNodes[i].Instanceid
+	}
 
+	for i := uint16(0); i < count.Worker; i++ {
+		var workerErr error
+		workerNodes[i], workerErr = MakeWorkerNode(awsos.AWSAMI)
+		FailIfError(workerErr, "Error making worker node")
+		allInstanceIDs[i+count.Etcd+count.Master] = workerNodes[i].Instanceid
+	}
+
+	defer TerminateInstances(allInstanceIDs...)
 	sshKey, err := GetSSHKeyFile()
 	FailIfError(err, "Error getting SSH Key file")
-
-	descErr := WaitForInstanceToStart(user, sshKey, &etcdNode, &masterNode, &workerNode)
+	nodes := PlanAWS{
+		Etcd:                etcdNodes,
+		Master:              masterNodes,
+		Worker:              workerNodes,
+		MasterNodeFQDN:      masterNodes[0].Hostname,
+		MasterNodeShortName: masterNodes[0].Hostname,
+		SSHKeyFile:          sshKey,
+		SSHUser:             awsos.AWSUser,
+	}
+	descErr := WaitForAllInstancesToStart(&nodes)
 	FailIfError(descErr, "Error waiting for nodes")
-	log.Printf("Created etcd nodes: %v (%v), master nodes %v (%v), workerNodes %v (%v)",
-		etcdNode.Instanceid, etcdNode.Publicip,
-		masterNode.Instanceid, masterNode.Publicip,
-		workerNode.Instanceid, workerNode.Publicip)
+	log.Printf("%v", nodes.Etcd[0].Publicip)
+	PrintNodes(&nodes)
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
-	nodes := PlanAWS{
-		Etcd:                []AWSNodeDeets{etcdNode},
-		Master:              []AWSNodeDeets{masterNode},
-		Worker:              []AWSNodeDeets{workerNode},
-		MasterNodeFQDN:      masterNode.Hostname,
-		MasterNodeShortName: masterNode.Hostname,
-		SSHUser:             user,
-		SSHKeyFile:          sshKey,
-	}
+	var hdErr error
+	nodes.HomeDirectory, hdErr = homedir.Dir()
+	FailIfError(hdErr, "Error getting home directory")
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
 	FailIfError(fileErr, "Error waiting for nodes")
@@ -176,10 +204,11 @@ func InstallKismatic(nodeType string, user string) PlanAWS {
 	appErr := app.Run()
 
 	FailIfError(appErr, "Error applying plan")
+
 	return nodes
 }
 
-func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
+func InstallBigKismaticWithDeps(count NodeCount, awsos AWSOSDetails) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
@@ -196,21 +225,21 @@ func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
 
 	for i := uint16(0); i < count.Etcd; i++ {
 		var etcErr error
-		etcdNodes[i], etcErr = MakeETCDNode(nodeType)
+		etcdNodes[i], etcErr = MakeETCDNode(awsos.AWSAMI)
 		FailIfError(etcErr, "Error making etcd node")
 		allInstanceIDs[i] = etcdNodes[i].Instanceid
 	}
 
 	for i := uint16(0); i < count.Master; i++ {
 		var masterErr error
-		masterNodes[i], masterErr = MakeMasterNode(nodeType)
+		masterNodes[i], masterErr = MakeMasterNode(awsos.AWSAMI)
 		FailIfError(masterErr, "Error making master node")
 		allInstanceIDs[i+count.Etcd] = masterNodes[i].Instanceid
 	}
 
 	for i := uint16(0); i < count.Worker; i++ {
 		var workerErr error
-		workerNodes[i], workerErr = MakeWorkerNode(nodeType)
+		workerNodes[i], workerErr = MakeWorkerNode(awsos.AWSAMI)
 		FailIfError(workerErr, "Error making worker node")
 		allInstanceIDs[i+count.Etcd+count.Master] = workerNodes[i].Instanceid
 	}
@@ -225,8 +254,8 @@ func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
 		Worker:              workerNodes,
 		MasterNodeFQDN:      masterNodes[0].Hostname,
 		MasterNodeShortName: masterNodes[0].Hostname,
-		SSHUser:             user,
 		SSHKeyFile:          sshKey,
+		SSHUser:             awsos.AWSUser,
 	}
 	descErr := WaitForAllInstancesToStart(&nodes)
 	FailIfError(descErr, "Error waiting for nodes")
@@ -242,6 +271,9 @@ func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
 	execErr := template.Execute(w, &nodes)
 	FailIfError(execErr, "Error filling in plan template")
 	w.Flush()
+
+	By("Installing some RPMs")
+	InstallRPMs(nodes, awsos)
 
 	By("Validing our plan")
 	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
@@ -263,6 +295,31 @@ func InstallBigKismatic(count NodeCount, nodeType string, user string) PlanAWS {
 	FailIfError(appErr, "Error applying plan")
 
 	return nodes
+}
+
+func InstallRPMs(nodes PlanAWS, awsos AWSOSDetails) {
+	// time.Sleep(90 * time.Second)
+
+	log.Printf("Prepping repos:")
+	RunViaSSH(awsos.CommandsToPrepRepo, awsos.AWSUser,
+		append(append(nodes.Etcd, nodes.Master...), nodes.Worker...),
+		5*time.Minute)
+
+	log.Printf("Installing Etcd:")
+	RunViaSSH(awsos.CommandsToInstallEtcd, awsos.AWSUser,
+		nodes.Etcd, 5*time.Minute)
+
+	log.Printf("Installing Docker:")
+	RunViaSSH(awsos.CommandsToInstallDocker, awsos.AWSUser,
+		append(nodes.Master, nodes.Worker...), 5*time.Minute)
+
+	log.Printf("Installing Master:")
+	RunViaSSH(awsos.CommandsToInstallK8sMaster, awsos.AWSUser,
+		nodes.Master, 5*time.Minute)
+
+	log.Printf("Installing Worker:")
+	RunViaSSH(awsos.CommandsToInstallK8sMaster, awsos.AWSUser,
+		append(nodes.Master, nodes.Worker...), 5*time.Minute)
 }
 
 func PrintNodes(plan *PlanAWS) {

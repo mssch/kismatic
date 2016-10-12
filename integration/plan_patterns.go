@@ -8,6 +8,7 @@ type PlanAWS struct {
 	MasterNodeShortName string
 	SSHUser             string
 	SSHKeyFile          string
+	HomeDirectory       string
 }
 
 type AWSNodeDeets struct {

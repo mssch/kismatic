@@ -77,6 +77,7 @@ endif
 	go get -u github.com/aws/aws-sdk-go
 	go get github.com/mitchellh/go-homedir
 	go install github.com/onsi/ginkgo/ginkgo
+	go get golang.org/x/crypto/ssh
 
 	ginkgo -v integration
 
@@ -91,5 +92,6 @@ endif
 	go get -u github.com/aws/aws-sdk-go
 	go get github.com/mitchellh/go-homedir
 	go install github.com/onsi/ginkgo/ginkgo
+	go get golang.org/x/crypto/ssh
 
 	go run provision/main.go

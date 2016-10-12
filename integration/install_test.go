@@ -103,34 +103,44 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	Describe("Calling installer with a plan targetting AWS", func() {
 		Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
 			It("should result in a working cluster", func() {
-				InstallKismatic(AMIUbuntu1604USEAST, "ubuntu")
+				InstallKismatic(UbuntuEast)
 			})
 		})
+		// Context("Using a 1/1/1 Ubtunu 16.04 layout with dependencies installed", func() {
+		// 	It("should result in a working cluster", func() {
+		// 		InstallKismaticWithDeps(UbuntuEast)
+		// 	})
+		// })
 		Context("Using a 1/1/1 CentOS 7 layout", func() {
 			It("should result in a working cluster", func() {
-				InstallKismatic(AMICentos7UsEast, "centos")
+				InstallKismatic(CentosEast)
 			})
 		})
-		Context("Using a Minikube CentOS 7 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallKismaticMini(AMICentos7UsEast, "centos")
-			})
-		})
-		Context("Using a 3/2/3 CentOS 7 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallBigKismatic(
-					NodeCount{
-						Etcd:   3,
-						Master: 2,
-						Worker: 3,
-					},
-					AMICentos7UsEast, "centos")
-			})
-		})
+		// Context("Using a 1/1/1 CentOS 7 layout with dependencies installed", func() {
+		// 	It("should result in a working cluster", func() {
+		// 		InstallKismaticWithDeps(CentosEast)
+		// 	})
+		// })
+		// Context("Using a Minikube CentOS 7 layout", func() {
+		// 	It("should result in a working cluster", func() {
+		// 		InstallKismaticMini(CentosEast)
+		// 	})
+		// })
+		// Context("Using a 3/2/3 CentOS 7 layout", func() {
+		// 	It("should result in a working cluster", func() {
+		// 		InstallBigKismatic(
+		// 			NodeCount{
+		// 				Etcd:   3,
+		// 				Master: 2,
+		// 				Worker: 3,
+		// 			},
+		// 			CentosEast)
+		// 	})
+		// })
 	})
 })
 
-func InstallKismaticWithABadNode() {
+func installKismaticWithABadNode() {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
