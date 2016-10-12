@@ -45,15 +45,13 @@ func NewCACert(csrFile string) (key, cert []byte, err error) {
 
 // ReadCACert read CA file
 func ReadCACert(name, dir string) (key, cert []byte, err error) {
-	keyName := fmt.Sprintf("%s-key.pem", name)
-	dest := filepath.Join(dir, keyName)
+	dest := filepath.Join(dir, keyName(name))
 	key, errKey := ioutil.ReadFile(dest)
 	if errKey != nil {
 		return nil, nil, fmt.Errorf("error reading private key: %v", errKey)
 	}
 
-	certName := fmt.Sprintf("%s.pem", name)
-	dest = filepath.Join(dir, certName)
+	dest = filepath.Join(dir, certName(name))
 	cert, errCert := ioutil.ReadFile(dest)
 	if errCert != nil {
 		return nil, nil, fmt.Errorf("error reading certificate: %v", errKey)
