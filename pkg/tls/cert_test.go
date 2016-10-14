@@ -13,23 +13,27 @@ import (
 
 func TestGenerateNewCertificate(t *testing.T) {
 	// Create CA Cert
-	key, caCert, err := NewCACert("test/ca-csr.json")
+	subject := Subject{
+		Country:            "someCountry",
+		State:              "someState",
+		Locality:           "someLocality",
+		Organization:       "someOrganization",
+		OrganizationalUnit: "someOrgUnit",
+	}
+	key, caCert, err := NewCACert("test/ca-csr.json", subject)
 	if err != nil {
 		t.Fatalf("error creating CA: %v", err)
 	}
-
 	parsedCACert, err := helpers.ParseCertificatePEM(caCert)
 	if err != nil {
 		t.Fatalf("error parsing CA Certificate: %v", err)
 	}
-
 	ca := &CA{
 		Key:        key,
 		Cert:       caCert,
 		ConfigFile: "test/ca-config.json",
 		Profile:    "kubernetes",
 	}
-
 	certHosts := []string{"testHostname", "otherName", "127.0.0.1", "10.5.6.217"}
 	req := csr.CertificateRequest{
 		CN: "testKube",
@@ -65,6 +69,10 @@ func TestGenerateNewCertificate(t *testing.T) {
 
 	if parsedCert.IsCA {
 		t.Errorf("Non-CA certificate is CA")
+	}
+
+	if parsedCert.Subject.CommonName != req.CN {
+		t.Errorf("common name mismatch: expected %q, but got %q", req.CN, parsedCert.Subject.CommonName)
 	}
 
 	if !reflect.DeepEqual(parsedCert.Issuer, parsedCACert.Subject) {

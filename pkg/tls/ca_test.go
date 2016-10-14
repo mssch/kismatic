@@ -9,7 +9,12 @@ import (
 )
 
 func TestNewCACert(t *testing.T) {
-	_, cert, err := NewCACert("test/ca-csr.json")
+	subject := Subject{
+		Country:  "someCountry",
+		State:    "someState",
+		Locality: "someLocality",
+	}
+	_, cert, err := NewCACert("test/ca-csr.json", subject)
 	if err != nil {
 		t.Fatalf("error creating CA cert: %v", err)
 	}

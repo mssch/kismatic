@@ -48,7 +48,14 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 
 	util.PrettyPrintOk(lp.Log, "Generating cluster Certificate Authority")
 	// It doesn't exist, generate one
-	key, cert, err := tls.NewCACert(lp.CACsr)
+	caSubject := tls.Subject{
+		Country:            p.Cluster.Certificates.LocationCountry,
+		State:              p.Cluster.Certificates.LocationState,
+		Locality:           p.Cluster.Certificates.LocationCity,
+		Organization:       p.Cluster.Certificates.Organization,
+		OrganizationalUnit: p.Cluster.Certificates.OrganizationalUnit,
+	}
+	key, cert, err := tls.NewCACert(lp.CACsr, p.Cluster.Name, caSubject)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create CA Cert: %v", err)
 	}
@@ -60,18 +67,16 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 	return ca, nil
 }
 
-// GenerateClusterCertficates creates a Certificates for all nodes on the cluster
+// GenerateClusterCertificates creates a Certificates for all nodes on the cluster
 func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []string) error {
 	if lp.Log == nil {
 		lp.Log = ioutil.Discard
 	}
-
 	// Add kubernetes service IP to certificates
 	kubeServiceIP, err := getKubernetesServiceIP(p)
 	if err != nil {
 		return fmt.Errorf("Error getting kubernetes service IP: %v", err)
 	}
-
 	defaultCertHosts := []string{
 		"kubernetes",
 		"kubernetes.default",
@@ -81,13 +86,31 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []str
 		kubeServiceIP,
 	}
 
-	// Then, create certs for all nodes
+	// Create certs for master nodes.. they include the load balanced names
+	seenNodes := map[string]bool{}
+	for _, n := range p.Master.Nodes {
+		if _, ok := seenNodes[n.Host]; ok {
+			continue
+		}
+		seenNodes[n.Host] = true
+		names := []string{}
+		names = append(names, defaultCertHosts...)
+		if p.Master.LoadBalancedFQDN != "" {
+			names = append(names, p.Master.LoadBalancedFQDN)
+		}
+		if p.Master.LoadBalancedShortName != "" {
+			names = append(names, p.Master.LoadBalancedShortName)
+		}
+		if err := lp.generateNodeCert(p, n, ca, names); err != nil {
+			return err
+		}
+	}
+
+	// Then, create certs for rest of nodes
 	nodes := []Node{}
 	nodes = append(nodes, p.Etcd.Nodes...)
-	nodes = append(nodes, p.Master.Nodes...)
 	nodes = append(nodes, p.Worker.Nodes...)
 
-	seenNodes := map[string]bool{}
 	for _, n := range nodes {
 		// Only generate certs once for each node, nodes can be in more than one group
 		if _, ok := seenNodes[n.Host]; ok {
@@ -98,14 +121,12 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []str
 			return err
 		}
 	}
-
 	// Create certs for docker registry if it's missing
 	if p.DockerRegistry.UseInternal {
 		if err := lp.generateDockerRegistryCert(p, ca); err != nil {
 			return err
 		}
 	}
-
 	// Finally, create certs for user if they are missing
 	for _, user := range users {
 		if err := lp.generateUserCert(p, user, ca); err != nil {
@@ -196,14 +217,14 @@ func generateCert(cnName string, p *Plan, hostList []string, ca *tls.CA) (key, c
 				C:  p.Cluster.Certificates.LocationCountry,
 				ST: p.Cluster.Certificates.LocationState,
 				L:  p.Cluster.Certificates.LocationCity,
+				O:  p.Cluster.Certificates.Organization,
+				OU: p.Cluster.Certificates.OrganizationalUnit,
 			},
 		},
 	}
-
 	key, cert, err = tls.NewCert(ca, req)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error generating certs for %q: %v", cnName, err)
 	}
-
 	return key, cert, err
 }
