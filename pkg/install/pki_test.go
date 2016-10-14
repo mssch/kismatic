@@ -89,9 +89,6 @@ func getPlan() *Plan {
 
 // Validate the certificate subject information
 func validateCertSubject(t *testing.T, cert *x509.Certificate, p *Plan) {
-	if cert.Subject.CommonName != p.Cluster.Name {
-		t.Errorf("common name mismatch: expected %q, but got %q", p.Cluster.Name, cert.Subject.CommonName)
-	}
 	if cert.Subject.Country[0] != certCountry {
 		t.Errorf("country mismatch: expected %q, but got %q", certCountry, cert.Subject.Country[0])
 	}
@@ -126,6 +123,10 @@ func TestGeneratedClusterCASubject(t *testing.T) {
 		t.Errorf("generated cert is not CA")
 	}
 	validateCertSubject(t, caCert, p)
+
+	if caCert.Subject.CommonName != p.Cluster.Name {
+		t.Errorf("common name mismatch: expected %q, got %q", p.Cluster.Name, caCert.Subject.CommonName)
+	}
 }
 
 func TestGeneratedClusterCAWrittenToDestinationDir(t *testing.T) {
@@ -212,6 +213,10 @@ func TestGenerateClusterCertificatesNodeCert(t *testing.T) {
 	}
 	certFile := filepath.Join(pki.GeneratedCertsDirectory, node.Host+".pem")
 	cert := mustReadCertFile(certFile, t)
+
+	if cert.Subject.CommonName != node.Host {
+		t.Errorf("common name mismatch: got %q, expected %q", cert.Subject.CommonName, node.Host)
+	}
 
 	validateCertSubject(t, cert, p)
 	// Validate DNS names
@@ -467,9 +472,6 @@ func TestLoadBalancedNamesNotInEtcdCert(t *testing.T) {
 	if err = pki.GenerateClusterCertificates(p, ca, users); err != nil {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
-	if err := pki.GenerateClusterCertificates(p, ca, users); err != nil {
-		t.Fatalf("error generating cluster certs: %v", err)
-	}
 
 	// Verify master node has load balanced name and FQDN
 	certFile := filepath.Join(pki.GeneratedCertsDirectory, "etcd.pem")
@@ -496,4 +498,47 @@ func TestLoadBalancedNamesNotInEtcdCert(t *testing.T) {
 	if found {
 		t.Errorf("load balanced name was found in etcd certificate")
 	}
+}
+
+func TestGenerateClusterCertificatesUserSubject(t *testing.T) {
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	p := getPlan()
+	p.Worker = NodeGroup{}
+
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	users := []string{"admin"}
+	if err = pki.GenerateClusterCertificates(p, ca, users); err != nil {
+		t.Fatalf("failed to generate certs: %v", err)
+	}
+	certFile := filepath.Join(pki.GeneratedCertsDirectory, "admin.pem")
+	userCert := mustReadCertFile(certFile, t)
+
+	if userCert.Subject.CommonName != users[0] {
+		t.Errorf("common name mismatch: got %q, expected %q", userCert.Subject.CommonName, users[0])
+	}
+}
+
+func TestGenerateClusterCertificatesDockerCert(t *testing.T) {
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	p := getPlan()
+	p.Worker = NodeGroup{}
+	p.DockerRegistry.UseInternal = true
+
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	users := []string{"admin"}
+	if err = pki.GenerateClusterCertificates(p, ca, users); err != nil {
+		t.Fatalf("failed to generate certs: %v", err)
+	}
+	certFile := filepath.Join(pki.GeneratedCertsDirectory, "docker.pem")
+	mustReadCertFile(certFile, t)
 }

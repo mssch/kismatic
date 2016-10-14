@@ -157,7 +157,7 @@ func (lp *LocalPKI) generateNodeCert(plan *Plan, node Node, ca *tls.CA, defaultC
 
 	util.PrettyPrintOk(lp.Log, "Generating certificates for host %q", node.Host)
 	nodeList := append(defaultCertHosts, node.Host, node.IP, node.InternalIP)
-	key, cert, err := generateCert(plan.Cluster.Name, plan, nodeList, ca)
+	key, cert, err := generateCert(node.Host, plan, nodeList, ca)
 	if err != nil {
 		return fmt.Errorf("error during cluster cert generation: %v", err)
 	}
