@@ -116,7 +116,7 @@ func (lp *LocalPKI) GenerateClusterCerts(p *Plan, ca *tls.CA, users []string) er
 		util.PrettyPrintOk(lp.Log, "Generating certificates for docker registry")
 		// Default registry will be deployed on the first master
 		n := p.Master.Nodes[0]
-		dockerKey, dockerCert, err := generateCert(n.Host, p, []string{n.Host, n.IP, n.InternalIP, "192.168.99.100"}, ca)
+		dockerKey, dockerCert, err := generateCert(n.Host, p, []string{n.Host, n.IP, n.InternalIP}, ca)
 		if err != nil {
 			return fmt.Errorf("error during user cert generation: %v", err)
 		}

@@ -180,7 +180,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 	ev["setup_internal_docker_registry"] = strconv.FormatBool(p.DockerRegistry.SetupInternal)
 
-	// TODO fix hostname and port
 	// Use user provided details for Docker registry
 	if p.DockerRegistry.Address != "" {
 		ev["docker_certificates_ca_path"] = p.DockerRegistry.CAPath
