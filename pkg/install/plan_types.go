@@ -48,9 +48,10 @@ type NodeGroup struct {
 
 // MasterNodeGroup is the collection of master nodes
 type MasterNodeGroup struct {
-	NodeGroup             `yaml:",inline"`
+	ExpectedCount         int    `yaml:"expected_count"`
 	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
+	Nodes                 []Node
 }
 
 // DockerRegistry details for docker registry, either confgiured by the cli or customer provided

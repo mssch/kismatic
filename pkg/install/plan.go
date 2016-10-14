@@ -1,13 +1,15 @@
 package install
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"text/template"
+	"regexp"
 
 	"github.com/apprenda/kismatic-platform/pkg/util"
+	garbler "github.com/michaelbironneau/garbler/lib"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -43,22 +45,37 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 	return p, nil
 }
 
+var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z]+)[ ]*:`)
+
 // Write the plan to the file system
 func (fp *FilePlanner) Write(p *Plan) error {
-	tmpl, err := template.New("plan").Parse(planTemplate)
-	if err != nil {
-		return fmt.Errorf("error reading plan template: %v", err)
-	}
-	var planBuffer bytes.Buffer
-	err = tmpl.Execute(&planBuffer, struct{ Plan Plan }{Plan: *p})
-	if err != nil {
-		return fmt.Errorf("error creating plan template: %v", err)
+	oneTimeComments := commentMap
+	bytez, marshalErr := yaml.Marshal(p)
+	if marshalErr != nil {
+		return fmt.Errorf("error marshalling plan to yaml", marshalErr)
 	}
 
-	err = ioutil.WriteFile(fp.File, planBuffer.Bytes(), 0644)
+	f, err := os.Create(fp.File)
 	if err != nil {
-		return fmt.Errorf("error writing install plan template: %v", err)
+		return fmt.Errorf("error making plan file", err)
 	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(bytes.NewReader(bytez))
+	for scanner.Scan() {
+		text := scanner.Text()
+		matched := yamlKeyRE.FindStringSubmatch(text)
+
+		if matched != nil && len(matched) > 1 {
+			if thiscomment, ok := oneTimeComments[matched[1]]; ok {
+				f.WriteString(fmt.Sprintf("%-40s # %s\n", text, thiscomment))
+				delete(oneTimeComments, matched[1])
+				continue
+			}
+		}
+		f.WriteString(text + "\n")
+	}
+
 	return nil
 }
 
@@ -72,6 +89,8 @@ func (fp *FilePlanner) PlanExists() bool {
 func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 	// Set sensible defaults
 	p.Cluster.Name = "kubernetes"
+	generatedAdminpass, _ := garbler.NewPassword(nil)
+	p.Cluster.AdminPassword = generatedAdminpass
 
 	// Set SSH defaults
 	p.Cluster.SSH.User = "kismaticuser"
@@ -90,9 +109,10 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 	p.Cluster.Certificates.LocationCity = "Troy"
 	p.Cluster.Certificates.LocationState = "New York"
 	p.Cluster.Certificates.LocationCountry = "US"
+	p.DockerRegistry.UseInternal = false
 
 	// Generate entries for all node types
-	n := Node{Host: "shortname", IP: "127.0.0.1"}
+	n := Node{}
 	for i := 0; i < p.Etcd.ExpectedCount; i++ {
 		p.Etcd.Nodes = append(p.Etcd.Nodes, n)
 	}
@@ -127,51 +147,22 @@ func getDNSServiceIP(p *Plan) (string, error) {
 	return ip.To4().String(), nil
 }
 
-const planTemplate = `{{ $p := .Plan }}
-cluster:
-  name: {{$p.Cluster.Name}}  #inline comment
-  admin_password: {{$p.Cluster.AdminPassword}}
-  networking:
-    type: {{$p.Cluster.Networking.Type}}
-    pod_cidr_block: {{$p.Cluster.Networking.PodCIDRBlock}}
-    service_cidr_block: {{$p.Cluster.Networking.ServiceCIDRBlock}}
-    policy_enabled: {{$p.Cluster.Networking.PolicyEnabled}}
-    update_hosts_files: {{$p.Cluster.Networking.UpdateHostsFiles}}
-  certificates:
-    expiry: {{$p.Cluster.Certificates.Expiry}}
-    location_city: {{$p.Cluster.Certificates.LocationCity}}
-    location_state: {{$p.Cluster.Certificates.LocationState}}
-    location_country: {{$p.Cluster.Certificates.LocationCountry}}
-  ssh:
-    user: {{$p.Cluster.SSH.User}}
-    ssh_key: {{$p.Cluster.SSH.Key}}
-    ssh_port: {{$p.Cluster.SSH.Port}}
-docker_registry:
-    use_internal: {{$p.DockerRegistry.UseInternal}}
-etcd:
-  expected_count: {{$p.Etcd.ExpectedCount}}
-  nodes:
-{{- range $n := $p.Etcd.Nodes}}
-  - host: {{$n.Host}}
-    ip: {{$n.IP}}
-    internalip: {{$n.InternalIP}}
-{{- end}}
-master:
-  expected_count: {{$p.Master.ExpectedCount}}
-  nodes:
-{{- range $n := $p.Master.Nodes}}
-  - host: {{$n.Host}}
-    ip: {{$n.IP}}
-    internalip: {{$n.InternalIP}}
-{{- end}}
-  load_balanced_fqdn: {{$p.Master.LoadBalancedFQDN}}
-  load_balanced_short_name: {{$p.Master.LoadBalancedShortName}}
-worker:
-  expected_count: {{$p.Worker.ExpectedCount}}
-  nodes:
-{{- range $n := $p.Worker.Nodes}}
-  - host: {{$n.Host}}
-    ip: {{$n.IP}}
-    internalip: {{$n.InternalIP}}
-{{- end}}
-`
+var commentMap = map[string]string{
+	"admin_password":           "This token is used for Kubernetes' administration.",
+	"type":                     "Overlay or Routed. Routed pods can be addressed from outside the Kubernetes cluster; Overlay pods can only address each other.",
+	"pod_cidr_block":           "Kubernetes will assign pods IPs in this range. Do not use a range that is already in use on your local network!",
+	"service_cidr_block":       "Kubernetes will assign services IPs in this range. Do not use a range that is already in use by your local network or pod network!",
+	"policy_enabled":           "When true, enables network policy enforcement on the Kubernetes Pod network. This is an advanced feature.",
+	"update_hosts_files":       "When true, the installer will add entries for all nodes to other nodes' hosts files. Use when you don't have access to DNS.",
+	"expiry":                   "Self-signed certificate expiration period in hours; default is 2 years.",
+	"ssh_key":                  "Absolute path to the ssh public key we should use to manage nodes",
+	"etcd":                     "Here you will identify all of the nodes that should play the etcd role on your cluster",
+	"master":                   "Here you will identify all of the nodes that should play the master role",
+	"worker":                   "Here you will identify all of the nodes that will be workers",
+	"host":                     "The (short) hostname of a node, e.g. etcd01",
+	"ip":                       "The ip address the installer should use to manage this node, e.g. 8.8.8.8",
+	"internalip":               "If the node has an IP for internal traffic, enter it here; otherwise leave blank",
+	"load_balanced_fqdn":       "If using a load balanced master fqdn enter it here; otherwise use the fqdn of any master node",
+	"load_balanced_short_name": "If using a load balanced master enter its short name here; otherwise use the short name of any master node",
+	"use_internal":             "When true, a Docker Registry will be installed on top of your cluster and used to host Docker images needed for its installation",
+}

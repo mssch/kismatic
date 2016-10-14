@@ -106,37 +106,37 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				InstallKismatic(UbuntuEast)
 			})
 		})
-		// Context("Using a 1/1/1 Ubtunu 16.04 layout with dependencies installed", func() {
-		// 	It("should result in a working cluster", func() {
-		// 		InstallKismaticWithDeps(UbuntuEast)
-		// 	})
-		// })
+		Context("Using a 1/1/1 Ubtunu 16.04 layout with dependencies installed", func() {
+			It("should result in a working cluster", func() {
+				InstallKismaticWithDeps(UbuntuEast)
+			})
+		})
 		Context("Using a 1/1/1 CentOS 7 layout", func() {
 			It("should result in a working cluster", func() {
 				InstallKismatic(CentosEast)
 			})
 		})
-		// Context("Using a 1/1/1 CentOS 7 layout with dependencies installed", func() {
-		// 	It("should result in a working cluster", func() {
-		// 		InstallKismaticWithDeps(CentosEast)
-		// 	})
-		// })
-		// Context("Using a Minikube CentOS 7 layout", func() {
-		// 	It("should result in a working cluster", func() {
-		// 		InstallKismaticMini(CentosEast)
-		// 	})
-		// })
-		// Context("Using a 3/2/3 CentOS 7 layout", func() {
-		// 	It("should result in a working cluster", func() {
-		// 		InstallBigKismatic(
-		// 			NodeCount{
-		// 				Etcd:   3,
-		// 				Master: 2,
-		// 				Worker: 3,
-		// 			},
-		// 			CentosEast)
-		// 	})
-		// })
+		Context("Using a 1/1/1 CentOS 7 layout with dependencies installed", func() {
+			It("should result in a working cluster", func() {
+				InstallKismaticWithDeps(CentosEast)
+			})
+		})
+		Context("Using a Minikube CentOS 7 layout", func() {
+			It("should result in a working cluster", func() {
+				InstallKismaticMini(CentosEast)
+			})
+		})
+		Context("Using a 3/2/3 CentOS 7 layout", func() {
+			It("should result in a working cluster", func() {
+				InstallBigKismatic(
+					NodeCount{
+						Etcd:   3,
+						Master: 2,
+						Worker: 3,
+					},
+					CentosEast)
+			})
+		})
 	})
 })
 

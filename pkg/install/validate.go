@@ -163,7 +163,19 @@ func (ng *NodeGroup) validate() (bool, []error) {
 
 func (mng *MasterNodeGroup) validate() (bool, []error) {
 	v := newValidator()
-	v.validate(&mng.NodeGroup)
+
+	if len(mng.Nodes) <= 0 {
+		v.addError(fmt.Errorf("At least one node is required"))
+	}
+	if mng.ExpectedCount <= 0 {
+		v.addError(fmt.Errorf("Node count must be greater than 0"))
+	}
+	if len(mng.Nodes) != mng.ExpectedCount && (len(mng.Nodes) > 0 && mng.ExpectedCount > 0) {
+		v.addError(fmt.Errorf("Expected node count (%d) does not match the number of nodes provided (%d)", mng.ExpectedCount, len(mng.Nodes)))
+	}
+	for i, n := range mng.Nodes {
+		v.validateWithErrPrefix(fmt.Sprintf("Node #%d", i+1), &n)
+	}
 
 	if mng.LoadBalancedFQDN == "" {
 		v.addError(fmt.Errorf("Load balanced FQDN is required"))
@@ -186,6 +198,9 @@ func (n *Node) validate() (bool, []error) {
 	}
 	if ip := net.ParseIP(n.IP); ip == nil {
 		v.addError(fmt.Errorf("Invalid IP provided"))
+	}
+	if ip := net.ParseIP(n.InternalIP); n.InternalIP != "" && ip == nil {
+		v.addError(fmt.Errorf("Invalid InternalIP provided"))
 	}
 	return v.valid()
 }
