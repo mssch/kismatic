@@ -11,12 +11,7 @@ type NetworkConfig struct {
 
 // CertsConfig describes the cluster's trust and certificate configuration
 type CertsConfig struct {
-	Expiry             string
-	LocationCity       string `yaml:"location_city"`
-	LocationState      string `yaml:"location_state"`
-	LocationCountry    string `yaml:"location_country"`
-	Organization       string `yaml:"organization"`
-	OrganizationalUnit string `yaml:"organization_unit"`
+	Expiry string
 }
 
 // SSHConfig describes the cluster's SSH configuration for accessing nodes

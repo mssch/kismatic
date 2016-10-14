@@ -10,6 +10,14 @@ import (
 	"github.com/cloudflare/cfssl/csr"
 )
 
+const (
+	certOrganization = "Apprenda"
+	certOrgUnit      = "Kismatic"
+	certCountry      = "US"
+	certState        = "NY"
+	certLocality     = "Troy"
+)
+
 // The PKI provides a way for generating certificates for the cluster described by the Plan
 type PKI interface {
 	GenerateClusterCA(p *Plan) (*tls.CA, error)
@@ -49,11 +57,11 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 	util.PrettyPrintOk(lp.Log, "Generating cluster Certificate Authority")
 	// It doesn't exist, generate one
 	caSubject := tls.Subject{
-		Country:            p.Cluster.Certificates.LocationCountry,
-		State:              p.Cluster.Certificates.LocationState,
-		Locality:           p.Cluster.Certificates.LocationCity,
-		Organization:       p.Cluster.Certificates.Organization,
-		OrganizationalUnit: p.Cluster.Certificates.OrganizationalUnit,
+		Organization:       certOrganization,
+		OrganizationalUnit: certOrgUnit,
+		Country:            certCountry,
+		State:              certState,
+		Locality:           certLocality,
 	}
 	key, cert, err := tls.NewCACert(lp.CACsr, p.Cluster.Name, caSubject)
 	if err != nil {
@@ -214,11 +222,11 @@ func generateCert(cnName string, p *Plan, hostList []string, ca *tls.CA) (key, c
 		Hosts: hostList,
 		Names: []csr.Name{
 			{
-				C:  p.Cluster.Certificates.LocationCountry,
-				ST: p.Cluster.Certificates.LocationState,
-				L:  p.Cluster.Certificates.LocationCity,
-				O:  p.Cluster.Certificates.Organization,
-				OU: p.Cluster.Certificates.OrganizationalUnit,
+				O:  certOrganization,
+				OU: certOrgUnit,
+				C:  certCountry,
+				ST: certState,
+				L:  certLocality,
 			},
 		},
 	}

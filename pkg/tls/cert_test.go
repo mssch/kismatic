@@ -20,7 +20,7 @@ func TestGenerateNewCertificate(t *testing.T) {
 		Organization:       "someOrganization",
 		OrganizationalUnit: "someOrgUnit",
 	}
-	key, caCert, err := NewCACert("test/ca-csr.json", subject)
+	key, caCert, err := NewCACert("test/ca-csr.json", "someCN", subject)
 	if err != nil {
 		t.Fatalf("error creating CA: %v", err)
 	}
@@ -73,6 +73,26 @@ func TestGenerateNewCertificate(t *testing.T) {
 
 	if parsedCert.Subject.CommonName != req.CN {
 		t.Errorf("common name mismatch: expected %q, but got %q", req.CN, parsedCert.Subject.CommonName)
+	}
+
+	if parsedCert.Subject.Organization[0] != req.Names[0].O {
+		t.Errorf("organization mismatch: expected %q, but got %q", req.Names[0].O, parsedCert.Subject.Organization)
+	}
+
+	if parsedCert.Subject.OrganizationalUnit[0] != req.Names[0].OU {
+		t.Errorf("organizational unit mismatch: expected %q, but got %q", req.Names[0].OU, parsedCert.Subject.OrganizationalUnit)
+	}
+
+	if parsedCert.Subject.Country[0] != req.Names[0].C {
+		t.Errorf("country mismatch: expected %q, but got %q", req.Names[0].C, parsedCert.Subject.Country[0])
+	}
+
+	if parsedCert.Subject.Locality[0] != req.Names[0].L {
+		t.Errorf("locality mismatch: expected %q, but got %q", req.Names[0].L, parsedCert.Subject.Locality[0])
+	}
+
+	if parsedCert.Subject.Province[0] != req.Names[0].ST {
+		t.Errorf("state mismatch: expected %q, but got %q", req.Names[0].ST, parsedCert.Subject.Province[0])
 	}
 
 	if !reflect.DeepEqual(parsedCert.Issuer, parsedCACert.Subject) {

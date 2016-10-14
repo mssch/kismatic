@@ -49,12 +49,7 @@ func getPlan() *Plan {
 		Cluster: Cluster{
 			Name: "someName",
 			Certificates: CertsConfig{
-				Expiry:             "1h",
-				LocationCity:       "someCity",
-				LocationState:      "someState",
-				LocationCountry:    "someCountry",
-				Organization:       "someOrganization",
-				OrganizationalUnit: "someOrgUnit",
+				Expiry: "1h",
 			},
 			Networking: NetworkConfig{
 				ServiceCIDRBlock: "10.0.0.0/24", // required for DNS service
@@ -70,13 +65,11 @@ func getPlan() *Plan {
 			},
 		},
 		Master: MasterNodeGroup{
-			NodeGroup: NodeGroup{
-				Nodes: []Node{
-					Node{
-						Host:       "master",
-						IP:         "99.99.99.99",
-						InternalIP: "88.88.88.88",
-					},
+			Nodes: []Node{
+				Node{
+					Host:       "master",
+					IP:         "99.99.99.99",
+					InternalIP: "88.88.88.88",
 				},
 			},
 			LoadBalancedFQDN:      "someFQDN",
@@ -99,20 +92,20 @@ func validateCertSubject(t *testing.T, cert *x509.Certificate, p *Plan) {
 	if cert.Subject.CommonName != p.Cluster.Name {
 		t.Errorf("common name mismatch: expected %q, but got %q", p.Cluster.Name, cert.Subject.CommonName)
 	}
-	if cert.Subject.Country[0] != p.Cluster.Certificates.LocationCountry {
-		t.Errorf("invalid country in subject. Expected %q, but got %q", p.Cluster.Certificates.LocationCountry, cert.Subject.Country[0])
+	if cert.Subject.Country[0] != certCountry {
+		t.Errorf("country mismatch: expected %q, but got %q", certCountry, cert.Subject.Country[0])
 	}
-	if cert.Subject.Locality[0] != p.Cluster.Certificates.LocationCity {
-		t.Errorf("invalid locality in generated cert. Expected %q but got %q", p.Cluster.Certificates.LocationCity, cert.Subject.Locality[0])
+	if cert.Subject.Locality[0] != certLocality {
+		t.Errorf("locality mismatch: expected %q, but got %q", certLocality, cert.Subject.Locality[0])
 	}
-	if cert.Subject.Province[0] != p.Cluster.Certificates.LocationState {
-		t.Errorf("invalid province in generated cert. Expected %q but got %q", p.Cluster.Certificates.LocationState, cert.Subject.Province[0])
+	if cert.Subject.Province[0] != certState {
+		t.Errorf("province mismatch: expected %q, but got %q", certState, cert.Subject.Province[0])
 	}
-	if cert.Subject.Organization[0] != p.Cluster.Certificates.Organization {
-		t.Errorf("invalid organization in generated cert. Expected %q but got %q", p.Cluster.Certificates.Organization, cert.Subject.Organization[0])
+	if cert.Subject.Organization[0] != certOrganization {
+		t.Errorf("invalid organization in generated cert. Expected %q but got %q", certOrganization, cert.Subject.Organization[0])
 	}
-	if cert.Subject.OrganizationalUnit[0] != p.Cluster.Certificates.OrganizationalUnit {
-		t.Errorf("invalid organizational unit in generated cert. Expected %q but got %q", p.Cluster.Certificates.OrganizationalUnit, cert.Subject.OrganizationalUnit[0])
+	if cert.Subject.OrganizationalUnit[0] != certOrgUnit {
+		t.Errorf("invalid organizational unit in generated cert. Expected %q but got %q", certOrgUnit, cert.Subject.OrganizationalUnit[0])
 	}
 }
 
