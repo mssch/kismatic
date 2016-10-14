@@ -91,6 +91,9 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 	p.Cluster.Certificates.LocationState = "New York"
 	p.Cluster.Certificates.LocationCountry = "US"
 
+	// Set DockerRegistry defaults
+	p.DockerRegistry.Port = 443
+
 	// Generate entries for all node types
 	n := Node{Host: "shortname", IP: "127.0.0.1"}
 	for i := 0; i < p.Etcd.ExpectedCount; i++ {
@@ -147,7 +150,12 @@ cluster:
     ssh_key: {{$p.Cluster.SSH.Key}}
     ssh_port: {{$p.Cluster.SSH.Port}}
 docker_registry:
-    use_internal: {{$p.DockerRegistry.UseInternal}}
+    setup_internal: {{$p.DockerRegistry.SetupInternal}}
+    address: {{$p.DockerRegistry.Address}}
+    port:
+    ca_path: {{$p.DockerRegistry.CAPath}}
+    cert_path: {{$p.DockerRegistry.CertPath}}
+    cert_key_path: {{$p.DockerRegistry.CertKeyPath}}
 etcd:
   expected_count: {{$p.Etcd.ExpectedCount}}
   nodes:

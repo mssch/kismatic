@@ -192,6 +192,26 @@ func (n *Node) validate() (bool, []error) {
 
 func (dr *DockerRegistry) validate() (bool, []error) {
 	v := newValidator()
-	// TODO add validation when there are more options
+	if dr.SetupInternal == true && (dr.Address != "" || dr.CAPath != "" || dr.CertPath != "" || dr.CertKeyPath != "") {
+		v.addError(fmt.Errorf("Cannot use_internal registry when DockerRegistry address, ca_path, cert_path, or cart_key_path is provided"))
+	}
+	if dr.Address == "" && (dr.CAPath != "" || dr.CertPath != "" || dr.CertKeyPath != "") {
+		v.addError(fmt.Errorf("Docker Registry address cannot be empty when ca_path, cert_path and cart_key_path are provided"))
+	}
+	if dr.Address != "" && (dr.Port < 1 || dr.Port > 65535) {
+		v.addError(fmt.Errorf("Docker Registry port %d is invalid. Port must be in the range 1-65535", dr.Port))
+	}
+	if dr.Address != "" && (dr.CAPath == "" || dr.CertKeyPath == "" || dr.CertPath == "") {
+		v.addError(fmt.Errorf("Docker Registry ca_path, cert_path and cart_key_path cannot be empty when registry address is provided"))
+	}
+	if _, err := os.Stat(dr.CAPath); dr.CAPath != "" && os.IsNotExist(err) {
+		v.addError(fmt.Errorf("Docker Registry CA file was not found at %q", dr.CAPath))
+	}
+	if _, err := os.Stat(dr.CertPath); dr.CertPath != "" && os.IsNotExist(err) {
+		v.addError(fmt.Errorf("Docker Registry certificate file was not found at %q", dr.CertPath))
+	}
+	if _, err := os.Stat(dr.CertKeyPath); dr.CertKeyPath != "" && os.IsNotExist(err) {
+		v.addError(fmt.Errorf("Docker Registry certificate key file was not found at %q", dr.CertKeyPath))
+	}
 	return v.valid()
 }

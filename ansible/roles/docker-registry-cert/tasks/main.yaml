@@ -16,7 +16,7 @@
   # copy ca
   - name: copy {{ docker_certificates_ca_file_name }}
     copy:
-      src: "{{ tls_directory }}/ca.pem"
+      src: "{{ docker_certificates_ca_path }}"
       dest: "{{ docker_self_signed_cert_dir }}/ca.crt"
       owner: "{{ docker_certificates_owner }}"
       group: "{{ docker_certificates_group }}"

@@ -10,4 +10,4 @@
     roles:
       - docker
       - role: docker-registry-cert
-        when: enable_docker_registry is defined and enable_docker_registry|bool == true
+        when: use_private_docker_registry is defined and use_private_docker_registry|bool == true

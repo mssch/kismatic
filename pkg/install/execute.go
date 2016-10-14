@@ -172,7 +172,22 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"kubernetes_dns_service_ip": dnsIP,
 		"modify_hosts_file":         strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
 		"enable_calico_policy":      strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
-		"enable_docker_registry":    strconv.FormatBool(p.DockerRegistry.UseInternal),
+	}
+	// Setup an internal Docker registry or use a provided one
+	// Else just use DockerHub
+	if p.DockerRegistry.SetupInternal || p.DockerRegistry.Address != "" {
+		ev["use_private_docker_registry"] = "true"
+	}
+	ev["setup_internal_docker_registry"] = strconv.FormatBool(p.DockerRegistry.SetupInternal)
+
+	// TODO fix hostname and port
+	// Use user provided details for Docker registry
+	if p.DockerRegistry.Address != "" {
+		ev["docker_certificates_ca_path"] = p.DockerRegistry.CAPath
+		ev["docker_certificates_cert_path"] = p.DockerRegistry.CertPath
+		ev["docker_certificates_key_path"] = p.DockerRegistry.CertKeyPath
+		ev["docker_registry_address"] = p.DockerRegistry.Address
+		ev["docker_registry_port"] = strconv.Itoa(p.DockerRegistry.Port)
 	}
 
 	if ae.options.RestartServices {
@@ -303,7 +318,7 @@ func (ae *ansibleExecutor) generateTLSAssets(p *Plan) (certsDir string, err erro
 			return "", fmt.Errorf("error generating CA for the cluster: %v", err)
 		}
 	} else {
-		util.PrettyPrintOk(ae.stdout, "Skipping Certificate Authority generation\n")
+		util.PrettyPrintOk(ae.stdout, "Skipping Certificate Authority generation")
 		ca, err = pki.ReadClusterCA(p)
 		if err != nil {
 			return "", fmt.Errorf("error reading cluster CA: %v", err)
