@@ -21,10 +21,18 @@ const (
 
 var token = os.Getenv("PACKET_TOKEN")
 var projectID = os.Getenv("PACKET_PROJECT_ID")
-var sshKey = os.Getenv("PACKET_SSH_KEY")
+var SSHKey = os.Getenv("PACKET_SSH_KEY")
 var sshUser = "root"
 
 var client *packngo.Client
+
+// Node is a Packet.net node
+type Node struct {
+	ID          string
+	Host        string
+	PublicIPv4  string
+	PrivateIPv4 string
+}
 
 func init() {
 	if token == "" {
@@ -33,14 +41,14 @@ func init() {
 	if projectID == "" {
 		log.Fatal("PACKET_PROJECT_ID environment variable must be set")
 	}
-	if sshKey == "" {
+	if SSHKey == "" {
 		log.Fatal("PACKET_SSH_KEY environment variable must be set")
 	}
 	client = packngo.NewClient("", token, http.DefaultClient)
 }
 
 // CreateNode creates a node in packet with the given hostname and OS
-func CreateNode(hostname string, os OS) (*packngo.Device, error) {
+func CreateNode(hostname string, os OS) (*Node, error) {
 	device := &packngo.DeviceCreateRequest{
 		HostName:     hostname,
 		OS:           string(os),
@@ -54,7 +62,10 @@ func CreateNode(hostname string, os OS) (*packngo.Device, error) {
 	if err != nil {
 		return nil, err
 	}
-	return dev, nil
+	node := &Node{
+		ID: dev.ID,
+	}
+	return node, nil
 }
 
 // DeleteNode deletes the node that matches the given ID
@@ -67,6 +78,24 @@ func DeleteNode(deviceID string) error {
 		return fmt.Errorf("failed to delete node with ID %q", deviceID)
 	}
 	return nil
+}
+
+// GetNode returns the node that matches the given ID
+func GetNode(deviceID string) (*Node, error) {
+	dev, _, err := client.Devices.Get(deviceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get device %q: %v", deviceID, err)
+	}
+	if dev == nil {
+		return nil, fmt.Errorf("did not get a device from server")
+	}
+	node := &Node{
+		ID:          deviceID,
+		Host:        dev.Hostname,
+		PublicIPv4:  getPublicIPv4(dev),
+		PrivateIPv4: getPrivateIPv4(dev),
+	}
+	return node, nil
 }
 
 // BlockUntilNodeAccessible blocks until the given node is accessible,
@@ -149,9 +178,21 @@ func getPublicIPv4(device *packngo.Device) string {
 	return ""
 }
 
+func getPrivateIPv4(device *packngo.Device) string {
+	for _, net := range device.Network {
+		if net.Public == true || net.AddressFamily != 4 {
+			continue
+		}
+		if net.Address != "" {
+			return net.Address
+		}
+	}
+	return ""
+}
+
 func sshAccessible(ip string) bool {
 	cmd := exec.Command("ssh")
-	cmd.Args = append(cmd.Args, "-i", sshKey)
+	cmd.Args = append(cmd.Args, "-i", SSHKey)
 	cmd.Args = append(cmd.Args, "-o", "ConnectTimeout=5")
 	cmd.Args = append(cmd.Args, "-o", "BatchMode=yes")
 	cmd.Args = append(cmd.Args, "-o", "StrictHostKeyChecking=no")

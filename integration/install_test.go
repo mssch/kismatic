@@ -13,6 +13,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/apprenda/kismatic-platform/integration/packet"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -177,6 +179,20 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			})
 		})
 	})
+
+	Describe("Calling installer with a plan targetting Packet.net infrastructure", func() {
+		Context("Using a Minikube CentOS 7 layout with overlay network", func() {
+			It("should result in a working cluster", func() {
+				nc := NodeCount{
+					Etcd:   1,
+					Master: 1,
+					Worker: 1,
+				}
+				packetInstallKismatic(packet.Ubuntu1604LTS, nc)
+			})
+		})
+	})
+
 })
 
 func installKismaticWithABadNode() {
