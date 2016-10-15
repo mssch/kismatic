@@ -13,3 +13,5 @@
   - name: verify calico-node is running
     command: systemctl status calico-node
     changed_when: false
+    retries: 12
+    delay: 10

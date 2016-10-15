@@ -2,7 +2,6 @@
   - hosts: master:!worker
     any_errors_fatal: true
     name: "Smoke test Master Nodes"
-    serial: 1
     remote_user: root
     become_method: sudo
     vars_files:

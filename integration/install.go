@@ -428,24 +428,40 @@ func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 		Hostname:   hostname,
 	}
 
-	params := &ec2.ModifyInstanceAttributeInput{
-		InstanceId: aws.String(deets.Instanceid), // Required
-		SourceDestCheck: &ec2.AttributeBooleanValue{
-			Value: aws.Bool(false),
-		},
-	}
-	_, err2 := svc.ModifyInstanceAttribute(params)
+	for i := 1; i < 4; i++ { //
+		params := &ec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(deets.Instanceid), // Required
+			SourceDestCheck: &ec2.AttributeBooleanValue{
+				Value: aws.Bool(false),
+			},
+		}
+		svc = ec2.New(session.New(&aws.Config{Region: aws.String(TARGET_REGION)}))
+		_, err2 := svc.ModifyInstanceAttribute(params)
 
-	if err2 != nil {
-		return AWSNodeDeets{}, err2
+		if err2 != nil {
+			if i == 3 {
+				return AWSNodeDeets{}, err2
+			}
+			fmt.Printf("Error encountered; retry %v (%V)", i, err2)
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		break
 	}
 
+	thisHost, _ := os.Hostname()
+
+	svc = ec2.New(session.New(&aws.Config{Region: aws.String(TARGET_REGION)}))
 	_, errtag := svc.CreateTags(&ec2.CreateTagsInput{
 		Resources: []*string{aws.String(deets.Instanceid)},
 		Tags: []*ec2.Tag{
 			{
 				Key:   aws.String("ApprendaTeam"),
 				Value: aws.String("Kismatic"),
+			},
+			{
+				Key:   aws.String("CreatedBy"),
+				Value: aws.String(thisHost),
 			},
 		},
 	})
