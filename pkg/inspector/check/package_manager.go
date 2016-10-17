@@ -28,9 +28,17 @@ func NewPackageManager(distro Distro) (PackageManager, error) {
 		return &debManager{
 			run: run,
 		}, nil
+	case Darwin:
+		return noopManager{}, nil
 	default:
 		return nil, fmt.Errorf("%s is not supported", distro)
 	}
+}
+
+type noopManager struct{}
+
+func (noopManager) IsAvailable(PackageQuery) (bool, error) {
+	return false, fmt.Errorf("unable to determine if package is available using noop pkg manager")
 }
 
 // package manager for EL-based distributions
