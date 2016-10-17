@@ -103,10 +103,10 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []str
 		seenNodes[n.Host] = true
 		names := []string{}
 		names = append(names, defaultCertHosts...)
-		if p.Master.LoadBalancedFQDN != "" {
+		if p.Master.LoadBalancedFQDN != "" && p.Master.LoadBalancedFQDN != n.Host {
 			names = append(names, p.Master.LoadBalancedFQDN)
 		}
-		if p.Master.LoadBalancedShortName != "" {
+		if p.Master.LoadBalancedShortName != "" && p.Master.LoadBalancedShortName != n.Host {
 			names = append(names, p.Master.LoadBalancedShortName)
 		}
 		if err := lp.generateNodeCert(p, n, ca, names); err != nil {
