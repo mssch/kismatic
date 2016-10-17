@@ -44,6 +44,17 @@
     template:
       src: 10-calico.conf.j2
       dest: "{{ network_plugin_dir }}/10-calico.conf"
+  # Check if default pool exists
+  - name: check if default pool ({{dafault_cidr}})  exists
+    command: calicoctl pool show --ipv4
+    register: calico_default_pool_check
+    environment:
+      DEFAULT_IPV4: "{{ internal_ipv4 }}"
+      ETCD_ENDPOINTS: "{{ etcd_networking_cluster_ip_list }}"
+      ETCD_CA_CERT_FILE: "{{ kubernetes_certificates_ca_path }}"
+      ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
+      ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
+    when: "'master' in group_names"
   - name: remove default CIDR - {{ dafault_cidr }}
     command: calicoctl pool remove {{ dafault_cidr }}
     environment:
@@ -53,7 +64,8 @@
       ETCD_CERT_FILE: "{{ kubernetes_certificates_cert_path }}"
       ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
     ignore_errors: yes # TODO better way to handle when this is run more than once
-    when: "'master' in group_names" # only run on masters
+    # Only run on Master nodes if the default pool exists
+    when: "'master' in group_names and '{{ dafault_cidr }}' in calico_default_pool_check.stdout"
     run_once: true
   # Two networking modes are supported: 'routed' and 'overlay'. Depending on the mode
   # the pool flags change. Mainly, --ipip is added when 'overlay' is specified.
