@@ -30,6 +30,7 @@ type Runner interface {
 	// WaitPlaybook blocks until the execution of the playbook is complete. If an error occurred,
 	// it is returned. Otherwise, returns nil to signal the completion of the playbook.
 	WaitPlaybook() error
+	StartPlaybookOnNode(playbookFile string, inventory Inventory, vars ExtraVars, node string) (<-chan Event, error)
 }
 
 type runner struct {
@@ -93,6 +94,15 @@ func (r *runner) WaitPlaybook() error {
 
 // RunPlaybook with the given inventory and extra vars
 func (r *runner) StartPlaybook(playbookFile string, inv Inventory, vars ExtraVars) (<-chan Event, error) {
+	return r.startPlaybook(playbookFile, inv, vars, "") // Don't set the --limit arg
+}
+
+func (r *runner) StartPlaybookOnNode(playbookFile string, inv Inventory, vars ExtraVars, node string) (<-chan Event, error) {
+	limitArg := node // set the --limit arg to the node we want to target
+	return r.startPlaybook(playbookFile, inv, vars, limitArg)
+}
+
+func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVars, limitArg string) (<-chan Event, error) {
 	extraVars, err := vars.commandLineVars()
 	if err != nil {
 		return nil, fmt.Errorf("error building extra vars: %v", err)
@@ -107,6 +117,11 @@ func (r *runner) StartPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	cmd := exec.Command(filepath.Join(r.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbook, "--extra-vars", extraVars)
 	cmd.Stdout = r.out
 	cmd.Stderr = r.errOut
+
+	if limitArg != "" {
+		cmd.Args = append(cmd.Args, "--limit", limitArg)
+	}
+
 	os.Setenv("PYTHONPATH", r.pythonPath)
 	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
