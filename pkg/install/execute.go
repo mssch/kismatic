@@ -146,7 +146,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	if err != nil {
 		return fmt.Errorf("error creating working directory for installation: %v", err)
 	}
-
 	// Save the plan file that was used for this execution
 	fp := FilePlanner{
 		File: filepath.Join(runDirectory, "kismatic-cluster.yaml"),
@@ -154,20 +153,16 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	if err = fp.Write(p); err != nil {
 		return fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
 	}
-
 	// Generate private keys and certificates for the cluster
 	if err = ae.generateTLSAssets(p); err != nil {
 		return err
 	}
-
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(p)
-
 	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
 		return fmt.Errorf("error getting DNS service IP: %v", err)
 	}
-
 	// Need absolute path for ansible. Otherwise ansible looks for it in the wrong place.
 	tlsDir, err := filepath.Abs(ae.certsDir)
 	if err != nil {
@@ -185,20 +180,17 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"enable_calico_policy":      strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
 		"enable_docker_registry":    strconv.FormatBool(p.DockerRegistry.UseInternal),
 	}
-
 	if ae.options.RestartServices {
 		services := []string{"etcd", "apiserver", "controller_manager", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
 		for _, s := range services {
 			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
 		}
 	}
-
 	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
 	ansibleLogFile, err := os.Create(ansibleLogFilename)
 	if err != nil {
 		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
 	}
-
 	// Run the installation playbook
 	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
 	playbook := "kubernetes.yaml"
@@ -206,7 +198,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, ev, ansibleLogFile); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -237,7 +228,6 @@ func (ae *ansibleExecutor) AddWorker(p *Plan, newWorker Node) error {
 	if err != nil {
 		return fmt.Errorf("error getting DNS service IP: %v", err)
 	}
-
 	// Need absolute path for ansible. Otherwise ansible looks for it in the wrong place.
 	tlsDir, err := filepath.Abs(generatedCertsDir)
 	if err != nil {
@@ -245,10 +235,8 @@ func (ae *ansibleExecutor) AddWorker(p *Plan, newWorker Node) error {
 	}
 	ev := ansible.ExtraVars{
 		"kubernetes_cluster_name":   p.Cluster.Name,
-		"kubernetes_admin_password": p.Cluster.AdminPassword,
 		"tls_directory":             tlsDir,
 		"calico_network_type":       p.Cluster.Networking.Type,
-		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
 		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
 		"kubernetes_dns_service_ip": dnsIP,
 		"modify_hosts_file":         strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
@@ -268,7 +256,7 @@ func (ae *ansibleExecutor) AddWorker(p *Plan, newWorker Node) error {
 	}
 	// Run the installation playbook
 	util.PrintHeader(ae.stdout, "Adding Worker Node to Cluster", '=')
-	playbook := "kubernetes.yaml"
+	playbook := "kubernetes-worker.yaml"
 	eventExplainer := &explain.DefaultEventExplainer{}
 	runner, explainer, err := ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLogFile)
 	if err != nil {
@@ -280,7 +268,6 @@ func (ae *ansibleExecutor) AddWorker(p *Plan, newWorker Node) error {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
 	go explainer.Explain(eventStream)
-
 	// Wait until ansible exits
 	if err = runner.WaitPlaybook(); err != nil {
 		return fmt.Errorf("error running playbook: %v", err)

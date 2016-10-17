@@ -44,6 +44,7 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 				RestartServices:          opts.RestartServices,
 				OutputFormat:             opts.OutputFormat,
 				Verbose:                  opts.Verbose,
+				SkipCAGeneration:         true,
 			}
 			executor, err := install.NewExecutor(out, os.Stderr, execOpts)
 			if err != nil {
@@ -58,9 +59,10 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 				IP:         args[1],
 				InternalIP: opts.WorkerInternalIP,
 			}
-			// Run pre-flight on the new node
-			if err := runPreFlightOnWorker(executor, *plan, node); err != nil {
-				return err
+			if !opts.SkipPreFlight {
+				if err := runPreFlightOnWorker(executor, *plan, node); err != nil {
+					return err
+				}
 			}
 			if err := executor.AddWorker(plan, node); err != nil {
 				return err
@@ -87,10 +89,4 @@ func runPreFlightOnWorker(executor install.Executor, plan install.Plan, workerNo
 	preFlightPlan.Etcd.Nodes = []install.Node{}
 	preFlightPlan.Worker.Nodes = []install.Node{workerNode}
 	return executor.RunPreFlightCheck(&preFlightPlan)
-}
-
-func addWorkerToPlan(plan install.Plan, node install.Node) *install.Plan {
-	plan.Worker.ExpectedCount++
-	plan.Worker.Nodes = append(plan.Worker.Nodes, node)
-	return &plan
 }
