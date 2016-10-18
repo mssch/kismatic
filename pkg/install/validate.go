@@ -114,16 +114,6 @@ func (c *CertsConfig) validate() (bool, []error) {
 	if _, err := time.ParseDuration(c.Expiry); err != nil {
 		v.addError(fmt.Errorf("Invalid certificate expiry %q provided: %v", c.Expiry, err))
 	}
-
-	if c.LocationCity == "" {
-		v.addError(errors.New("Certificate location_city field is required"))
-	}
-	if c.LocationState == "" {
-		v.addError(errors.New("Certificate location_state field is required"))
-	}
-	if c.LocationCountry == "" {
-		v.addError(errors.New("Certificate location_country field is required"))
-	}
 	return v.valid()
 }
 

@@ -15,7 +15,6 @@ type applyCmd struct {
 	planner            install.Planner
 	executor           install.Executor
 	planFile           string
-	skipCAGeneration   bool
 	generatedAssetsDir string
 	verbose            bool
 	outputFormat       string
@@ -27,7 +26,6 @@ type applyOpts struct {
 	caConfigFile       string
 	caSigningProfile   string
 	generatedAssetsDir string
-	skipCAGeneration   bool
 	restartServices    bool
 	verbose            bool
 	outputFormat       string
@@ -37,7 +35,6 @@ type applyOpts struct {
 // NewCmdApply creates a cluter using the plan file
 func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	applyOpts := applyOpts{}
-	skipCAGeneration := false
 	cmd := &cobra.Command{
 		Use:   "apply",
 		Short: "apply your plan file to create a Kismatic cluster",
@@ -47,7 +44,6 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 				CAConfigFile:             applyOpts.caConfigFile,
 				CASigningRequest:         applyOpts.caCSR,
 				CASigningProfile:         applyOpts.caSigningProfile,
-				SkipCAGeneration:         applyOpts.skipCAGeneration,
 				GeneratedAssetsDirectory: applyOpts.generatedAssetsDir,
 				RestartServices:          applyOpts.restartServices,
 				OutputFormat:             applyOpts.outputFormat,
@@ -64,7 +60,6 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 				planner:            planner,
 				executor:           executor,
 				planFile:           installOpts.planFilename,
-				skipCAGeneration:   skipCAGeneration,
 				generatedAssetsDir: applyOpts.generatedAssetsDir,
 				verbose:            applyOpts.verbose,
 				outputFormat:       applyOpts.outputFormat,
@@ -79,7 +74,6 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	cmd.Flags().StringVar(&applyOpts.caConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
 	cmd.Flags().StringVar(&applyOpts.caSigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
 	cmd.Flags().StringVar(&applyOpts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process are to be stored")
-	cmd.Flags().BoolVar(&applyOpts.skipCAGeneration, "skip-ca-generation", false, "skip CA generation and use an existing file")
 	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart clusters services (Use with care)")
 	cmd.Flags().BoolVar(&applyOpts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&applyOpts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
