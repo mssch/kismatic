@@ -12,6 +12,9 @@ import (
 	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
+var errMissingClusterCA = errors.New("The Certificate Authority's private key and certificate used to install " +
+	"the cluster are required for adding worker nodes.")
+
 // AddWorker adds a worker node to the original cluster described in the plan.
 // If successful, the updated plan is returned.
 func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan, error) {
@@ -127,8 +130,7 @@ func checkAddWorkerPrereqs(pki PKI, newWorker Node) error {
 			return fmt.Errorf("error while checking if cluster CA exists: %v", err)
 		}
 		if !caExists {
-			return errors.New("The Certificate Authority's private key and certificate used to install " +
-				"the cluster are required for adding worker nodes.")
+			return errMissingClusterCA
 		}
 	}
 	return nil

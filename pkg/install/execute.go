@@ -138,6 +138,9 @@ type ansibleExecutor struct {
 	ansibleDir          string
 	certsDir            string
 	pki                 PKI
+
+	// Hook for testing purposes.. default implementation is used at runtime
+	runnerExplainerFactory func(explain.AnsibleEventExplainer, io.Writer) (ansible.Runner, *explain.AnsibleEventStreamExplainer, error)
 }
 
 // Install the cluster according to the installation plan
@@ -324,6 +327,9 @@ func (ae *ansibleExecutor) runPlaybookWithExplainer(playbook string, eventExplai
 }
 
 func (ae *ansibleExecutor) getAnsibleRunnerAndExplainer(explainer explain.AnsibleEventExplainer, ansibleLog io.Writer) (ansible.Runner, *explain.AnsibleEventStreamExplainer, error) {
+	if ae.runnerExplainerFactory != nil {
+		return ae.runnerExplainerFactory(explainer, ansibleLog)
+	}
 	// Setup sinks for explainer and ansible stdout
 	var explainerOut, ansibleOut io.Writer
 	switch ae.consoleOutputFormat {
