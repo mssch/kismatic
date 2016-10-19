@@ -8,12 +8,23 @@ import (
 	"time"
 )
 
+// TODO: There is need to run validation against anything that is validatable.
+// Expose the validatable interface so that it can be consumed when
+// validating objects other than a Plan or a Node
+
 // ValidatePlan runs validation against the installation plan to ensure
 // that the plan contains valid user input. Returns true, nil if the validation
 // is successful. Otherwise, returns false and a collection of validation errors.
 func ValidatePlan(p *Plan) (bool, []error) {
 	v := newValidator()
 	v.validate(p)
+	return v.valid()
+}
+
+// ValidateNode runs validation against the given node.
+func ValidateNode(node *Node) (bool, []error) {
+	v := newValidator()
+	v.validate(node)
 	return v.valid()
 }
 

@@ -26,7 +26,7 @@ type Executor interface {
 	PreFlightExecutor
 	Install(p *Plan) error
 	RunSmokeTest(*Plan) error
-	AddWorker(p *Plan, newWorker Node) error
+	AddWorker(*Plan, Node) (*Plan, error)
 }
 
 // ExecutorOptions are used to configure the executor
@@ -197,80 +197,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	eventExplainer := &explain.DefaultEventExplainer{}
 	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, ev, ansibleLogFile); err != nil {
 		return err
-	}
-	return nil
-}
-
-// Install the cluster according to the installation plan
-func (ae *ansibleExecutor) AddWorker(p *Plan, newWorker Node) error {
-	runDirectory, err := ae.createRunDirectory("add-worker")
-	if err != nil {
-		return fmt.Errorf("error creating working directory for add-worker: %v", err)
-	}
-	// Add new node to worker list
-	p.Worker.ExpectedCount++
-	p.Worker.Nodes = append(p.Worker.Nodes, newWorker)
-	// Save the plan file that was used for this execution
-	fp := FilePlanner{
-		File: filepath.Join(runDirectory, "kismatic-cluster.yaml"),
-	}
-	if err = fp.Write(p); err != nil {
-		return fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
-	}
-	// Generate private keys and certificates for the cluster
-	generatedCertsDir, err := ae.generateTLSAssets(p)
-	if err != nil {
-		return err
-	}
-	// Build the ansible inventory
-	inventory := buildInventoryFromPlan(p)
-	dnsIP, err := getDNSServiceIP(p)
-	if err != nil {
-		return fmt.Errorf("error getting DNS service IP: %v", err)
-	}
-	// Need absolute path for ansible. Otherwise ansible looks for it in the wrong place.
-	tlsDir, err := filepath.Abs(generatedCertsDir)
-	if err != nil {
-		return fmt.Errorf("failed to determine absolute path to %s: %v", generatedCertsDir, err)
-	}
-	ev := ansible.ExtraVars{
-		"kubernetes_cluster_name":   p.Cluster.Name,
-		"tls_directory":             tlsDir,
-		"calico_network_type":       p.Cluster.Networking.Type,
-		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
-		"kubernetes_dns_service_ip": dnsIP,
-		"modify_hosts_file":         strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
-		"enable_calico_policy":      strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
-		"enable_docker_registry":    strconv.FormatBool(p.DockerRegistry.UseInternal),
-	}
-	if ae.options.RestartServices {
-		services := []string{"proxy", "kubelet", "calico_node", "docker"}
-		for _, s := range services {
-			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
-		}
-	}
-	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
-	ansibleLogFile, err := os.Create(ansibleLogFilename)
-	if err != nil {
-		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
-	}
-	// Run the installation playbook
-	util.PrintHeader(ae.stdout, "Adding Worker Node to Cluster", '=')
-	playbook := "kubernetes-worker.yaml"
-	eventExplainer := &explain.DefaultEventExplainer{}
-	runner, explainer, err := ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLogFile)
-	if err != nil {
-		return err
-	}
-	// Run the playbook on the new worker
-	eventStream, err := runner.StartPlaybookOnNode(playbook, inventory, ev, newWorker.Host)
-	if err != nil {
-		return fmt.Errorf("error running ansible playbook: %v", err)
-	}
-	go explainer.Explain(eventStream)
-	// Wait until ansible exits
-	if err = runner.WaitPlaybook(); err != nil {
-		return fmt.Errorf("error running playbook: %v", err)
 	}
 	return nil
 }

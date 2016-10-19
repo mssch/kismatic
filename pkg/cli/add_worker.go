@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/apprenda/kismatic-platform/pkg/install"
+	"github.com/apprenda/kismatic-platform/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -32,42 +33,9 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 			if len(args) != 2 {
 				return cmd.Usage()
 			}
-			planner := &install.FilePlanner{File: installOpts.planFilename}
-			if !planner.PlanExists() {
-				return errors.New("add-worker can only be used with an existin plan file")
-			}
-			execOpts := install.ExecutorOptions{
-				CAConfigFile:             opts.CAConfigFile,
-				CASigningProfile:         opts.CASigningProfile,
-				CASigningRequest:         opts.CASigningRequest,
-				GeneratedAssetsDirectory: opts.GeneratedAssetsDirectory,
-				RestartServices:          opts.RestartServices,
-				OutputFormat:             opts.OutputFormat,
-				Verbose:                  opts.Verbose,
-				SkipCAGeneration:         true,
-			}
-			executor, err := install.NewExecutor(out, os.Stderr, execOpts)
-			if err != nil {
-				return err
-			}
-			plan, err := planner.Read()
-			if err != nil {
-				return fmt.Errorf("failed to read plan file: %v", err)
-			}
-			node := install.Node{
-				Host:       args[0],
-				IP:         args[1],
-				InternalIP: opts.WorkerInternalIP,
-			}
-			if !opts.SkipPreFlight {
-				if err := runPreFlightOnWorker(executor, *plan, node); err != nil {
-					return err
-				}
-			}
-			if err := executor.AddWorker(plan, node); err != nil {
-				return err
-			}
-			return nil
+			workerHost := args[0]
+			workerIP := args[1]
+			return doAddWorker(out, installOpts.planFilename, opts, workerHost, workerIP)
 		},
 	}
 	cmd.Flags().StringVar(&opts.CASigningRequest, "ca-csr", "ansible/playbooks/tls/ca-csr.json", "path to the Certificate Authority CSR")
@@ -80,6 +48,78 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 	cmd.Flags().BoolVar(&opts.SkipPreFlight, "skip-preflight", false, "skip pre-flight checks")
 	cmd.Flags().StringVar(&opts.WorkerInternalIP, "worker-internal-ip", "", "the internal IP of the worker, if different than the IP.")
 	return cmd
+}
+
+func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, workerHost string, workerIP string) error {
+	planner := &install.FilePlanner{File: planFile}
+	if !planner.PlanExists() {
+		return errors.New("add-worker can only be used with an existin plan file")
+	}
+	execOpts := install.ExecutorOptions{
+		CAConfigFile:             opts.CAConfigFile,
+		CASigningProfile:         opts.CASigningProfile,
+		CASigningRequest:         opts.CASigningRequest,
+		GeneratedAssetsDirectory: opts.GeneratedAssetsDirectory,
+		RestartServices:          opts.RestartServices,
+		OutputFormat:             opts.OutputFormat,
+		Verbose:                  opts.Verbose,
+		SkipCAGeneration:         true,
+	}
+	executor, err := install.NewExecutor(out, os.Stderr, execOpts)
+	if err != nil {
+		return err
+	}
+	plan, err := planner.Read()
+	if err != nil {
+		return fmt.Errorf("failed to read plan file: %v", err)
+	}
+	node := install.Node{
+		Host:       workerHost,
+		IP:         workerIP,
+		InternalIP: opts.WorkerInternalIP,
+	}
+	if _, errs := install.ValidateNode(&node); errs != nil {
+		printValidationErrors(out, errs)
+		return errors.New("information provided about the new worker node is invalid")
+	}
+	if _, errs := install.ValidatePlan(plan); errs != nil {
+		printValidationErrors(out, errs)
+		return errors.New("the plan file failed validation")
+	}
+	if err := ensureNodeIsNew(*plan, node); err != nil {
+		return err
+	}
+	if !opts.SkipPreFlight {
+		util.PrintHeader(out, "Running Pre-Flight Checks On New Worker", '=')
+		if err := runPreFlightOnWorker(executor, *plan, node); err != nil {
+			return err
+		}
+	}
+	updatedPlan, err := executor.AddWorker(plan, node)
+	if err != nil {
+		return err
+	}
+	if err := planner.Write(updatedPlan); err != nil {
+		return fmt.Errorf("error updating plan file to inlcude new worker node: %v", err)
+	}
+	return nil
+}
+
+// returns an error if the plan contains a worker that is "equivalent"
+// to the new worker that is being added
+func ensureNodeIsNew(plan install.Plan, newWorker install.Node) error {
+	for _, n := range plan.Worker.Nodes {
+		if n.Host == newWorker.Host {
+			return fmt.Errorf("according to the plan file, the host name of the new node is already being used by another worker node")
+		}
+		if n.IP == newWorker.IP {
+			return fmt.Errorf("according to the plan file, the IP of the new node is already being used by another worker node")
+		}
+		if newWorker.InternalIP != "" && n.InternalIP == newWorker.InternalIP {
+			return fmt.Errorf("according to the plan file, the internal IP of the new node is already being used by another worker node")
+		}
+	}
+	return nil
 }
 
 func runPreFlightOnWorker(executor install.Executor, plan install.Plan, workerNode install.Node) error {
