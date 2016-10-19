@@ -12,4 +12,5 @@
   # verify service
   - name: verify kube-apiserver is running
     command: systemctl status kube-apiserver
-    changed_when: false
+    retries: 5
+    delay: 3

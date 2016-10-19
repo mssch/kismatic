@@ -12,4 +12,5 @@
   # verify service
   - name: verify calico-node is running
     command: systemctl status calico-node
-    changed_when: false
+    retries: 5
+    delay: 3
