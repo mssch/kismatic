@@ -61,16 +61,6 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
 
-	// Validate options
-	if options.CASigningRequest == "" {
-		return nil, fmt.Errorf("CASigningRequest option cannot be empty")
-	}
-	if options.CAConfigFile == "" {
-		return nil, fmt.Errorf("CAConfigFile option cannot be empty")
-	}
-	if options.CASigningProfile == "" {
-		return nil, fmt.Errorf("CASigningProfile option cannot be empty")
-	}
 	if options.GeneratedAssetsDirectory == "" {
 		return nil, fmt.Errorf("GeneratedAssetsDirectory option cannot be empty")
 	}
