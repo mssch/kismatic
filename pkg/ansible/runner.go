@@ -30,6 +30,9 @@ type Runner interface {
 	// WaitPlaybook blocks until the execution of the playbook is complete. If an error occurred,
 	// it is returned. Otherwise, returns nil to signal the completion of the playbook.
 	WaitPlaybook() error
+	// StartPlaybookOnNode runs the playbook asynchronously with the given inventory and extra vars
+	// against the specific node.
+	// It returns a read-only channel that must be consumed for the playbook execution to proceed.
 	StartPlaybookOnNode(playbookFile string, inventory Inventory, vars ExtraVars, node string) (<-chan Event, error)
 }
 
@@ -97,6 +100,9 @@ func (r *runner) StartPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	return r.startPlaybook(playbookFile, inv, vars, "") // Don't set the --limit arg
 }
 
+// StartPlaybookOnNode runs the playbook asynchronously with the given inventory and extra vars
+// against the specific node.
+// It returns a read-only channel that must be consumed for the playbook execution to proceed.
 func (r *runner) StartPlaybookOnNode(playbookFile string, inv Inventory, vars ExtraVars, node string) (<-chan Event, error) {
 	limitArg := node // set the --limit arg to the node we want to target
 	return r.startPlaybook(playbookFile, inv, vars, limitArg)
