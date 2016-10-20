@@ -55,7 +55,7 @@ func AddWorkerToKismaticMini(awsos AWSOSDetails) {
 	FailIfError(err, "Error applying plan")
 
 	g.By("Adding new worker")
-	app = exec.Command("./kismatic", "install", "add-worker", "-f", f.Name(), newWorker.Hostname, newWorker.Publicip, "--internal-ip", newWorker.Privateip)
+	app = exec.Command("./kismatic", "install", "add-worker", "-f", f.Name(), newWorker.Hostname, newWorker.Publicip, newWorker.Privateip)
 	app.Stdout = os.Stdout
 	app.Stderr = os.Stderr
 	err = app.Run()

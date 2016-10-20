@@ -12,6 +12,8 @@ import (
 )
 
 type addWorkerOpts struct {
+	CAConfigFile             string
+	CASigningProfile         string
 	GeneratedAssetsDirectory string
 	RestartServices          bool
 	OutputFormat             string
@@ -24,17 +26,24 @@ type addWorkerOpts struct {
 func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 	opts := &addWorkerOpts{}
 	cmd := &cobra.Command{
-		Use:   "add-worker WORKER_NAME WORKER_IP",
+		Use:   "add-worker WORKER_NAME WORKER_IP [WORKER_INTERNAL_IP]",
 		Short: "add a Worker node to an existing Kismatic cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 2 {
+			if len(args) < 2 || len(args) > 3 {
 				return cmd.Usage()
 			}
-			workerHost := args[0]
-			workerIP := args[1]
-			return doAddWorker(out, installOpts.planFilename, opts, workerHost, workerIP)
+			newWorker := install.Node{
+				Host: args[0],
+				IP:   args[1],
+			}
+			if len(args) == 3 {
+				newWorker.InternalIP = args[2]
+			}
+			return doAddWorker(out, installOpts.planFilename, opts, newWorker)
 		},
 	}
+	cmd.Flags().StringVar(&opts.CAConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
+	cmd.Flags().StringVar(&opts.CASigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
 	cmd.Flags().StringVar(&opts.GeneratedAssetsDirectory, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process are to be stored")
 	cmd.Flags().BoolVar(&opts.RestartServices, "restart-services", false, "force restart clusters services (Use with care)")
 	cmd.Flags().BoolVar(&opts.Verbose, "verbose", false, "enable verbose logging from the installation")
@@ -44,12 +53,14 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 	return cmd
 }
 
-func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, workerHost string, workerIP string) error {
+func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, newWorker install.Node) error {
 	planner := &install.FilePlanner{File: planFile}
 	if !planner.PlanExists() {
 		return errors.New("add-worker can only be used with an existin plan file")
 	}
 	execOpts := install.ExecutorOptions{
+		CAConfigFile:             opts.CAConfigFile,
+		CASigningProfile:         opts.CASigningProfile,
 		GeneratedAssetsDirectory: opts.GeneratedAssetsDirectory,
 		RestartServices:          opts.RestartServices,
 		OutputFormat:             opts.OutputFormat,
@@ -64,12 +75,7 @@ func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, workerHost
 	if err != nil {
 		return fmt.Errorf("failed to read plan file: %v", err)
 	}
-	node := install.Node{
-		Host:       workerHost,
-		IP:         workerIP,
-		InternalIP: opts.WorkerInternalIP,
-	}
-	if _, errs := install.ValidateNode(&node); errs != nil {
+	if _, errs := install.ValidateNode(&newWorker); errs != nil {
 		printValidationErrors(out, errs)
 		return errors.New("information provided about the new worker node is invalid")
 	}
@@ -77,16 +83,16 @@ func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, workerHost
 		printValidationErrors(out, errs)
 		return errors.New("the plan file failed validation")
 	}
-	if err := ensureNodeIsNew(*plan, node); err != nil {
+	if err := ensureNodeIsNew(*plan, newWorker); err != nil {
 		return err
 	}
 	if !opts.SkipPreFlight {
 		util.PrintHeader(out, "Running Pre-Flight Checks On New Worker", '=')
-		if err := runPreFlightOnWorker(executor, *plan, node); err != nil {
+		if err := runPreFlightOnWorker(executor, *plan, newWorker); err != nil {
 			return err
 		}
 	}
-	updatedPlan, err := executor.AddWorker(plan, node)
+	updatedPlan, err := executor.AddWorker(plan, newWorker)
 	if err != nil {
 		return err
 	}
