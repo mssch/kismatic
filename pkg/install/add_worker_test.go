@@ -204,7 +204,7 @@ func TestAddWorkerRestartServicesEnabled(t *testing.T) {
 	expectedServicesToRestart := []string{"proxy", "kubelet", "calico_node", "docker"}
 	for _, svc := range expectedServicesToRestart {
 		found := false
-		for k, v := range fakeRunner.incomingVars {
+		for k, v := range fakeRunner.incomingVars["kubernetes-worker.yaml"] {
 			if k == fmt.Sprintf("force_%s_restart", svc) && v == strconv.FormatBool(true) {
 				found = true
 			}
@@ -253,8 +253,8 @@ func TestAddWorkerHostsFilesDNSEnabled(t *testing.T) {
 		t.Errorf("unexpected error")
 	}
 	expectedPlaybook := "_hosts.yaml"
-	if fakeRunner.playbookName != expectedPlaybook {
-		t.Errorf("expected playbook %s, but ran %s", expectedPlaybook, fakeRunner.playbookName)
+	if fakeRunner.allNodesPlaybook != expectedPlaybook {
+		t.Errorf("expected playbook %s, but ran %s", expectedPlaybook, fakeRunner.allNodesPlaybook)
 	}
 }
 
@@ -281,20 +281,22 @@ func (f *fakePKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 func (f *fakePKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []string) error { return f.err }
 
 type fakeRunner struct {
-	eventChan    chan ansible.Event
-	err          error
-	incomingVars ansible.ExtraVars
-	playbookName string
+	eventChan        chan ansible.Event
+	err              error
+	incomingVars     map[string]ansible.ExtraVars
+	allNodesPlaybook string
 }
 
 func (f *fakeRunner) StartPlaybook(playbookFile string, inventory ansible.Inventory, vars ansible.ExtraVars) (<-chan ansible.Event, error) {
-	f.playbookName = playbookFile
-	f.incomingVars = vars
+	f.allNodesPlaybook = playbookFile
 	return f.eventChan, f.err
 }
 func (f *fakeRunner) WaitPlaybook() error { return f.err }
 func (f *fakeRunner) StartPlaybookOnNode(playbookFile string, inventory ansible.Inventory, vars ansible.ExtraVars, node string) (<-chan ansible.Event, error) {
-	f.incomingVars = vars
+	if f.incomingVars == nil {
+		f.incomingVars = map[string]ansible.ExtraVars{}
+	}
+	f.incomingVars[playbookFile] = vars
 	return f.eventChan, f.err
 }
 
