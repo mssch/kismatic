@@ -39,6 +39,10 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 		Use:   "apply",
 		Short: "apply your plan file to create a Kismatic cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 0 {
+				return fmt.Errorf("Unexpected args: %v", args)
+			}
+
 			planner := &install.FilePlanner{File: installOpts.planFilename}
 			executorOpts := install.ExecutorOptions{
 				CAConfigFile:             applyOpts.caConfigFile,

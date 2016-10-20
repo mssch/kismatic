@@ -25,6 +25,9 @@ func NewCmdValidate(out io.Writer, installOpts *installOpts) *cobra.Command {
 		Use:   "validate",
 		Short: "validate your plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 0 {
+				return fmt.Errorf("Unexpected args: %v", args)
+			}
 			planner := &install.FilePlanner{File: installOpts.planFilename}
 			opts.planFile = installOpts.planFilename
 			return doValidate(out, planner, opts)
