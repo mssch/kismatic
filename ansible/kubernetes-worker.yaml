@@ -9,3 +9,4 @@
   - include: _calico.yaml
   - include: _kubelet-worker.yaml
   - include: _proxy.yaml
+  - include: _worker-smoke-test.yaml

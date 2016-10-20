@@ -46,7 +46,7 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 	cmd.Flags().BoolVar(&opts.Verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
 	cmd.Flags().BoolVar(&opts.SkipPreFlight, "skip-preflight", false, "skip pre-flight checks")
-	cmd.Flags().StringVar(&opts.WorkerInternalIP, "worker-internal-ip", "", "the internal IP of the worker, if different than the IP.")
+	cmd.Flags().StringVar(&opts.WorkerInternalIP, "internal-ip", "", "the internal IP of the worker, if different than the IP.")
 	return cmd
 }
 

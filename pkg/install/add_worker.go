@@ -107,6 +107,26 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 			return nil, fmt.Errorf("error updating hosts files on all nodes: %v", err)
 		}
 	}
+	// Verify that the node registered with API server
+	util.PrintHeader(ae.stdout, "Running New Worker Smoke Test", '=')
+	playbook = "_worker-smoke-test.yaml"
+	ev = ansible.ExtraVars{
+		"worker_node": newWorker.Host,
+	}
+	eventExplainer = &explain.DefaultEventExplainer{}
+	runner, explainer, err = ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLogFile)
+	if err != nil {
+		return nil, err
+	}
+	eventStream, err = runner.StartPlaybookOnNode(playbook, inventory, ev, newWorker.Host)
+	if err != nil {
+		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
+	}
+	go explainer.Explain(eventStream)
+	// Wait until ansible exits
+	if err = runner.WaitPlaybook(); err != nil {
+		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
+	}
 	return &updatedPlan, nil
 }
 
