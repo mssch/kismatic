@@ -147,6 +147,11 @@ yum_repository_url: https://kismatic-rpm.s3.amazonaws.com/
 yum_gpg_key_url: https://kismatic-rpm.s3.amazonaws.com/public.key
 deb_repository_url: https://kismatic-deb.s3.amazonaws.com/
 deb_gpg_key_url: https://kismatic-deb.s3.amazonaws.com/public.key
+# Uncomment below to use local repo
+# yum_repository_url: http://192.168.200.80/
+# yum_gpg_key_url: http://192.168.200.80/public.key
+# deb_repository_url: http://192.168.200.80/
+# yumdeb_gpg_key_url: http://192.168.200.80/public.key
 #===============================================================================
 # PV configs for monitoring and logging
 #pv_monitoring_nfs_server_ip: "192.168.99.20"
