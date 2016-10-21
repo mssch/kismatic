@@ -6,7 +6,8 @@ import (
 )
 
 // PackageAvailable is a rule that ensures that the given package
-// is available in the host operating system
+// is either installed on the host operating system
+// or available for installation
 type PackageAvailable struct {
 	Meta
 	PackageName    string

@@ -27,7 +27,7 @@ func main() {
 
 	//defer os.RemoveAll(kisPath)
 
-	cluster := integration.InstallKismatic(integration.UbuntuEast)
+	cluster := integration.InstallBigKismatic(integration.NodeCount{Etcd: 1, Master: 1, Worker: 1}, integration.UbuntuEast)
 
 	fmt.Println("Your cluster is ready.\n")
 	integration.PrintNodes(&cluster)

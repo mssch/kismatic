@@ -75,9 +75,25 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Calling installer with 'install validate'", func() {
-		Context("using a Minikube Ubuntu 16/04 layout", func() {
+		Context("using a Minikube Ubuntu 16.04 layout", func() {
 			It("should return successfully with a valid plan", func() {
 				ValidateKismaticMini(AMIUbuntu1604USEAST, "ubuntu")
+			})
+		})
+	})
+
+	Describe("Calling installer with 'install validate'", func() {
+		Context("using a Minikube Ubuntu 16.04 layout with dependencies installed", func() {
+			It("should return successfully with a valid plan", func() {
+				ValidateKismaticMiniWithDeps(UbuntuEast)
+			})
+		})
+	})
+
+	Describe("Calling installer with 'install validate'", func() {
+		Context("using a Minikube Ubuntu 16.04 layout with partial dependencies installed", func() {
+			It("should return successfully with a valid plan", func() {
+				ValidateKismaticMiniErrorsWithPartialDeps(UbuntuEast)
 			})
 		})
 	})
@@ -86,6 +102,22 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		Context("using a Minikube CentOS 7 layout", func() {
 			It("should return successfully with a valid plan", func() {
 				ValidateKismaticMini(AMICentos7UsEast, "centos")
+			})
+		})
+	})
+
+	Describe("Calling installer with 'install validate'", func() {
+		Context("using a Minikube CentOS 7 layout with dependencies installed", func() {
+			It("should return successfully with a valid plan", func() {
+				ValidateKismaticMiniWithDeps(CentosEast)
+			})
+		})
+	})
+
+	Describe("Calling installer with 'install validate'", func() {
+		Context("using a Minikube CentOS 7 layout with partial dependencies installed", func() {
+			It("should return successfully with a valid plan", func() {
+				ValidateKismaticMiniErrorsWithPartialDeps(CentosEast)
 			})
 		})
 	})

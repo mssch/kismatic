@@ -66,7 +66,7 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	tar -cvzf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
 
-just-integration-test:
+get-test-deps:
 ifndef AWS_SECRET_ACCESS_KEY
 	$(error Must export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to run integration tests)
 endif
@@ -79,19 +79,11 @@ endif
 	go install github.com/onsi/ginkgo/ginkgo
 	go get golang.org/x/crypto/ssh
 
-	ginkgo -v integration
+just-integration-test: get-test-deps
+	ginkgo -p -v integration
 
-mine-marvel: dist
-ifndef AWS_SECRET_ACCESS_KEY
-	$(error Must export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to run integration tests)
-endif
-	go get github.com/onsi/ginkgo/ginkgo
-	go get github.com/onsi/gomega
-	go get github.com/jmcvetta/guid
-	go get gopkg.in/yaml.v2
-	go get -u github.com/aws/aws-sdk-go
-	go get github.com/mitchellh/go-homedir
-	go install github.com/onsi/ginkgo/ginkgo
-	go get golang.org/x/crypto/ssh
+serial-integration-test: get-test-deps
+	ginkgo -p -v integration
 
+mine-marvel: dist get-test-deps
 	go run provision/main.go

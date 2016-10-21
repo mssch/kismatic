@@ -163,16 +163,17 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		return fmt.Errorf("failed to determine absolute path to %s: %v", generatedCertsDir, err)
 	}
 	ev := ansible.ExtraVars{
-		"kubernetes_cluster_name":   p.Cluster.Name,
-		"kubernetes_admin_password": p.Cluster.AdminPassword,
-		"tls_directory":             tlsDir,
-		"calico_network_type":       p.Cluster.Networking.Type,
-		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
-		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
-		"kubernetes_dns_service_ip": dnsIP,
-		"modify_hosts_file":         strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
-		"enable_calico_policy":      strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
-		"enable_docker_registry":    strconv.FormatBool(p.DockerRegistry.UseInternal),
+		"kubernetes_cluster_name":    p.Cluster.Name,
+		"kubernetes_admin_password":  p.Cluster.AdminPassword,
+		"tls_directory":              tlsDir,
+		"calico_network_type":        p.Cluster.Networking.Type,
+		"kubernetes_services_cidr":   p.Cluster.Networking.ServiceCIDRBlock,
+		"kubernetes_pods_cidr":       p.Cluster.Networking.PodCIDRBlock,
+		"kubernetes_dns_service_ip":  dnsIP,
+		"modify_hosts_file":          strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
+		"enable_calico_policy":       strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
+		"enable_docker_registry":     strconv.FormatBool(p.DockerRegistry.UseInternal),
+		"allow_package_installation": strconv.FormatBool(p.Cluster.AllowPackageInstallation),
 	}
 
 	if ae.options.RestartServices {
@@ -258,6 +259,7 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
 		"kismatic_preflight_checker_local": filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector"),
 		"modify_hosts_file":                strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
+		"allow_package_installation":       strconv.FormatBool(p.Cluster.AllowPackageInstallation),
 	}
 
 	// run the pre-flight playbook with pre-flight explainer

@@ -84,6 +84,22 @@ const defaultRuleSet = `---
   timeout: 5s
   
 # TODO: Add kismatic package checks
+- kind: PackageAvailable
+  when: ["etcd"]
+  packageName: kismatic-etcd
+  packageVersion: 1.4.3
+- kind: PackageAvailable
+  when: ["master","worker"]
+  packageName: kismatic-docker-engine
+  packageVersion: 1.11.2
+- kind: PackageAvailable
+  when: ["master"]
+  packageName: kismatic-kubernetes-master
+  packageVersion: 1.4.3
+- kind: PackageAvailable
+  when: ["worker"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.4.3
 `
 
 // DefaultRules returns the list of rules that are built into the inspector

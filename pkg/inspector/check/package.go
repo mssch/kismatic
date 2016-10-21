@@ -21,7 +21,7 @@ type PackageAvailableCheck struct {
 // Check returns true if the package is available. Otherwise returns false, or an error
 // if the check is unable to determine the condition.
 func (c PackageAvailableCheck) Check() (bool, error) {
-	ok, err := c.PackageManager.IsAvailable(c.PackageQuery)
+	ok, err := IsPackageReadyToContinue(c.PackageManager, c.PackageQuery)
 	if err != nil {
 		return false, fmt.Errorf("failed to determine if %s is available from the operating system's package manager: %v", c.PackageQuery, err)
 	}

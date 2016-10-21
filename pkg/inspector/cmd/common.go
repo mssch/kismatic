@@ -32,6 +32,7 @@ func getRulesFromFileOrDefault(out io.Writer, file string) ([]rule.Rule, error) 
 	} else {
 		rules = rule.DefaultRules()
 	}
+
 	return rules, nil
 }
 
