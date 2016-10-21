@@ -58,9 +58,7 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	ok, errs := install.ValidatePlan(plan)
 	if !ok {
 		util.PrettyPrintErr(out, "Validating installation plan file")
-		for _, err := range errs {
-			util.PrintColor(out, util.Red, "- %v\n", err)
-		}
+		printValidationErrors(out, errs)
 		return fmt.Errorf("validation error prevents installation from proceeding")
 	}
 	util.PrettyPrintOk(out, "Validating installation plan file")
@@ -81,4 +79,10 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 		return err
 	}
 	return nil
+}
+
+func printValidationErrors(out io.Writer, errors []error) {
+	for _, err := range errors {
+		util.PrintColor(out, util.Red, "- %v\n", err)
+	}
 }

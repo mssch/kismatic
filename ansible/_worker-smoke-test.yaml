@@ -1,0 +1,12 @@
+---
+  - hosts: master
+    any_errors_fatal: true
+    name: "Smoke Test New Worker"
+    remote_user: root
+    become_method: sudo
+    run_once: true
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/kubelet-master.yaml
+    roles:
+      - worker-smoke-test

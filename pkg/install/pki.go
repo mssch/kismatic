@@ -20,6 +20,10 @@ const (
 
 // The PKI provides a way for generating certificates for the cluster described by the Plan
 type PKI interface {
+	CertificateAuthorityExists() (bool, error)
+	NodeCertificateExists(node Node) (bool, error)
+	GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) error
+	GetClusterCA() (*tls.CA, error)
 	GenerateClusterCA(p *Plan) (*tls.CA, error)
 	GenerateClusterCertificates(p *Plan, ca *tls.CA, users []string) error
 }
@@ -33,6 +37,31 @@ type LocalPKI struct {
 	Log                     io.Writer
 }
 
+// CertificateAuthorityExists returns true if the CA for the cluster exists
+func (lp *LocalPKI) CertificateAuthorityExists() (bool, error) {
+	return tls.CertKeyPairExists("ca", lp.GeneratedCertsDirectory)
+}
+
+// NodeCertificateExists returns true if the node's key and certificate exist
+func (lp *LocalPKI) NodeCertificateExists(node Node) (bool, error) {
+	return tls.CertKeyPairExists(node.Host, lp.GeneratedCertsDirectory)
+}
+
+// GetClusterCA returns the cluster CA
+func (lp *LocalPKI) GetClusterCA() (*tls.CA, error) {
+	ca := &tls.CA{
+		ConfigFile: lp.CAConfigFile,
+		Profile:    lp.CASigningProfile,
+	}
+	key, cert, err := tls.ReadCACert("ca", lp.GeneratedCertsDirectory)
+	if err != nil {
+		return nil, fmt.Errorf("error reading CA certificate/key: %v", err)
+	}
+	ca.Cert = cert
+	ca.Key = key
+	return ca, nil
+}
+
 // GenerateClusterCA creates a Certificate Authority for the cluster
 func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 	ca := &tls.CA{
@@ -44,14 +73,7 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 		return nil, fmt.Errorf("error verifying CA certificate/key: %v", err)
 	}
 	if exists {
-		key, cert, err := tls.ReadCACert("ca", lp.GeneratedCertsDirectory)
-		if err != nil {
-			return nil, fmt.Errorf("error reading CA certificate/key: %v", err)
-		}
-		util.PrettyPrintOk(lp.Log, "Found a cluster Certificate Authority")
-		ca.Cert = cert
-		ca.Key = key
-		return ca, nil
+		return lp.GetClusterCA()
 	}
 
 	util.PrettyPrintOk(lp.Log, "Generating cluster Certificate Authority")
@@ -80,52 +102,19 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []str
 	if lp.Log == nil {
 		lp.Log = ioutil.Discard
 	}
-	// Add kubernetes service IP to certificates
-	kubeServiceIP, err := getKubernetesServiceIP(p)
-	if err != nil {
-		return fmt.Errorf("Error getting kubernetes service IP: %v", err)
-	}
-	defaultCertHosts := []string{
-		"kubernetes",
-		"kubernetes.default",
-		"kubernetes.default.svc",
-		"kubernetes.default.svc.cluster.local",
-		"127.0.0.1",
-		kubeServiceIP,
-	}
-
-	// Create certs for master nodes.. they include the load balanced names
-	seenNodes := map[string]bool{}
-	for _, n := range p.Master.Nodes {
-		if _, ok := seenNodes[n.Host]; ok {
-			continue
-		}
-		seenNodes[n.Host] = true
-		names := []string{}
-		names = append(names, defaultCertHosts...)
-		if p.Master.LoadBalancedFQDN != "" && p.Master.LoadBalancedFQDN != n.Host {
-			names = append(names, p.Master.LoadBalancedFQDN)
-		}
-		if p.Master.LoadBalancedShortName != "" && p.Master.LoadBalancedShortName != n.Host {
-			names = append(names, p.Master.LoadBalancedShortName)
-		}
-		if err := lp.generateNodeCert(p, n, ca, names); err != nil {
-			return err
-		}
-	}
-
-	// Then, create certs for rest of nodes
 	nodes := []Node{}
 	nodes = append(nodes, p.Etcd.Nodes...)
+	nodes = append(nodes, p.Master.Nodes...)
 	nodes = append(nodes, p.Worker.Nodes...)
 
+	seenNodes := map[string]bool{}
 	for _, n := range nodes {
 		// Only generate certs once for each node, nodes can be in more than one group
 		if _, ok := seenNodes[n.Host]; ok {
 			continue
 		}
 		seenNodes[n.Host] = true
-		if err := lp.generateNodeCert(p, n, ca, defaultCertHosts); err != nil {
+		if err := lp.GenerateNodeCertificate(p, n, ca); err != nil {
 			return err
 		}
 	}
@@ -144,7 +133,8 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []str
 	return nil
 }
 
-func (lp *LocalPKI) generateNodeCert(plan *Plan, node Node, ca *tls.CA, defaultCertHosts []string) error {
+// GenerateNodeCertificate creates a private key and certificate for the given node
+func (lp *LocalPKI) GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) error {
 	// Don't generate if the key pair is already there
 	exist, err := tls.CertKeyPairExists(node.Host, lp.GeneratedCertsDirectory)
 	if err != nil {
@@ -154,10 +144,22 @@ func (lp *LocalPKI) generateNodeCert(plan *Plan, node Node, ca *tls.CA, defaultC
 		util.PrettyPrintOk(lp.Log, "Found key and certificate for node %q", node.Host)
 		return nil
 	}
-
+	// Build list of SANs
+	clusterSANs, err := clusterCertsSubjectAlternateNames(plan)
+	if err != nil {
+		return err
+	}
 	util.PrettyPrintOk(lp.Log, "Generating certificates for host %q", node.Host)
-	nodeList := append(defaultCertHosts, node.Host, node.IP, node.InternalIP)
-	key, cert, err := generateCert(node.Host, plan, nodeList, ca)
+	nodeSANs := append(clusterSANs, node.Host, node.IP, node.InternalIP)
+	if isMasterNode(*plan, node) {
+		if plan.Master.LoadBalancedFQDN != "" {
+			nodeSANs = append(nodeSANs, plan.Master.LoadBalancedFQDN)
+		}
+		if plan.Master.LoadBalancedShortName != "" {
+			nodeSANs = append(nodeSANs, plan.Master.LoadBalancedShortName)
+		}
+	}
+	key, cert, err := generateCert(node.Host, plan, nodeSANs, ca)
 	if err != nil {
 		return fmt.Errorf("error during cluster cert generation: %v", err)
 	}
@@ -235,4 +237,29 @@ func generateCert(cnName string, p *Plan, hostList []string, ca *tls.CA) (key, c
 		return nil, nil, fmt.Errorf("error generating certs for %q: %v", cnName, err)
 	}
 	return key, cert, err
+}
+
+func clusterCertsSubjectAlternateNames(plan *Plan) ([]string, error) {
+	kubeServiceIP, err := getKubernetesServiceIP(plan)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting kubernetes service IP: %v", err)
+	}
+	defaultCertHosts := []string{
+		"kubernetes",
+		"kubernetes.default",
+		"kubernetes.default.svc",
+		"kubernetes.default.svc.cluster.local",
+		"127.0.0.1",
+		kubeServiceIP,
+	}
+	return defaultCertHosts, nil
+}
+
+func isMasterNode(plan Plan, node Node) bool {
+	for _, master := range plan.Master.Nodes {
+		if node == master {
+			return true
+		}
+	}
+	return false
 }
