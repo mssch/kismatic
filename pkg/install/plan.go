@@ -107,9 +107,6 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 
 	// Set Certificate defaults
 	p.Cluster.Certificates.Expiry = "17520h"
-	p.Cluster.Certificates.LocationCity = "Troy"
-	p.Cluster.Certificates.LocationState = "New York"
-	p.Cluster.Certificates.LocationCountry = "US"
 	p.DockerRegistry.UseInternal = false
 
 	// Generate entries for all node types

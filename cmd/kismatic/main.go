@@ -19,7 +19,7 @@ func main() {
 	}
 
 	if err := cmd.Execute(); err != nil {
-		util.PrintColor(os.Stderr, util.Red, "Error running command: %v\n", err)
+		util.PrintColor(os.Stderr, util.Red, "%v\n", err)
 		os.Exit(1)
 	}
 

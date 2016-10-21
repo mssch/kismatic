@@ -6,7 +6,7 @@
       dest: "{{ kubernetes_service_dir }}/kube-proxy.service"
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
-      mode: "{{ kuberntes_service_mode }}"
+      mode: "{{ kubernetes_service_mode }}"
     notify:
       - reload services
       - enable kube-proxy

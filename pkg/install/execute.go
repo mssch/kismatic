@@ -12,7 +12,6 @@ import (
 
 	"github.com/apprenda/kismatic-platform/pkg/ansible"
 	"github.com/apprenda/kismatic-platform/pkg/install/explain"
-	"github.com/apprenda/kismatic-platform/pkg/tls"
 	"github.com/apprenda/kismatic-platform/pkg/util"
 )
 
@@ -27,6 +26,7 @@ type Executor interface {
 	PreFlightExecutor
 	Install(p *Plan) error
 	RunSmokeTest(*Plan) error
+	AddWorker(*Plan, Node) (*Plan, error)
 }
 
 // ExecutorOptions are used to configure the executor
@@ -60,11 +60,6 @@ type ExecutorOptions struct {
 func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
-
-	// Validate options
-	if options.CASigningRequest == "" {
-		return nil, fmt.Errorf("CASigningRequest option cannot be empty")
-	}
 	if options.CAConfigFile == "" {
 		return nil, fmt.Errorf("CAConfigFile option cannot be empty")
 	}
@@ -88,15 +83,25 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 	default:
 		return nil, fmt.Errorf("Output format %q is not supported", options.OutputFormat)
 	}
-
+	certsDir := filepath.Join(options.GeneratedAssetsDirectory, "keys")
+	pki := &LocalPKI{
+		CACsr:                   options.CASigningRequest,
+		CAConfigFile:            options.CAConfigFile,
+		CASigningProfile:        options.CASigningProfile,
+		GeneratedCertsDirectory: certsDir,
+		Log: stdout,
+	}
 	return &ansibleExecutor{
 		options:             options,
 		stdout:              stdout,
 		consoleOutputFormat: outFormat,
 		ansibleDir:          ansibleDir,
+		certsDir:            certsDir,
+		pki:                 pki,
 	}, nil
 }
 
+// NewPreFlightExecutor returns an executor for running preflight
 func NewPreFlightExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (PreFlightExecutor, error) {
 	ansibleDir := "ansible"
 	if options.RunsDirectory == "" {
@@ -126,6 +131,11 @@ type ansibleExecutor struct {
 	stdout              io.Writer
 	consoleOutputFormat ansible.OutputFormat
 	ansibleDir          string
+	certsDir            string
+	pki                 PKI
+
+	// Hook for testing purposes.. default implementation is used at runtime
+	runnerExplainerFactory func(explain.AnsibleEventExplainer, io.Writer) (ansible.Runner, *explain.AnsibleEventStreamExplainer, error)
 }
 
 // Install the cluster according to the installation plan
@@ -134,7 +144,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	if err != nil {
 		return fmt.Errorf("error creating working directory for installation: %v", err)
 	}
-
 	// Save the plan file that was used for this execution
 	fp := FilePlanner{
 		File: filepath.Join(runDirectory, "kismatic-cluster.yaml"),
@@ -142,25 +151,20 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	if err = fp.Write(p); err != nil {
 		return fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
 	}
-
 	// Generate private keys and certificates for the cluster
-	generatedCertsDir, err := ae.generateTLSAssets(p)
-	if err != nil {
+	if err = ae.generateTLSAssets(p); err != nil {
 		return err
 	}
-
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(p)
-
 	dnsIP, err := getDNSServiceIP(p)
 	if err != nil {
 		return fmt.Errorf("error getting DNS service IP: %v", err)
 	}
-
 	// Need absolute path for ansible. Otherwise ansible looks for it in the wrong place.
-	tlsDir, err := filepath.Abs(generatedCertsDir)
+	tlsDir, err := filepath.Abs(ae.certsDir)
 	if err != nil {
-		return fmt.Errorf("failed to determine absolute path to %s: %v", generatedCertsDir, err)
+		return fmt.Errorf("failed to determine absolute path to %s: %v", ae.certsDir, err)
 	}
 	ev := ansible.ExtraVars{
 		"kubernetes_cluster_name":    p.Cluster.Name,
@@ -175,20 +179,17 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"enable_docker_registry":     strconv.FormatBool(p.DockerRegistry.UseInternal),
 		"allow_package_installation": strconv.FormatBool(p.Cluster.AllowPackageInstallation),
 	}
-
 	if ae.options.RestartServices {
 		services := []string{"etcd", "apiserver", "controller_manager", "scheduler", "proxy", "kubelet", "calico_node", "docker"}
 		for _, s := range services {
 			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
 		}
 	}
-
 	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
 	ansibleLogFile, err := os.Create(ansibleLogFilename)
 	if err != nil {
 		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
 	}
-
 	// Run the installation playbook
 	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
 	playbook := "kubernetes.yaml"
@@ -196,7 +197,6 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, ev, ansibleLogFile); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -282,46 +282,51 @@ func (ae *ansibleExecutor) createRunDirectory(runName string) (string, error) {
 	return runDirectory, nil
 }
 
-func (ae *ansibleExecutor) generateTLSAssets(p *Plan) (certsDir string, err error) {
-	keysDir := filepath.Join(ae.options.GeneratedAssetsDirectory, "keys")
-	if err = os.MkdirAll(keysDir, 0777); err != nil {
-		return "", fmt.Errorf("error creating directory %s for storing TLS assets: %v", keysDir, err)
-	}
-	pki := LocalPKI{
-		CACsr:                   ae.options.CASigningRequest,
-		CAConfigFile:            ae.options.CAConfigFile,
-		CASigningProfile:        ae.options.CASigningProfile,
-		GeneratedCertsDirectory: filepath.Join(ae.options.GeneratedAssetsDirectory, "keys"),
-		Log: ae.stdout,
+func (ae *ansibleExecutor) generateTLSAssets(p *Plan) error {
+	if err := os.MkdirAll(ae.certsDir, 0777); err != nil {
+		return fmt.Errorf("error creating directory %s for storing TLS assets: %v", ae.certsDir, err)
 	}
 
-	// Generate or read cluster Certificate Authority
+	// Generate cluster Certificate Authority
 	util.PrintHeader(ae.stdout, "Configuring Certificates", '=')
-	var ca *tls.CA
-	if !ae.options.SkipCAGeneration {
-		util.PrettyPrintOk(ae.stdout, "Generating cluster Certificate Authority")
-		ca, err = pki.GenerateClusterCA(p)
-		if err != nil {
-			return "", fmt.Errorf("error generating CA for the cluster: %v", err)
-		}
-	} else {
-		util.PrettyPrintOk(ae.stdout, "Skipping Certificate Authority generation\n")
-		ca, err = pki.ReadClusterCA(p)
-		if err != nil {
-			return "", fmt.Errorf("error reading cluster CA: %v", err)
-		}
+	ca, err := ae.pki.GenerateClusterCA(p)
+	if err != nil {
+		return fmt.Errorf("error generating CA for the cluster: %v", err)
 	}
 
 	// Generate node and user certificates
-	err = pki.GenerateClusterCerts(p, ca, []string{"admin"})
+	err = ae.pki.GenerateClusterCertificates(p, ca, []string{"admin"})
 	if err != nil {
-		return "", fmt.Errorf("error generating certificates for the cluster: %v", err)
+		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
-	util.PrettyPrintOk(ae.stdout, "Generated cluster certificates at %q", pki.GeneratedCertsDirectory)
-	return keysDir, nil
+	util.PrettyPrintOk(ae.stdout, "Cluster certificates can be found in the %q directory", ae.options.GeneratedAssetsDirectory)
+	return nil
 }
 
-func (ae *ansibleExecutor) runPlaybookWithExplainer(playbook string, explainer explain.AnsibleEventExplainer, inv ansible.Inventory, ev ansible.ExtraVars, ansibleLog io.Writer) error {
+func (ae *ansibleExecutor) runPlaybookWithExplainer(playbook string, eventExplainer explain.AnsibleEventExplainer, inv ansible.Inventory, ev ansible.ExtraVars, ansibleLog io.Writer) error {
+	// Setup sinks for explainer and ansible stdout
+	runner, explainer, err := ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLog)
+
+	// Start running ansible with the given playbook
+	eventStream, err := runner.StartPlaybook(playbook, inv, ev)
+	if err != nil {
+		return fmt.Errorf("error running ansible playbook: %v", err)
+	}
+	// Ansible blocks until explainer starts reading from stream. Start
+	// explainer in a separate go routine
+	go explainer.Explain(eventStream)
+
+	// Wait until ansible exits
+	if err = runner.WaitPlaybook(); err != nil {
+		return fmt.Errorf("error running playbook: %v", err)
+	}
+	return nil
+}
+
+func (ae *ansibleExecutor) getAnsibleRunnerAndExplainer(explainer explain.AnsibleEventExplainer, ansibleLog io.Writer) (ansible.Runner, *explain.AnsibleEventStreamExplainer, error) {
+	if ae.runnerExplainerFactory != nil {
+		return ae.runnerExplainerFactory(explainer, ansibleLog)
+	}
 	// Setup sinks for explainer and ansible stdout
 	var explainerOut, ansibleOut io.Writer
 	switch ae.consoleOutputFormat {
@@ -336,29 +341,16 @@ func (ae *ansibleExecutor) runPlaybookWithExplainer(playbook string, explainer e
 	// Send stdout and stderr to ansibleOut
 	runner, err := ansible.NewRunner(ansibleOut, ansibleOut, ae.ansibleDir)
 	if err != nil {
-		return fmt.Errorf("error creating ansible runner: %v", err)
+		return nil, nil, fmt.Errorf("error creating ansible runner: %v", err)
 	}
 
-	// Start running ansible with the given playbook
-	eventStream, err := runner.StartPlaybook(playbook, inv, ev)
-	if err != nil {
-		return fmt.Errorf("error running ansible playbook: %v", err)
-	}
-
-	// Setup explainer for handling event stream. Ansible will block
-	// if the stream is not consumed
 	streamExplainer := &explain.AnsibleEventStreamExplainer{
 		Out:            explainerOut,
 		Verbose:        ae.options.Verbose,
 		EventExplainer: explainer,
 	}
-	go streamExplainer.Explain(eventStream)
 
-	// Wait until ansible exits
-	if err = runner.WaitPlaybook(); err != nil {
-		return fmt.Errorf("error running playbook: %v", err)
-	}
-	return nil
+	return runner, streamExplainer, nil
 }
 
 func buildInventoryFromPlan(p *Plan) ansible.Inventory {

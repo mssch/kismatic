@@ -15,6 +15,9 @@ func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Comman
 		Use:   "plan",
 		Short: "plan your Kismatic cluster and generate a plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 0 {
+				return fmt.Errorf("Unexpected args: %v", args)
+			}
 			planner := &install.FilePlanner{File: options.planFilename}
 			return doPlan(in, out, planner, options.planFilename)
 		},

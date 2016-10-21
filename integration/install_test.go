@@ -170,6 +170,13 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			})
 		})
 	})
+	Describe("Calling add-worker targetting AWS", func() {
+		Context("Using a Minikube Ubuntu 16.04 layout", func() {
+			It("should add a worker node to the cluster", func() {
+				AddWorkerToKismaticMini(UbuntuEast)
+			})
+		})
+	})
 })
 
 func installKismaticWithABadNode() {

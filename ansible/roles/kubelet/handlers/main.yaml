@@ -14,4 +14,3 @@
     command: systemctl status kubelet
     retries: 12
     delay: 10
-    changed_when: false

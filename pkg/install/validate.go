@@ -8,12 +8,23 @@ import (
 	"time"
 )
 
+// TODO: There is need to run validation against anything that is validatable.
+// Expose the validatable interface so that it can be consumed when
+// validating objects other than a Plan or a Node
+
 // ValidatePlan runs validation against the installation plan to ensure
 // that the plan contains valid user input. Returns true, nil if the validation
 // is successful. Otherwise, returns false and a collection of validation errors.
 func ValidatePlan(p *Plan) (bool, []error) {
 	v := newValidator()
 	v.validate(p)
+	return v.valid()
+}
+
+// ValidateNode runs validation against the given node.
+func ValidateNode(node *Node) (bool, []error) {
+	v := newValidator()
+	v.validate(node)
 	return v.valid()
 }
 
@@ -113,16 +124,6 @@ func (c *CertsConfig) validate() (bool, []error) {
 	v := newValidator()
 	if _, err := time.ParseDuration(c.Expiry); err != nil {
 		v.addError(fmt.Errorf("Invalid certificate expiry %q provided: %v", c.Expiry, err))
-	}
-
-	if c.LocationCity == "" {
-		v.addError(errors.New("Certificate location_city field is required"))
-	}
-	if c.LocationState == "" {
-		v.addError(errors.New("Certificate location_state field is required"))
-	}
-	if c.LocationCountry == "" {
-		v.addError(errors.New("Certificate location_country field is required"))
 	}
 	return v.valid()
 }

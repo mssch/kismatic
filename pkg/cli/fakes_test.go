@@ -27,6 +27,10 @@ type fakeExecutor struct {
 	err           error
 }
 
+func (fe *fakeExecutor) AddWorker(p *install.Plan, newWorker install.Node) (*install.Plan, error) {
+	return nil, nil
+}
+
 func (fe *fakeExecutor) Install(p *install.Plan) error {
 	fe.installCalled = true
 	return fe.err

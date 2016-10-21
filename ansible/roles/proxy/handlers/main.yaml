@@ -12,4 +12,5 @@
   # verify service
   - name: verify kube-proxy is running
     command: systemctl status kube-proxy
-    changed_when: false
+    retries: 5
+    delay: 3
