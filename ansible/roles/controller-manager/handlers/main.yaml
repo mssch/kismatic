@@ -12,4 +12,5 @@
   # verify service
   - name: verify kube-controller-manager is running
     command: systemctl status kube-controller-manager
-    changed_when: false
+    retries: 5
+    delay: 3

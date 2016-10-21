@@ -318,8 +318,8 @@ func InstallRPMs(nodes PlanAWS, awsos AWSOSDetails) {
 		nodes.Master, 5*time.Minute)
 
 	log.Printf("Installing Worker:")
-	RunViaSSH(awsos.CommandsToInstallK8sMaster, awsos.AWSUser,
-		append(nodes.Master, nodes.Worker...), 5*time.Minute)
+	RunViaSSH(awsos.CommandsToInstallK8s, awsos.AWSUser,
+		nodes.Worker, 5*time.Minute)
 }
 
 func PrintNodes(plan *PlanAWS) {
@@ -333,7 +333,7 @@ func PrintNodes(plan *PlanAWS) {
 
 func printNode(aws *[]AWSNodeDeets) {
 	for _, node := range *aws {
-		log.Printf("\t%v (%v)", node.Instanceid, node.Publicip)
+		log.Printf("\t%v (%v, %v)", node.Hostname, node.Publicip, node.Privateip)
 	}
 }
 

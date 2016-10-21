@@ -1,0 +1,157 @@
+package install
+
+import (
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+
+	"github.com/apprenda/kismatic-platform/pkg/ansible"
+	"github.com/apprenda/kismatic-platform/pkg/install/explain"
+	"github.com/apprenda/kismatic-platform/pkg/util"
+)
+
+var errMissingClusterCA = errors.New("The Certificate Authority's private key and certificate used to install " +
+	"the cluster are required for adding worker nodes.")
+
+// AddWorker adds a worker node to the original cluster described in the plan.
+// If successful, the updated plan is returned.
+func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan, error) {
+	if err := checkAddWorkerPrereqs(ae.pki, newWorker); err != nil {
+		return nil, err
+	}
+	runDirectory, err := ae.createRunDirectory("add-worker")
+	if err != nil {
+		return nil, fmt.Errorf("error creating working directory for add-worker: %v", err)
+	}
+	updatedPlan := addWorkerToPlan(*originalPlan, newWorker)
+	fp := FilePlanner{
+		File: filepath.Join(runDirectory, "kismatic-cluster.yaml"),
+	}
+	if err = fp.Write(&updatedPlan); err != nil {
+		return nil, fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
+	}
+	// Generate node certificates
+	util.PrintHeader(ae.stdout, "Generating Certificate For Worker Node", '=')
+	ca, err := ae.pki.GetClusterCA()
+	if err != nil {
+		return nil, err
+	}
+	if err := ae.pki.GenerateNodeCertificate(originalPlan, newWorker, ca); err != nil {
+		return nil, fmt.Errorf("error generating certificate for new worker: %v", err)
+	}
+	// Build the ansible inventory
+	inventory := buildInventoryFromPlan(&updatedPlan)
+	dnsIP, err := getDNSServiceIP(&updatedPlan)
+	if err != nil {
+		return nil, fmt.Errorf("error getting DNS service IP: %v", err)
+	}
+	tlsDir, err := filepath.Abs(ae.certsDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine absolute path to %s: %v", ae.certsDir, err)
+	}
+	ev := ansible.ExtraVars{
+		"kubernetes_cluster_name":   updatedPlan.Cluster.Name,
+		"tls_directory":             tlsDir,
+		"calico_network_type":       updatedPlan.Cluster.Networking.Type,
+		"kubernetes_pods_cidr":      updatedPlan.Cluster.Networking.PodCIDRBlock,
+		"kubernetes_dns_service_ip": dnsIP,
+		"modify_hosts_file":         strconv.FormatBool(updatedPlan.Cluster.Networking.UpdateHostsFiles),
+		"enable_calico_policy":      strconv.FormatBool(updatedPlan.Cluster.Networking.PolicyEnabled),
+		"enable_docker_registry":    strconv.FormatBool(updatedPlan.DockerRegistry.SetupInternal),
+	}
+	if ae.options.RestartServices {
+		services := []string{"proxy", "kubelet", "calico_node", "docker"}
+		for _, s := range services {
+			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
+		}
+	}
+	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
+	ansibleLogFile, err := os.Create(ansibleLogFilename)
+	if err != nil {
+		return nil, fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
+	}
+	// Run the playbook for adding the node
+	util.PrintHeader(ae.stdout, "Adding Worker Node to Cluster", '=')
+	playbook := "kubernetes-worker.yaml"
+	eventExplainer := &explain.DefaultEventExplainer{}
+	runner, explainer, err := ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLogFile)
+	if err != nil {
+		return nil, err
+	}
+	eventStream, err := runner.StartPlaybookOnNode(playbook, inventory, ev, newWorker.Host)
+	if err != nil {
+		return nil, fmt.Errorf("error running ansible playbook: %v", err)
+	}
+	go explainer.Explain(eventStream)
+	// Wait until ansible exits
+	if err = runner.WaitPlaybook(); err != nil {
+		return nil, fmt.Errorf("error running playbook: %v", err)
+	}
+	if updatedPlan.Cluster.Networking.UpdateHostsFiles {
+		// We need to run ansible against all hosts to update the hosts files
+		util.PrintHeader(ae.stdout, "Updating Hosts Files On All Nodes", '=')
+		playbook := "_hosts.yaml"
+		eventExplainer := &explain.DefaultEventExplainer{}
+		runner, explainer, err := ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLogFile)
+		if err != nil {
+			return nil, err
+		}
+		eventStream, err := runner.StartPlaybook(playbook, inventory, ev)
+		if err != nil {
+			return nil, fmt.Errorf("error running playbook to update hosts files on all nodes: %v", err)
+		}
+		go explainer.Explain(eventStream)
+		if err = runner.WaitPlaybook(); err != nil {
+			return nil, fmt.Errorf("error updating hosts files on all nodes: %v", err)
+		}
+	}
+	// Verify that the node registered with API server
+	util.PrintHeader(ae.stdout, "Running New Worker Smoke Test", '=')
+	playbook = "_worker-smoke-test.yaml"
+	ev = ansible.ExtraVars{
+		"worker_node": newWorker.Host,
+	}
+	eventExplainer = &explain.DefaultEventExplainer{}
+	runner, explainer, err = ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLogFile)
+	if err != nil {
+		return nil, err
+	}
+	eventStream, err = runner.StartPlaybookOnNode(playbook, inventory, ev, newWorker.Host)
+	if err != nil {
+		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
+	}
+	go explainer.Explain(eventStream)
+	// Wait until ansible exits
+	if err = runner.WaitPlaybook(); err != nil {
+		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
+	}
+	return &updatedPlan, nil
+}
+
+func addWorkerToPlan(plan Plan, worker Node) Plan {
+	plan.Worker.ExpectedCount++
+	plan.Worker.Nodes = append(plan.Worker.Nodes, worker)
+	return plan
+}
+
+// ensure the assumptions we are making are solid
+func checkAddWorkerPrereqs(pki PKI, newWorker Node) error {
+	// 1. if the node certificate is not there, we need to ensure that
+	// the CA is available for generating the new worker's cert
+	certExists, err := pki.NodeCertificateExists(newWorker)
+	if err != nil {
+		return fmt.Errorf("error while checking if node's certificate exists: %v", err)
+	}
+	if !certExists {
+		caExists, err := pki.CertificateAuthorityExists()
+		if err != nil {
+			return fmt.Errorf("error while checking if cluster CA exists: %v", err)
+		}
+		if !caExists {
+			return errMissingClusterCA
+		}
+	}
+	return nil
+}

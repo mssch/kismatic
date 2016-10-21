@@ -13,23 +13,27 @@ import (
 
 func TestGenerateNewCertificate(t *testing.T) {
 	// Create CA Cert
-	key, caCert, err := NewCACert("test/ca-csr.json")
+	subject := Subject{
+		Country:            "someCountry",
+		State:              "someState",
+		Locality:           "someLocality",
+		Organization:       "someOrganization",
+		OrganizationalUnit: "someOrgUnit",
+	}
+	key, caCert, err := NewCACert("test/ca-csr.json", "someCN", subject)
 	if err != nil {
 		t.Fatalf("error creating CA: %v", err)
 	}
-
 	parsedCACert, err := helpers.ParseCertificatePEM(caCert)
 	if err != nil {
 		t.Fatalf("error parsing CA Certificate: %v", err)
 	}
-
 	ca := &CA{
 		Key:        key,
 		Cert:       caCert,
 		ConfigFile: "test/ca-config.json",
 		Profile:    "kubernetes",
 	}
-
 	certHosts := []string{"testHostname", "otherName", "127.0.0.1", "10.5.6.217"}
 	req := csr.CertificateRequest{
 		CN: "testKube",
@@ -65,6 +69,30 @@ func TestGenerateNewCertificate(t *testing.T) {
 
 	if parsedCert.IsCA {
 		t.Errorf("Non-CA certificate is CA")
+	}
+
+	if parsedCert.Subject.CommonName != req.CN {
+		t.Errorf("common name mismatch: expected %q, but got %q", req.CN, parsedCert.Subject.CommonName)
+	}
+
+	if parsedCert.Subject.Organization[0] != req.Names[0].O {
+		t.Errorf("organization mismatch: expected %q, but got %q", req.Names[0].O, parsedCert.Subject.Organization)
+	}
+
+	if parsedCert.Subject.OrganizationalUnit[0] != req.Names[0].OU {
+		t.Errorf("organizational unit mismatch: expected %q, but got %q", req.Names[0].OU, parsedCert.Subject.OrganizationalUnit)
+	}
+
+	if parsedCert.Subject.Country[0] != req.Names[0].C {
+		t.Errorf("country mismatch: expected %q, but got %q", req.Names[0].C, parsedCert.Subject.Country[0])
+	}
+
+	if parsedCert.Subject.Locality[0] != req.Names[0].L {
+		t.Errorf("locality mismatch: expected %q, but got %q", req.Names[0].L, parsedCert.Subject.Locality[0])
+	}
+
+	if parsedCert.Subject.Province[0] != req.Names[0].ST {
+		t.Errorf("state mismatch: expected %q, but got %q", req.Names[0].ST, parsedCert.Subject.Province[0])
 	}
 
 	if !reflect.DeepEqual(parsedCert.Issuer, parsedCACert.Subject) {

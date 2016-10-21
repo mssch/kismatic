@@ -55,7 +55,7 @@ network_environment_path: "/etc/network-environment"
 calico_executable_mode: 0775
 #networking
 modify_hosts_file: false
-dafault_cidr: 192.168.0.0/16
+default_cidr: 192.168.0.0/16
 kubernetes_dns_service_ip: 10.3.0.10
 kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_master_secure_port}}
 kubernetes_services_cidr: 10.3.0.0/24
@@ -76,7 +76,7 @@ kubernetes_authorization_policy_path: "{{kubernetes_lib_dir}}/authorization-poli
 kubernetes_kubeconfig_path: "{{kubelet_lib_dir}}/kubeconfig"
 # file modes
 kubernetes_executable_mode: 0775
-kuberntes_service_mode: 0664
+kubernetes_service_mode: 0664
 kubernetes_certificates_mode: 0660
 docker_certificate_mode: 0660
 network_environment_mode: 0660
@@ -147,6 +147,11 @@ yum_repository_url: https://kismatic-rpm.s3.amazonaws.com/
 yum_gpg_key_url: https://kismatic-rpm.s3.amazonaws.com/public.key
 deb_repository_url: https://kismatic-deb.s3.amazonaws.com/
 deb_gpg_key_url: https://kismatic-deb.s3.amazonaws.com/public.key
+# Uncomment below to use local repo
+# yum_repository_url: http://192.168.200.80/
+# yum_gpg_key_url: http://192.168.200.80/public.key
+# deb_repository_url: http://192.168.200.80/
+# yumdeb_gpg_key_url: http://192.168.200.80/public.key
 #===============================================================================
 # PV configs for monitoring and logging
 #pv_monitoring_nfs_server_ip: "192.168.99.20"

@@ -3,6 +3,7 @@ package tls
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/apprenda/kismatic-platform/pkg/util"
@@ -83,15 +84,13 @@ func WriteCert(key, cert []byte, name, dir string) error {
 	}
 
 	// Write private key with read-only for user
-	keyName := fmt.Sprintf("%s-key.pem", name)
-	err = ioutil.WriteFile(filepath.Join(dir, keyName), key, 0600)
+	err = ioutil.WriteFile(filepath.Join(dir, keyName(name)), key, 0600)
 	if err != nil {
 		return fmt.Errorf("error writing private key: %v", err)
 	}
 
 	// Write cert
-	certName := fmt.Sprintf("%s.pem", name)
-	err = ioutil.WriteFile(filepath.Join(dir, certName), cert, 0644)
+	err = ioutil.WriteFile(filepath.Join(dir, certName(name)), cert, 0644)
 	if err != nil {
 		return fmt.Errorf("error writing certificate: %v", err)
 	}
@@ -99,21 +98,28 @@ func WriteCert(key, cert []byte, name, dir string) error {
 	return nil
 }
 
-// ReadCert reads cert and key files
-func ReadCert(name, dir string) ([]byte, []byte, error) {
-	keyName := fmt.Sprintf("%s-key.pem", name)
-	dest := filepath.Join(dir, keyName)
-	key, errKey := ioutil.ReadFile(dest)
-	if errKey != nil {
-		return nil, nil, fmt.Errorf("error reading private key: %v", errKey)
+// CertKeyPairExists returns true if a key and matching certificate exist.
+// Matching is defined as having the expected file names. No validation
+// is performed on the actual bytes of the cert/key
+func CertKeyPairExists(name, dir string) (bool, error) {
+	kn := keyName(name)
+	var err error
+	if _, err = os.Stat(filepath.Join(dir, kn)); os.IsNotExist(err) {
+		return false, nil
 	}
-
-	certName := fmt.Sprintf("%s.pem", name)
-	dest = filepath.Join(dir, certName)
-	cert, errCert := ioutil.ReadFile(dest)
-	if errCert != nil {
-		return nil, nil, fmt.Errorf("error reading certificate: %v", errKey)
+	if err != nil {
+		return false, err
 	}
-
-	return key, cert, nil
+	cn := certName(name)
+	if _, err = os.Stat(filepath.Join(dir, cn)); os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
+
+func keyName(s string) string { return fmt.Sprintf("%s-key.pem", s) }
+
+func certName(s string) string { return fmt.Sprintf("%s.pem", s) }

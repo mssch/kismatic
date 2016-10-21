@@ -1,0 +1,3 @@
+---
+  - name: verify node registered with API server
+    command: kubectl get nodes {{ worker_node }}

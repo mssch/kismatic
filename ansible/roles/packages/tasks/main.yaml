@@ -24,7 +24,7 @@
 
   - meta: flush_handlers  #Run handlers
 
-  # isntall packages
+  # install packages
   - name: install etcd package
     package: name=kismatic-etcd state=latest
     when: "'etcd' in group_names"
@@ -39,4 +39,4 @@
 
   - name: install kubernetes worker package
     package: name=kismatic-kubernetes-node state=latest
-    when: "'worker' in group_names and 'master' not in group_names"
+    when: "'worker' in group_names and 'master' not in group_names and 'etcd' not in group_names"

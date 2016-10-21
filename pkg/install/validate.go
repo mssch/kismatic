@@ -8,12 +8,23 @@ import (
 	"time"
 )
 
+// TODO: There is need to run validation against anything that is validatable.
+// Expose the validatable interface so that it can be consumed when
+// validating objects other than a Plan or a Node
+
 // ValidatePlan runs validation against the installation plan to ensure
 // that the plan contains valid user input. Returns true, nil if the validation
 // is successful. Otherwise, returns false and a collection of validation errors.
 func ValidatePlan(p *Plan) (bool, []error) {
 	v := newValidator()
 	v.validate(p)
+	return v.valid()
+}
+
+// ValidateNode runs validation against the given node.
+func ValidateNode(node *Node) (bool, []error) {
+	v := newValidator()
+	v.validate(node)
 	return v.valid()
 }
 
@@ -114,16 +125,6 @@ func (c *CertsConfig) validate() (bool, []error) {
 	if _, err := time.ParseDuration(c.Expiry); err != nil {
 		v.addError(fmt.Errorf("Invalid certificate expiry %q provided: %v", c.Expiry, err))
 	}
-
-	if c.LocationCity == "" {
-		v.addError(errors.New("Certificate location_city field is required"))
-	}
-	if c.LocationState == "" {
-		v.addError(errors.New("Certificate location_state field is required"))
-	}
-	if c.LocationCountry == "" {
-		v.addError(errors.New("Certificate location_country field is required"))
-	}
 	return v.valid()
 }
 
@@ -163,7 +164,19 @@ func (ng *NodeGroup) validate() (bool, []error) {
 
 func (mng *MasterNodeGroup) validate() (bool, []error) {
 	v := newValidator()
-	v.validate(&mng.NodeGroup)
+
+	if len(mng.Nodes) <= 0 {
+		v.addError(fmt.Errorf("At least one node is required"))
+	}
+	if mng.ExpectedCount <= 0 {
+		v.addError(fmt.Errorf("Node count must be greater than 0"))
+	}
+	if len(mng.Nodes) != mng.ExpectedCount && (len(mng.Nodes) > 0 && mng.ExpectedCount > 0) {
+		v.addError(fmt.Errorf("Expected node count (%d) does not match the number of nodes provided (%d)", mng.ExpectedCount, len(mng.Nodes)))
+	}
+	for i, n := range mng.Nodes {
+		v.validateWithErrPrefix(fmt.Sprintf("Node #%d", i+1), &n)
+	}
 
 	if mng.LoadBalancedFQDN == "" {
 		v.addError(fmt.Errorf("Load balanced FQDN is required"))
@@ -187,31 +200,28 @@ func (n *Node) validate() (bool, []error) {
 	if ip := net.ParseIP(n.IP); ip == nil {
 		v.addError(fmt.Errorf("Invalid IP provided"))
 	}
+	if ip := net.ParseIP(n.InternalIP); n.InternalIP != "" && ip == nil {
+		v.addError(fmt.Errorf("Invalid InternalIP provided"))
+	}
 	return v.valid()
 }
 
 func (dr *DockerRegistry) validate() (bool, []error) {
 	v := newValidator()
-	if dr.SetupInternal == true && (dr.Address != "" || dr.CAPath != "" || dr.CertPath != "" || dr.CertKeyPath != "") {
-		v.addError(fmt.Errorf("Cannot use_internal registry when DockerRegistry address, ca_path, cert_path, or cert_key_path is provided"))
+	if dr.SetupInternal == true && (dr.Address != "" || dr.CAPath != "") {
+		v.addError(fmt.Errorf("Cannot setup internal registry when DockerRegistry address or CA is provided"))
 	}
-	if dr.Address == "" && (dr.CAPath != "" || dr.CertPath != "" || dr.CertKeyPath != "") {
-		v.addError(fmt.Errorf("Docker Registry address cannot be empty when ca_path, cert_path and cert_key_path are provided"))
+	if dr.Address == "" && (dr.CAPath != "") {
+		v.addError(fmt.Errorf("Docker Registry address cannot be empty when CA is provided"))
 	}
 	if dr.Address != "" && (dr.Port < 1 || dr.Port > 65535) {
 		v.addError(fmt.Errorf("Docker Registry port %d is invalid. Port must be in the range 1-65535", dr.Port))
 	}
-	if dr.Address != "" && (dr.CAPath == "" || dr.CertKeyPath == "" || dr.CertPath == "") {
-		v.addError(fmt.Errorf("Docker Registry ca_path, cert_path and cert_key_path cannot be empty when registry address is provided"))
+	if dr.Address != "" && (dr.CAPath == "") {
+		v.addError(fmt.Errorf("Docker Registry CA cannot be empty when registry address is provided"))
 	}
 	if _, err := os.Stat(dr.CAPath); dr.CAPath != "" && os.IsNotExist(err) {
 		v.addError(fmt.Errorf("Docker Registry CA file was not found at %q", dr.CAPath))
-	}
-	if _, err := os.Stat(dr.CertPath); dr.CertPath != "" && os.IsNotExist(err) {
-		v.addError(fmt.Errorf("Docker Registry certificate file was not found at %q", dr.CertPath))
-	}
-	if _, err := os.Stat(dr.CertKeyPath); dr.CertKeyPath != "" && os.IsNotExist(err) {
-		v.addError(fmt.Errorf("Docker Registry certificate key file was not found at %q", dr.CertKeyPath))
 	}
 	return v.valid()
 }

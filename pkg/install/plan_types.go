@@ -11,10 +11,7 @@ type NetworkConfig struct {
 
 // CertsConfig describes the cluster's trust and certificate configuration
 type CertsConfig struct {
-	Expiry          string
-	LocationCity    string `yaml:"location_city"`
-	LocationState   string `yaml:"location_state"`
-	LocationCountry string `yaml:"location_country"`
+	Expiry string
 }
 
 // SSHConfig describes the cluster's SSH configuration for accessing nodes
@@ -48,9 +45,10 @@ type NodeGroup struct {
 
 // MasterNodeGroup is the collection of master nodes
 type MasterNodeGroup struct {
-	NodeGroup             `yaml:",inline"`
+	ExpectedCount         int    `yaml:"expected_count"`
 	LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
 	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
+	Nodes                 []Node
 }
 
 // DockerRegistry details for docker registry, either confgiured by the cli or customer provided
@@ -58,9 +56,7 @@ type DockerRegistry struct {
 	SetupInternal bool `yaml:"setup_internal"`
 	Address       string
 	Port          int
-	CAPath        string `yaml:"ca_path"`
-	CertPath      string `yaml:"cert_path"`
-	CertKeyPath   string `yaml:"cert_key_path"`
+	CAPath        string `yaml:"CA"`
 }
 
 // Plan is the installation plan that the user intends to execute
