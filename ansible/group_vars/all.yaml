@@ -152,7 +152,6 @@ deb_gpg_key_url: https://kismatic-deb.s3-accelerate.amazonaws.com/public.key
 # yum_gpg_key_url: http://192.168.200.80/public.key
 # deb_repository_url: http://192.168.200.80/
 # yumdeb_gpg_key_url: http://192.168.200.80/public.key
->>>>>>> a0e7e753640caf9ec66ecd3dce7e42859aa04b02
 #===============================================================================
 # PV configs for monitoring and logging
 #pv_monitoring_nfs_server_ip: "192.168.99.20"
