@@ -27,13 +27,14 @@ func AddWorkerToKismaticMini(awsos AWSOSDetails) {
 
 	g.By("Building a plan to set up an overlay network cluster on this hardware")
 	nodes := PlanAWS{
-		Etcd:                []AWSNodeDeets{node},
-		Master:              []AWSNodeDeets{node},
-		Worker:              []AWSNodeDeets{node},
-		MasterNodeFQDN:      node.Publicip,
-		MasterNodeShortName: node.Publicip,
-		SSHKeyFile:          sshKey,
-		SSHUser:             awsos.AWSUser,
+		Etcd:                     []AWSNodeDeets{node},
+		Master:                   []AWSNodeDeets{node},
+		Worker:                   []AWSNodeDeets{node},
+		MasterNodeFQDN:           node.Publicip,
+		MasterNodeShortName:      node.Publicip,
+		SSHKeyFile:               sshKey,
+		SSHUser:                  awsos.AWSUser,
+		AllowPackageInstallation: true,
 	}
 
 	g.By("Building a template")
