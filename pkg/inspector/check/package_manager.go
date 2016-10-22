@@ -64,6 +64,12 @@ type noopManager struct{}
 func (noopManager) IsAvailable(PackageQuery) (bool, error) {
 	return false, fmt.Errorf("unable to determine if package is available using noop pkg manager")
 }
+func (noopManager) IsInstalled(PackageQuery) (bool, error) {
+	return false, fmt.Errorf("unable to determine if package is installed using noop pkg manager")
+}
+func (noopManager) Enforced() bool {
+	return false
+}
 
 // package manager for EL-based distributions
 type rpmManager struct {
