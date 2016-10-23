@@ -36,32 +36,27 @@ func NewCert(ca *CA, req csr.CertificateRequest) (key, cert []byte, err error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("error processing CSR: %v", err)
 	}
-
 	// Get CA private key
 	caPriv, err := helpers.ParsePrivateKeyPEMWithPassword(ca.Key, []byte(ca.Password))
 	if err != nil {
 		return nil, nil, fmt.Errorf("error parsing privte key: %v", err)
 	}
-
 	// Parse CA Cert
 	caCert, err := helpers.ParseCertificatePEM(ca.Cert)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error parsing CA cert: %v", err)
 	}
 	sigAlgo := signer.DefaultSigAlgo(caPriv)
-
 	// Get CA config from file
 	caConfig, err := config.LoadFile(ca.ConfigFile)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error loading CA Config: %v", err)
 	}
-
 	// Create signer using CA
 	s, err := local.NewSigner(caPriv, caCert, sigAlgo, caConfig.Signing)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating signer: %v", err)
 	}
-
 	// Generate cert using CA signer
 	signReq := signer.SignRequest{
 		Request: string(csrBytes),
@@ -71,7 +66,6 @@ func NewCert(ca *CA, req csr.CertificateRequest) (key, cert []byte, err error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("error signing certificate: %v", err)
 	}
-
 	return key, cert, nil
 }
 
@@ -82,19 +76,16 @@ func WriteCert(key, cert []byte, name, dir string) error {
 	if err != nil {
 		return err
 	}
-
 	// Write private key with read-only for user
 	err = ioutil.WriteFile(filepath.Join(dir, keyName(name)), key, 0600)
 	if err != nil {
 		return fmt.Errorf("error writing private key: %v", err)
 	}
-
 	// Write cert
 	err = ioutil.WriteFile(filepath.Join(dir, certName(name)), cert, 0644)
 	if err != nil {
 		return fmt.Errorf("error writing certificate: %v", err)
 	}
-
 	return nil
 }
 

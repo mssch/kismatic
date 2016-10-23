@@ -31,14 +31,6 @@ type Executor interface {
 
 // ExecutorOptions are used to configure the executor
 type ExecutorOptions struct {
-	// CASigningRequest in JSON format expected by cfSSL
-	CASigningRequest string
-	// CAConfigFile is the Certificate Authority configuration file
-	// in the JSON format expected by cfSSL
-	CAConfigFile string
-	// CASigningProfile is the signing profile to be used when signing
-	// certificates. The profile must be defined in the CAConfigFile
-	CASigningProfile string
 	// SkipCAGeneration determines whether the Certificate Authority should
 	// be generated. If false, an existing CA file must exist.
 	SkipCAGeneration bool
@@ -60,12 +52,6 @@ type ExecutorOptions struct {
 func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
-	if options.CAConfigFile == "" {
-		return nil, fmt.Errorf("CAConfigFile option cannot be empty")
-	}
-	if options.CASigningProfile == "" {
-		return nil, fmt.Errorf("CASigningProfile option cannot be empty")
-	}
 	if options.GeneratedAssetsDirectory == "" {
 		return nil, fmt.Errorf("GeneratedAssetsDirectory option cannot be empty")
 	}
@@ -85,9 +71,9 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 	}
 	certsDir := filepath.Join(options.GeneratedAssetsDirectory, "keys")
 	pki := &LocalPKI{
-		CACsr:                   options.CASigningRequest,
-		CAConfigFile:            options.CAConfigFile,
-		CASigningProfile:        options.CASigningProfile,
+		CACsr:                   filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
+		CAConfigFile:            filepath.Join(ansibleDir, "playbooks", "tls", "ca-config.json"),
+		CASigningProfile:        "kubernetes",
 		GeneratedCertsDirectory: certsDir,
 		Log: stdout,
 	}

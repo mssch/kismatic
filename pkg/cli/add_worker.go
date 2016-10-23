@@ -12,8 +12,6 @@ import (
 )
 
 type addWorkerOpts struct {
-	CAConfigFile             string
-	CASigningProfile         string
 	GeneratedAssetsDirectory string
 	RestartServices          bool
 	OutputFormat             string
@@ -41,8 +39,6 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 			return doAddWorker(out, installOpts.planFilename, opts, newWorker)
 		},
 	}
-	cmd.Flags().StringVar(&opts.CAConfigFile, "ca-config", "ansible/playbooks/tls/ca-config.json", "path to the Certificate Authority configuration file")
-	cmd.Flags().StringVar(&opts.CASigningProfile, "ca-signing-profile", "kubernetes", "name of the profile to be used for signing certificates")
 	cmd.Flags().StringVar(&opts.GeneratedAssetsDirectory, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process are to be stored")
 	cmd.Flags().BoolVar(&opts.RestartServices, "restart-services", false, "force restart clusters services (Use with care)")
 	cmd.Flags().BoolVar(&opts.Verbose, "verbose", false, "enable verbose logging from the installation")
@@ -57,8 +53,6 @@ func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, newWorker 
 		return errors.New("add-worker can only be used with an existin plan file")
 	}
 	execOpts := install.ExecutorOptions{
-		CAConfigFile:             opts.CAConfigFile,
-		CASigningProfile:         opts.CASigningProfile,
 		GeneratedAssetsDirectory: opts.GeneratedAssetsDirectory,
 		RestartServices:          opts.RestartServices,
 		OutputFormat:             opts.OutputFormat,
