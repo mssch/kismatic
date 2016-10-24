@@ -1,0 +1,9 @@
+---
+  - hosts: master[0]
+    name: Configure Internal Docker Registry 
+    remote_user: root
+    become_method: sudo
+    run_once: true
+
+    roles:
+      - role: docker-registry-container

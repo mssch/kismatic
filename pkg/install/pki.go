@@ -119,7 +119,7 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []str
 		}
 	}
 	// Create certs for docker registry if it's missing
-	if p.DockerRegistry.UseInternal {
+	if p.DockerRegistry.SetupInternal {
 		if err := lp.generateDockerRegistryCert(p, ca); err != nil {
 			return err
 		}

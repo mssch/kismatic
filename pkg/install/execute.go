@@ -162,8 +162,20 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		"kubernetes_dns_service_ip":  dnsIP,
 		"modify_hosts_file":          strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
 		"enable_calico_policy":       strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
-		"enable_docker_registry":     strconv.FormatBool(p.DockerRegistry.UseInternal),
 		"allow_package_installation": strconv.FormatBool(p.Cluster.AllowPackageInstallation),
+	}
+	// Setup an internal Docker registry or use a provided one
+	// Else just use DockerHub
+	if p.DockerRegistry.SetupInternal || p.DockerRegistry.Address != "" {
+		ev["use_private_docker_registry"] = "true"
+	}
+	ev["setup_internal_docker_registry"] = strconv.FormatBool(p.DockerRegistry.SetupInternal)
+
+	// Use user provided details for Docker registry
+	if p.DockerRegistry.Address != "" {
+		ev["docker_certificates_ca_path"] = p.DockerRegistry.CAPath
+		ev["docker_registry_address"] = p.DockerRegistry.Address
+		ev["docker_registry_port"] = strconv.Itoa(p.DockerRegistry.Port)
 	}
 	if ae.options.RestartServices {
 		services := []string{"etcd", "apiserver", "controller_manager", "scheduler", "proxy", "kubelet", "calico_node", "docker"}

@@ -529,7 +529,7 @@ func TestGenerateClusterCertificatesDockerCert(t *testing.T) {
 
 	p := getPlan()
 	p.Worker = NodeGroup{}
-	p.DockerRegistry.UseInternal = true
+	p.DockerRegistry.SetupInternal = true
 
 	ca, err := pki.GenerateClusterCA(p)
 	if err != nil {

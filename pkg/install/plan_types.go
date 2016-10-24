@@ -54,7 +54,10 @@ type MasterNodeGroup struct {
 
 // DockerRegistry details for docker registry, either confgiured by the cli or customer provided
 type DockerRegistry struct {
-	UseInternal bool `yaml:"use_internal"`
+	SetupInternal bool `yaml:"setup_internal"`
+	Address       string
+	Port          int
+	CAPath        string `yaml:"CA"`
 }
 
 // Plan is the installation plan that the user intends to execute

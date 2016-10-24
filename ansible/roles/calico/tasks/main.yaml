@@ -12,7 +12,7 @@
 
   # install calicoctl
   # pre-download Docker image
-  - name: download {{ calico_node_img }}
+  - name: "download calico/node"
     command: docker pull {{ calico_node_img }}
   # start calico-node service
   - name: copy calico-node.service to remote

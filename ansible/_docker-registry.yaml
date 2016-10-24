@@ -1,9 +1,9 @@
 ---
   - hosts: master[0]
-    name: Add-On Docker Registry
+    name: Configure Docker for Private Registry
     remote_user: root
     become_method: sudo
     run_once: true
 
     roles:
-      - role: addon-docker-registry
+      - role: docker-registry

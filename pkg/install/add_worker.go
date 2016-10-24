@@ -59,7 +59,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 		"kubernetes_dns_service_ip": dnsIP,
 		"modify_hosts_file":         strconv.FormatBool(updatedPlan.Cluster.Networking.UpdateHostsFiles),
 		"enable_calico_policy":      strconv.FormatBool(updatedPlan.Cluster.Networking.PolicyEnabled),
-		"enable_docker_registry":    strconv.FormatBool(updatedPlan.DockerRegistry.UseInternal),
+		"enable_docker_registry":    strconv.FormatBool(updatedPlan.DockerRegistry.SetupInternal),
 	}
 	if ae.options.RestartServices {
 		services := []string{"proxy", "kubelet", "calico_node", "docker"}

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/apprenda/kismatic-platform/pkg/util"
 	garbler "github.com/michaelbironneau/garbler/lib"
@@ -89,8 +90,10 @@ func (fp *FilePlanner) PlanExists() bool {
 func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 	// Set sensible defaults
 	p.Cluster.Name = "kubernetes"
-	generatedAdminpass, _ := garbler.NewPassword(nil)
-	p.Cluster.AdminPassword = generatedAdminpass
+	generatedAdminPass, _ := garbler.NewPassword(nil)
+	// Cannot contain ":" in kubecofig
+	generatedAdminPass = strings.Replace(generatedAdminPass, ":", "new", -1)
+	p.Cluster.AdminPassword = generatedAdminPass
 	p.Cluster.AllowPackageInstallation = false
 
 	// Set SSH defaults
@@ -107,7 +110,10 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 
 	// Set Certificate defaults
 	p.Cluster.Certificates.Expiry = "17520h"
-	p.DockerRegistry.UseInternal = false
+	p.DockerRegistry.SetupInternal = false
+
+	// Set DockerRegistry defaults
+	p.DockerRegistry.Port = 443
 
 	// Generate entries for all node types
 	n := Node{}
@@ -154,14 +160,18 @@ var commentMap = map[string]string{
 	"policy_enabled":           "When true, enables network policy enforcement on the Kubernetes Pod network. This is an advanced feature.",
 	"update_hosts_files":       "When true, the installer will add entries for all nodes to other nodes' hosts files. Use when you don't have access to DNS.",
 	"expiry":                   "Self-signed certificate expiration period in hours; default is 2 years.",
-	"ssh_key":                  "Absolute path to the ssh public key we should use to manage nodes",
-	"etcd":                     "Here you will identify all of the nodes that should play the etcd role on your cluster",
-	"master":                   "Here you will identify all of the nodes that should play the master role",
-	"worker":                   "Here you will identify all of the nodes that will be workers",
+	"ssh_key":                  "Absolute path to the ssh public key we should use to manage nodes.",
+	"etcd":                     "Here you will identify all of the nodes that should play the etcd role on your cluster.",
+	"master":                   "Here you will identify all of the nodes that should play the master role.",
+	"worker":                   "Here you will identify all of the nodes that will be workers.",
 	"host":                     "The (short) hostname of a node, e.g. etcd01",
-	"ip":                       "The ip address the installer should use to manage this node, e.g. 8.8.8.8",
-	"internalip":               "If the node has an IP for internal traffic, enter it here; otherwise leave blank",
-	"load_balanced_fqdn":       "If using a load balanced master fqdn enter it here; otherwise use the fqdn of any master node",
-	"load_balanced_short_name": "If using a load balanced master enter its short name here; otherwise use the short name of any master node",
-	"use_internal":             "When true, a Docker Registry will be installed on top of your cluster and used to host Docker images needed for its installation",
+	"ip":                       "The ip address the installer should use to manage this node, e.g. 8.8.8.8.",
+	"internalip":               "If the node has an IP for internal traffic, enter it here; otherwise leave blank.",
+	"load_balanced_fqdn":       "If using a load balanced master fqdn enter it here; otherwise use the fqdn of any master node.",
+	"load_balanced_short_name": "If using a load balanced master enter its short name here; otherwise use the short name of any master node.",
+	"docker_registry":          "Here you will provide the details of your Docker registry or setup an internal one to run in the cluster. This is optional and the cluster will always have access to the Docker Hub.",
+	"setup_internal":           "When true, a Docker Registry will be installed on top of your cluster and used to host Docker images needed for its installation.",
+	"address":                  "IP or hostname for your Docker registry. An internal registry will NOT be setup when this field is provided. Must be accessible from all the nodes in the cluster.",
+	"port":                     "Port for your Docker registry.",
+	"CA":                       "Absolute path to the CA that was used when starting your Docker registry. The docker daemons on all nodes in the cluster will be configured with this CA.",
 }

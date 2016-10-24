@@ -1,0 +1,34 @@
+---
+  # Use private docker registry provided by the user
+  - name: load docker images
+    command: docker load -i /opt/images/{{ item }}.tar
+    with_items:
+     - calico
+     - kube-policy-controller
+     - kubedns
+     - kube-dnsmasq
+     - exechealthz
+     - kubernetes-dashboard
+     - pause
+
+  - name: tag docker images
+    command: docker tag {{ item }}
+    with_items:
+      - "{{calico_node_orig_img}} {{calico_node_priv_img}}"
+      - "{{calico_kube_policy_controller_orig_img}} {{calico_kube_policy_controller_priv_img}}"
+      - "{{kubedns_orig_img}} {{kubedns_priv_img}}"
+      - "{{kube_dnsmasq_orig_img}} {{kube_dnsmasq_priv_img}}"
+      - "{{exechealthz_orig_img}} {{exechealthz_priv_img}}"
+      - "{{kubernetes_dashboard_orig_img}} {{kubernetes_dashboard_priv_img}}"
+      - "{{pause_orig_img}} {{pause_priv_img}}"
+
+  - name: push docker image to private registry
+    command: docker push {{ item }}
+    with_items:
+      - "{{calico_node_priv_img}}"
+      - "{{calico_kube_policy_controller_priv_img}}"
+      - "{{kubedns_priv_img}}"
+      - "{{kube_dnsmasq_priv_img}}"
+      - "{{exechealthz_priv_img}}"
+      - "{{kubernetes_dashboard_priv_img}}"
+      - "{{pause_priv_img}}"
