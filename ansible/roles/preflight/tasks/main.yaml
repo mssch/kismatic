@@ -18,7 +18,7 @@
       dest: "{{ bin_dir }}/kismatic-inspector"
       mode: 0744
   - name: start the Kismatic Inspector in server mode
-    command: "{{ bin_dir }}/kismatic-inspector server --node-roles {{ \",\".join(group_names) }} --port 8888"
+    command: "{{ bin_dir }}/kismatic-inspector server --node-roles {{ \",\".join(group_names) }} --port 8888 {{ (allow_package_installation == 'true') | ternary('', '-e') }}"
     async: 300
     register: start_inspector
   - name: ensure Kismatic Inspector server is running

@@ -44,7 +44,7 @@ NetworkManager.x86_64           1:1.0.6-30.el7_2               @koji-override-1`
 	m := rpmManager{
 		run: mock.run,
 	}
-	p := PackageQuery{"NetworkManager.x86_64", "1:1.0.6-30.el7_2"}
+	p := PackageQuery{"NetworkManager", "1:1.0.6"}
 	ok, _ := m.IsAvailable(p)
 	if !ok {
 		t.Error("expected true, but got false")
@@ -79,7 +79,7 @@ NetworkManager.x86_64           1:1.0.6-30.el7_2               @koji-override-1`
 	m := rpmManager{
 		run: mock.run,
 	}
-	p := PackageQuery{"NetworkManager.x86_64", "1.0"}
+	p := PackageQuery{"NetworkManager", "1.0"}
 	ok, err := m.IsAvailable(p)
 	if ok {
 		t.Error("expected false, but got true")
@@ -98,7 +98,7 @@ NetworkManager.x86_64           1:1.0.6-30.el7_2               @koji-override-1`
 	m := rpmManager{
 		run: mock.run,
 	}
-	p := PackageQuery{"NetworkManager", "1:1.0.6-30.el7_2"}
+	p := PackageQuery{"NetworkManagr", "1:1.0.6-30.el7_2"}
 	ok, err := m.IsAvailable(p)
 	if ok {
 		t.Error("expected false, but got true")
@@ -138,7 +138,7 @@ ii  libc6:amd64                                           2.23-0ubuntu3         
 	m := debManager{
 		run: mock.run,
 	}
-	p := PackageQuery{"libc6:amd64", "2.23-0ubuntu3"}
+	p := PackageQuery{"libc6", "2.23"}
 	ok, _ := m.IsAvailable(p)
 	if !ok {
 		t.Errorf("expected true, but got false")
@@ -193,7 +193,7 @@ func TestDebPackageManagerExecError(t *testing.T) {
 		run: mock.run,
 	}
 	p := PackageQuery{"", ""}
-	ok, err := m.IsAvailable(p)
+	ok, err := m.IsInstalled(p)
 	if ok {
 		t.Error("expected false, but got true")
 	}

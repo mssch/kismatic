@@ -53,13 +53,11 @@ func NewCACert(csrFile string, commonName string, subject Subject) (key, cert []
 	}
 	caCSR.Names = []csr.Name{name}
 	caCSR.CN = commonName
-
 	// Generate CA Cert according to CSR
 	cert, _, key, err = initca.New(caCSR)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating CA cert: %v", err)
 	}
-
 	return key, cert, nil
 }
 
@@ -70,12 +68,10 @@ func ReadCACert(name, dir string) (key, cert []byte, err error) {
 	if errKey != nil {
 		return nil, nil, fmt.Errorf("error reading private key: %v", errKey)
 	}
-
 	dest = filepath.Join(dir, certName(name))
 	cert, errCert := ioutil.ReadFile(dest)
 	if errCert != nil {
 		return nil, nil, fmt.Errorf("error reading certificate: %v", errKey)
 	}
-
 	return key, cert, nil
 }

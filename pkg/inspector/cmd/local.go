@@ -11,9 +11,10 @@ import (
 )
 
 type localOpts struct {
-	outputType string
-	nodeRoles  string
-	rulesFile  string
+	outputType      string
+	nodeRoles       string
+	rulesFile       string
+	enforcePackages bool
 }
 
 var localExample = `# Run with a custom rules file
@@ -34,6 +35,7 @@ func NewCmdLocal(out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.outputType, "output", "o", "table", "set the result output type. Options are 'json', 'table'")
 	cmd.Flags().StringVar(&opts.nodeRoles, "node-roles", "", "comma-separated list of the node's roles. Valid roles are 'etcd', 'master', 'worker'")
 	cmd.Flags().StringVarP(&opts.rulesFile, "file", "f", "", "the path to an inspector rules file. If blank, the inspector uses the default rules")
+	cmd.Flags().BoolVarP(&opts.enforcePackages, "enforcePackages", "e", false, "when provided the installer will test that all Kismatic packages have been installed")
 	return cmd
 }
 
@@ -58,14 +60,11 @@ func runLocal(out io.Writer, opts localOpts) error {
 	if err != nil {
 		return fmt.Errorf("error running checks locally: %v", err)
 	}
-	_, err = check.NewPackageManager(distro)
+	pkgMgr, err := check.NewPackageManager(distro, opts.enforcePackages)
 	if err != nil {
 		return err
 	}
-	pkgMgr, err := check.NewPackageManager(distro)
-	if err != nil {
-		return err
-	}
+
 	// Create rule engine
 	e := rule.Engine{
 		RuleCheckMapper: rule.DefaultCheckMapper{

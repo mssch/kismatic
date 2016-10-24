@@ -3,6 +3,7 @@ package integration
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"path/filepath"
 	"regexp"
@@ -74,13 +75,14 @@ func InstallKismaticMini(awsos AWSOSDetails) PlanAWS {
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
 	nodes := PlanAWS{
-		Etcd:                []AWSNodeDeets{etcdNode},
-		Master:              []AWSNodeDeets{masterNode},
-		Worker:              []AWSNodeDeets{workerNode},
-		MasterNodeFQDN:      masterNode.Hostname,
-		MasterNodeShortName: masterNode.Hostname,
-		SSHKeyFile:          sshKey,
-		SSHUser:             awsos.AWSUser,
+		Etcd:                     []AWSNodeDeets{etcdNode},
+		Master:                   []AWSNodeDeets{masterNode},
+		Worker:                   []AWSNodeDeets{workerNode},
+		MasterNodeFQDN:           masterNode.Hostname,
+		MasterNodeShortName:      masterNode.Hostname,
+		SSHKeyFile:               sshKey,
+		SSHUser:                  awsos.AWSUser,
+		AllowPackageInstallation: true,
 	}
 
 	f, fileErr := os.Create("kismatic-testing.yaml")
@@ -160,6 +162,7 @@ func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
 	sshKey, err := GetSSHKeyFile()
 	FailIfError(err, "Error getting SSH Key file")
 	nodes := PlanAWS{
+		AllowPackageInstallation: true,
 		Etcd:                etcdNodes,
 		Master:              masterNodes,
 		Worker:              workerNodes,
@@ -249,6 +252,7 @@ func InstallBigKismaticWithDeps(count NodeCount, awsos AWSOSDetails) PlanAWS {
 	sshKey, err := GetSSHKeyFile()
 	FailIfError(err, "Error getting SSH Key file")
 	nodes := PlanAWS{
+		AllowPackageInstallation: false,
 		Etcd:                etcdNodes,
 		Master:              masterNodes,
 		Worker:              workerNodes,
@@ -345,18 +349,12 @@ func FailIfError(err error, message ...string) {
 }
 
 func CopyKismaticToTemp() string {
-	tmpDir := os.TempDir()
-	randomness, randomErr := GenerateGUIDString()
-	if randomErr != nil {
-		log.Fatal("Error making a GUID: ", randomErr)
-	}
-	kisPath := tmpDir + "/kisint/" + randomness
-	err := os.MkdirAll(kisPath, 0777)
+	tmpDir, err := ioutil.TempDir("", "kisint")
 	if err != nil {
 		log.Fatal("Error making temp dir: ", err)
 	}
 
-	return kisPath
+	return tmpDir
 }
 
 func GenerateGUIDString() (string, error) {
@@ -428,24 +426,40 @@ func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 		Hostname:   hostname,
 	}
 
-	params := &ec2.ModifyInstanceAttributeInput{
-		InstanceId: aws.String(deets.Instanceid), // Required
-		SourceDestCheck: &ec2.AttributeBooleanValue{
-			Value: aws.Bool(false),
-		},
-	}
-	_, err2 := svc.ModifyInstanceAttribute(params)
+	for i := 1; i < 4; i++ { //
+		params := &ec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(deets.Instanceid), // Required
+			SourceDestCheck: &ec2.AttributeBooleanValue{
+				Value: aws.Bool(false),
+			},
+		}
+		svc = ec2.New(session.New(&aws.Config{Region: aws.String(TARGET_REGION)}))
+		_, err2 := svc.ModifyInstanceAttribute(params)
 
-	if err2 != nil {
-		return AWSNodeDeets{}, err2
+		if err2 != nil {
+			if i == 3 {
+				return AWSNodeDeets{}, err2
+			}
+			fmt.Printf("Error encountered; retry %v (%V)", i, err2)
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		break
 	}
 
+	thisHost, _ := os.Hostname()
+
+	svc = ec2.New(session.New(&aws.Config{Region: aws.String(TARGET_REGION)}))
 	_, errtag := svc.CreateTags(&ec2.CreateTagsInput{
 		Resources: []*string{aws.String(deets.Instanceid)},
 		Tags: []*ec2.Tag{
 			{
 				Key:   aws.String("ApprendaTeam"),
 				Value: aws.String("Kismatic"),
+			},
+			{
+				Key:   aws.String("CreatedBy"),
+				Value: aws.String(thisHost),
 			},
 		},
 	})

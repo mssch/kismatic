@@ -66,6 +66,7 @@ func runClient(out io.Writer, opts clientOpts) error {
 	if err != nil {
 		return err
 	}
+
 	results, err := c.ExecuteRules(rules)
 	if err != nil {
 		return fmt.Errorf("error running inspector against remote node: %v", err)

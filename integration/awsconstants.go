@@ -1,7 +1,11 @@
 package integration
 
 const TARGET_REGION = "us-east-1"
+
 const SUBNETID = "subnet-85f111b9"
+
+//"subnet-edab6fd1"
+
 const KEYNAME = "kismatic-integration-testing"
 const SECURITYGROUPID = "sg-d1dc4dab"
 

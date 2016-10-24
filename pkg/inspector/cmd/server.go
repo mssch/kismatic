@@ -19,20 +19,22 @@ kismatic-inspector server --port 9000 --node-roles master
 func NewCmdServer(out io.Writer) *cobra.Command {
 	var port int
 	var nodeRoles string
+	var enforcePackages bool
 	cmd := &cobra.Command{
 		Use:     "server",
 		Short:   "Stand up the inspector server for running checks remotely",
 		Example: serverExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runServer(out, cmd.Parent().Name(), port, nodeRoles)
+			return runServer(out, cmd.Parent().Name(), port, nodeRoles, enforcePackages)
 		},
 	}
 	cmd.Flags().IntVar(&port, "port", 9090, "the port number for standing up the Inspector server")
 	cmd.Flags().StringVar(&nodeRoles, "node-roles", "", "comma-separated list of the node's roles. Valid roles are 'etcd', 'master', 'worker'")
+	cmd.Flags().BoolVarP(&enforcePackages, "enforcePackages", "e", false, "when provided the installer will test that all Kismatic packages have been installed")
 	return cmd
 }
 
-func runServer(out io.Writer, commandName string, port int, nodeRoles string) error {
+func runServer(out io.Writer, commandName string, port int, nodeRoles string, enforcePackages bool) error {
 	if nodeRoles == "" {
 		return fmt.Errorf("--node-roles is required")
 	}
@@ -40,7 +42,7 @@ func runServer(out io.Writer, commandName string, port int, nodeRoles string) er
 	if err != nil {
 		return err
 	}
-	s, err := inspector.NewServer(roles, port)
+	s, err := inspector.NewServer(roles, port, enforcePackages)
 	if err != nil {
 		return fmt.Errorf("error starting up inspector server: %v", err)
 	}

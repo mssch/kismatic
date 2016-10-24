@@ -1,14 +1,15 @@
 package integration
 
 type PlanAWS struct {
-	Etcd                []AWSNodeDeets
-	Master              []AWSNodeDeets
-	Worker              []AWSNodeDeets
-	MasterNodeFQDN      string
-	MasterNodeShortName string
-	SSHUser             string
-	SSHKeyFile          string
-	HomeDirectory       string
+	Etcd                     []AWSNodeDeets
+	Master                   []AWSNodeDeets
+	Worker                   []AWSNodeDeets
+	MasterNodeFQDN           string
+	MasterNodeShortName      string
+	SSHUser                  string
+	SSHKeyFile               string
+	HomeDirectory            string
+	AllowPackageInstallation bool
 }
 
 type AWSNodeDeets struct {
@@ -21,6 +22,7 @@ type AWSNodeDeets struct {
 const planAWSOverlay = `cluster:
   name: kubernetes
   admin_password: abbazabba
+  allow_package_installation: {{.AllowPackageInstallation}}
   networking:
     type: overlay
     pod_cidr_block: 172.16.0.0/16

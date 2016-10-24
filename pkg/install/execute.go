@@ -31,14 +31,6 @@ type Executor interface {
 
 // ExecutorOptions are used to configure the executor
 type ExecutorOptions struct {
-	// CASigningRequest in JSON format expected by cfSSL
-	CASigningRequest string
-	// CAConfigFile is the Certificate Authority configuration file
-	// in the JSON format expected by cfSSL
-	CAConfigFile string
-	// CASigningProfile is the signing profile to be used when signing
-	// certificates. The profile must be defined in the CAConfigFile
-	CASigningProfile string
 	// SkipCAGeneration determines whether the Certificate Authority should
 	// be generated. If false, an existing CA file must exist.
 	SkipCAGeneration bool
@@ -60,12 +52,6 @@ type ExecutorOptions struct {
 func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (Executor, error) {
 	// TODO: Is there a better way to handle this path to the ansible install dir?
 	ansibleDir := "ansible"
-	if options.CAConfigFile == "" {
-		return nil, fmt.Errorf("CAConfigFile option cannot be empty")
-	}
-	if options.CASigningProfile == "" {
-		return nil, fmt.Errorf("CASigningProfile option cannot be empty")
-	}
 	if options.GeneratedAssetsDirectory == "" {
 		return nil, fmt.Errorf("GeneratedAssetsDirectory option cannot be empty")
 	}
@@ -85,9 +71,9 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 	}
 	certsDir := filepath.Join(options.GeneratedAssetsDirectory, "keys")
 	pki := &LocalPKI{
-		CACsr:                   options.CASigningRequest,
-		CAConfigFile:            options.CAConfigFile,
-		CASigningProfile:        options.CASigningProfile,
+		CACsr:                   filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
+		CAConfigFile:            filepath.Join(ansibleDir, "playbooks", "tls", "ca-config.json"),
+		CASigningProfile:        "kubernetes",
 		GeneratedCertsDirectory: certsDir,
 		Log: stdout,
 	}
@@ -167,15 +153,16 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		return fmt.Errorf("failed to determine absolute path to %s: %v", ae.certsDir, err)
 	}
 	ev := ansible.ExtraVars{
-		"kubernetes_cluster_name":   p.Cluster.Name,
-		"kubernetes_admin_password": p.Cluster.AdminPassword,
-		"tls_directory":             tlsDir,
-		"calico_network_type":       p.Cluster.Networking.Type,
-		"kubernetes_services_cidr":  p.Cluster.Networking.ServiceCIDRBlock,
-		"kubernetes_pods_cidr":      p.Cluster.Networking.PodCIDRBlock,
-		"kubernetes_dns_service_ip": dnsIP,
-		"modify_hosts_file":         strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
-		"enable_calico_policy":      strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
+		"kubernetes_cluster_name":    p.Cluster.Name,
+		"kubernetes_admin_password":  p.Cluster.AdminPassword,
+		"tls_directory":              tlsDir,
+		"calico_network_type":        p.Cluster.Networking.Type,
+		"kubernetes_services_cidr":   p.Cluster.Networking.ServiceCIDRBlock,
+		"kubernetes_pods_cidr":       p.Cluster.Networking.PodCIDRBlock,
+		"kubernetes_dns_service_ip":  dnsIP,
+		"modify_hosts_file":          strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
+		"enable_calico_policy":       strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
+		"allow_package_installation": strconv.FormatBool(p.Cluster.AllowPackageInstallation),
 	}
 	// Setup an internal Docker registry or use a provided one
 	// Else just use DockerHub
@@ -270,6 +257,7 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 		"kismatic_preflight_checker":       filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
 		"kismatic_preflight_checker_local": filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector"),
 		"modify_hosts_file":                strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
+		"allow_package_installation":       strconv.FormatBool(p.Cluster.AllowPackageInstallation),
 	}
 
 	// run the pre-flight playbook with pre-flight explainer

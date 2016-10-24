@@ -12,21 +12,45 @@ import (
 // package manager
 type PackageManager interface {
 	IsAvailable(PackageQuery) (bool, error)
+	IsInstalled(PackageQuery) (bool, error)
+	Enforced() bool
+}
+
+func IsPackageReadyToContinue(m PackageManager, q PackageQuery) (bool, error) {
+	if m.Enforced() {
+		installed, _ := m.IsInstalled(q)
+
+		if installed {
+			return true, nil
+		}
+
+		available, _ := m.IsAvailable(q)
+
+		if available {
+			return false, fmt.Errorf("%v is not installed but is available in a package repository", q)
+		}
+
+		return false, fmt.Errorf("%v is not installed and isn't available in known package repositories", q)
+	}
+	return true, nil
 }
 
 // NewPackageManager returns a package manager for the given distribution
-func NewPackageManager(distro Distro) (PackageManager, error) {
+func NewPackageManager(distro Distro, enforcePackages bool) (PackageManager, error) {
 	run := func(name string, arg ...string) ([]byte, error) {
-		return exec.Command(name, arg...).CombinedOutput()
+		r, err := exec.Command(name, arg...).CombinedOutput()
+		return r, err
 	}
 	switch distro {
 	case RHEL, CentOS:
 		return &rpmManager{
-			run: run,
+			run:             run,
+			enforcePackages: enforcePackages,
 		}, nil
 	case Ubuntu:
 		return &debManager{
-			run: run,
+			run:             run,
+			enforcePackages: enforcePackages,
 		}, nil
 	case Darwin:
 		return noopManager{}, nil
@@ -40,14 +64,25 @@ type noopManager struct{}
 func (noopManager) IsAvailable(PackageQuery) (bool, error) {
 	return false, fmt.Errorf("unable to determine if package is available using noop pkg manager")
 }
+func (noopManager) IsInstalled(PackageQuery) (bool, error) {
+	return false, fmt.Errorf("unable to determine if package is installed using noop pkg manager")
+}
+func (noopManager) Enforced() bool {
+	return false
+}
 
 // package manager for EL-based distributions
 type rpmManager struct {
-	run func(string, ...string) ([]byte, error)
+	run             func(string, ...string) ([]byte, error)
+	enforcePackages bool
+}
+
+func (m rpmManager) Enforced() bool {
+	return m.enforcePackages
 }
 
 func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
-	out, err := m.run("yum", "list", "-q", p.Name)
+	out, err := m.run("yum", "list", "available", "-q", p.Name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
 	}
@@ -57,8 +92,20 @@ func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
 	return m.isPackageListed(p, out), nil
 }
 
+func (m rpmManager) IsInstalled(p PackageQuery) (bool, error) {
+	out, err := m.run("yum", "list", "installed", "-q", p.Name)
+	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.Name, p.Version, err)
+	}
+	return m.isPackageListed(p, out), nil
+}
+
 func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 	s := bufio.NewScanner(bytes.NewReader(list))
+
 	for s.Scan() {
 		line := s.Text()
 		f := strings.Fields(line)
@@ -66,7 +113,9 @@ func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 			// Ignore lines that don't match the expected format
 			continue
 		}
-		if p.Name == f[0] && p.Version == f[1] {
+		maybeName := strings.Split(f[0], ".")[0]
+		maybeVersion := strings.Split(f[1], "-")[0]
+		if p.Name == maybeName && p.Version == maybeVersion {
 			return true
 		}
 	}
@@ -75,18 +124,24 @@ func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 
 // package manager for debian-based distributions
 type debManager struct {
-	run func(string, ...string) ([]byte, error)
+	run             func(string, ...string) ([]byte, error)
+	enforcePackages bool
 }
 
-func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
+func (m debManager) Enforced() bool {
+	return m.enforcePackages
+}
+
+func (m debManager) IsInstalled(p PackageQuery) (bool, error) {
 	// First check if the package is installed
-	installed, err := m.isInstalled(p)
+	installed, err := m.isPackageListed(p)
 	if err != nil {
 		return false, err
 	}
-	if installed {
-		return true, nil
-	}
+	return installed, nil
+}
+
+func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
 	// If it's not installed, ensure that it is available via the
 	// package manager. We attempt to install using --dry-run. If exit status is zero, we
 	// know the package is available for download
@@ -100,7 +155,7 @@ func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
 	return true, nil
 }
 
-func (m debManager) isInstalled(p PackageQuery) (bool, error) {
+func (m debManager) isPackageListed(p PackageQuery) (bool, error) {
 	out, err := m.run("dpkg", "-l", p.Name)
 	if err != nil && strings.Contains(string(out), "no packages found matching") {
 		return false, nil
@@ -116,7 +171,9 @@ func (m debManager) isInstalled(p PackageQuery) (bool, error) {
 			// Ignore lines with unexpected format
 			continue
 		}
-		if p.Name == f[1] && p.Version == f[2] {
+		maybeName := strings.Split(f[1], ".")[0]
+		maybeVersion := strings.Split(f[2], "-")[0]
+		if p.Name == maybeName && p.Version == maybeVersion {
 			return true, nil
 		}
 	}

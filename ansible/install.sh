@@ -4,7 +4,7 @@ cd tls/
 ./tls-bootstrap.sh
 cd ../
 if [[ -z "$var" ]]; then
-  ansible-playbook -i inventory.ini -s kubernetes.yaml
+  ansible-playbook -i inventory.ini -s kubernetes.yaml -f 10
 else
-  ansible-playbook -i inventory.ini -s kubernetes.yaml --extra-vars $1
+  ansible-playbook -i inventory.ini -s kubernetes.yaml -f 10 --extra-vars $1
 fi
