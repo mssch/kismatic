@@ -1,8 +1,7 @@
-Apprenda Kubernetes Distribution Platform
+# Kismatic Install
+Matthew M. Miller Alex Brand, Dimitri Koshkin, Joseph Jacks
 
-Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
-
-**What the Kismatic installer will do:**
+## What the Kismatic installer will do:
 
 * Use key-based SSH to manage machines in a Kubernetes cluster
 
@@ -18,9 +17,9 @@ Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
 
 * Maintain a record of the original intent of the cluster to help inform upgrades
 
-(installer-workflow.png)
+![High-level workflow](installer-workflow.png)
 
-**Plan**
+## Plan
 
 Setting up a proper cluster takes a little forethought. Depending on your intent, you may need to engage multiple teams within your organization to correctly provision the required infrastructure. Planning will help you identify provisioning tasks and report the results of them to the installer.
 
