@@ -115,19 +115,23 @@ func InstallKismaticMini(awsos AWSOSDetails) PlanAWS {
 }
 
 func InstallKismatic(awsos AWSOSDetails) PlanAWS {
-	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos)
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, false, false)
 }
 
 func InstallKismaticWithDeps(awsos AWSOSDetails) PlanAWS {
-	return InstallBigKismaticWithDeps(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos)
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, true, false)
 }
 
-func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
+func InstallKismaticWithAutoConfiguredDocker(awsos AWSOSDetails) PlanAWS {
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, false, false)
+}
+
+func InstallBigKismatic(count NodeCount, awsos AWSOSDetails, installDeps, autoConfigureDockerRegistry bool) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
 	if count.Etcd < 1 || count.Master < 1 || count.Worker < 1 {
-		Fail("Must have at least 1 of ever node type")
+		Fail("Must have at least 1 of every node type")
 	}
 
 	By("Making infrastructure")
@@ -170,6 +174,7 @@ func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
 		MasterNodeShortName: masterNodes[0].Hostname,
 		SSHKeyFile:          sshKey,
 		SSHUser:             awsos.AWSUser,
+		AutoConfiguredDockerRegistry: autoConfigureDockerRegistry,
 	}
 	descErr := WaitForAllInstancesToStart(&nodes)
 	FailIfError(descErr, "Error waiting for nodes")
@@ -189,95 +194,10 @@ func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
 	FailIfError(execErr, "Error filling in plan template")
 	w.Flush()
 
-	By("Validing our plan")
-	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
-	verbytes, verErr := ver.CombinedOutput()
-	verText := string(verbytes)
-
-	FailIfError(verErr, "Error validating plan", verText)
-
-	if bailBeforeAnsible() == true {
-		return nodes
+	if installDeps {
+		By("Installing some RPMs")
+		InstallRPMs(nodes, awsos)
 	}
-
-	By("Punch it Chewie!")
-	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
-	app.Stdout = os.Stdout
-	app.Stderr = os.Stderr
-	appErr := app.Run()
-
-	FailIfError(appErr, "Error applying plan")
-
-	return nodes
-}
-
-func InstallBigKismaticWithDeps(count NodeCount, awsos AWSOSDetails) PlanAWS {
-	By("Building a template")
-	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
-	FailIfError(err, "Couldn't parse template")
-	if count.Etcd < 1 || count.Master < 1 || count.Worker < 1 {
-		Fail("Must have at least 1 of ever node type")
-	}
-
-	By("Making infrastructure")
-
-	allInstanceIDs := make([]string, count.Total())
-	etcdNodes := make([]AWSNodeDeets, count.Etcd)
-	masterNodes := make([]AWSNodeDeets, count.Master)
-	workerNodes := make([]AWSNodeDeets, count.Worker)
-
-	for i := uint16(0); i < count.Etcd; i++ {
-		var etcErr error
-		etcdNodes[i], etcErr = MakeETCDNode(awsos.AWSAMI)
-		FailIfError(etcErr, "Error making etcd node")
-		allInstanceIDs[i] = etcdNodes[i].Instanceid
-	}
-
-	for i := uint16(0); i < count.Master; i++ {
-		var masterErr error
-		masterNodes[i], masterErr = MakeMasterNode(awsos.AWSAMI)
-		FailIfError(masterErr, "Error making master node")
-		allInstanceIDs[i+count.Etcd] = masterNodes[i].Instanceid
-	}
-
-	for i := uint16(0); i < count.Worker; i++ {
-		var workerErr error
-		workerNodes[i], workerErr = MakeWorkerNode(awsos.AWSAMI)
-		FailIfError(workerErr, "Error making worker node")
-		allInstanceIDs[i+count.Etcd+count.Master] = workerNodes[i].Instanceid
-	}
-
-	defer TerminateInstances(allInstanceIDs...)
-
-	sshKey, err := GetSSHKeyFile()
-	FailIfError(err, "Error getting SSH Key file")
-	nodes := PlanAWS{
-		AllowPackageInstallation: false,
-		Etcd:                etcdNodes,
-		Master:              masterNodes,
-		Worker:              workerNodes,
-		MasterNodeFQDN:      masterNodes[0].Hostname,
-		MasterNodeShortName: masterNodes[0].Hostname,
-		SSHKeyFile:          sshKey,
-		SSHUser:             awsos.AWSUser,
-	}
-	descErr := WaitForAllInstancesToStart(&nodes)
-	FailIfError(descErr, "Error waiting for nodes")
-	log.Printf("%v", nodes.Etcd[0].Publicip)
-	PrintNodes(&nodes)
-
-	By("Building a plan to set up an overlay network cluster on this hardware")
-
-	f, fileErr := os.Create("kismatic-testing.yaml")
-	FailIfError(fileErr, "Error waiting for nodes")
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	execErr := template.Execute(w, &nodes)
-	FailIfError(execErr, "Error filling in plan template")
-	w.Flush()
-
-	By("Installing some RPMs")
-	InstallRPMs(nodes, awsos)
 
 	By("Validing our plan")
 	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())

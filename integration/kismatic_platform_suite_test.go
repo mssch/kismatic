@@ -8,6 +8,8 @@ import (
 )
 
 func TestKismaticPlatform(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "KismaticPlatform Suite")
+	if !testing.Short() {
+		RegisterFailHandler(Fail)
+		RunSpecs(t, "KismaticPlatform Suite")
+	}
 }
