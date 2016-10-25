@@ -1,5 +1,5 @@
 # Kismatic Install
-Matthew M. Miller Alex Brand, Dimitri Koshkin, Joseph Jacks
+Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
 
 ## What the Kismatic installer will do:
 
@@ -304,8 +304,8 @@ Only those IP ranges you want to manage the Kubernetes nodes</td>
 
 <table>
   <tr>
-    <td>Expiration period for certificates
-default 17520h</td>
+    <td>Expiration period for certificates<br/>
+*default 17520h*</td>
     <td></td>
   </tr>
   <tr>
@@ -328,7 +328,7 @@ Kismatic will manage generation and installation of TLS certificates and keys us
 
 The default expiry period for certificates is **17520h (**2 years). Certificates must be updated prior to expiry or the platform will cease to operate without warning. Replacing certificates will cause momentary downtime with Kubernetes as of version 1.3; future versions should allow for certificate "rolling" without downtime.
 
-**Provision**
+# Provision
 
 ## Get the distribution
 
