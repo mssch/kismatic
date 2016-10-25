@@ -123,7 +123,7 @@ func InstallKismaticWithDeps(awsos AWSOSDetails) PlanAWS {
 }
 
 func InstallKismaticWithAutoConfiguredDocker(awsos AWSOSDetails) PlanAWS {
-	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, false, false)
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, false, true)
 }
 
 func InstallBigKismatic(count NodeCount, awsos AWSOSDetails, installDeps, autoConfigureDockerRegistry bool) PlanAWS {
