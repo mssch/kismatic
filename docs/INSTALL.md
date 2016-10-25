@@ -5,7 +5,7 @@ Matthew M. Miller Alex Brand, Dimitri Koshkin, Joseph Jacks
 
 * Use key-based SSH to manage machines in a Kubernetes cluster
 
-* Verify that machines and network have been properly provisioned for a Kubernetes installation
+* Validate that machines and network have been properly provisioned for a Kubernetes installation
 
 * Generate SSL certificates for internal Kubernetes traffic
 
@@ -49,7 +49,7 @@ Suggested: 2</td>
 </table>
 
 
-Kubernetes is installed on multiple physical or virtual machines and may be provisioned on or on most public infrastructure clouds. These machines become **nodes** of the Kubernetes cluster. 
+Kubernetes is installed on multiple physical or virtual machines and may be provisioned on or on most public infrastructure clouds. These machines become **nodes** of the Kubernetes cluster.
 
 In our installation of Kubernetes, machines (which are called **nodes**) are specialized to one of three distinct roles within the cluster: **etcd**, **master** or **worker**.
 
@@ -169,7 +169,7 @@ Worker nodes are where your applications will run. You can add more as necessary
 
 For example, if you would like to absorb the failure of a VM host, you would need at least one host's worth of unused worker capacity on top of what you would otherwise need.
 
-## Network 
+## Network
 
 <table>
   <tr>
@@ -513,7 +513,7 @@ To double check that your nodes are fit for purpose, you can run the kismatic in
 
 ## Networking
 
-Enter your network settings in the plan file, including 
+Enter your network settings in the plan file, including
 
 * pod networking technique (**routed** or **overlay**)
 
@@ -535,11 +535,10 @@ This step will result in the copying of the kismatic-inspector to each node via 
 
 **Apply**
 
-Having a valid plan, from your installation machine run 
+Having a valid plan, from your installation machine run
 
 ./kismatic install apply
 
 Kismatic will connect to each of your machines, install necessary software and prove its correctness. Any errors detected will be written to standard out.
 
 Congratulations! You've got a Kubernetes cluster.
-

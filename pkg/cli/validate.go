@@ -54,7 +54,7 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	}
 	util.PrettyPrintOk(out, "Reading installation plan file %q", opts.planFile)
 
-	// Verify plan file
+	// Validate plan file
 	ok, errs := install.ValidatePlan(plan)
 	if !ok {
 		util.PrettyPrintErr(out, "Validating installation plan file")

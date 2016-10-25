@@ -1,6 +1,6 @@
 # Kismatic Inspector
 
-The Kismatic Inspector can be used to verify infrastructure that has been provisioned
+The Kismatic Inspector can be used to validate infrastructure that has been provisioned
 for running the Kismatic platform.
 
 The utility supports two modes of operation:
