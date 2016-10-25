@@ -6,6 +6,7 @@ Kismatic is a set of utilities for managing Kubernetes installations.
 We're focused on making it straightforward for those who manage their own infrastructure to install secure, highly available Kubernetes clusters.
 
 The Kismatic tools include:
+
 1. `kismatic`
    * A utility for installing and configuring Kubernetes on provisioned infrastructure
 2. `kismatic-inspector`
@@ -16,12 +17,13 @@ The Kismatic tools include:
    * Packages for installing Kubernetes and its dependendencies, focused on specific roles in an HA cluster
    * With these packages installed on a local repo it is possible to install use Kismatic to Kubernetes to nodes that do not have access to the public internet.
 
-Current versions:
-* Kubernetes 1.4.3
-* Docker 1.11.2
-* Calicoctl 0.22.0
-* Etcd (for Kubernetes) 3.0.10
-* Etcd (for Calico) 2.37
+| Dependency | Currently installed version |
+| --- | --- |
+| Kubernetes | 1.4.3 |
+| Docker | 1.11.2 |
+| Calicoctl | 0.22.0 |
+| Etcd (for Kubernetes) | 3.0.10 |
+| Etcd (for Calico) | 2.37 |
 
 # Kismatic Documentation
 
@@ -35,6 +37,7 @@ Current versions:
 Use the `kismatic install` command to work through installation of a platform. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
 
 The installation consists of three phases:
+
 1. **Plan**: `kismatic install plan` 
    1. The installer will ask basic questions about the intent of your cluster.
    2. The installer will produce a `kismatic-cluster.yaml` to capture your intent.
