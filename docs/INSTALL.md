@@ -21,6 +21,10 @@ Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
 
 ![High-level workflow](installer-workflow.png)
 
+| Plan | Provision | Validate | Install |
+| --- | --- | --- | --- |
+| You'll read these docs and learn more about the resources Kubernetes will require of your infrastructure provider and work with others to make decisions and arrange required work. | You'll work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. You'll collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable |  
+
 ## Plan
 
 Setting up a proper cluster takes a little forethought. Depending on your intent, you may need to engage multiple teams within your organization to correctly provision the required infrastructure. Planning will help you identify provisioning tasks and report the results of them to the installer.
@@ -38,16 +42,15 @@ You can stand up a small cluster in AWS or virtualized on a personal computer if
 <table>
   <tr>
     <td>Etcd Nodes <br />
-*Suggested: 3*</td>
-    <td>1      **3**     5     7</td>
+Suggested: 3</td>
+    <td>1      <b>3</b>     5     7</td>
   </tr>
   <tr>
     <td>Master Nodes <br />
-*Suggested: 2*</td>
-    <td>1      **2** </td>
+Suggested: 2</td>
+    <td>1      <b>2</b> </td>
   </tr>
 </table>
-
 
 Kubernetes is installed on multiple physical or virtual machines and may be provisioned on or on most public infrastructure clouds. These machines become **nodes** of the Kubernetes cluster.
 
@@ -222,7 +225,7 @@ Care should be taken that the IP addresses under management by Kubernetes do not
 
 There are two techniques we support for pod networking on Kubernetes: **overlay** and **routed**.
 
-In an **overlay** network, communications between pods happen on a virtual network that is only visible to machines that are running an agent. This agent communicates with other agents via the node's local network and establishes IP-over-IP tunnels through which Kubernetes platform traffic is routed.
+In an **overlay** network, communications between pods happen on a virtual network that is only visible to machines that are running an agent. This agent communicates with other agents via the node's local network and establishes IP-over-IP tunnels through which Kubernetes Pod traffic is routed.
 
 In this model, no work has to be done to allow pods to communicate with each other (other than ensuring that you are not blocking IP-over-IP traffic). Two or more Kubernetes clusters might even operate on the same pod and services IP ranges, without being able to see each others’ traffic.
 
@@ -320,7 +323,7 @@ Only those IP ranges you want to manage the Kubernetes nodes</td>
 <table>
   <tr>
     <td>Expiration period for certificates<br/>
-*default 17520h*</td>
+<i>default 17520h</i></td>
     <td></td>
   </tr>
   <tr>
@@ -333,15 +336,15 @@ Only those IP ranges you want to manage the Kubernetes nodes</td>
   </tr>
   <tr>
     <td>Location Country<br />
-*default US*</td>
+<i>default US</i></td>
     <td></td>
   </tr>
 </table>
 
 
-Kismatic will manage generation and installation of TLS certificates and keys used for intra-platform security. It does this using the open source CloudFlare SSL library and information provided in the Plan file. These certificates and keys are exclusively used to encrypt and authorize traffic between Kubernetes components; they are not presented to end-users.
+Kismatic will automate generation and installation of TLS certificates and keys used for intra-cluster security. It does this using the open source CloudFlare SSL library and information provided in the Plan file. These certificates and keys are exclusively used to encrypt and authorize traffic between Kubernetes components; they are not presented to end-users.
 
-The default expiry period for certificates is **17520h (**2 years). Certificates must be updated prior to expiry or the platform will cease to operate without warning. Replacing certificates will cause momentary downtime with Kubernetes as of version 1.3; future versions should allow for certificate "rolling" without downtime.
+The default expiry period for certificates is **17520h** (2 years). Certificates must be updated prior to expiry or the cluster will cease to operate without warning. Replacing certificates will cause momentary downtime with Kubernetes as of version 1.3; future versions should allow for certificate "rolling" without downtime.
 
 # Provision
 
@@ -351,14 +354,13 @@ You will need to run the installer either from a Linux machine or from a Darwin 
 
 The installer can run from a machine that will become a node on the cluster, but since the installer's machine holds secrets (such as SSH/SSL keys and certificates), it's best to run from a machine with limited user access and an encrypted disk.
 
-The machine the installer is run from should be available for future modifications to the platform (adding and removing nodes, upgrading Kubernetes).
+The machine the installer is run from should be available for future modifications to the cluster (adding and removing nodes, upgrading Kubernetes).
 
 ## Download the installer
 
 ### To install from Linux
 
 From an ssh session, type:
-
 
 `curl -L [https](https://is.gd/kismaticlinux)[://is.gd/kismaticlinux](https://is.gd/kismaticlinux) | tar -zx`
 
@@ -394,19 +396,19 @@ There are four pieces of information we will need to be able to address each nod
 
 <table>
   <tr>
-    <td>**hostname**</td>
+    <td><b>hostname</b></td>
     <td>This is a short name that machines can access each other with. If you opt for Kismatic to manage host files for your cluster, this name will be copied to host files.</td>
   </tr>
   <tr>
-    <td>**ip**</td>
+    <td><b>ip</b></td>
     <td>This is the ip that the installer should connect to your node with. If you don't specify a separate internal_ip for the node, the ip will be used for platform traffic as well</td>
   </tr>
   <tr>
-    <td>**internal_ip**<br/> (optional)</td>
+    <td><b>internal_ip</b><br/> (optional)</td>
     <td>In many cases nodes will have more than one physical network card or more than one ip address. Specifying an internal IP address allows you to route traffic over a specific network. It's best for Kubernetes components to communicate with each other via a local network, rather than over the internet.</td>
   </tr>
   <tr>
-    <td>**labels** <br/> (optional)</td>
+    <td><b>labels</b> <br/> (optional)</td>
     <td>With worker nodes, labels allow you to identify details of the hardware that you may want to be available to Kubernetes to aid in scheduling decisions. For example, if you have worker nodes with GPUs and worker nodes without, you may want to tag the nodes with GPUs.</td>
   </tr>
 </table>
