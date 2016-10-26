@@ -1,5 +1,4 @@
 # Kismatic Install
-Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
 
 ## What the Kismatic install will do:
 
