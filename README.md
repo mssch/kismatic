@@ -47,24 +47,13 @@ The installation consists of three phases:
    2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
 2. **Provision** 
    1. Provision machines
-      1. Allocate hardware (bare metal machines, VMs, EC2 instances)
-      2. Open access to the installer
-      3. Optionally install software packages
    2. Provision networking
-      1. Find convenient CIDR blocks for Kubernetes components
-      2. Decide on network type (overlay or routed)
-      3. Open up ports where necessary.
-      4. Optionally add load balancing to Master nodes
    3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
 3. **Install**: `kismatic install apply` 
    1. Every install phase begins by validating the plan and testing the infrastructure referenced within it.
-   2. If the installation plan is valid, the installer will build you a cluster.
-      1. Validate that nodes are provisioned correctly
-      2. Install (or validate) software packages including Docker and Kubernetes
-      3. Generate TLS certificates and keys for intra cluster communications
-      4. Configure the cluster 
-      5. After configuration, run a smoke test to ensure that scaling and pod networking are working as prescribed.
-
+   2. If the installation plan is valid, Kismatic will build you a cluster.
+   3. After installation, Kismatic performs a basic test of scaling and networking on the cluster
+   
 # Development documentation
 
 [How to build](BUILDING.md)
