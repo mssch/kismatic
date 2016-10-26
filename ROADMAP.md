@@ -1,4 +1,6 @@
-# Kismatic is focused on simplifying the management of privately hosted Kubernetes by making best practices simpler to implement.
+# High Level Roadmap
+
+Kismatic is focused on simplifying the management of privately hosted Kubernetes by making best practices simpler to implement.
 
 1. Storage
    * Stateful workloads are a fact of life and running them on Kubernetes, with its PersistentVolume awareness, makes sense. We want to make it easy to add durable storage to a cluster via Kismatic. This will also allow us to set aside some amount of durable storage for management tools like Prometheus.  
