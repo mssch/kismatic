@@ -7,7 +7,7 @@ We're focused on making it straightforward for those who manage their own infras
 
 The Kismatic tools include:
 
-1. `kismatic`
+1. [`kismatic`](docs/INSTALL.md)
    * A utility for installing and configuring Kubernetes on provisioned infrastructure
 2. [`kismatic-inspector`](cmd/kismatic-inspector/README.md)
    * A utility for assuring that software and network configuration of a node are correct prior to installing Kubernetes
