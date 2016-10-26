@@ -54,6 +54,7 @@ The installation consists of three phases:
       1. Find convenient CIDR blocks for Kubernetes components
       2. Decide on network type (overlay or routed)
       3. Open up ports where necessary.
+      4. Optionally add load balancing to Master nodes
    3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
 3. **Install**: `kismatic install apply` 
    1. Every install phase begins by validating the plan and testing the infrastructure referenced within it.
