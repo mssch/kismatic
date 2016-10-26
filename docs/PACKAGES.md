@@ -14,14 +14,12 @@ By default, Kismatic will install its own repos onto machines and use them to do
 
 2. Install the RPMs for the type of node you want to create
 
-| Product | install command | etcd | master | worker |
-| --- | --- | --- | --- | --- |
-| Etcd | `sudo yum -y install kismatic-etcd` | Install | | |
-| Docker | `sudo yum -y install kismatic-docker-engine` | | Install first | Install first |
-| Kubernetes Master | `sudo yum -y install kismatic-kubernetes-master` | | | Install second |
-| Kubernetes Worker | `sudo yum -y install kismatic-kubernetes-node` | | Install second\* | |
-
-\*Note: if your intent is to make a single node that fills all three roles (a "minikube" cluster), you should omit kismatic-kubernetes-node. All the packages needed are installed by kismatic-kubernetes-master 
+| Product | Install Command |
+| --- | --- | --- |
+| Etcd | `sudo yum -y install kismatic-etcd` | 
+| Kubernetes Master | `sudo yum -y install kismatic-kubernetes-master` | 
+| Kubernetes Worker | `sudo yum -y install kismatic-kubernetes-node` |
+| Kubernetes Master & Worker | `sudo yum -y install kismatic-kubernetes-master && sudo yum -y install kismatic-kubernetes-node` |
 
 ## Installing via DEB (Ubuntu Xenial)
 
@@ -40,15 +38,12 @@ By default, Kismatic will install its own repos onto machines and use them to do
 
 3. Install the RPMs for the type of node you want to create
 
-| Product | install command | etcd | master | worker |
-| --- | --- | --- | --- | --- |
-| Etcd | `sudo apt-get -y install kismatic-etcd` | Install | | |
-| Docker | `sudo apt-get -y install kismatic-docker-engine` | | Install first | Install first |
-| Kubernetes Master | `sudo apt-get -y install kismatic-kubernetes-master` | | | Install second |
-| Kubernetes Worker | `sudo apt-get -y install kismatic-kubernetes-node` | | Install second\* | |
-
-\*Note: if your goal is to make a single node that fills all three roles (a "minikube" cluster), you should omit kismatic-kubernetes-node. All the packages needed are installed by kismatic-kubernetes-master 
-
+| Product | Install Command |
+| --- | --- | --- |
+| Etcd | `sudo apt-get -y install kismatic-etcd` | 
+| Kubernetes Master | `sudo apt-get -y install kismatic-kubernetes-master` | 
+| Kubernetes Worker | `sudo apt-get -y install kismatic-kubernetes-node` |
+| Kubernetes Master & Worker | `sudo apt-get -y install kismatic-kubernetes-master && sudo apt-get -y install kismatic-kubernetes-node` |
 
 # <a name="synclocal"></a>Synchronizing a local repo
 
@@ -64,13 +59,13 @@ Changes to dependencies should be called out in the notes that accompany a relea
 
 ## yum
 
-[Listing dependencies of a package](http://stackoverflow.com/questions/4627158/how-to-list-all-dependencies-of-a-package-on-linux)
-
-[Syncing with a repo](http://www.tecmint.com/setup-local-repositories-in-ubuntu/)
-
-## apt
-
 [Listing dependencies of a package](http://serverfault.com/questions/199743/how-to-list-rpm-dependencies)
 
 [Syncing with a repo](http://bencane.com/2013/04/15/creating-a-local-yum-repository/)
 
+## apt
+
+
+[Listing dependencies of a package](http://stackoverflow.com/questions/4627158/how-to-list-all-dependencies-of-a-package-on-linux)
+
+[Syncing with a repo](http://www.tecmint.com/setup-local-repositories-in-ubuntu/)
