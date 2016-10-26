@@ -22,7 +22,30 @@
 
 | [Plan](PLAN.md) | [Provision](Provision.md) | [Validate](#validate) | [Apply](#apply) |
 | --- | --- | --- | --- |
-| You'll read these docs and learn more about the resources Kubernetes will require of your infrastructure provider and work with others to make decisions and arrange required work. | You'll work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. You'll collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable |  
+| You'll read these docs and learn more about the resources Kubernetes will require of your infrastructure provider. You may engage with other departments to make decisions and arrange required work. | You'll work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. You'll collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable |
+
+1. **Plan**: `kismatic install plan` 
+   1. The installer will ask basic questions about the intent of your cluster.
+   2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
+2. **Provision** 
+   1. Provision machines
+      1. Allocate hardware (bare metal machines, VMs, EC2 instances)
+      2. Open access to the installer
+      3. Optionally install software packages
+   2. Provision networking
+      1. Find convenient CIDR blocks for Kubernetes components
+      2. Decide on network type (overlay or routed)
+      3. Open up ports where necessary.
+      4. Optionally add load balancing to Master nodes
+   3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
+3. **Install**: `kismatic install apply` 
+   1. Every install phase begins by validating the plan and testing the infrastructure referenced within it.
+   2. If the installation plan is valid, the installer will build you a cluster.
+      1. Validate that nodes are provisioned correctly
+      2. Install (or validate) software packages including Docker and Kubernetes
+      3. Generate TLS certificates and keys for intra cluster communications
+      4. Configure the cluster 
+      5. After configuration, run a smoke test to ensure that scaling and pod networking are working as prescribed.
 
 ## Plan
 
