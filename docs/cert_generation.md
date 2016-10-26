@@ -1,7 +1,7 @@
 # Certificate Generation
 
 ## What are certs used for?
-* Internal communications between platform components
+* Internal communications between cluster components
   * Kubectl -> API server
   * API Server -> Etcd
   * Etcd <-> Etcd

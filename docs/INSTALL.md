@@ -21,7 +21,7 @@ Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
 
 ![High-level workflow](installer-workflow.png)
 
-| Plan | Provision | Validate | Install |
+| [Plan](PLAN.md) | [Provision](Provision.md) | [Validate](#validate) | [Install](Install) |
 | --- | --- | --- | --- |
 | You'll read these docs and learn more about the resources Kubernetes will require of your infrastructure provider and work with others to make decisions and arrange required work. | You'll work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. You'll collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable |  
 
@@ -358,19 +358,19 @@ The machine the installer is run from should be available for future modificatio
 
 ## Download the installer
 
-### To install from Linux
+### To unpack the installer from Linux
 
 From an ssh session, type:
 
-`curl -L [https](https://is.gd/kismaticlinux)[://is.gd/kismaticlinux](https://is.gd/kismaticlinux) | tar -zx`
+`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest/kismatic.tar.gz | tar -zx`
 
-### To install from Darwin (Mac OSX)
+### To unpack from Darwin (Mac OSX)
 
 From a terminal window, type
 
-`curl -L https://is.gd/kismaticdarwin | tar -zx`
+`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest-darwin/kismatic.tar.gz | tar -zx`
 
-## Generate Plan File
+## Generate A Plan File
 
 From the machine you installed Kismatic to, run the following:
 
@@ -378,7 +378,7 @@ From the machine you installed Kismatic to, run the following:
 
 You will be asked a few questions regarding the decisions you made in the Plan section above. The kismatic installer will then generate a **kismatic-cluster.yaml** file.
 
-As machines are being provisioned, you must record their identity and credentials in this file. You should also give your cluster a name and provide an administrative password.
+As machines are being provisioned, you must record their identity and credentials in this file.
 
 ## Compute
 
@@ -401,7 +401,7 @@ There are four pieces of information we will need to be able to address each nod
   </tr>
   <tr>
     <td><b>ip</b></td>
-    <td>This is the ip that the installer should connect to your node with. If you don't specify a separate internal_ip for the node, the ip will be used for platform traffic as well</td>
+    <td>This is the ip that the installer should connect to your node with. If you don't specify a separate internal_ip for the node, the ip will be used for cluster traffic as well</td>
   </tr>
   <tr>
     <td><b>internal_ip</b><br/> (optional)</td>
@@ -499,7 +499,7 @@ There are four pieces of information we will need to be able to address each nod
 
 ### Inspector
 
-To double check that your nodes are fit for purpose, you can run the kismatic inspector. This tool will be run on each node as part of validating your platform and network fitness prior to installation.
+To double check that your nodes are fit for purpose, you can run the kismatic inspector. This tool will be run on each node as part of validating your cluster and network fitness prior to installation.
 
 ## Networking
 
@@ -511,17 +511,19 @@ Enter your network settings in the plan file, including
 
 Create your DNS CNAME or load balancer alias for your Kubernetes master nodes based on their hostnames.
 
-**Validate**
+# <a name="validate"></a>Validate
 
 Having updated your plan, from your installation machine run
 
 `./kismatic install validate`
 
-This will cause the installer to validate the structure and content of your plan, as well as the readiness of your nodes and network for installation.  Any errors detected will be written to standard out.
+This will cause the installer to validate the structure and content of your plan, as well as the readiness of your nodes and network for installation.  Any errors detected will be written to stdout.
 
-This step will result in the copying of the kismatic-inspector to each node via ssh. You should expect it to fail if all your nodes are not yet set up to be accessed via ssh.
+This step will result in the copying of the kismatic-inspector to each node via ssh. You should expect it to fail if all your nodes are not yet set up to be accessed via ssh; in this case, only the failure to connect (not the readiness of the node) will be reported.
 
-**Apply**
+Note: if you're confident about the structure of your plan file and the state of your cluster, validation will be performed during `install apply` as well. Feel free to throw caution to the wind.
+
+# <a name="install"></a>Install
 
 Having a valid plan, from your installation machine run
 
