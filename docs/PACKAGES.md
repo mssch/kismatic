@@ -21,7 +21,7 @@ By default, Kismatic will install its own repos onto machines and use them to do
 | Kubernetes Master | `sudo yum -y install kismatic-kubernetes-master` | | | Install second |
 | Kubernetes Worker | `sudo yum -y install kismatic-kubernetes-node` | | Install second\* | |
 
-\*Note: if your goal is to make a single node that fills all three roles (a "minikube" cluster), you should omit kismatic-kubernetes-node. All the packages needed are installed by kismatic-kubernetes-master 
+\*Note: if your intent is to make a single node that fills all three roles (a "minikube" cluster), you should omit kismatic-kubernetes-node. All the packages needed are installed by kismatic-kubernetes-master 
 
 ## Installing via DEB (Ubuntu Xenial)
 
@@ -45,7 +45,7 @@ By default, Kismatic will install its own repos onto machines and use them to do
 | Etcd | `sudo apt-get -y install kismatic-etcd` | Install | | |
 | Docker | `sudo apt-get -y install kismatic-docker-engine` | | Install first | Install first |
 | Kubernetes Master | `sudo apt-get -y install kismatic-kubernetes-master` | | | Install second |
-| Kubernetes Worker |  | | Install second\* | |
+| Kubernetes Worker | `sudo apt-get -y install kismatic-kubernetes-node` | | Install second\* | |
 
 \*Note: if your goal is to make a single node that fills all three roles (a "minikube" cluster), you should omit kismatic-kubernetes-node. All the packages needed are installed by kismatic-kubernetes-master 
 
@@ -56,7 +56,11 @@ If you maintain a package repository, you should not perform step 1 in the instr
 
 Each Kismatic package will also have many transitive dependencies. To be able to install nodes fully disconnected from the internet, you will need to synchronize your repo with these packages' repos as well.
 
-Dependencies do change over time and as such they are not listed here. Instead, they can be derived from any machine that is integrated with our repos using the commands linked below. Changes to dependencies should be called out in the notes that accompany a release.
+Dependencies and their versions will change over time and as such they are not listed here. Instead, they can be derived from any machine that is integrated with our repos using the commands linked below.
+
+To help ensure you've correctly synchronized your repo, you can attempt to a test cluster with 1 node of each role. The Kismatic inspector will check your packages to be sure they installed correctly and will alert if any of them are missing.
+
+Changes to dependencies should be called out in the notes that accompany a release.
 
 ## yum
 
