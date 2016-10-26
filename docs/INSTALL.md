@@ -20,7 +20,7 @@
 
 ![High-level workflow](installer-workflow.png)
 
-| [Plan](PLAN.md) | [Provision](Provision.md) | [Validate](#validate) | [Install](#install) |
+| [Plan](PLAN.md) | [Provision](Provision.md) | [Validate](#validate) | [Apply](#apply) |
 | --- | --- | --- | --- |
 | You'll read these docs and learn more about the resources Kubernetes will require of your infrastructure provider and work with others to make decisions and arrange required work. | You'll work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. You'll collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable |  
 
@@ -522,7 +522,7 @@ This step will result in the copying of the kismatic-inspector to each node via 
 
 Note: if you're confident about the structure of your plan file and the state of your cluster, validation will be performed during `install apply` as well. Feel free to throw caution to the wind.
 
-# <a name="install"></a>Install
+# <a name="apply"></a>Apply
 
 Having a valid plan, from your installation machine run
 
