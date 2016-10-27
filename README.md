@@ -15,7 +15,7 @@ The Kismatic tools include:
    * Tests a cluster to be sure that its networking and scaling work as intended. This tool is used to "smoke test" a newly built cluster.
 4. [Kismatic RPM & DEB packages](docs/PACKAGES.md)
    * Packages for installing Kubernetes and its dependendencies, focused on specific roles in an HA cluster
-   * With these packages installed on a local repo it is possible to install use Kismatic to Kubernetes to nodes that do not have access to the public internet.
+   * With these packages installed on a local repo it is possible to use Kismatic to install Kubernetes to nodes that do not have access to the public internet.
 
 | Dependency | Current version |
 | --- | --- |
