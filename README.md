@@ -46,11 +46,11 @@ The installation consists of three phases:
    1. The installer will ask basic questions about the intent of your cluster.
    2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
 2. **Provision** 
-   1. Provision machines
-   2. Provision networking
+   1. You provision your own machines
+   2. You tweak your network
    3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
 3. **Install**: `kismatic install apply` 
-   1. Every install phase begins by validating the plan and testing the infrastructure referenced within it.
+   1. The installer checks your provisioned infrastructure against your intent.
    2. If the installation plan is valid, Kismatic will build you a cluster.
    3. After installation, Kismatic performs a basic test of scaling and networking on the cluster
    
