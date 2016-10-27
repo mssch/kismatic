@@ -38,7 +38,7 @@ The Kismatic tools include:
 [Roadmap](ROADMAP.md)
 
 # Dangerously Basic Installation instructions
-Use the `kismatic install` command to work through installation of a platform. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
+Use the `kismatic install` command to work through installation of a cluster. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
 
 The installation consists of three phases:
 
