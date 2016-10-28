@@ -2,9 +2,7 @@ package packet
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"time"
 
@@ -15,16 +13,19 @@ import (
 type OS string
 
 const (
+	// Ubuntu1604LTS OS image
 	Ubuntu1604LTS = OS("ubuntu_16_04_image")
-	CentOS7       = OS("centos_7_image")
+	// CentOS7 OS image
+	CentOS7 = OS("centos_7_image")
 )
 
-var token = os.Getenv("PACKET_TOKEN")
-var projectID = os.Getenv("PACKET_PROJECT_ID")
-var SSHKey = os.Getenv("PACKET_SSH_KEY")
-var sshUser = "root"
+// Client for managing infrastructure on Packet
+type Client struct {
+	Token     string
+	ProjectID string
 
-var client *packngo.Client
+	apiClient *packngo.Client
+}
 
 // Node is a Packet.net node
 type Node struct {
@@ -34,30 +35,18 @@ type Node struct {
 	PrivateIPv4 string
 }
 
-func init() {
-	if token == "" {
-		log.Fatal("PACKET_TOKEN environment variable must be set")
-	}
-	if projectID == "" {
-		log.Fatal("PACKET_PROJECT_ID environment variable must be set")
-	}
-	if SSHKey == "" {
-		log.Fatal("PACKET_SSH_KEY environment variable must be set")
-	}
-	client = packngo.NewClient("", token, http.DefaultClient)
-}
-
 // CreateNode creates a node in packet with the given hostname and OS
-func CreateNode(hostname string, os OS) (*Node, error) {
+func (c Client) CreateNode(hostname string, os OS) (*Node, error) {
 	device := &packngo.DeviceCreateRequest{
 		HostName:     hostname,
 		OS:           string(os),
 		Tags:         []string{"integration-test"},
-		ProjectID:    projectID,
+		ProjectID:    c.ProjectID,
 		Plan:         "baremetal_0",
 		BillingCycle: "hourly",
 		Facility:     "ewr1",
 	}
+	client := c.getAPIClient()
 	dev, _, err := client.Devices.Create(device)
 	if err != nil {
 		return nil, err
@@ -68,8 +57,17 @@ func CreateNode(hostname string, os OS) (*Node, error) {
 	return node, nil
 }
 
+func (c *Client) getAPIClient() *packngo.Client {
+	if c.apiClient != nil {
+		return c.apiClient
+	}
+	c.apiClient = packngo.NewClient("", c.Token, http.DefaultClient)
+	return c.apiClient
+}
+
 // DeleteNode deletes the node that matches the given ID
-func DeleteNode(deviceID string) error {
+func (c Client) DeleteNode(deviceID string) error {
+	client := c.getAPIClient()
 	resp, err := client.Devices.Delete(deviceID)
 	if err != nil {
 		return fmt.Errorf("failed to delete node with ID %q", deviceID)
@@ -81,7 +79,8 @@ func DeleteNode(deviceID string) error {
 }
 
 // GetNode returns the node that matches the given ID
-func GetNode(deviceID string) (*Node, error) {
+func (c Client) GetNode(deviceID string) (*Node, error) {
+	client := c.getAPIClient()
 	dev, _, err := client.Devices.Get(deviceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device %q: %v", deviceID, err)
@@ -100,7 +99,7 @@ func GetNode(deviceID string) (*Node, error) {
 
 // BlockUntilNodeAccessible blocks until the given node is accessible,
 // or the timeout is reached.
-func BlockUntilNodeAccessible(deviceID string, timeout time.Duration) error {
+func (c Client) BlockUntilNodeAccessible(deviceID string, timeout time.Duration, sshKey, sshUser string) error {
 	timeoutChan := make(chan bool, 1)
 	go func() {
 		time.Sleep(timeout)
@@ -114,7 +113,7 @@ func BlockUntilNodeAccessible(deviceID string, timeout time.Duration) error {
 		case <-timeoutChan:
 			return fmt.Errorf("timed out waiting for node to be accessible")
 		default:
-			dev, _, err := client.Devices.Get(deviceID)
+			dev, _, err := c.getAPIClient().Devices.Get(deviceID)
 			if err != nil {
 				continue
 			}
@@ -135,7 +134,7 @@ func BlockUntilNodeAccessible(deviceID string, timeout time.Duration) error {
 		case <-timeoutChan:
 			return fmt.Errorf("timedout waiting for node to be active")
 		default:
-			dev, _, err := client.Devices.Get(deviceID)
+			dev, _, err := c.getAPIClient().Devices.Get(deviceID)
 			if err != nil {
 				continue
 			}
@@ -156,7 +155,7 @@ func BlockUntilNodeAccessible(deviceID string, timeout time.Duration) error {
 		case <-timeoutChan:
 			return fmt.Errorf("timed out waiting for node to be accessible")
 		default:
-			if sshAccessible(nodeIP) {
+			if sshAccessible(nodeIP, sshKey, sshUser) {
 				fmt.Printf("\nSSH is GO!\n")
 				return nil
 			}
@@ -190,9 +189,9 @@ func getPrivateIPv4(device *packngo.Device) string {
 	return ""
 }
 
-func sshAccessible(ip string) bool {
+func sshAccessible(ip string, sshKey, sshUser string) bool {
 	cmd := exec.Command("ssh")
-	cmd.Args = append(cmd.Args, "-i", SSHKey)
+	cmd.Args = append(cmd.Args, "-i", sshKey)
 	cmd.Args = append(cmd.Args, "-o", "ConnectTimeout=5")
 	cmd.Args = append(cmd.Args, "-o", "BatchMode=yes")
 	cmd.Args = append(cmd.Args, "-o", "StrictHostKeyChecking=no")
