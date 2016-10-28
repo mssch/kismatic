@@ -302,8 +302,6 @@ func InstallBigKismaticWithDeps(count NodeCount, awsos AWSOSDetails) PlanAWS {
 }
 
 func InstallRPMs(nodes PlanAWS, awsos AWSOSDetails) {
-	// time.Sleep(90 * time.Second)
-
 	log.Printf("Prepping repos:")
 	RunViaSSH(awsos.CommandsToPrepRepo, awsos.AWSUser,
 		append(append(nodes.Etcd, nodes.Master...), nodes.Worker...),
@@ -441,7 +439,7 @@ func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 				return AWSNodeDeets{}, err2
 			}
 			fmt.Printf("Error encountered; retry %v (%V)", i, err2)
-			time.Sleep(1 * time.Second)
+			time.Sleep(5 * time.Second)
 			continue
 		}
 		break
@@ -547,7 +545,7 @@ func WaitForInstanceToStart(sshUser, sshKey string, nodes ...*AWSNodeDeets) erro
 				deets.Publicip = *descResult.Reservations[0].Instances[0].PublicIpAddress
 				BlockUntilSSHOpen(deets, sshUser, sshKey)
 			} else {
-				time.Sleep(1 * time.Second)
+				time.Sleep(5 * time.Second)
 			}
 		}
 	}
