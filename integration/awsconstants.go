@@ -2,7 +2,7 @@ package integration
 
 const TARGET_REGION = "us-east-1"
 
-const SUBNETID = "subnet-85f111b9"
+const SUBNETID = "subnet-25e13d08"
 
 //"subnet-edab6fd1"
 
@@ -38,9 +38,10 @@ type AWSOSDetails struct {
 	AWSAMI  string
 	AWSUser string
 
-	CommandsToPrepRepo         []string
-	CommandsToInstallEtcd      []string
-	CommandsToInstallDocker    []string
-	CommandsToInstallK8sMaster []string
-	CommandsToInstallK8s       []string
+	CommandsToPrepRepo                []string
+	CommandsToInstallEtcd             []string
+	CommandsToInstallDocker           []string
+	CommandsToInstallK8sMaster        []string
+	CommandsToInstallK8s              []string
+	CommandsToInstallDockerFromScript []string
 }

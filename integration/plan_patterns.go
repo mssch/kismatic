@@ -11,6 +11,9 @@ type PlanAWS struct {
 	HomeDirectory                string
 	AllowPackageInstallation     bool
 	AutoConfiguredDockerRegistry bool
+	DockerRegistryIP             string
+	DockerRegistryPort           int
+	DockerRegistryCAPath         string
 }
 
 type AWSNodeDeets struct {
@@ -39,8 +42,11 @@ const planAWSOverlay = `cluster:
     user: {{.SSHUser}}
     ssh_key: {{.SSHKeyFile}}
     ssh_port: 22
-  docker_registry:
-    setup_internal: {{.AutoConfiguredDockerRegistry}}
+docker_registry:
+  setup_internal: {{.AutoConfiguredDockerRegistry}}
+  address: {{.DockerRegistryIP}}
+  port: {{.DockerRegistryPort}}
+  CA: {{.DockerRegistryCAPath}}
 etcd:
   expected_count: {{len .Etcd}}
   nodes:{{range .Etcd}}

@@ -44,6 +44,32 @@ func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Dur
 	return success
 }
 
+func CopyFileToRemote(file string, destFile string, user string, host AWSNodeDeets, period time.Duration) bool {
+	results := make(chan string, 10)
+	success := true
+	timeout := time.After(period)
+
+	config := &ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{
+			PublicKeyFile(os.Getenv("HOME") + "/.ssh/kismatic-integration-testing.pem"),
+		},
+	}
+
+	go func(hostname string) {
+		results <- scpFile(file, destFile, hostname, config)
+	}(host.Publicip)
+
+	select {
+	case res := <-results:
+		fmt.Print(res)
+	case <-timeout:
+		fmt.Printf("%v timed out!", host)
+		return false
+	}
+	return success
+}
+
 func PublicKeyFile(file string) ssh.AuthMethod {
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -109,4 +135,17 @@ func executeCmd(cmd, hostname string, config *ssh.ClientConfig) string {
 	// }
 
 	// return hostname + ": " + stdoutBuf.String()
+}
+
+func scpFile(filePath string, destFilePath string, hostname string, config *ssh.ClientConfig) string {
+	ver := exec.Command("scp", "-o", "StrictHostKeyChecking no", "-i", os.Getenv("HOME")+"/.ssh/kismatic-integration-testing.pem", filePath, config.User+"@"+hostname+":"+destFilePath)
+	ver.Stdin = os.Stdin
+
+	verbytes, verErr := ver.CombinedOutput()
+	if verErr != nil {
+		fmt.Printf("Oops: %v", verErr)
+	}
+	verText := string(verbytes)
+
+	return hostname + ": " + verText
 }
