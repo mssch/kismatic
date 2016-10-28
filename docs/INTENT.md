@@ -4,6 +4,7 @@ The most important detail
 
 ## What's the intent of your cluster?
 
+| --- | --- |
 | I want to run a small development cluster on my laptop| [Minikube style](#minikube) |
 | I want to run a small protoype or development cluster in AWS | [Developer's Cluster](#junior) |
 | I want to run a reliable, permanent labratory cluster that's not accessible by oth | [Skunkworks Cluster](#skunkworks) |
