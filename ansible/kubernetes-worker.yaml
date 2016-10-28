@@ -1,7 +1,7 @@
 ---
   - include: _all.yaml
   - include: _packages.yaml
-    when: install_packages_from_public_repo|bool == true
+    when: allow_package_installation|bool == true
   - include: _hosts.yaml
     when: modify_hosts_file|bool == true
   - include: _docker.yaml
