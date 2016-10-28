@@ -1,9 +1,9 @@
 ---
   - hosts: master[0]
-    name: Configure Docker for Private Registry
+    name: Load Docker Images Into Private Registry 
     remote_user: root
     become_method: sudo
     run_once: true
 
     roles:
-      - role: docker-registry
+      - role: docker-registry-images
