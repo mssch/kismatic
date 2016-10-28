@@ -13,7 +13,7 @@ func main() {
 	if err := os.Setenv("LEAVE_ARTIFACTS", "true"); err != nil {
 		log.Fatal("Error setting environment variable", err)
 	}
-	os.Setenv("BAIL_BEFORE_ANSIBLE", "")
+	os.Setenv("BAIL_BEFORE_ANSIBLE", "true")
 
 	kisPath := integration.CopyKismaticToTemp()
 
@@ -24,8 +24,6 @@ func main() {
 		log.Fatal("Error unpacking installer", string(tarOut), tarErr)
 	}
 	os.Chdir(kisPath)
-
-	//defer os.RemoveAll(kisPath)
 
 	cluster := integration.InstallBigKismatic(integration.NodeCount{Etcd: 1, Master: 1, Worker: 1}, integration.UbuntuEast)
 

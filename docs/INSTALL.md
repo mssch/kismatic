@@ -1,23 +1,51 @@
 # Kismatic Install
-Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
 
-## What the Kismatic installer will do:
+## What the Kismatic install will do:
 
 * Use key-based SSH to manage machines in a Kubernetes cluster
-
 * Validate that machines and network have been properly provisioned for a Kubernetes installation
-
 * Generate SSL certificates for internal Kubernetes traffic
-
 * Install a software defined network that Kubernetes will use for Pod and Service traffic
-
 * Install Kubernetes components
+* Install useful add-ons such as a Docker Registry, Kubernetes DNS and a Kubernetes Dashboard
+* Allow for the addition of worker nodes to an existing cluster built with Kismatic
 
-* Allow for the addition or removal of nodes
+## What the Kismatic install will not do:
 
-* Maintain a record of the original intent of the cluster to help inform upgrades
+* Allow you to manage Kubernetes clusters that weren't built using Kismatic
+* Allow you to add Etcd or Master nodes
+* Provision infrastructure
+* Alter your local network
+* Install load balancers or Ingress 
 
 ![High-level workflow](installer-workflow.png)
+
+| [Plan](PLAN.md) | [Provision](Provision.md) | [Validate](#validate) | [Apply](#apply) |
+| --- | --- | --- | --- |
+| You'll read these docs and learn more about the resources Kubernetes will require of your infrastructure provider. You may engage with other departments to make decisions and arrange required work. | You'll work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. You'll collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable |
+
+1. **Plan**: `kismatic install plan` 
+   1. The installer will ask basic questions about the intent of your cluster.
+   2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
+2. **Provision** 
+   1. Provision machines
+      1. Allocate hardware (bare metal machines, VMs, EC2 instances)
+      2. Open access to the installer
+      3. Optionally install software packages
+   2. Provision networking
+      1. Find convenient CIDR blocks for Kubernetes components
+      2. Decide on network type (overlay or routed)
+      3. Open up ports where necessary.
+      4. Optionally add load balancing to Master nodes
+   3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
+3. **Install**: `kismatic install apply` 
+   1. Every install phase begins by validating the plan and testing the infrastructure referenced within it.
+   2. If the installation plan is valid, the installer will build you a cluster.
+      1. Validate that nodes are provisioned correctly
+      2. Install (or validate) software packages including Docker and Kubernetes
+      3. Generate TLS certificates and keys for intra cluster communications
+      4. Configure the cluster 
+      5. After configuration, run a smoke test to ensure that scaling and pod networking are working as prescribed.
 
 ## Plan
 
@@ -26,9 +54,7 @@ Setting up a proper cluster takes a little forethought. Depending on your intent
 Planning involves three main areas of concern:
 
 * The machines we'll be installing Kubernetes on
-
 * The network we'll be installing Kubernetes on
-
 * The services we'll be connecting with
 
 You can stand up a small cluster in AWS or virtualized on a personal computer if you just want to get started with Kubernetes.
@@ -37,40 +63,37 @@ You can stand up a small cluster in AWS or virtualized on a personal computer if
 
 <table>
   <tr>
-    <td>Etcd Nodes
+    <td>Etcd Nodes <br />
 Suggested: 3</td>
-    <td>1      3     5     7</td>
+    <td>1      <b>3</b>     5     7</td>
   </tr>
   <tr>
-    <td>Master Nodes
+    <td>Master Nodes <br />
 Suggested: 2</td>
-    <td>1      2 </td>
+    <td>1      <b>2</b> </td>
   </tr>
 </table>
 
-
 Kubernetes is installed on multiple physical or virtual machines and may be provisioned on or on most public infrastructure clouds. These machines become **nodes** of the Kubernetes cluster.
 
-In our installation of Kubernetes, machines (which are called **nodes**) are specialized to one of three distinct roles within the cluster: **etcd**, **master** or **worker**.
+In our installation of Kubernetes, nodes are specialized to one of three distinct roles within the cluster: *etcd*, *master* or *worker*.
 
-**etcd: **These nodes provide data storage for the master.
-
-**master: **These nodes provide API endpoints and manage the Pods installed on workers.
-
-**worker: **These nodes are where your pods are instantiated.
+* etcd
+  * These nodes provide data storage for the master.
+* master
+  * These nodes provide API endpoints and manage the Pods installed on workers.
+* worker
+  * These nodes are where your pods are instantiated.
 
 Nodes within a cluster should have latencies between them of 10ms or lower to prevent instability. If you would like to host workloads at multiple data centers, or in a hybrid cloud scenario, you should expect to set up at least one cluster in each zone.
 
 ### Hardware & Operating System
 
-Infrastructure providers supported:
+Infrastructure supported:
 
 * bare metal
-
 * virtual machines
-
-* AWS
-
+* AWS EC2
 * Packet.net
 
 If using VMs or IaaS, your best experience will be had using dedicated CPU resources for all node types rather than time sharing, as opposed to over-provisioning.
@@ -78,9 +101,7 @@ If using VMs or IaaS, your best experience will be had using dedicated CPU resou
 Operating Systems supported:
 
 * RHEL 7
-
 * Centos 7
-
 * Ubuntu 16.04
 
 Minimum hardware requirements:
@@ -174,17 +195,17 @@ For example, if you would like to absorb the failure of a VM host, you would nee
 <table>
   <tr>
     <td>Networking Technique</td>
-    <td>Routed
+    <td>Routed<br />
 Overlay</td>
   </tr>
   <tr>
     <td>How hostnames will be resolved for nodes</td>
-    <td>Use DNS
+    <td>Use DNS<br />
 Let Kismatic Manage Hosts Files on nodes</td>
   </tr>
   <tr>
     <td>Network Policy Control</td>
-    <td>No network policy
+    <td>No network policy<br />
 Calico-managed network policy</td>
   </tr>
   <tr>
@@ -210,7 +231,7 @@ For this to work, Kubernetes makes use of technologies built in to Docker and Li
 
 ### Pod and Service CIDR blocks
 
-To provide these behaviors, Kubernetes needs to be able to issue IP addresses from two IP ranges: a **pod network **and** a services network**. This is in addition to the IP addresses nodes will be assigned on their **local network****.**
+To provide these behaviors, Kubernetes needs to be able to issue IP addresses from two IP ranges: a **pod network** and a **services network**. This is in addition to the IP addresses nodes will be assigned on their **local network**.
 
 The pod and service network ranges each need to be assigned a single contiguous CIDR block large enough to handle your workloads and any future scaling. Worker and Master nodes will reserve IP addresses in blocks of 64, so the pod network must be sized so that:
 
@@ -226,7 +247,7 @@ Care should be taken that the IP addresses under management by Kubernetes do not
 
 There are two techniques we support for pod networking on Kubernetes: **overlay** and **routed**.
 
-In an **overlay** network, communications between pods happen on a virtual network that is only visible to machines that are running an agent. This agent communicates with other agents via the node's local network and establishes IP-over-IP tunnels through which Kubernetes platform traffic is routed.
+In an **overlay** network, communications between pods happen on a virtual network that is only visible to machines that are running an agent. This agent communicates with other agents via the node's local network and establishes IP-over-IP tunnels through which Kubernetes Pod traffic is routed.
 
 In this model, no work has to be done to allow pods to communicate with each other (other than ensuring that you are not blocking IP-over-IP traffic). Two or more Kubernetes clusters might even operate on the same pod and services IP ranges, without being able to see each others’ traffic.
 
@@ -240,7 +261,8 @@ In a routed model, cluster communications often work out of the box. Sometimes r
 
 Sometimes, it is valuable to peer nodes in the cluster with a network router that is physically near to them. For this purpose, the cluster announces its BGP messages with an **AS Number** that may be specified when Kubernetes is installed. Our default AS Number is 64511.
 
-Network Policy
+### Network Policy
+
 By default, Pods can talk to any port and any other Pod, Service or machine on its network. Pod to pod network access is a requirement of Kubernetes, but this degree of openness is not.
 
 When policy is enabled, access to all Pods is restricted and managed in part by Kubernetes and the Calico networking plugin. When adding new Pods, any ports that are identified within the definition will be made accessible to other pods. Access can be further opened or closed using the Calico command line tools installed on every Master node -- for example, you may grant access to a pod, or a namespace of pods, to a developer’s machine.
@@ -251,7 +273,7 @@ Network policy gets very advanced and can make prototyping the cluster more diff
 
 All nodes in the cluster will need a short name with which they can communicate with each other. DNS is one way to provide this.
 
-It's also valuable to have a load balanced alias for the master servers in your cluster, allowing for transparent failover if a master node goes offline. This can be performed either via DNS load balancing or via a Virtual IP if your network has a load balancer already. Pick a FQDN and short name for this alias to master that defines your cluster's intent -- for example, if this is the only Kubernetes cluster on your network, [kubernetes.yourdomain.com](http://kubernetes.yourdomain.com)** **would be ideal.
+It's also valuable to have a load balanced alias for the master servers in your cluster, allowing for transparent failover if a master node goes offline. This can be performed either via DNS load balancing or via a Virtual IP if your network has a load balancer already. Pick a FQDN and short name for this alias to master that defines your cluster's intent -- for example, if this is the only Kubernetes cluster on your network, [kubernetes.yourdomain.com](http://kubernetes.yourdomain.com) would be ideal.
 
 If you do not wish to run DNS, you may optionally allow the Kismatic installer to manage hosts files on all of your nodes. Be aware that this option will not scale beyond a few dozen nodes, as adding or removing nodes through the installer will force a hosts file update to all nodes on the cluster.
 
@@ -271,7 +293,7 @@ Network policies for the local network on which nodes reside will need to be set
   <tr>
     <td>To allow API server</td>
     <td>worker</td>
-    <td>0.0.0.0/0 OR
+    <td>0.0.0.0/0 OR <br />
 Only those IP ranges that you want to be able to manage Kubernetes workloads PLUS Kubernetes nodes</td>
     <td>tcp:6443
 tcp:8080</td>
@@ -279,7 +301,7 @@ tcp:8080</td>
   <tr>
     <td>To allow ICMP</td>
     <td>all</td>
-    <td>0.0.0.0/0 OR
+    <td>0.0.0.0/0 OR <br />
 Only those IP ranges that you want to be able to manage Kubernetes workloads PLUS Kubernetes nodes</td>
     <td>icmp</td>
   </tr>
@@ -287,15 +309,33 @@ Only those IP ranges that you want to be able to manage Kubernetes workloads PLU
     <td>To allow all internal traffic between Kubernetes nodes</td>
     <td>all</td>
     <td>All nodes in the Kubernetes cluster</td>
-    <td>tcp:0-65535
+    <td>tcp:0-65535<br />
 udp:0-65535</td>
   </tr>
   <tr>
     <td>To allow SSH</td>
     <td>all</td>
-    <td>0.0.0.0/0 OR
+    <td>0.0.0.0/0 OR<br />
 Only those IP ranges you want to manage the Kubernetes nodes</td>
     <td>tcp:22</td>
+  </tr> 
+  <tr>
+  	<td>To allow communications between ETCD nodes</td>
+    <td>etcd</td>
+    <td>etcd nodes</td>
+    <td>tcp:2380<br/>
+ tcp:6660</td>
+  </tr>
+  <tr>
+  	<td>To allow communications between Kubernetes nodes and ETCD</td>
+    <td>etcd</td>
+    <td>master nodes</td>
+    <td>tcp:2379</td>
+  </tr>
+  <td>To allow communications between Calico networking and ETCD</td>
+    <td>etcd</td>
+    <td>etcd nodes</td>
+    <td>tcp:6666</td>
   </tr>
 </table>
 
@@ -305,7 +345,7 @@ Only those IP ranges you want to manage the Kubernetes nodes</td>
 <table>
   <tr>
     <td>Expiration period for certificates<br/>
-*default 17520h*</td>
+<i>default 17520h</i></td>
     <td></td>
   </tr>
   <tr>
@@ -317,16 +357,16 @@ Only those IP ranges you want to manage the Kubernetes nodes</td>
     <td></td>
   </tr>
   <tr>
-    <td>Location Country
-default US</td>
+    <td>Location Country<br />
+<i>default US</i></td>
     <td></td>
   </tr>
 </table>
 
 
-Kismatic will manage generation and installation of TLS certificates and keys used for intra-platform security. It does this using the open source CloudFlare SSL library and information provided in the Plan file. These certificates and keys are exclusively used to encrypt and authorize traffic between Kubernetes components; they are not presented to end-users.
+Kismatic will automate generation and installation of TLS certificates and keys used for intra-cluster security. It does this using the open source CloudFlare SSL library and information provided in the Plan file. These certificates and keys are exclusively used to encrypt and authorize traffic between Kubernetes components; they are not presented to end-users.
 
-The default expiry period for certificates is **17520h (**2 years). Certificates must be updated prior to expiry or the platform will cease to operate without warning. Replacing certificates will cause momentary downtime with Kubernetes as of version 1.3; future versions should allow for certificate "rolling" without downtime.
+The default expiry period for certificates is **17520h** (2 years). Certificates must be updated prior to expiry or the cluster will cease to operate without warning. Replacing certificates will cause momentary downtime with Kubernetes as of version 1.3; future versions should allow for certificate "rolling" without downtime.
 
 # Provision
 
@@ -336,62 +376,61 @@ You will need to run the installer either from a Linux machine or from a Darwin 
 
 The installer can run from a machine that will become a node on the cluster, but since the installer's machine holds secrets (such as SSH/SSL keys and certificates), it's best to run from a machine with limited user access and an encrypted disk.
 
-The machine the installer is run from should be available for future modifications to the platform (adding and removing nodes, upgrading Kubernetes).
+The machine the installer is run from should be available for future modifications to the cluster (adding and removing nodes, upgrading Kubernetes).
 
 ## Download the installer
 
-### To install from Linux
+### To unpack the installer from Linux
 
 From an ssh session, type:
 
+`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest/kismatic.tar.gz | tar -zx`
 
-curl -L [https](https://is.gd/kismaticlinux)[://is.gd/kismaticlinux](https://is.gd/kismaticlinux) | tar -zx
-
-### To install from Darwin (Mac OSX)
+### To unpack from Darwin (Mac OSX)
 
 From a terminal window, type
 
-curl -L https://is.gd/kismaticdarwin | tar -zx
+`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest-darwin/kismatic.tar.gz | tar -zx`
 
-## Generate Plan File
+## Generate A Plan File
 
 From the machine you installed Kismatic to, run the following:
 
-./kismatic install plan
+`./kismatic install plan`
 
 You will be asked a few questions regarding the decisions you made in the Plan section above. The kismatic installer will then generate a **kismatic-cluster.yaml** file.
 
-As machines are being provisioned, you must record their identity and credentials in this file. You should also give your cluster a name and provide an administrative password.
+As machines are being provisioned, you must record their identity and credentials in this file.
 
 ## Compute
 
 ### Accessing nodes via the Installer
 
-To install Kismatic, you will need a user with remote sudo access and an ssh public key added to each node. The same username and keypair must be used for all nodes. This account should only be used by the kismatic installer.
+To install Kubernetes with Kismatic, you will need a user with remote sudo access and an ssh public key added to each node. The same username and keypair must be used for all nodes. This account should only be used by the kismatic installer.
 
-We suggest a default user **kismaticuser**, with a corresponding private key **kismaticuser.key **added to the directory you'll be installing kismatic from. This would be the ideal spot to generate the keypair via
+We suggest a default user **kismaticuser**, with a corresponding private key **kismaticuser.key **added to the directory you're running the installer from. This would be the ideal spot to generate the keypair via:
 
-ssh-keygen -t rsa -b 4096 -f kismaticuser.key -P ""
+`ssh-keygen -t rsa -b 4096 -f kismaticuser.key -P ""`
 
-The resulting **kismaticuser.pub** will then need to be copied to each node. ssh-copy-id can be convenient for this.
+The resulting **kismaticuser.pub** will need to be copied to each node. ssh-copy-id can be convenient for this, or you can simply copy its contents to ~/.ssh/idrsa
 
 There are four pieces of information we will need to be able to address each node:
 
 <table>
   <tr>
-    <td>hostname</td>
+    <td><b>hostname</b></td>
     <td>This is a short name that machines can access each other with. If you opt for Kismatic to manage host files for your cluster, this name will be copied to host files.</td>
   </tr>
   <tr>
-    <td>ip</td>
-    <td>This is the ip that the installer should connect to your node with. If you don't specify a separate internal_ip for the node, the ip will be used for platform traffic as well</td>
+    <td><b>ip</b></td>
+    <td>This is the ip that the installer should connect to your node with. If you don't specify a separate internal_ip for the node, the ip will be used for cluster traffic as well</td>
   </tr>
   <tr>
-    <td>internal_ip (optional)</td>
+    <td><b>internal_ip</b><br/> (optional)</td>
     <td>In many cases nodes will have more than one physical network card or more than one ip address. Specifying an internal IP address allows you to route traffic over a specific network. It's best for Kubernetes components to communicate with each other via a local network, rather than over the internet.</td>
   </tr>
   <tr>
-    <td>labels (optional)</td>
+    <td><b>labels</b> <br/> (optional)</td>
     <td>With worker nodes, labels allow you to identify details of the hardware that you may want to be available to Kubernetes to aid in scheduling decisions. For example, if you have worker nodes with GPUs and worker nodes without, you may want to tag the nodes with GPUs.</td>
   </tr>
 </table>
@@ -399,145 +438,118 @@ There are four pieces of information we will need to be able to address each nod
 
 ### Configuration
 
-*Note: for the moment, all the software requirements beyond the base OS will be downloaded,  installed and configured by the Kismatic installer. This will take a while over public internet. Soon, we will be offering the option to download and host omnibus RPM & deb packages on an internal repository, allowing for** internet-free installs** and much faster deployment times.*
-
-*The good news is that there is really nothing to do other than set up a base box with a user and public key SSH access.*
-
 <table>
   <tr>
-    <td>Requirement</td>
-    <td>Required for</td>
-    <td>etcd</td>
-    <td>master</td>
-    <td>worker</td>
+    <th>Requirement</th>
+    <th>Required for</th>
+    <th>etcd</th>
+    <th>master</th>
+    <th>worker</th>
   </tr>
   <tr>
-    <td>/etc/ssh/sshd_config contains PubkeyAuthentication yes</td>
+    <td>user and public key installed on all nodes</td>
     <td>Access from kismatic to manage node</td>
     <td>yes</td>
     <td>yes</td>
     <td>yes</td>
   </tr>
   <tr>
-    <td>Access to DNS</td>
+    <td>/etc/ssh/sshd_config contains `PubkeyAuthentication yes`</td>
+    <td>Access from kismatic to manage node</td>
+    <td>yes</td>
+    <td>yes</td>
+    <td>yes</td>
+  </tr>
+  <tr>
+    <td>Access to an apt or yum repository</td>
     <td>Retrieving binaries over the internet during installation</td>
-    <td>yes</td>
-    <td>yes</td>
-    <td>yes</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>iptables</td>
-    <td>pod networking</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
-  </tr>
-  <tr>
-    <td>iptables-save</td>
-    <td>pod networking</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
-  </tr>
-  <tr>
-    <td>iptables-restore</td>
-    <td>pod networking</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
-  </tr>
-  <tr>
-    <td>ip</td>
-    <td>pod networking</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
-  </tr>
-  <tr>
-    <td>nsenter</td>
-    <td>container access</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
-  </tr>
-  <tr>
-    <td>mount</td>
-    <td>hosting containers</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
-  </tr>
-  <tr>
-    <td>umount</td>
-    <td>hosting containers</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
-  </tr>
-  <tr>
-    <td>glibc</td>
-    <td>glibness library</td>
-    <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
+    <td>yes\*</td>
+    <td>yes\*</td>
+    <td>yes\*</td>
   </tr>
   <tr>
     <td>Python 2.7</td>
     <td>kismatic management of nodes</td>
-    <td>yes*</td>
-    <td>yes*</td>
-    <td>yes*</td>
+    <td>yes\*</td>
+    <td>yes\*</td>
+    <td>yes\*</td>
   </tr>
   <tr>
-    <td>Docker 1.11 or 1.12</td>
+    <td>Kismatic package of Docker 1.11.2</td>
     <td>hosting containers</td>
     <td></td>
     <td>yes*</td>
     <td>yes*</td>
   </tr>
+  <tr>
+    <td>Kismatic package of Calico 0.22.0</td>
+    <td>inter-pod networking</td>
+    <td></td>
+    <td>yes\*</td>
+    <td>yes\*</td>
+  </tr>
+  <tr>
+    <td>Kismatic package of Etcd 2.3.7 and 3.0.4</td>
+    <td>inter-pod networking</td>
+    <td>yes\*</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Kismatic package of Calico 0.22.0</td>
+    <td>inter-pod networking</td>
+    <td></td>
+    <td>yes\*</td>
+    <td>yes\*</td>
+  </tr>
+  <tr>
+    <td>Kismatic package of Kubernetes Master 1.4.3</td>
+    <td>Kubernetes</td>
+    <td></td>
+    <td>yes\* </td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Kismatic package of Kubernetes Worker 1.4.3</td>
+    <td>Kubernetes</td>
+    <td></td>
+    <td></td>
+    <td>yes\*</td>
+  </tr>
 </table>
-
-
-* *Installer will attempt to install if missing.*
+\* *Kismatic will attempt to install if missing. This may take significantly more time than pre-baking an image and will require internet access*
 
 ### Inspector
 
-To double check that your nodes are fit for purpose, you can run the kismatic inspector. This tool will be run on each node as part of validating your platform and network fitness prior to installation.
+To double check that your nodes are fit for purpose, you can run the kismatic inspector. This tool will be run on each node as part of validating your cluster and network fitness prior to installation.
 
 ## Networking
 
 Enter your network settings in the plan file, including
 
 * pod networking technique (**routed** or **overlay**)
-
 * CIDR ranges for pod and services networks
-
 * whether the kismatic installer should manage hosts files for your cluster
 
 Create your DNS CNAME or load balancer alias for your Kubernetes master nodes based on their hostnames.
 
-**Validate**
+# <a name="validate"></a>Validate
 
 Having updated your plan, from your installation machine run
 
-./kismatic install validate
+`./kismatic install validate`
 
-This will cause the installer to validate the structure and content of your plan, as well as the readiness of your nodes and network for installation.  Any errors detected will be written to standard out.
+This will cause the installer to validate the structure and content of your plan, as well as the readiness of your nodes and network for installation.  Any errors detected will be written to stdout.
 
-This step will result in the copying of the kismatic-inspector to each node via ssh. You should expect it to fail if all your nodes are not yet set up to be accessed via ssh.
+This step will result in the copying of the kismatic-inspector to each node via ssh. You should expect it to fail if all your nodes are not yet set up to be accessed via ssh; in this case, only the failure to connect (not the readiness of the node) will be reported.
 
-**Apply**
+Note: if you're confident about the structure of your plan file and the state of your cluster, validation will be performed during `install apply` as well. Feel free to throw caution to the wind.
+
+# <a name="apply"></a>Apply
 
 Having a valid plan, from your installation machine run
 
-./kismatic install apply
+`./kismatic install apply`
 
 Kismatic will connect to each of your machines, install necessary software and prove its correctness. Any errors detected will be written to standard out.
 
