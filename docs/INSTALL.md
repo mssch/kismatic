@@ -10,7 +10,7 @@
 * Install useful add-ons such as a Docker Registry, Kubernetes DNS and a Kubernetes Dashboard
 * Allow for the addition of worker nodes to an existing cluster built with Kismatic
 
-## What the Kismatic install will not do:
+## What the Kismatic install will **not** do:
 
 * Allow you to manage Kubernetes clusters that weren't built using Kismatic
 * Allow you to add Etcd or Master nodes
@@ -25,6 +25,8 @@
 | --- | --- | --- | --- |
 | You'll read these docs and learn more about the resources Kubernetes will require of your infrastructure provider. You may engage with other departments to make decisions and arrange required work. | You'll work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. You'll collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable |
 
+0. **[Intent](INTENT.md)**:
+   1. Know what you want to build
 1. **Plan**: `kismatic install plan` 
    1. The installer will ask basic questions about the intent of your cluster.
    2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
