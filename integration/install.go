@@ -654,8 +654,8 @@ func deployDockerRegistry(node AWSNodeDeets, awsos AWSOSDetails) (hostname strin
 	ioutil.WriteFile("docker.pem", cert, 0644)
 	ioutil.WriteFile("docker-key.pem", key, 0644)
 
-	CopyFileToRemote(pwd+"/docker.pem", "~/certs/docker.pem", awsos.AWSUser, node, 1*time.Minute)
-	CopyFileToRemote(pwd+"/docker-key.pem", "~/certs/docker-key.pem", awsos.AWSUser, node, 1*time.Minute)
+	CopyFileToRemote(pwd+"/docker.pem", "~/certs/docker.pem", awsos.AWSUser, []AWSNodeDeets{node}, 1*time.Minute)
+	CopyFileToRemote(pwd+"/docker-key.pem", "~/certs/docker-key.pem", awsos.AWSUser, []AWSNodeDeets{node}, 1*time.Minute)
 	success = RunViaSSH([]string{StartDockerRegistryCommand}, awsos.AWSUser, []AWSNodeDeets{node}, 1*time.Minute)
 	if !success {
 		Fail("docker registry error")

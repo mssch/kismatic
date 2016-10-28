@@ -44,7 +44,7 @@ func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Dur
 	return success
 }
 
-func CopyFileToRemote(file string, destFile string, user string, host AWSNodeDeets, period time.Duration) bool {
+func CopyFileToRemote(file string, destFile string, user string, hosts []AWSNodeDeets, period time.Duration) bool {
 	results := make(chan string, 10)
 	success := true
 	timeout := time.After(period)
@@ -56,16 +56,20 @@ func CopyFileToRemote(file string, destFile string, user string, host AWSNodeDee
 		},
 	}
 
-	go func(hostname string) {
-		results <- scpFile(file, destFile, hostname, config)
-	}(host.Publicip)
+	for _, host := range hosts {
+		go func(hostname string) {
+			results <- scpFile(file, destFile, hostname, config)
+		}(host.Publicip)
+	}
 
-	select {
-	case res := <-results:
-		fmt.Print(res)
-	case <-timeout:
-		fmt.Printf("%v timed out!", host)
-		return false
+	for i := 0; i < len(hosts); i++ {
+		select {
+		case res := <-results:
+			fmt.Print(res)
+		case <-timeout:
+			fmt.Printf("%v timed out!", hosts[i])
+			return false
+		}
 	}
 	return success
 }
