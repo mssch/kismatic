@@ -1,18 +1,17 @@
-# intent
+# Intent
 
-The most important detail 
+The most important thing you need to know before installation is what you want to build.
 
-## What's the intent of your cluster?
-
+| What's the intent of your cluster? | Example |
 | --- | --- |
-| I want to run a small development cluster on my laptop| [Minikube style](#minikube) |
+| I want to run a small development cluster on my laptop | [Minikube "Cluster"](#minikube) |
 | I want to run a small protoype or development cluster in AWS | [Developer's Cluster](#junior) |
 | I want to run a reliable, permanent labratory cluster that's not accessible by oth | [Skunkworks Cluster](#skunkworks) |
 | I want to run a reliable, permanent production cluster that's easily addressible by other machines on a cluster. | [Production Cluster](#production) | 
 
 # <a name="minikube"></a>Minikube style
 
-What we've got:
+The hardware we've got:
 
 * A developer's laptop (Running OSX or Linux)
 * A desktop virtualizer ()
