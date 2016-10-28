@@ -17,6 +17,8 @@
 * Provision infrastructure (make machines or alter your network)
 * Install load balancers or Ingress 
 
+# The Install Workflow
+
 ![High-level workflow](installer-workflow.png)
 
 | [Plan](PLAN.md) | [Provision](Provision.md) | [Validate](#validate) | [Apply](#apply) |
