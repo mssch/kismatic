@@ -15,8 +15,7 @@ Matthew M. Miller, Alex Brand, Dimitri Koshkin, Joseph Jacks
 
 * Allow you to manage Kubernetes clusters that weren't built using Kismatic
 * Allow you to add Etcd or Master nodes
-* Provision infrastructure
-* Alter your local network
+* Provision infrastructure (make machines or alter your network)
 * Install load balancers or Ingress 
 
 ![High-level workflow](installer-workflow.png)
