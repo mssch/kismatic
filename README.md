@@ -1,9 +1,9 @@
 # Kismatic -- The Enterprise Toolkit for Kubernetes Reliability Engineering (KRE)
 [![Build Status](https://snap-ci.com/On8xdVQV0xY5VXICf0Fx0Vq7fVMDUAfU6JFc8Wtt94A/build_image)](https://snap-ci.com/apprenda/kismatic-platform/branch/master)
 
-Kismatic is a set of utilities for managing Kubernetes installations.
+Kismatic is a set of tools for designing, deploying and operating enterprise-tuned production ready Kubernetes clusters.
 
-We're focused on making it straightforward for those who manage their own infrastructure to install secure, highly available Kubernetes clusters.
+We're focused on making it straightforward for organizations who fully manage their own infrastructure to deploy secure, highly available and Kubernetes installations with built-in sane defaults for networking, distributed routing and tracing, cluster health, security and more!
 
 The Kismatic tools include:
 
