@@ -60,24 +60,36 @@ Minimum hardware requirements:
 <table>
   <tr>
     <td>Node Role</td>
-    <td>CPU</td>
-    <td>Ram</td>
-    <td>Disk</td>
+    <td>CPU (Prototyping)</td>
+    <td>Ram (Prototyping)</td>
+    <td>Disk (Prototyping)</td>
+    <td>CPU (Production)</td>
+    <td>Ram (Production)</td>
+    <td>Disk (Production)</td>
   </tr>
   <tr>
     <td>etcd</td>
+    <td>1 CPU Core, 2 GHz</td>
+    <td>1 GB</td>
+    <td>8 GB</td>
     <td>1 CPU Core, 2 GHz</td>
     <td>1 GB</td>
     <td>50 GB</td>
   </tr>
   <tr>
     <td>master</td>
+    <td>1 CPU Cores, 2 GHz</td>
+    <td>2 GB</td>
+    <td>8 GB</td>
     <td>2 CPU Cores, 2 GHz</td>
     <td>2 GB</td>
     <td>50 GB</td>
   </tr>
   <tr>
     <td>worker</td>
+    <td>1 CPU Core, 2 GHz</td>
+    <td>1 GB</td>
+    <td>8 GB</td>
     <td>1 CPU Core, 2 GHz</td>
     <td>1 GB</td>
     <td>200 GB</td>
