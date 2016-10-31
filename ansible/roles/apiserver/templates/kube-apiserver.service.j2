@@ -12,6 +12,7 @@ Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
 Environment=KEY_FILE={{ kubernetes_certificates_key_path }}
 Environment=SERVICES_CIDR={{ kubernetes_services_cidr }}
 Environment=TOKEN_AUTH_FILE={{ kubernetes_token_auth_path }}
+Environment=BAIC_AUTH_FILE={{ kubernetes_basic_auth_path }}
 ExecStart={{ bin_dir }}/kube-apiserver \
   --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
   --advertise-address=${INTERNAL_IP} \
@@ -19,6 +20,7 @@ ExecStart={{ bin_dir }}/kube-apiserver \
   --apiserver-count=${APISERVER_COUNT} \
   --authorization-mode=ABAC \
   --authorization-policy-file=${AUTHORIZATION_POLICY_FILE} \
+  --basic-auth-file=${BAIC_AUTH_FILE} \
   --bind-address=0.0.0.0 \
   --client-ca-file=${CA_FILE} \
   --enable-swagger-ui=true \
