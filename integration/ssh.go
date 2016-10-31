@@ -28,7 +28,7 @@ func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Dur
 			for _, cmd := range cmds {
 				results <- executeCmd(cmd, hostname, config)
 			}
-		}(host.Publicip)
+		}(host.PublicIP)
 	}
 
 	for i := 0; i < len(hosts)*len(cmds); i++ {
@@ -68,45 +68,24 @@ func executeCmd(cmd, hostname string, config *ssh.ClientConfig) string {
 	verText := string(verbytes)
 
 	return hostname + ": " + verText
+}
 
-	// conn, _ := ssh.Dial("tcp", hostname+":22", config)
-	// session, _ := conn.NewSession()
-	// defer session.Close()
-
-	// var stdoutBuf bytes.Buffer
-	// session.Stdin = os.Stdin
-	// session.Stdout = os.Stdout //&stdoutBuf
-	// session.Stderr = os.Stderr //&stdoutBuf
-
-	// modes := ssh.TerminalModes{
-	// 	ssh.ECHO:          0,
-	// 	ssh.ECHOCTL:       0,
-	// 	ssh.TTY_OP_ISPEED: 14400,
-	// 	ssh.TTY_OP_OSPEED: 14400,
-	// }
-
-	// fileDescriptor := int(os.Stdin.Fd())
-
-	// if terminal.IsTerminal(fileDescriptor) {
-	// 	originalState, err := terminal.MakeRaw(fileDescriptor)
-	// 	if err != nil {
-	// 		fmt.Println("Error setting terminal to raw '%v': %v", cmd, err)
-	// 	}
-	// 	defer terminal.Restore(fileDescriptor, originalState)
-
-	// 	termWidth, termHeight, err := terminal.GetSize(fileDescriptor)
-	// 	if err != nil {
-	// 		fmt.Println("Error running '%v': %v", cmd, err)
-	// 	}
-
-	// 	if rptyErr := session.RequestPty("xterm", termHeight, termWidth, modes); rptyErr != nil {
-	// 		fmt.Println("Error running '%v': %v", cmd, rptyErr)
-	// 	}
-
-	// 	session.Run(cmd)
-	// } else {
-	// 	fmt.Println("IDK.")
-	// }
-
-	// return hostname + ": " + stdoutBuf.String()
+// BlockUntilSSHOpen waits until the node with the given IP is accessible via SSH.
+func BlockUntilSSHOpen(publicIP, sshUser, sshKey string) {
+	fmt.Println(publicIP, sshUser, sshKey)
+	for {
+		cmd := exec.Command("ssh")
+		cmd.Args = append(cmd.Args, "-i", sshKey)
+		cmd.Args = append(cmd.Args, "-o", "ConnectTimeout=5")
+		cmd.Args = append(cmd.Args, "-o", "BatchMode=yes")
+		cmd.Args = append(cmd.Args, "-o", "StrictHostKeyChecking=no")
+		cmd.Args = append(cmd.Args, fmt.Sprintf("%s@%s", sshUser, publicIP), "exit") // just call exit if we are able to connect
+		if err := cmd.Run(); err == nil {
+			// command succeeded
+			fmt.Println()
+			return
+		}
+		fmt.Printf("?")
+		time.Sleep(3 * time.Second)
+	}
 }

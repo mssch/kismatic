@@ -1,43 +1,19 @@
 package integration
 
 import (
-	"bufio"
-	"fmt"
-	"html/template"
 	"io/ioutil"
-	"log"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
 
-	"os"
 	"os/exec"
 
-	"github.com/apprenda/kismatic-platform/integration/packet"
-
+	"github.com/apprenda/kismatic-platform/integration/aws"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Happy Path Installation Tests", func() {
-	kisPath := CopyKismaticToTemp()
-
-	BeforeSuite(func() {
-		fmt.Println("Unpacking kismatic to", kisPath)
-		c := exec.Command("tar", "-zxf", "../out/kismatic.tar.gz", "-C", kisPath)
-		tarOut, tarErr := c.CombinedOutput()
-		if tarErr != nil {
-			log.Fatal("Error unpacking installer", string(tarOut), tarErr)
-		}
-		os.Chdir(kisPath)
-	})
-
-	AfterSuite(func() {
-		if !leaveIt() {
-			os.RemoveAll(kisPath)
-		}
-	})
-
 	Describe("Calling installer with no input", func() {
 		It("should output help text", func() {
 			c := exec.Command("./kismatic")
@@ -75,55 +51,6 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			})
 		})
 	})
-
-	Describe("Calling installer with 'install validate'", func() {
-		Context("using a Minikube Ubuntu 16.04 layout", func() {
-			It("should return successfully with a valid plan", func() {
-				ValidateKismaticMini(AMIUbuntu1604USEAST, "ubuntu")
-			})
-		})
-	})
-
-	Describe("Calling installer with 'install validate'", func() {
-		Context("using a Minikube Ubuntu 16.04 layout with dependencies installed", func() {
-			It("should return successfully with a valid plan", func() {
-				ValidateKismaticMiniWithDeps(UbuntuEast)
-			})
-		})
-	})
-
-	Describe("Calling installer with 'install validate'", func() {
-		Context("using a Minikube Ubuntu 16.04 layout with partial dependencies installed", func() {
-			It("should return successfully with a valid plan", func() {
-				ValidateKismaticMiniErrorsWithPartialDeps(UbuntuEast)
-			})
-		})
-	})
-
-	Describe("Calling installer with 'install validate'", func() {
-		Context("using a Minikube CentOS 7 layout", func() {
-			It("should return successfully with a valid plan", func() {
-				ValidateKismaticMini(AMICentos7UsEast, "centos")
-			})
-		})
-	})
-
-	Describe("Calling installer with 'install validate'", func() {
-		Context("using a Minikube CentOS 7 layout with dependencies installed", func() {
-			It("should return successfully with a valid plan", func() {
-				ValidateKismaticMiniWithDeps(CentosEast)
-			})
-		})
-	})
-
-	Describe("Calling installer with 'install validate'", func() {
-		Context("using a Minikube CentOS 7 layout with partial dependencies installed", func() {
-			It("should return successfully with a valid plan", func() {
-				ValidateKismaticMiniErrorsWithPartialDeps(CentosEast)
-			})
-		})
-	})
-
 	Describe("Calling installer with a plan targeting bad infrastructure", func() {
 		Context("Using a 1/1/1 Ubtunu 16.04 layout pointing to bad ip addresses", func() {
 			It("should bomb validate and apply", func() {
@@ -134,137 +61,142 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		})
 	})
 
-	Describe("Calling installer with a plan targetting AWS", func() {
-		Context("Using a 1/1/1 Ubtunu 16.04 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallKismatic(UbuntuEast)
+	Describe("Installing with package installation enabled", func() {
+		Context("Targetting AWS infrastructure", func() {
+			Context("Using a 1/1/1 Ubuntu 16.04 layout", func() {
+				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
+					installKismaticPkgInstallEnabled(awsClient, NodeCount{1, 1, 1}, Ubuntu1604LTS, "ubuntu")
+				})
 			})
-		})
-		Context("Using a 1/1/1 Ubtunu 16.04 layout with dependencies installed", func() {
-			It("should result in a working cluster", func() {
-				InstallKismaticWithDeps(UbuntuEast)
+
+			Context("Using a 1/1/1 CentOS 7 layout", func() {
+				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
+					installKismaticPkgInstallEnabled(awsClient, NodeCount{1, 1, 1}, CentOS7, "centos")
+				})
 			})
-		})
-		Context("Using a 1/1/1 CentOS 7 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallKismatic(CentosEast)
-			})
-		})
-		Context("Using a 1/1/1 CentOS 7 layout with dependencies installed", func() {
-			It("should result in a working cluster", func() {
-				InstallKismaticWithDeps(CentosEast)
-			})
-		})
-		Context("Using a Minikube CentOS 7 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallKismaticMini(CentosEast)
-			})
-		})
-		Context("Using a 3/2/3 CentOS 7 layout", func() {
-			It("should result in a working cluster", func() {
-				InstallBigKismatic(
-					NodeCount{
-						Etcd:   3,
-						Master: 2,
-						Worker: 3,
-					},
-					CentosEast)
-			})
-		})
-	})
-	Describe("Calling add-worker targetting AWS", func() {
-		Context("Using a Minikube Ubuntu 16.04 layout", func() {
-			It("should add a worker node to the cluster", func() {
-				AddWorkerToKismaticMini(UbuntuEast)
+
+			Context("Using a 3/2/3 CentOS 7 layout", func() {
+				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
+					installKismaticPkgInstallEnabled(awsClient, NodeCount{3, 2, 3}, CentOS7, "centos")
+				})
 			})
 		})
 	})
 
-	Describe("Calling installer with a plan targetting Packet.net infrastructure", func() {
-		Context("Using a Minikube CentOS 7 layout with overlay network", func() {
-			It("should result in a working cluster", func() {
-				nc := NodeCount{
-					Etcd:   1,
-					Master: 1,
-					Worker: 1,
-				}
-				packetInstallKismatic(packet.Ubuntu1604LTS, nc)
+	Describe("Installing against a minikube layout", func() {
+		Context("Using CentOS 7", func() {
+			ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
+				By("Provisioning nodes")
+				nodes, err := provisionAWSNodes(awsClient, NodeCount{Worker: 1}, CentOS7)
+				defer terminateNodes(awsClient, nodes)
+				Expect(err).ToNot(HaveOccurred())
+
+				By("Waiting until nodes are SSH-accessible")
+				sshUser := "centos"
+				sshKey, err := GetSSHKeyFile()
+				Expect(err).ToNot(HaveOccurred())
+				err = waitForSSH(nodes, sshUser, sshKey)
+				Expect(err).ToNot(HaveOccurred())
+
+				theNode := nodes.worker[0]
+				err = installKismaticMini(theNode, sshUser, sshKey)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+		Context("Using Ubuntu 16.04", func() {
+			ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
+				By("Provisioning nodes")
+				nodes, err := provisionAWSNodes(awsClient, NodeCount{Worker: 1}, Ubuntu1604LTS)
+				defer terminateNodes(awsClient, nodes)
+				Expect(err).ToNot(HaveOccurred())
+
+				By("Waiting until nodes are SSH-accessible")
+				sshUser := "ubuntu"
+				sshKey, err := GetSSHKeyFile()
+				Expect(err).ToNot(HaveOccurred())
+				err = waitForSSH(nodes, sshUser, sshKey)
+				Expect(err).ToNot(HaveOccurred())
+
+				theNode := nodes.worker[0]
+				err = installKismaticMini(theNode, sshUser, sshKey)
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})
 
+	Describe("Installing with package installation disabled", func() {
+		Context("Targetting AWS infrastructure", func() {
+			Context("Using a 1/1/1 Ubuntu 16.04 layout", func() {
+				ItOnAWS("Should result in a working cluster", func(awsClient *aws.Client) {
+					By("Provisioning nodes")
+					distro := Ubuntu1604LTS
+					nodes, err := provisionAWSNodes(awsClient, NodeCount{1, 1, 1}, distro)
+					defer terminateNodes(awsClient, nodes)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("Waiting until nodes are SSH-accessible")
+					sshUser := "ubuntu"
+					sshKey, err := GetSSHKeyFile()
+					Expect(err).ToNot(HaveOccurred())
+					err = waitForSSH(nodes, sshUser, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("Installing the Kismatic RPMs")
+					InstallKismaticRPMs(nodes, distro, sshUser, sshKey)
+
+					installOpts := installOptions{
+						allowPackageInstallation: false,
+					}
+					err = installKismatic(nodes, installOpts, sshUser, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+
+			Context("Using a 1/1/1 CentOS 7 layout", func() {
+				ItOnAWS("Should result in a working cluster", func(awsClient *aws.Client) {
+					By("Provisioning nodes")
+					distro := CentOS7
+					nodes, err := provisionAWSNodes(awsClient, NodeCount{1, 1, 1}, distro)
+					defer terminateNodes(awsClient, nodes)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("Waiting until nodes are SSH-accessible")
+					sshUser := "centos"
+					sshKey, err := GetSSHKeyFile()
+					Expect(err).ToNot(HaveOccurred())
+					err = waitForSSH(nodes, sshUser, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("Installing the Kismatic RPMs")
+					InstallKismaticRPMs(nodes, distro, sshUser, sshKey)
+
+					installOpts := installOptions{
+						allowPackageInstallation: false,
+					}
+					err = installKismatic(nodes, installOpts, sshUser, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+		})
+	})
 })
 
-func installKismaticWithABadNode() {
-	By("Building a template")
-	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
-	FailIfError(err, "Couldn't parse template")
+func installKismaticPkgInstallEnabled(awsClient *aws.Client, nodeCount NodeCount, distro linuxDistro, sshUser string) {
+	By("Provisioning nodes")
+	nodes, err := provisionAWSNodes(awsClient, nodeCount, distro)
+	defer terminateNodes(awsClient, nodes)
+	Expect(err).ToNot(HaveOccurred())
 
-	By("Faking infrastructure")
-	fakeNode := AWSNodeDeets{
-		Instanceid: "FakeId",
-		Publicip:   "10.0.0.0",
-		Hostname:   "FakeHostname",
-	}
-
-	By("Building a plan to set up an overlay network cluster on this hardware")
-
+	By("Waiting until nodes are SSH-accessible")
 	sshKey, err := GetSSHKeyFile()
-	FailIfError(err, "Error getting SSH Key file")
+	Expect(err).ToNot(HaveOccurred())
+	err = waitForSSH(nodes, sshUser, sshKey)
+	Expect(err).ToNot(HaveOccurred())
 
-	nodes := PlanAWS{
-		Etcd:                []AWSNodeDeets{fakeNode},
-		Master:              []AWSNodeDeets{fakeNode},
-		Worker:              []AWSNodeDeets{fakeNode},
-		MasterNodeFQDN:      "yep.nope",
-		MasterNodeShortName: "yep",
-		SSHUser:             "Billy Rubin",
-		SSHKeyFile:          sshKey,
+	By("Running installation against infrastructure")
+	installOpts := installOptions{
+		allowPackageInstallation: true,
 	}
-
-	f, fileErr := os.Create("kismatic-testing.yaml")
-	FailIfError(fileErr, "Error waiting for nodes")
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	execErr := template.Execute(w, &nodes)
-	FailIfError(execErr, "Error filling in plan template")
-	w.Flush()
-
-	f.Close()
-
-	// By("Validing our plan")
-	// ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
-	// ver.Stdout = os.Stdout
-	// ver.Stderr = os.Stderr
-	// verErr := ver.Run()
-
-	// if verErr == nil {
-	// 	// This should really be a failure but at the moment validation does not run tests against target nodes
-	// 	// Fail("Validation succeeeded even though it shouldn't have")
-	// }
-
-	By("Well, try it anyway")
-	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
-	app.Stdout = os.Stdout
-	app.Stderr = os.Stderr
-	appErr := app.Run()
-
-	if appErr == nil {
-		Fail("Application succeeeded even though it shouldn't have")
-	}
-}
-
-func completesInTime(dothis func(), howLong time.Duration) bool {
-	c1 := make(chan string, 1)
-	go func() {
-		dothis()
-		c1 <- "completed"
-	}()
-
-	select {
-	case <-c1:
-		return true
-	case <-time.After(howLong):
-		return false
-	}
+	err = installKismatic(nodes, installOpts, sshUser, sshKey)
+	Expect(err).ToNot(HaveOccurred())
 }

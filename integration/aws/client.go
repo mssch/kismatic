@@ -47,7 +47,6 @@ type ClientConfig struct {
 type Credentials struct {
 	ID     string
 	Secret string
-	Token  string
 }
 
 // Client for provisioning machines on AWS
@@ -59,7 +58,7 @@ type Client struct {
 
 func (c *Client) getAPIClient() (*ec2.EC2, error) {
 	if c.ec2Client == nil {
-		creds := credentials.NewStaticCredentials(c.Credentials.ID, c.Credentials.Secret, c.Credentials.Token)
+		creds := credentials.NewStaticCredentials(c.Credentials.ID, c.Credentials.Secret, "")
 		_, err := creds.Get()
 		if err != nil {
 			return nil, fmt.Errorf("Error with credentials provided: %v", err)
@@ -163,10 +162,14 @@ func (c Client) GetNode(id string) (*Node, error) {
 	if hostname == "" {
 		return nil, fmt.Errorf("Failed to get hostname from instance's DNS name %q", *instance.PrivateDnsName)
 	}
+	var publicIP string
+	if instance.PublicIpAddress != nil {
+		publicIP = *instance.PublicIpAddress
+	}
 	return &Node{
 		Hostname:  hostname,
 		PrivateIP: *instance.PrivateIpAddress,
-		PublicIP:  *instance.PublicIpAddress,
+		PublicIP:  publicIP,
 	}, nil
 }
 
