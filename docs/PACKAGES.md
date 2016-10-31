@@ -66,13 +66,13 @@ Changes to dependencies should be called out in the notes that accompany a relea
 
 ## yum
 
-[Listing dependencies of a package](http://serverfault.com/questions/199743/how-to-list-rpm-dependencies)
+Listing dependencies of a package: `yum deplist $PACKAGE`
 
 [Syncing with a repo](http://bencane.com/2013/04/15/creating-a-local-yum-repository/)
 
 ## apt
 
 
-[Listing dependencies of a package](http://stackoverflow.com/questions/4627158/how-to-list-all-dependencies-of-a-package-on-linux)
+Listing dependencies of a package: `apt-cache depends $PACKAGE`
 
 [Syncing with a repo](http://www.tecmint.com/setup-local-repositories-in-ubuntu/)
