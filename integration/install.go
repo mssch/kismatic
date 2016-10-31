@@ -189,7 +189,7 @@ func InstallBigKismatic(count NodeCount, awsos AWSOSDetails, installDeps, autoCo
 
 	if setupCustomDocker {
 		dockerNode := nodes.Etcd[0]
-		nodes.DockerRegistryIP, nodes.DockerRegistryPort, nodes.DockerRegistryCAPath = deployDockerRegistry(dockerNode)
+		nodes.DockerRegistryIP, nodes.DockerRegistryPort, nodes.DockerRegistryCAPath = deployDockerRegistry(dockerNode, awsos)
 	}
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
@@ -369,7 +369,7 @@ func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 			if i == 3 {
 				return AWSNodeDeets{}, err2
 			}
-			fmt.Printf("Error encountered; retry %v (%V)", i, err2)
+			fmt.Printf("Error encountered; retry %v (%v)", i, err2)
 			time.Sleep(5 * time.Second)
 			continue
 		}
