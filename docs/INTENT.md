@@ -17,18 +17,18 @@
 
 * A developer's laptop (Running OSX or Linux)
 * A desktop virtualizer (such as Oracle VirtualBox)
-* A VM lifecycle tool (such as Vagrant) can dramatically speed up set up time
+* A VM lifecycle tool (such as Vagrant) can dramatically speed up set up time for virtual machines
 
 ## How you install:
 
 1. Download the [latest Kismatic](PROVISION.md#get) for your OS and unpack it somewhere convenient.
 2. Create a [small Linux VM](PLAN.md#compute)
-   1. You will need to know its IP address and short name.
-   2. You will need to create a user with passwordless auth, ssh capability and a [public key](PROVISION.md#access).
+   *. You will need to know its IP address and short name.
+   *. You will need to create a user with passwordless auth, ssh capability and a [public key](PROVISION.md#access).
 3. Run `kismatic install plan`; you will be creating 1 of each node
 4. Open the plan file in a text editor
-   1. Update your user and public key if necessary
-   2. Add your one machine's IP and short name as a node in the section for each type of node -- etcd, worker and master.
+   *. Update your user and public key if necessary
+   *. Add your one machine's IP and short name as a node in the section for each type of node -- etcd, worker and master.
 5. Run `kismatic install apply`
 6. Congratulations! You have your first cluster.
 
