@@ -23,12 +23,12 @@
 
 1. Download the [latest Kismatic](PROVISION.md#get) for your OS and unpack it somewhere convenient.
 2. Create a [small Linux VM](PLAN.md#compute)
-   *. You will need to know its IP address and short name.
-   *. You will need to create a user with passwordless auth, ssh capability and a [public key](PROVISION.md#access).
+   * You will need to know its IP address and short name.
+   * You will need to create a user with passwordless auth, ssh capability and a [public key](PROVISION.md#access).
 3. Run `kismatic install plan`; you will be creating 1 of each node
-4. Open the plan file in a text editor
-   *. Update your user and public key if necessary
-   *. Add your one machine's IP and short name as a node in the section for each type of node -- etcd, worker and master.
+4. Open the `kismatic-cluster.yaml` file in a text editor
+   * Update your user and public key if necessary
+   * Add your one machine's IP and short name as a node in the section for each type of node -- etcd, worker and master.
 5. Run `kismatic install apply`
 6. Congratulations! You have your first cluster.
 
