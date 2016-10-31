@@ -38,10 +38,9 @@ type AWSOSDetails struct {
 	AWSAMI  string
 	AWSUser string
 
-	CommandsToPrepRepo                []string
-	CommandsToInstallEtcd             []string
-	CommandsToInstallDocker           []string
-	CommandsToInstallK8sMaster        []string
-	CommandsToInstallK8s              []string
-	CommandsToInstallDockerFromScript []string
+	CommandsToPrepRepo         []string
+	CommandsToInstallEtcd      []string
+	CommandsToInstallDocker    []string
+	CommandsToInstallK8sMaster []string
+	CommandsToInstallK8s       []string
 }
