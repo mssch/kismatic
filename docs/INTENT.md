@@ -2,8 +2,8 @@
 
 | Why do you want to install Kubernetes? | Example Cluster |
 | --- | --- |
-| I want to run a small development cluster on my laptop| [Minikube-style](#minikube) |
-| I want to run a small protoype or development cluster in AWS | [Developer](#junior) |
+| I want to run a small prototype cluster on my laptop| [Minikube-style](#minikube) |
+| I want to run a small development cluster in AWS | [Developer](#junior) |
 | I want to run a reliable, permanent labratory cluster to host mostly services for my team. | [Skunkworks](#skunkworks) |
 | I want to run a reliable, permanent production cluster to host services for my team and others. | [Production](#production) | 
 
