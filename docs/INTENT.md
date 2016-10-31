@@ -35,7 +35,7 @@ How we install:
 
 How we can use it:
 
-# <a name="skunkworks"></a>3+/2/3+ Skunkworks Cluster
+# <a name="skunkworks"></a>3+/2/2+ Skunkworks Cluster
 
 *I would like to build and grow a big cluster for my team to share and work with. I don't need to share much with other people in the company, want to avoid introducing complexity to our network or I prefer the security of not having all of my Kubernetes pods addressable automatically by anybody with access to the network. This is a production environment, but we can probably survive a major disaster so long as it is low risk.*
 
@@ -48,7 +48,7 @@ How we install:
 
 How we can use it:
 
-# <a name="production"></a>5+/2+/3+ Production Cluster
+# <a name="production"></a>5+/2+/2+ Production Cluster
 
 *I want to build and grow a big cluster for my team to share their apps with the rest of the company. Security is a secondary concern to access. Also, this is production: we can't take any chances.*
 
