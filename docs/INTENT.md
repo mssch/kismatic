@@ -13,13 +13,14 @@
 
 ![](minikube.jpg)
 
-What you need:
+## What you need:
 
 * A developer's laptop (Running OSX or Linux)
 * A desktop virtualizer (such as Oracle VirtualBox)
 * A VM lifecycle tool (such as Vagrant) can dramatically speed up set up time
 
-How you install:
+## How you install:
+
 1. Download the [latest Kismatic](PROVISION.md#get) for your OS and unpack it somewhere convenient.
 2. Create a [small Linux VM](PLAN.md#compute)
    1. You will need to know its IP address and short name.
@@ -37,12 +38,12 @@ How you install:
 
 ![](dev.jpg)
 
-What you need:
+## What you need:
 
 * A developer's laptop (Running OSX or Linux)
 * An AWS account
 
-How you install:
+## How you install:
 
 # <a name="skunkworks"></a>3+/2/2+ Skunkworks Cluster
 
@@ -50,11 +51,12 @@ How you install:
 
 *I would like to build and grow a big cluster for my team to share and work with. I don't need to share much with other people in the company, want to avoid introducing complexity to our network or I prefer the security of not having all of my Kubernetes pods addressable automatically by anybody with access to the network. This is a production environment, but we can probably survive a major disaster so long as it is low risk.*
 
-What you need:
+## What you need:
 
 * An AWS account, bare metal machines or a bunch of VMs
 
-How you install:
+## How you install:
+
 1. Make an install machine. This is a small (1 CPU, 1 GB ram, <8 GB hard drive) Linux VM with an encrypted disk and very limited access -- just potential cluster administrators.
 
 # <a name="production"></a>5+/2+/2+ Production Cluster
@@ -63,9 +65,10 @@ How you install:
 
 *I want to build and grow a big cluster for my team to share their apps with the rest of the company. Security is a secondary concern to access. Also, this is production: we can't take any chances.*
 
-What you need:
+## What you need:
 
 * Bare metal machines or a bunch of VMs
 
-How you install:
+## How you install:
+
 1. Make an install machine. This is a small (1 CPU, 1 GB ram, <8 GB hard drive) Linux VM with an encrypted disk and very limited access -- just potential cluster administrators.
