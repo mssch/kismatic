@@ -1,9 +1,9 @@
-# Kismatic -- Keep IT Simple: Make a Tidy Infrastructure Cluster
+# Kismatic -- The Enterprise Toolkit for Kubernetes Reliability Engineering (KRE)
 [![Build Status](https://snap-ci.com/On8xdVQV0xY5VXICf0Fx0Vq7fVMDUAfU6JFc8Wtt94A/build_image)](https://snap-ci.com/apprenda/kismatic-platform/branch/master)
 
-Kismatic is a set of utilities for managing Kubernetes installations.
+Kismatic is a set of tools for designing, deploying and operating enterprise-tuned production ready Kubernetes clusters.
 
-We're focused on making it straightforward for those who manage their own infrastructure to install secure, highly available Kubernetes clusters.
+We're focused on making it straightforward for organizations who fully manage their own infrastructure to deploy secure, highly available and Kubernetes installations with built-in sane defaults for networking, distributed routing and tracing, cluster health, security and more!
 
 The Kismatic tools include:
 
@@ -25,9 +25,9 @@ The Kismatic tools include:
 | Etcd (for Kubernetes) | 3.0.10 |
 | Etcd (for Calico) | 2.37 |
 
-[Download latest install tarball (OSX)](https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest-darwin/kismatic.tar.gz)
+[Download latest install tarball (OSX)](https://s3.amazonaws.com/kismatic-installer/latest-darwin/kismatic.tar.gz)
 
-[Download latest install tarball (Linux)](https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest/kismatic.tar.gz)
+[Download latest install tarball (Linux)](https://s3.amazonaws.com/kismatic-installer/latest/kismatic.tar.gz)
 
 # Kismatic Documentation
 

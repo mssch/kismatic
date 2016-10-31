@@ -2,7 +2,7 @@
   # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
   - include: _all.yaml
   - include: _packages.yaml
-    when: install_packages_from_public_repo|bool == true
+    when: allow_package_installation|bool == true
   - include: _hosts.yaml
     when: modify_hosts_file|bool == true
   # etcd
@@ -12,7 +12,7 @@
   - include: _docker.yaml
   - include: _docker-registry-container.yaml
     when: setup_internal_docker_registry|bool == true
-  - include: _docker-registry.yaml
+  - include: _docker-registry-images.yaml
     when: use_private_docker_registry|bool == true
   - include: _kubenode-cert.yaml
   # master:worker

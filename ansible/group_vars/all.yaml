@@ -142,7 +142,7 @@ pause_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/pause-
 pause_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ pause_priv_img }}{% else %}{{ pause_orig_img }}{% endif %}'
 #===============================================================================
 # kismatic packages
-install_packages_from_public_repo: true
+allow_package_installation: true
 yum_repository_url: https://kismatic-rpm.s3-accelerate.amazonaws.com/
 yum_gpg_key_url: https://kismatic-rpm.s3-accelerate.amazonaws.com/public.key
 deb_repository_url: https://kismatic-deb.s3-accelerate.amazonaws.com/

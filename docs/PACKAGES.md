@@ -53,7 +53,14 @@ Each Kismatic package will also have many transitive dependencies. To be able to
 
 Dependencies and their versions will change over time and as such they are not listed here. Instead, they can be derived from any machine that is integrated with our repos using the commands linked below.
 
-To help ensure you've correctly synchronized your repo, you can attempt to a test cluster with 1 node of each role. The Kismatic inspector will check your packages to be sure they installed correctly and will alert if any of them are missing.
+One way to ensure you've correctly synchronized your repo is to install a test cluster.
+
+1. Provision 1 node of each role
+2. Install the Kismatic packages
+3. Run `kismatic plan` to generate a new Plan file
+4. Update the Plan file to identify your nodes and using the configuration `allow_package_installation=false`. 
+5. Run `kismatic validate`
+6. During validation, the Kismatic inspector will check your packages to be sure they installed correctly and will fail if any of them are missing. 
 
 Changes to dependencies should be called out in the notes that accompany a release.
 
