@@ -5,7 +5,7 @@ kismatic is the main tool for managing your Kismatic cluster
 ### Synopsis
 
 
-kismatic is the main tool for managing your Kismatic cluster
+kismatic is the main tool for managing your Kismatic cluster  
 more documentation is availble at https://github.com/apprenda/kismatic-platform
 
 ```
