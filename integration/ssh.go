@@ -44,6 +44,36 @@ func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Dur
 	return success
 }
 
+func CopyFileToRemote(file string, destFile string, user string, hosts []AWSNodeDeets, period time.Duration) bool {
+	results := make(chan string, 10)
+	success := true
+	timeout := time.After(period)
+
+	config := &ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{
+			PublicKeyFile(os.Getenv("HOME") + "/.ssh/kismatic-integration-testing.pem"),
+		},
+	}
+
+	for _, host := range hosts {
+		go func(hostname string) {
+			results <- scpFile(file, destFile, hostname, config)
+		}(host.Publicip)
+	}
+
+	for i := 0; i < len(hosts); i++ {
+		select {
+		case res := <-results:
+			fmt.Print(res)
+		case <-timeout:
+			fmt.Printf("%v timed out!", hosts[i])
+			return false
+		}
+	}
+	return success
+}
+
 func PublicKeyFile(file string) ssh.AuthMethod {
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -68,45 +98,17 @@ func executeCmd(cmd, hostname string, config *ssh.ClientConfig) string {
 	verText := string(verbytes)
 
 	return hostname + ": " + verText
+}
 
-	// conn, _ := ssh.Dial("tcp", hostname+":22", config)
-	// session, _ := conn.NewSession()
-	// defer session.Close()
+func scpFile(filePath string, destFilePath string, hostname string, config *ssh.ClientConfig) string {
+	ver := exec.Command("scp", "-o", "StrictHostKeyChecking no", "-i", os.Getenv("HOME")+"/.ssh/kismatic-integration-testing.pem", filePath, config.User+"@"+hostname+":"+destFilePath)
+	ver.Stdin = os.Stdin
 
-	// var stdoutBuf bytes.Buffer
-	// session.Stdin = os.Stdin
-	// session.Stdout = os.Stdout //&stdoutBuf
-	// session.Stderr = os.Stderr //&stdoutBuf
+	verbytes, verErr := ver.CombinedOutput()
+	if verErr != nil {
+		fmt.Printf("Oops: %v", verErr)
+	}
+	verText := string(verbytes)
 
-	// modes := ssh.TerminalModes{
-	// 	ssh.ECHO:          0,
-	// 	ssh.ECHOCTL:       0,
-	// 	ssh.TTY_OP_ISPEED: 14400,
-	// 	ssh.TTY_OP_OSPEED: 14400,
-	// }
-
-	// fileDescriptor := int(os.Stdin.Fd())
-
-	// if terminal.IsTerminal(fileDescriptor) {
-	// 	originalState, err := terminal.MakeRaw(fileDescriptor)
-	// 	if err != nil {
-	// 		fmt.Println("Error setting terminal to raw '%v': %v", cmd, err)
-	// 	}
-	// 	defer terminal.Restore(fileDescriptor, originalState)
-
-	// 	termWidth, termHeight, err := terminal.GetSize(fileDescriptor)
-	// 	if err != nil {
-	// 		fmt.Println("Error running '%v': %v", cmd, err)
-	// 	}
-
-	// 	if rptyErr := session.RequestPty("xterm", termHeight, termWidth, modes); rptyErr != nil {
-	// 		fmt.Println("Error running '%v': %v", cmd, rptyErr)
-	// 	}
-
-	// 	session.Run(cmd)
-	// } else {
-	// 	fmt.Println("IDK.")
-	// }
-
-	// return hostname + ": " + stdoutBuf.String()
+	return hostname + ": " + verText
 }

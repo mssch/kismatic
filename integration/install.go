@@ -14,9 +14,11 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/apprenda/kismatic-platform/pkg/tls"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/cloudflare/cfssl/csr"
 	. "github.com/onsi/ginkgo"
 
 	"github.com/jmcvetta/guid"
@@ -105,7 +107,7 @@ func InstallKismaticMini(awsos AWSOSDetails) PlanAWS {
 	}
 
 	By("Punch it Chewie!")
-	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name(), "--verbose")
 	app.Stdout = os.Stdout
 	app.Stderr = os.Stderr
 	appErr := app.Run()
@@ -115,19 +117,27 @@ func InstallKismaticMini(awsos AWSOSDetails) PlanAWS {
 }
 
 func InstallKismatic(awsos AWSOSDetails) PlanAWS {
-	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos)
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, false, false, false)
 }
 
 func InstallKismaticWithDeps(awsos AWSOSDetails) PlanAWS {
-	return InstallBigKismaticWithDeps(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos)
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, true, false, false)
 }
 
-func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
+func InstallKismaticWithAutoConfiguredDocker(awsos AWSOSDetails) PlanAWS {
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, false, true, false)
+}
+
+func InstallKismaticWithCustomDocker(awsos AWSOSDetails) PlanAWS {
+	return InstallBigKismatic(NodeCount{Etcd: 1, Master: 1, Worker: 1}, awsos, false, false, true)
+}
+
+func InstallBigKismatic(count NodeCount, awsos AWSOSDetails, installDeps, autoConfigureDockerRegistry, setupCustomDocker bool) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
 	if count.Etcd < 1 || count.Master < 1 || count.Worker < 1 {
-		Fail("Must have at least 1 of ever node type")
+		Fail("Must have at least 1 of every node type")
 	}
 
 	By("Making infrastructure")
@@ -170,11 +180,17 @@ func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
 		MasterNodeShortName: masterNodes[0].Hostname,
 		SSHKeyFile:          sshKey,
 		SSHUser:             awsos.AWSUser,
+		AutoConfiguredDockerRegistry: autoConfigureDockerRegistry,
 	}
 	descErr := WaitForAllInstancesToStart(&nodes)
 	FailIfError(descErr, "Error waiting for nodes")
 	log.Printf("%v", nodes.Etcd[0].Publicip)
 	PrintNodes(&nodes)
+
+	if setupCustomDocker {
+		dockerNode := nodes.Etcd[0]
+		nodes.DockerRegistryIP, nodes.DockerRegistryPort, nodes.DockerRegistryCAPath = deployDockerRegistry(dockerNode, awsos)
+	}
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
 	var hdErr error
@@ -189,95 +205,10 @@ func InstallBigKismatic(count NodeCount, awsos AWSOSDetails) PlanAWS {
 	FailIfError(execErr, "Error filling in plan template")
 	w.Flush()
 
-	By("Validing our plan")
-	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
-	verbytes, verErr := ver.CombinedOutput()
-	verText := string(verbytes)
-
-	FailIfError(verErr, "Error validating plan", verText)
-
-	if bailBeforeAnsible() == true {
-		return nodes
+	if installDeps {
+		By("Installing some RPMs")
+		InstallRPMs(nodes, awsos)
 	}
-
-	By("Punch it Chewie!")
-	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
-	app.Stdout = os.Stdout
-	app.Stderr = os.Stderr
-	appErr := app.Run()
-
-	FailIfError(appErr, "Error applying plan")
-
-	return nodes
-}
-
-func InstallBigKismaticWithDeps(count NodeCount, awsos AWSOSDetails) PlanAWS {
-	By("Building a template")
-	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
-	FailIfError(err, "Couldn't parse template")
-	if count.Etcd < 1 || count.Master < 1 || count.Worker < 1 {
-		Fail("Must have at least 1 of ever node type")
-	}
-
-	By("Making infrastructure")
-
-	allInstanceIDs := make([]string, count.Total())
-	etcdNodes := make([]AWSNodeDeets, count.Etcd)
-	masterNodes := make([]AWSNodeDeets, count.Master)
-	workerNodes := make([]AWSNodeDeets, count.Worker)
-
-	for i := uint16(0); i < count.Etcd; i++ {
-		var etcErr error
-		etcdNodes[i], etcErr = MakeETCDNode(awsos.AWSAMI)
-		FailIfError(etcErr, "Error making etcd node")
-		allInstanceIDs[i] = etcdNodes[i].Instanceid
-	}
-
-	for i := uint16(0); i < count.Master; i++ {
-		var masterErr error
-		masterNodes[i], masterErr = MakeMasterNode(awsos.AWSAMI)
-		FailIfError(masterErr, "Error making master node")
-		allInstanceIDs[i+count.Etcd] = masterNodes[i].Instanceid
-	}
-
-	for i := uint16(0); i < count.Worker; i++ {
-		var workerErr error
-		workerNodes[i], workerErr = MakeWorkerNode(awsos.AWSAMI)
-		FailIfError(workerErr, "Error making worker node")
-		allInstanceIDs[i+count.Etcd+count.Master] = workerNodes[i].Instanceid
-	}
-
-	defer TerminateInstances(allInstanceIDs...)
-
-	sshKey, err := GetSSHKeyFile()
-	FailIfError(err, "Error getting SSH Key file")
-	nodes := PlanAWS{
-		AllowPackageInstallation: false,
-		Etcd:                etcdNodes,
-		Master:              masterNodes,
-		Worker:              workerNodes,
-		MasterNodeFQDN:      masterNodes[0].Hostname,
-		MasterNodeShortName: masterNodes[0].Hostname,
-		SSHKeyFile:          sshKey,
-		SSHUser:             awsos.AWSUser,
-	}
-	descErr := WaitForAllInstancesToStart(&nodes)
-	FailIfError(descErr, "Error waiting for nodes")
-	log.Printf("%v", nodes.Etcd[0].Publicip)
-	PrintNodes(&nodes)
-
-	By("Building a plan to set up an overlay network cluster on this hardware")
-
-	f, fileErr := os.Create("kismatic-testing.yaml")
-	FailIfError(fileErr, "Error waiting for nodes")
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	execErr := template.Execute(w, &nodes)
-	FailIfError(execErr, "Error filling in plan template")
-	w.Flush()
-
-	By("Installing some RPMs")
-	InstallRPMs(nodes, awsos)
 
 	By("Validing our plan")
 	ver := exec.Command("./kismatic", "install", "validate", "-f", f.Name())
@@ -291,7 +222,7 @@ func InstallBigKismaticWithDeps(count NodeCount, awsos AWSOSDetails) PlanAWS {
 	}
 
 	By("Punch it Chewie!")
-	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	app := exec.Command("./kismatic", "install", "apply", "-f", f.Name(), "--verbose")
 	app.Stdout = os.Stdout
 	app.Stderr = os.Stderr
 	appErr := app.Run()
@@ -438,7 +369,7 @@ func MakeAWSNode(ami string, instanceType string) (AWSNodeDeets, error) {
 			if i == 3 {
 				return AWSNodeDeets{}, err2
 			}
-			fmt.Printf("Error encountered; retry %v (%V)", i, err2)
+			fmt.Printf("Error encountered; retry %v (%v)", i, err2)
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -567,4 +498,69 @@ func BlockUntilSSHOpen(node *AWSNodeDeets, sshUser, sshKey string) {
 		fmt.Printf("?")
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func deployDockerRegistry(node AWSNodeDeets, awsos AWSOSDetails) (hostname string, port int, caPath string) {
+	const InstallDockerFromScriptCommand = `sudo curl -sSL https://get.docker.com/ | sh`
+	const StartDockerCommand = `sudo systemctl start docker`
+	const CreateDockerCertsDir = `mkdir ~/certs`
+	const StartDockerRegistryCommand = `sudo docker run -d -p 443:5000 --restart=always --name registry -v ~/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker.pem -e REGISTRY_HTTP_TLS_KEY=/certs/docker-key.pem registry`
+	// Install Docker on etcd
+	success := RunViaSSH([]string{InstallDockerFromScriptCommand, StartDockerCommand, CreateDockerCertsDir}, awsos.AWSUser, []AWSNodeDeets{node}, 10*time.Minute)
+	if !success {
+		Fail("docker install error")
+	}
+
+	// Generate CA
+	subject := tls.Subject{
+		Organization:       "someOrg",
+		OrganizationalUnit: "someOrgUnit",
+	}
+	key, caCert, err := tls.NewCACert("test-tls/ca-csr.json", "someCommonName", subject)
+
+	FailIfError(err, fmt.Sprintf("error creating Docker CA cert: %v", err))
+
+	ioutil.WriteFile("docker-ca.pem", caCert, 0644)
+
+	// Generate certs
+	ca := &tls.CA{
+		Key:        key,
+		Cert:       caCert,
+		ConfigFile: "test-tls/ca-config.json",
+		Profile:    "kubernetes",
+	}
+	certHosts := []string{node.Hostname, node.Privateip, node.Publicip}
+	req := csr.CertificateRequest{
+		CN: node.Hostname,
+		KeyRequest: &csr.BasicKeyRequest{
+			A: "rsa",
+			S: 2048,
+		},
+		Hosts: certHosts,
+		Names: []csr.Name{
+			{
+				C:  "US",
+				L:  "Troy",
+				O:  "Kubernetes",
+				OU: "Cluster",
+				ST: "New York",
+			},
+		},
+	}
+
+	pwd, _ := os.Getwd()
+
+	key, cert, err := tls.NewCert(ca, req)
+	FailIfError(err, fmt.Sprintf("error creating Docker certs: %v", err))
+	ioutil.WriteFile("docker.pem", cert, 0644)
+	ioutil.WriteFile("docker-key.pem", key, 0644)
+
+	CopyFileToRemote(pwd+"/docker.pem", "~/certs/docker.pem", awsos.AWSUser, []AWSNodeDeets{node}, 1*time.Minute)
+	CopyFileToRemote(pwd+"/docker-key.pem", "~/certs/docker-key.pem", awsos.AWSUser, []AWSNodeDeets{node}, 1*time.Minute)
+	success = RunViaSSH([]string{StartDockerRegistryCommand}, awsos.AWSUser, []AWSNodeDeets{node}, 1*time.Minute)
+	if !success {
+		Fail("docker registry error")
+	}
+
+	return node.Hostname, 443, pwd + "/docker-ca.pem"
 }

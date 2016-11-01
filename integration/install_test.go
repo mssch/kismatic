@@ -27,6 +27,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		if tarErr != nil {
 			log.Fatal("Error unpacking installer", string(tarOut), tarErr)
 		}
+		CopyDir("test-tls/", kisPath+"/test-tls")
 		os.Chdir(kisPath)
 	})
 
@@ -153,6 +154,16 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				InstallKismaticWithDeps(CentosEast)
 			})
 		})
+		Context("Using a 1/1/1 CentOS 7 layout and auto-configured docker registry", func() {
+			It("should result in a working cluster", func() {
+				InstallKismaticWithAutoConfiguredDocker(CentosEast)
+			})
+		})
+		Context("Using a 1/1/1 CentOS 7 layout and a custom private docker registry", func() {
+			It("should result in a working cluster", func() {
+				InstallKismaticWithCustomDocker(CentosEast)
+			})
+		})
 		Context("Using a Minikube CentOS 7 layout", func() {
 			It("should result in a working cluster", func() {
 				InstallKismaticMini(CentosEast)
@@ -166,7 +177,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 						Master: 2,
 						Worker: 3,
 					},
-					CentosEast)
+					CentosEast, false, false, false)
 			})
 		})
 	})
