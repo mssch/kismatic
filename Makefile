@@ -77,6 +77,7 @@ get-test-deps:
 	go get golang.org/x/crypto/ssh
 	go get github.com/cloudflare/cfssl/csr
 	go get github.com/fatih/color
+	go get github.com/packethost/packngo
 
 just-integration-test: get-test-deps
 	ginkgo -p -v integration
