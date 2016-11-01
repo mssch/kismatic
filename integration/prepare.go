@@ -1,9 +1,15 @@
 package integration
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/cloudflare/cfssl/csr"
 	. "github.com/onsi/ginkgo"
 )
 
@@ -76,4 +82,79 @@ func getPrepForDistro(distro linuxDistro) nodePrep {
 	default:
 		panic(fmt.Sprintf("Unsupported distro %s", distro))
 	}
+}
+
+func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (string, error) {
+	// Install Docker on the node
+	installDockerCmds := []string{
+		"sudo curl -sSL https://get.docker.com/ | sh",
+		"sudo systemctl start docker",
+		"mkdir ~/certs",
+	}
+	ok := RunViaSSH(installDockerCmds, node.SSHUser, []NodeDeets{node}, 10*time.Minute)
+	if !ok {
+		return "", errors.New("Failed to install Docker on the node")
+	}
+	// Generate CA
+	subject := tls.Subject{
+		Organization:       "someOrg",
+		OrganizationalUnit: "someOrgUnit",
+	}
+	key, caCert, err := tls.NewCACert("test-tls/ca-csr.json", "someCommonName", subject)
+	if err != nil {
+		return "", fmt.Errorf("error generating CA cert for Docker: %v", err)
+	}
+	err = ioutil.WriteFile("docker-ca.pem", caCert, 0644)
+	if err != nil {
+		return "", fmt.Errorf("error writing CA cert to file")
+	}
+	// Generate Certificate
+	ca := &tls.CA{
+		Key:        key,
+		Cert:       caCert,
+		ConfigFile: "test-tls/ca-config.json",
+		Profile:    "kubernetes",
+	}
+	certHosts := []string{node.Hostname, node.PrivateIP, node.PublicIP}
+	req := csr.CertificateRequest{
+		CN: node.Hostname,
+		KeyRequest: &csr.BasicKeyRequest{
+			A: "rsa",
+			S: 2048,
+		},
+		Hosts: certHosts,
+		Names: []csr.Name{
+			{
+				C:  "US",
+				L:  "Troy",
+				O:  "Kubernetes",
+				OU: "Cluster",
+				ST: "New York",
+			},
+		},
+	}
+	key, cert, err := tls.NewCert(ca, req)
+	if err != nil {
+		return "", fmt.Errorf("error generating certificate for Docker registry: %v", err)
+	}
+	if err = ioutil.WriteFile("docker.pem", cert, 0644); err != nil {
+		return "", fmt.Errorf("error writing certificate to file: %v", err)
+	}
+	if err = ioutil.WriteFile("docker-key.pem", key, 0644); err != nil {
+		return "", fmt.Errorf("error writing private key to file: %v", err)
+	}
+
+	CopyFileToRemote("docker.pem", "~/certs/docker.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
+	CopyFileToRemote("docker-key.pem", "~/certs/docker-key.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
+
+	startDockerRegistryCmd := []string{fmt.Sprintf("sudo docker run -d -p %d:5000 --restart=always ", listeningPort) +
+		"--name registry -v ~/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker.pem " +
+		"-e REGISTRY_HTTP_TLS_KEY=/certs/docker-key.pem registry"}
+	if ok := RunViaSSH(startDockerRegistryCmd, node.SSHUser, []NodeDeets{node}, 1*time.Minute); !ok {
+		return "", fmt.Errorf("failed to start docker registry")
+	}
+
+	// Need the full path, otherwise ansible looks for it in the wrong place
+	pwd, _ := os.Getwd()
+	return filepath.Join(pwd, "docker-ca.pem"), nil
 }

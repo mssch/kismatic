@@ -33,7 +33,9 @@ type infraDependentTest func(nodes provisionedNodes, sshKey string)
 func WithInfrastructure(nodeCount NodeCount, distro linuxDistro, provisioner infrastructureProvisioner, f infraDependentTest) {
 	By("Provisioning nodes")
 	nodes, err := provisioner.ProvisionNodes(nodeCount, distro)
-	defer provisioner.TerminateNodes(nodes)
+	if !leaveIt() {
+		defer provisioner.TerminateNodes(nodes)
+	}
 	Expect(err).ToNot(HaveOccurred())
 
 	By("Waiting until nodes are SSH-accessible")
@@ -50,7 +52,9 @@ type miniInfraDependentTest func(node NodeDeets, sshKey string)
 func WithMiniInfrastructure(distro linuxDistro, provisioner infrastructureProvisioner, f miniInfraDependentTest) {
 	By("Provisioning nodes")
 	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro)
-	defer provisioner.TerminateNodes(nodes)
+	if !leaveIt() {
+		defer provisioner.TerminateNodes(nodes)
+	}
 	Expect(err).ToNot(HaveOccurred())
 
 	By("Waiting until nodes are SSH-accessible")

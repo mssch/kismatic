@@ -152,4 +152,43 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			})
 		})
 	})
+
+	Describe("Installing with private Docker registry", func() {
+		Context("Using a 1/1/1 CentOS 7 layout", func() {
+			nodeCount := NodeCount{Etcd: 1, Master: 1, Worker: 1}
+			distro := CentOS7
+
+			Context("Using the auto-configured docker registry", func() {
+				ItOnAWS("should result in a working cluster", func(aws infrastructureProvisioner) {
+					WithInfrastructure(nodeCount, distro, aws, func(nodes provisionedNodes, sshKey string) {
+						installOpts := installOptions{
+							allowPackageInstallation:    true,
+							autoConfigureDockerRegistry: true,
+						}
+						err := installKismatic(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+			})
+
+			Context("Using a custom registry provided by the user", func() {
+				ItOnAWS("should result in a working cluster", func(aws infrastructureProvisioner) {
+					WithInfrastructure(nodeCount, distro, aws, func(nodes provisionedNodes, sshKey string) {
+						By("Installing an external Docker registry on one of the etcd nodes")
+						dockerRegistryPort := 443
+						caFile, err := deployDockerRegistry(nodes.etcd[0], dockerRegistryPort, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+						installOpts := installOptions{
+							allowPackageInstallation: true,
+							dockerRegistryCAPath:     caFile,
+							dockerRegistryIP:         nodes.etcd[0].PrivateIP,
+							dockerRegistryPort:       dockerRegistryPort,
+						}
+						err = installKismatic(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+			})
+		})
+	})
 })

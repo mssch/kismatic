@@ -75,6 +75,8 @@ get-test-deps:
 	go get github.com/mitchellh/go-homedir
 	go install github.com/onsi/ginkgo/ginkgo
 	go get golang.org/x/crypto/ssh
+	go get github.com/cloudflare/cfssl/csr
+	go get github.com/fatih/color
 
 just-integration-test: get-test-deps
 	ginkgo -p -v integration

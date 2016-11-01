@@ -45,7 +45,11 @@ func ExtractKismaticToTemp() (string, error) {
 }
 
 type installOptions struct {
-	allowPackageInstallation bool
+	allowPackageInstallation    bool
+	autoConfigureDockerRegistry bool
+	dockerRegistryIP            string
+	dockerRegistryPort          int
+	dockerRegistryCAPath        string
 }
 
 func installKismaticMini(node NodeDeets, sshKey string) error {
@@ -98,13 +102,16 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 	sshUser := nodes.master[0].SSHUser
 	plan := PlanAWS{
 		AllowPackageInstallation: installOpts.allowPackageInstallation,
-		Etcd:                nodes.etcd,
-		Master:              nodes.master,
-		Worker:              nodes.worker,
-		MasterNodeFQDN:      nodes.master[0].Hostname,
-		MasterNodeShortName: nodes.master[0].Hostname,
-		SSHKeyFile:          sshKey,
-		SSHUser:             sshUser,
+		Etcd:                 nodes.etcd,
+		Master:               nodes.master,
+		Worker:               nodes.worker,
+		MasterNodeFQDN:       nodes.master[0].Hostname,
+		MasterNodeShortName:  nodes.master[0].Hostname,
+		SSHKeyFile:           sshKey,
+		SSHUser:              sshUser,
+		DockerRegistryCAPath: installOpts.dockerRegistryCAPath,
+		DockerRegistryIP:     installOpts.dockerRegistryIP,
+		DockerRegistryPort:   installOpts.dockerRegistryPort,
 	}
 
 	f, err := os.Create("kismatic-testing.yaml")

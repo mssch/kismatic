@@ -1,6 +1,6 @@
 # Provision
 
-## Get the distribution
+## <a name="get"></a>Get the distribution
 
 You will need to run the installer either from a Linux machine or from a Darwin (OSX) machine. This machine will need to be able to access via SSH all the machines that will become nodes of the Kubernetes cluster.
 
@@ -32,9 +32,9 @@ You will be asked a few questions regarding the decisions you made in the Plan s
 
 As machines are being provisioned, you must record their identity and credentials in this file.
 
-## Compute
+## Create Virtual Machines
 
-### Accessing nodes via the Installer
+### <a name="access"></a>Providing access to the Installer
 
 To install Kubernetes with Kismatic, you will need a user with remote sudo access and an ssh public key added to each node. The same username and keypair must be used for all nodes. This account should only be used by the kismatic installer.
 

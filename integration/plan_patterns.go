@@ -1,15 +1,19 @@
 package integration
 
 type PlanAWS struct {
-	Etcd                     []NodeDeets
-	Master                   []NodeDeets
-	Worker                   []NodeDeets
-	MasterNodeFQDN           string
-	MasterNodeShortName      string
-	SSHUser                  string
-	SSHKeyFile               string
-	HomeDirectory            string
-	AllowPackageInstallation bool
+	Etcd                         []NodeDeets
+	Master                       []NodeDeets
+	Worker                       []NodeDeets
+	MasterNodeFQDN               string
+	MasterNodeShortName          string
+	SSHUser                      string
+	SSHKeyFile                   string
+	HomeDirectory                string
+	AllowPackageInstallation     bool
+	AutoConfiguredDockerRegistry bool
+	DockerRegistryIP             string
+	DockerRegistryPort           int
+	DockerRegistryCAPath         string
 }
 
 const planAWSOverlay = `cluster:
@@ -31,6 +35,11 @@ const planAWSOverlay = `cluster:
     user: {{.SSHUser}}
     ssh_key: {{.SSHKeyFile}}
     ssh_port: 22
+docker_registry:
+  setup_internal: {{.AutoConfiguredDockerRegistry}}
+  address: {{.DockerRegistryIP}}
+  port: {{.DockerRegistryPort}}
+  CA: {{.DockerRegistryCAPath}}
 etcd:
   expected_count: {{len .Etcd}}
   nodes:{{range .Etcd}}

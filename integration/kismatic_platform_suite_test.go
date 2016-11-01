@@ -2,6 +2,7 @@ package integration
 
 import (
 	"os"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,8 +11,10 @@ import (
 )
 
 func TestKismaticPlatform(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "KismaticPlatform Suite")
+	if !testing.Short() {
+		RegisterFailHandler(Fail)
+		RunSpecs(t, "KismaticPlatform Suite")
+	}
 }
 
 var kisPath string
@@ -21,6 +24,7 @@ var _ = BeforeSuite(func() {
 	if err != nil {
 		Fail("Failed to extract kismatic")
 	}
+	CopyDir("test-tls/", filepath.Join(kisPath, "test-tls"))
 	os.Chdir(kisPath)
 })
 
