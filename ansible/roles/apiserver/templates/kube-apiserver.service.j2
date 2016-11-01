@@ -11,7 +11,6 @@ Environment=CA_FILE={{ kubernetes_certificates_ca_path }}
 Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
 Environment=KEY_FILE={{ kubernetes_certificates_key_path }}
 Environment=SERVICES_CIDR={{ kubernetes_services_cidr }}
-Environment=TOKEN_AUTH_FILE={{ kubernetes_token_auth_path }}
 Environment=BASIC_AUTH_FILE={{ kubernetes_basic_auth_path }}
 ExecStart={{ bin_dir }}/kube-apiserver \
   --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
@@ -34,7 +33,6 @@ ExecStart={{ bin_dir }}/kube-apiserver \
   --service-cluster-ip-range=${SERVICES_CIDR} \
   --tls-cert-file=${CERT_FILE} \
   --tls-private-key-file=${KEY_FILE} \
-  --token-auth-file=${TOKEN_AUTH_FILE} \
   --runtime-config=extensions/v1beta1=true,extensions/v1beta1/networkpolicies=true \
   --v=2
 Restart=on-failure

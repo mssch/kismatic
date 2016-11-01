@@ -5,10 +5,6 @@
       path: "{{ kubernetes_lib_dir }}"
       state: directory
 
-  - name: copy tokens.csv to remote
-    template:
-      src: tokens.csv
-      dest: "{{ kubernetes_lib_dir }}/tokens.csv"
   - name: copy basicauth.csv to remote
     template:
       src: basicauth.csv

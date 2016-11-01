@@ -71,7 +71,6 @@ network_plugin_dir: /etc/cni/net.d
 kubernetes_lib_dir: /var/lib/kubernetes
 kubelet_lib_dir: /var/lib/kubelet
 # paths
-kubernetes_token_auth_path: "{{kubernetes_lib_dir}}/tokens.csv"
 kubernetes_basic_auth_path: "{{kubernetes_lib_dir}}/basicauth.csv"
 kubernetes_authorization_policy_path: "{{kubernetes_lib_dir}}/authorization-policy.json"
 kubernetes_kubeconfig_path: "{{kubelet_lib_dir}}/kubeconfig"
