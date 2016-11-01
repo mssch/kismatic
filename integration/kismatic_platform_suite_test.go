@@ -1,11 +1,7 @@
 package integration
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
-	"os/exec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +17,7 @@ func TestKismaticPlatform(t *testing.T) {
 var kisPath string
 var _ = BeforeSuite(func() {
 	var err error
-	kisPath, err = extractKismaticToTemp()
+	kisPath, err = ExtractKismaticToTemp()
 	if err != nil {
 		Fail("Failed to extract kismatic")
 	}
@@ -33,17 +29,3 @@ var _ = AfterSuite(func() {
 		os.RemoveAll(kisPath)
 	}
 })
-
-func extractKismaticToTemp() (string, error) {
-	tmpDir, err := ioutil.TempDir("", "kisint")
-	if err != nil {
-		log.Fatal("Error making temp dir: ", err)
-	}
-	By(fmt.Sprintf("Extracting Kismatic to temp directory %q", tmpDir))
-	cmd := exec.Command("tar", "-zxf", "../out/kismatic.tar.gz", "-C", tmpDir)
-	_, err = cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("error extracting kismatic to temp dir: %v", err)
-	}
-	return tmpDir, nil
-}

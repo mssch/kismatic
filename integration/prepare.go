@@ -47,8 +47,9 @@ var centos7Prep = nodePrep{
 	CommandsToInstallK8s:       []string{installKubernetesYum},
 }
 
-func InstallKismaticRPMs(nodes provisionedNodes, distro linuxDistro, sshUser, sshKey string) {
+func InstallKismaticRPMs(nodes provisionedNodes, distro linuxDistro, sshKey string) {
 	prep := getPrepForDistro(distro)
+	sshUser := nodes.master[0].SSHUser
 	By("Configuring package repository")
 	RunViaSSH(prep.CommandsToPrepRepo, sshUser, append(append(nodes.etcd, nodes.master...), nodes.worker...), 5*time.Minute)
 

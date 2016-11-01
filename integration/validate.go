@@ -11,7 +11,7 @@ import (
 )
 
 // ValidateKismaticMini runs validation against a mini kismatic cluster
-func ValidateKismaticMini(node AWSNodeDeets, user, sshKey string) PlanAWS {
+func ValidateKismaticMini(node NodeDeets, user, sshKey string) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
@@ -19,9 +19,9 @@ func ValidateKismaticMini(node AWSNodeDeets, user, sshKey string) PlanAWS {
 	log.Printf("Created single node for Kismatic Mini: %s (%s)", node.id, node.PublicIP)
 	By("Building a plan to set up an overlay network cluster on this hardware")
 	nodes := PlanAWS{
-		Etcd:                     []AWSNodeDeets{node},
-		Master:                   []AWSNodeDeets{node},
-		Worker:                   []AWSNodeDeets{node},
+		Etcd:                     []NodeDeets{node},
+		Master:                   []NodeDeets{node},
+		Worker:                   []NodeDeets{node},
 		MasterNodeFQDN:           node.Hostname,
 		MasterNodeShortName:      node.Hostname,
 		SSHUser:                  user,
@@ -48,7 +48,7 @@ func ValidateKismaticMini(node AWSNodeDeets, user, sshKey string) PlanAWS {
 	return nodes
 }
 
-func ValidateKismaticMiniDenyPkgInstallation(node AWSNodeDeets, sshUser, sshKey string) error {
+func ValidateKismaticMiniDenyPkgInstallation(node NodeDeets, sshUser, sshKey string) error {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
@@ -57,9 +57,9 @@ func ValidateKismaticMiniDenyPkgInstallation(node AWSNodeDeets, sshUser, sshKey 
 	By("Building a plan to set up an overlay network cluster on this hardware")
 	nodes := PlanAWS{
 		AllowPackageInstallation: false,
-		Etcd:                []AWSNodeDeets{node},
-		Master:              []AWSNodeDeets{node},
-		Worker:              []AWSNodeDeets{node},
+		Etcd:                []NodeDeets{node},
+		Master:              []NodeDeets{node},
+		Worker:              []NodeDeets{node},
 		MasterNodeFQDN:      node.Hostname,
 		MasterNodeShortName: node.Hostname,
 		SSHUser:             sshUser,

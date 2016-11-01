@@ -2,7 +2,9 @@ package integration
 
 import (
 	"bufio"
+	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -28,20 +30,35 @@ func GetSSHKeyFile() (string, error) {
 	return filepath.Join(dir, ".ssh", "kismatic-integration-testing.pem"), nil
 }
 
+func ExtractKismaticToTemp() (string, error) {
+	tmpDir, err := ioutil.TempDir("", "kisint")
+	if err != nil {
+		log.Fatal("Error making temp dir: ", err)
+	}
+	By(fmt.Sprintf("Extracting Kismatic to temp directory %q", tmpDir))
+	cmd := exec.Command("tar", "-zxf", "../out/kismatic.tar.gz", "-C", tmpDir)
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("error extracting kismatic to temp dir: %v", err)
+	}
+	return tmpDir, nil
+}
+
 type installOptions struct {
 	allowPackageInstallation bool
 }
 
-func installKismaticMini(node AWSNodeDeets, sshUser, sshKey string) error {
+func installKismaticMini(node NodeDeets, sshKey string) error {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
+	sshUser := node.SSHUser
 	nodes := PlanAWS{
-		Etcd:                     []AWSNodeDeets{node},
-		Master:                   []AWSNodeDeets{node},
-		Worker:                   []AWSNodeDeets{node},
+		Etcd:                     []NodeDeets{node},
+		Master:                   []NodeDeets{node},
+		Worker:                   []NodeDeets{node},
 		MasterNodeFQDN:           node.Hostname,
 		MasterNodeShortName:      node.Hostname,
 		SSHKeyFile:               sshKey,
@@ -72,12 +89,13 @@ func installKismaticMini(node AWSNodeDeets, sshUser, sshKey string) error {
 	return cmd.Run()
 }
 
-func installKismatic(nodes provisionedNodes, installOpts installOptions, sshUser, sshKey string) error {
+func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey string) error {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
 
 	By("Building a plan to set up an overlay network cluster on this hardware")
+	sshUser := nodes.master[0].SSHUser
 	plan := PlanAWS{
 		AllowPackageInstallation: installOpts.allowPackageInstallation,
 		Etcd:                nodes.etcd,
@@ -110,7 +128,7 @@ func installKismaticWithABadNode() {
 	FailIfError(err, "Couldn't parse template")
 
 	By("Faking infrastructure")
-	fakeNode := AWSNodeDeets{
+	fakeNode := NodeDeets{
 		id:       "FakeId",
 		PublicIP: "10.0.0.0",
 		Hostname: "FakeHostname",
@@ -120,9 +138,9 @@ func installKismaticWithABadNode() {
 	sshKey, err := GetSSHKeyFile()
 	FailIfError(err, "Error getting SSH Key file")
 	nodes := PlanAWS{
-		Etcd:                []AWSNodeDeets{fakeNode},
-		Master:              []AWSNodeDeets{fakeNode},
-		Worker:              []AWSNodeDeets{fakeNode},
+		Etcd:                []NodeDeets{fakeNode},
+		Master:              []NodeDeets{fakeNode},
+		Worker:              []NodeDeets{fakeNode},
 		MasterNodeFQDN:      "yep.nope",
 		MasterNodeShortName: "yep",
 		SSHUser:             "Billy Rubin",

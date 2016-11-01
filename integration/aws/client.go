@@ -27,6 +27,7 @@ type Node struct {
 	Hostname  string
 	PrivateIP string
 	PublicIP  string
+	SSHUser   string
 }
 
 // AMI is the Amazon Machine Image
@@ -170,6 +171,7 @@ func (c Client) GetNode(id string) (*Node, error) {
 		Hostname:  hostname,
 		PrivateIP: *instance.PrivateIpAddress,
 		PublicIP:  publicIP,
+		SSHUser:   defaultSSHUserForAMI(AMI(*instance.ImageId)),
 	}, nil
 }
 
@@ -187,4 +189,15 @@ func (c Client) DestroyNodes(nodeIDs []string) error {
 		return err
 	}
 	return nil
+}
+
+func defaultSSHUserForAMI(ami AMI) string {
+	switch ami {
+	case Ubuntu1604LTSEast:
+		return "ubuntu"
+	case CentOS7East:
+		return "centos"
+	default:
+		panic(fmt.Sprintf("unsupported AMI: %q", ami))
+	}
 }

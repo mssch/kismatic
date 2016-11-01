@@ -33,6 +33,7 @@ type Node struct {
 	Host        string
 	PublicIPv4  string
 	PrivateIPv4 string
+	SSHUser     string
 }
 
 // CreateNode creates a node in packet with the given hostname and OS
@@ -93,6 +94,7 @@ func (c Client) GetNode(deviceID string) (*Node, error) {
 		Host:        dev.Hostname,
 		PublicIPv4:  getPublicIPv4(dev),
 		PrivateIPv4: getPrivateIPv4(dev),
+		SSHUser:     "root",
 	}
 	return node, nil
 }

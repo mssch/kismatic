@@ -1,9 +1,9 @@
 package integration
 
 type PlanAWS struct {
-	Etcd                     []AWSNodeDeets
-	Master                   []AWSNodeDeets
-	Worker                   []AWSNodeDeets
+	Etcd                     []NodeDeets
+	Master                   []NodeDeets
+	Worker                   []NodeDeets
 	MasterNodeFQDN           string
 	MasterNodeShortName      string
 	SSHUser                  string

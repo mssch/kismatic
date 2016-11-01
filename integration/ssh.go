@@ -11,7 +11,7 @@ import (
 )
 
 // Run the given command(s) as the given user on all hosts via SSH within the given period
-func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Duration) bool {
+func RunViaSSH(cmds []string, user string, hosts []NodeDeets, period time.Duration) bool {
 	results := make(chan string, 10)
 	success := true
 	timeout := time.After(period)
@@ -72,7 +72,6 @@ func executeCmd(cmd, hostname string, config *ssh.ClientConfig) string {
 
 // BlockUntilSSHOpen waits until the node with the given IP is accessible via SSH.
 func BlockUntilSSHOpen(publicIP, sshUser, sshKey string) {
-	fmt.Println(publicIP, sshUser, sshKey)
 	for {
 		cmd := exec.Command("ssh")
 		cmd.Args = append(cmd.Args, "-i", sshKey)

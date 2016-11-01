@@ -3,9 +3,12 @@ package integration
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/apprenda/kismatic-platform/integration/aws"
+	"github.com/apprenda/kismatic-platform/integration/packet"
+	homedir "github.com/mitchellh/go-homedir"
 )
 
 const (
@@ -16,6 +19,7 @@ const (
 type infrastructureProvisioner interface {
 	ProvisionNodes(NodeCount, linuxDistro) (provisionedNodes, error)
 	TerminateNodes(provisionedNodes) error
+	SSHKey() string
 }
 
 type linuxDistro string
@@ -27,24 +31,25 @@ type NodeCount struct {
 }
 
 type provisionedNodes struct {
-	etcd   []AWSNodeDeets
-	master []AWSNodeDeets
-	worker []AWSNodeDeets
+	etcd   []NodeDeets
+	master []NodeDeets
+	worker []NodeDeets
 }
 
-func (p provisionedNodes) allNodes() []AWSNodeDeets {
-	n := []AWSNodeDeets{}
+func (p provisionedNodes) allNodes() []NodeDeets {
+	n := []NodeDeets{}
 	n = append(n, p.etcd...)
 	n = append(n, p.master...)
 	n = append(n, p.worker...)
 	return n
 }
 
-type AWSNodeDeets struct {
+type NodeDeets struct {
 	id        string
 	Hostname  string
 	PublicIP  string
 	PrivateIP string
+	SSHUser   string
 }
 
 func (nc NodeCount) Total() uint16 {
@@ -60,11 +65,20 @@ const (
 	AMICentos7UsEast    = "ami-6d1c2007"
 )
 
+type sshMachineProvisioner struct {
+	sshKey string
+}
+
+func (p sshMachineProvisioner) SSHKey() string {
+	return p.sshKey
+}
+
 type awsProvisioner struct {
+	sshMachineProvisioner
 	client aws.Client
 }
 
-func awsClientFromEnvironment() (infrastructureProvisioner, bool) {
+func AWSClientFromEnvironment() (infrastructureProvisioner, bool) {
 	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	if accessKeyID == "" || secretAccessKey == "" {
@@ -98,7 +112,13 @@ func awsClientFromEnvironment() (infrastructureProvisioner, bool) {
 	if overrideSecGroup != "" {
 		c.Config.SecurityGroupID = overrideSecGroup
 	}
-	return awsProvisioner{c}, true
+	p := awsProvisioner{client: c}
+	p.sshKey = os.Getenv("AWS_SSH_KEY_PATH")
+	if p.sshKey == "" {
+		dir, _ := homedir.Dir()
+		p.sshKey = filepath.Join(dir, ".ssh", "kismatic-integration-testing.pem")
+	}
+	return p, true
 }
 
 func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
@@ -118,21 +138,21 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 		if err != nil {
 			return provisioned, err
 		}
-		provisioned.etcd = append(provisioned.etcd, AWSNodeDeets{id: nodeID})
+		provisioned.etcd = append(provisioned.etcd, NodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Master; i++ {
 		nodeID, err := p.client.CreateNode(ami, aws.T2Micro)
 		if err != nil {
 			return provisioned, err
 		}
-		provisioned.master = append(provisioned.master, AWSNodeDeets{id: nodeID})
+		provisioned.master = append(provisioned.master, NodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Worker; i++ {
 		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
 		if err != nil {
 			return provisioned, err
 		}
-		provisioned.worker = append(provisioned.worker, AWSNodeDeets{id: nodeID})
+		provisioned.worker = append(provisioned.worker, NodeDeets{id: nodeID})
 	}
 	// Wait until all instances have their public IPs assigned
 	for i := range provisioned.etcd {
@@ -144,6 +164,7 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 		etcd.Hostname = node.Hostname
 		etcd.PrivateIP = node.PrivateIP
 		etcd.PublicIP = node.PublicIP
+		etcd.SSHUser = node.SSHUser
 	}
 	for i := range provisioned.master {
 		master := &provisioned.master[i]
@@ -154,6 +175,7 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 		master.Hostname = node.Hostname
 		master.PrivateIP = node.PrivateIP
 		master.PublicIP = node.PublicIP
+		master.SSHUser = node.SSHUser
 	}
 	for i := range provisioned.worker {
 		worker := &provisioned.worker[i]
@@ -164,6 +186,7 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 		worker.Hostname = node.Hostname
 		worker.PrivateIP = node.PrivateIP
 		worker.PublicIP = node.PublicIP
+		worker.SSHUser = node.SSHUser
 	}
 	return provisioned, nil
 }
@@ -192,10 +215,137 @@ func (p awsProvisioner) TerminateNodes(runningNodes provisionedNodes) error {
 	return p.client.DestroyNodes(nodeIDs)
 }
 
-func waitForSSH(provisionedNodes provisionedNodes, sshUser, sshKey string) error {
+type packetProvisioner struct {
+	sshMachineProvisioner
+	client packet.Client
+}
+
+func packetClientFromEnv() (infrastructureProvisioner, bool) {
+	token := os.Getenv("PACKET_AUTH_TOKEN")
+	projectID := os.Getenv("PACKET_PROJECT_ID")
+	if token == "" || projectID == "" {
+		return nil, false
+	}
+	p := packetProvisioner{
+		client: packet.Client{
+			Token:     token,
+			ProjectID: projectID,
+		},
+	}
+	p.sshKey = os.Getenv("PACKET_SSH_KEY_PATH")
+	if p.sshKey == "" {
+		dir, _ := homedir.Dir()
+		p.sshKey = filepath.Join(dir, ".ssh", "packet-kismatic-integration-testing.pem")
+	}
+	return p, true
+}
+
+func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
+	var packetDistro packet.OS
+	switch distro {
+	case Ubuntu1604LTS:
+		packetDistro = packet.Ubuntu1604LTS
+	case CentOS7:
+		packetDistro = packet.CentOS7
+	default:
+		panic(fmt.Sprintf("Used an unsupported distribution: %s", distro))
+	}
+	// Create all the nodes
+	nodes := provisionedNodes{}
+	for i := uint16(0); i < nodeCount.Etcd; i++ {
+		id, err := p.createNode(packetDistro, i)
+		if err != nil {
+			return nodes, err
+		}
+		nodes.etcd = append(nodes.etcd, NodeDeets{id: id})
+	}
+	for i := uint16(0); i < nodeCount.Master; i++ {
+		id, err := p.createNode(packetDistro, i)
+		if err != nil {
+			return nodes, err
+		}
+		nodes.master = append(nodes.master, NodeDeets{id: id})
+	}
+	for i := uint16(0); i < nodeCount.Worker; i++ {
+		id, err := p.createNode(packetDistro, i)
+		if err != nil {
+			return nodes, err
+		}
+		nodes.worker = append(nodes.worker, NodeDeets{id: id})
+	}
+	// Wait until all nodes are ready
+	err := p.updateNodeUntilPublicIPAvailable(nodes.etcd)
+	if err != nil {
+		return nodes, err
+	}
+	err = p.updateNodeUntilPublicIPAvailable(nodes.master)
+	if err != nil {
+		return nodes, err
+	}
+	err = p.updateNodeUntilPublicIPAvailable(nodes.worker)
+	if err != nil {
+		return nodes, err
+	}
+	return nodes, nil
+}
+
+func (p packetProvisioner) TerminateNodes(nodes provisionedNodes) error {
+	allNodes := append(nodes.etcd, nodes.master...)
+	allNodes = append(allNodes, nodes.worker...)
+	failedDeletes := []string{}
+	for _, n := range allNodes {
+		if err := p.client.DeleteNode(n.id); err != nil {
+			failedDeletes = append(failedDeletes, n.Hostname)
+		}
+	}
+	if len(failedDeletes) > 0 {
+		return fmt.Errorf("FAILED TO DELETE THE FOLLOWING NODES ON PACKET: %v", failedDeletes)
+	}
+	return nil
+}
+
+func (p packetProvisioner) createNode(distro packet.OS, count uint16) (string, error) {
+	hostname := fmt.Sprintf("kismatic-integration-%d-%d", time.Now().UnixNano(), count)
+	node, err := p.client.CreateNode(hostname, distro)
+	if err != nil {
+		return "", err
+	}
+	return node.ID, nil
+}
+
+func (p packetProvisioner) updateNodeUntilPublicIPAvailable(nodes []NodeDeets) error {
+	for i := range nodes {
+		node := &nodes[i]
+		nodeDeets, err := p.waitForPublicIP(node.id)
+		if err != nil {
+			return err
+		}
+		node.Hostname = nodeDeets.Host
+		node.PrivateIP = nodeDeets.PrivateIPv4
+		node.PublicIP = nodeDeets.PublicIPv4
+		node.SSHUser = nodeDeets.SSHUser
+	}
+	return nil
+}
+
+func (p packetProvisioner) waitForPublicIP(nodeID string) (*packet.Node, error) {
+	for {
+		fmt.Printf(".")
+		node, err := p.client.GetNode(nodeID)
+		if err != nil {
+			return nil, err
+		}
+		if node.PublicIPv4 != "" {
+			return node, nil
+		}
+		time.Sleep(1 * time.Minute)
+	}
+}
+
+func waitForSSH(provisionedNodes provisionedNodes, sshKey string) error {
 	nodes := provisionedNodes.allNodes()
 	for _, n := range nodes {
-		BlockUntilSSHOpen(n.PublicIP, sshUser, sshKey)
+		BlockUntilSSHOpen(n.PublicIP, n.SSHUser, sshKey)
 	}
 	return nil
 }
