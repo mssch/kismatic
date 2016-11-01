@@ -14,13 +14,13 @@ The machine the installer is run from should be available for future modificatio
 
 From an ssh session, type:
 
-`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest/kismatic.tar.gz | tar -zx`
+`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kismatic.tar.gz | tar -zx`
 
 ### To unpack from Darwin (Mac OSX)
 
 From a terminal window, type
 
-`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/kismatic-installer/latest-darwin/kismatic.tar.gz | tar -zx`
+`curl -L https://kismatic-installer.s3-accelerate.amazonaws.com/latest-darwin/kismatic.tar.gz | tar -zx`
 
 ## Generate A Plan File
 
