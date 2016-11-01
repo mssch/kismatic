@@ -8,3 +8,7 @@ import:
   version: ~1.2.0
 - package: github.com/fatih/color
   version: ~1.0.0
+- package: github.com/cpuguy83/go-md2man
+  version: ^1.0.6
+  subpackages:
+  - md2man

@@ -89,3 +89,7 @@ serial-integration-test: get-test-deps
 
 mine-marvel: dist get-test-deps
 	go run provision/main.go
+
+cli-docs:
+	mkdir cli-docs
+	go run cmd/kismatic/main.go
