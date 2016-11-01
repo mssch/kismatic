@@ -8,7 +8,6 @@ import (
 
 	"os/exec"
 
-	"github.com/apprenda/kismatic-platform/integration/aws"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -67,24 +66,24 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		}
 		Context("Targetting AWS infrastructure", func() {
 			Context("using a 1/1/1 layout with Ubuntu 16.04 LTS", func() {
-				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					WithInfrastructure(NodeCount{1, 1, 1}, Ubuntu1604LTS, awsClient, "ubuntu", func(nodes provisionedNodes, sshUser, sshKey string) {
+				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithInfrastructure(NodeCount{1, 1, 1}, Ubuntu1604LTS, provisioner, "ubuntu", func(nodes provisionedNodes, sshUser, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshUser, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 			})
 			Context("using a 1/1/1 layout with CentOS 7", func() {
-				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					WithInfrastructure(NodeCount{1, 1, 1}, CentOS7, awsClient, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
+				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithInfrastructure(NodeCount{1, 1, 1}, CentOS7, provisioner, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshUser, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 			})
 			Context("using a 3/2/3 layout with CentOS 7", func() {
-				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					WithInfrastructure(NodeCount{3, 2, 3}, CentOS7, awsClient, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
+				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithInfrastructure(NodeCount{3, 2, 3}, CentOS7, provisioner, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshUser, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -96,16 +95,16 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	Describe("Installing against a minikube layout", func() {
 		Context("Targetting AWS infrastructure", func() {
 			Context("Using CentOS 7", func() {
-				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					WithMiniInfrastructure(CentOS7, awsClient, "centos", func(node AWSNodeDeets, sshUser, sshKey string) {
+				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithMiniInfrastructure(CentOS7, provisioner, "centos", func(node AWSNodeDeets, sshUser, sshKey string) {
 						err := installKismaticMini(node, sshUser, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 			})
 			Context("Using Ubuntu 16.04 LTS", func() {
-				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					WithMiniInfrastructure(Ubuntu1604LTS, awsClient, "ubuntu", func(node AWSNodeDeets, sshUser, sshKey string) {
+				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithMiniInfrastructure(Ubuntu1604LTS, provisioner, "ubuntu", func(node AWSNodeDeets, sshUser, sshKey string) {
 						err := installKismaticMini(node, sshUser, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -120,8 +119,8 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		}
 		Context("Targetting AWS infrastructure", func() {
 			Context("Using a 1/1/1 layout with Ubuntu 16.04 LTS", func() {
-				ItOnAWS("Should result in a working cluster", func(awsClient *aws.Client) {
-					WithInfrastructure(NodeCount{1, 1, 1}, Ubuntu1604LTS, awsClient, "ubuntu", func(nodes provisionedNodes, sshUser, sshKey string) {
+				ItOnAWS("Should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithInfrastructure(NodeCount{1, 1, 1}, Ubuntu1604LTS, provisioner, "ubuntu", func(nodes provisionedNodes, sshUser, sshKey string) {
 						By("Installing the Kismatic RPMs")
 						InstallKismaticRPMs(nodes, Ubuntu1604LTS, sshUser, sshKey)
 						err := installKismatic(nodes, installOpts, sshUser, sshKey)
@@ -131,8 +130,8 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			})
 
 			Context("Using a 1/1/1 CentOS 7 layout", func() {
-				ItOnAWS("Should result in a working cluster", func(awsClient *aws.Client) {
-					WithInfrastructure(NodeCount{1, 1, 1}, CentOS7, awsClient, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
+				ItOnAWS("Should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithInfrastructure(NodeCount{1, 1, 1}, CentOS7, provisioner, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
 						By("Installing the Kismatic RPMs")
 						InstallKismaticRPMs(nodes, CentOS7, sshUser, sshKey)
 						err := installKismatic(nodes, installOpts, sshUser, sshKey)

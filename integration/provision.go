@@ -13,6 +13,11 @@ const (
 	CentOS7       = linuxDistro("centos7")
 )
 
+type infrastructureProvisioner interface {
+	ProvisionNodes(NodeCount, linuxDistro) (provisionedNodes, error)
+	TerminateNodes(provisionedNodes) error
+}
+
 type linuxDistro string
 
 type NodeCount struct {
@@ -55,7 +60,11 @@ const (
 	AMICentos7UsEast    = "ami-6d1c2007"
 )
 
-func awsClientFromEnvironment() (*aws.Client, bool) {
+type awsProvisioner struct {
+	client aws.Client
+}
+
+func awsClientFromEnvironment() (infrastructureProvisioner, bool) {
 	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	if accessKeyID == "" || secretAccessKey == "" {
@@ -89,10 +98,10 @@ func awsClientFromEnvironment() (*aws.Client, bool) {
 	if overrideSecGroup != "" {
 		c.Config.SecurityGroupID = overrideSecGroup
 	}
-	return &c, true
+	return awsProvisioner{c}, true
 }
 
-func provisionAWSNodes(client *aws.Client, nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
+func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
 	var ami aws.AMI
 	switch distro {
 	case Ubuntu1604LTS:
@@ -105,21 +114,21 @@ func provisionAWSNodes(client *aws.Client, nodeCount NodeCount, distro linuxDist
 	provisioned := provisionedNodes{}
 	var i uint16
 	for i = 0; i < nodeCount.Etcd; i++ {
-		nodeID, err := client.CreateNode(ami, aws.T2Micro)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Micro)
 		if err != nil {
 			return provisioned, err
 		}
 		provisioned.etcd = append(provisioned.etcd, AWSNodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Master; i++ {
-		nodeID, err := client.CreateNode(ami, aws.T2Micro)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Micro)
 		if err != nil {
 			return provisioned, err
 		}
 		provisioned.master = append(provisioned.master, AWSNodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Worker; i++ {
-		nodeID, err := client.CreateNode(ami, aws.T2Medium)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
 		if err != nil {
 			return provisioned, err
 		}
@@ -128,7 +137,7 @@ func provisionAWSNodes(client *aws.Client, nodeCount NodeCount, distro linuxDist
 	// Wait until all instances have their public IPs assigned
 	for i := range provisioned.etcd {
 		etcd := &provisioned.etcd[i]
-		node, err := waitForPublicIP(client, etcd.id)
+		node, err := p.waitForPublicIP(etcd.id)
 		if err != nil {
 			return provisioned, err
 		}
@@ -138,7 +147,7 @@ func provisionAWSNodes(client *aws.Client, nodeCount NodeCount, distro linuxDist
 	}
 	for i := range provisioned.master {
 		master := &provisioned.master[i]
-		node, err := waitForPublicIP(client, master.id)
+		node, err := p.waitForPublicIP(master.id)
 		if err != nil {
 			return provisioned, err
 		}
@@ -148,7 +157,7 @@ func provisionAWSNodes(client *aws.Client, nodeCount NodeCount, distro linuxDist
 	}
 	for i := range provisioned.worker {
 		worker := &provisioned.worker[i]
-		node, err := waitForPublicIP(client, worker.id)
+		node, err := p.waitForPublicIP(worker.id)
 		if err != nil {
 			return provisioned, err
 		}
@@ -159,10 +168,10 @@ func provisionAWSNodes(client *aws.Client, nodeCount NodeCount, distro linuxDist
 	return provisioned, nil
 }
 
-func waitForPublicIP(client *aws.Client, nodeID string) (*aws.Node, error) {
+func (p awsProvisioner) waitForPublicIP(nodeID string) (*aws.Node, error) {
 	for {
 		fmt.Print(".")
-		node, err := client.GetNode(nodeID)
+		node, err := p.client.GetNode(nodeID)
 		if err != nil {
 			return nil, err
 		}
@@ -174,13 +183,13 @@ func waitForPublicIP(client *aws.Client, nodeID string) (*aws.Node, error) {
 	}
 }
 
-func terminateNodes(client *aws.Client, runningNodes provisionedNodes) error {
+func (p awsProvisioner) TerminateNodes(runningNodes provisionedNodes) error {
 	nodes := runningNodes.allNodes()
 	nodeIDs := []string{}
 	for _, n := range nodes {
 		nodeIDs = append(nodeIDs, n.id)
 	}
-	return client.DestroyNodes(nodeIDs)
+	return p.client.DestroyNodes(nodeIDs)
 }
 
 func waitForSSH(provisionedNodes provisionedNodes, sshUser, sshKey string) error {

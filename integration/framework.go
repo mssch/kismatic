@@ -1,13 +1,12 @@
 package integration
 
 import (
-	"github.com/apprenda/kismatic-platform/integration/aws"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 // ItOnAWS runs a spec if the AWS details have been provided
-func ItOnAWS(description string, f func(*aws.Client)) {
+func ItOnAWS(description string, f func(infrastructureProvisioner)) {
 	It(description, func() {
 		awsClient, ok := awsClientFromEnvironment()
 		if !ok {
@@ -20,10 +19,10 @@ func ItOnAWS(description string, f func(*aws.Client)) {
 type infraDependentTest func(nodes provisionedNodes, sshUser, sshKey string)
 
 // WithInfrastructure runs the spec with the requested infrastructure
-func WithInfrastructure(nodeCount NodeCount, distro linuxDistro, client *aws.Client, sshUser string, f infraDependentTest) {
+func WithInfrastructure(nodeCount NodeCount, distro linuxDistro, provisioner infrastructureProvisioner, sshUser string, f infraDependentTest) {
 	By("Provisioning nodes")
-	nodes, err := provisionAWSNodes(client, nodeCount, distro)
-	defer terminateNodes(client, nodes)
+	nodes, err := provisioner.ProvisionNodes(nodeCount, distro)
+	defer provisioner.TerminateNodes(nodes)
 	Expect(err).ToNot(HaveOccurred())
 
 	By("Waiting until nodes are SSH-accessible")
@@ -38,10 +37,10 @@ func WithInfrastructure(nodeCount NodeCount, distro linuxDistro, client *aws.Cli
 type miniInfraDependentTest func(node AWSNodeDeets, sshUser, sshKey string)
 
 // WithMiniInfrastructure runs the spec with a Minikube-like infrastructure setup.
-func WithMiniInfrastructure(distro linuxDistro, client *aws.Client, sshUser string, f miniInfraDependentTest) {
+func WithMiniInfrastructure(distro linuxDistro, provisioner infrastructureProvisioner, sshUser string, f miniInfraDependentTest) {
 	By("Provisioning nodes")
-	nodes, err := provisionAWSNodes(client, NodeCount{Worker: 1}, distro)
-	defer terminateNodes(client, nodes)
+	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro)
+	defer provisioner.TerminateNodes(nodes)
 	Expect(err).ToNot(HaveOccurred())
 
 	By("Waiting until nodes are SSH-accessible")
