@@ -14,6 +14,13 @@ import (
 const (
 	Ubuntu1604LTS = linuxDistro("ubuntu1604LTS")
 	CentOS7       = linuxDistro("centos7")
+
+	AWSTargetRegion     = "us-east-1"
+	AWSSubnetID         = "subnet-25e13d08"
+	AWSKeyName          = "kismatic-integration-testing"
+	AWSSecurityGroupID  = "sg-d1dc4dab"
+	AMIUbuntu1604USEAST = "ami-29f96d3e"
+	AMICentos7UsEast    = "ami-6d1c2007"
 )
 
 type infrastructureProvisioner interface {
@@ -28,6 +35,10 @@ type NodeCount struct {
 	Etcd   uint16
 	Master uint16
 	Worker uint16
+}
+
+func (nc NodeCount) Total() uint16 {
+	return nc.Etcd + nc.Master + nc.Worker
 }
 
 type provisionedNodes struct {
@@ -51,19 +62,6 @@ type NodeDeets struct {
 	PrivateIP string
 	SSHUser   string
 }
-
-func (nc NodeCount) Total() uint16 {
-	return nc.Etcd + nc.Master + nc.Worker
-}
-
-const (
-	AWSTargetRegion     = "us-east-1"
-	AWSSubnetID         = "subnet-25e13d08"
-	AWSKeyName          = "kismatic-integration-testing"
-	AWSSecurityGroupID  = "sg-d1dc4dab"
-	AMIUbuntu1604USEAST = "ami-29f96d3e"
-	AMICentos7UsEast    = "ami-6d1c2007"
-)
 
 type sshMachineProvisioner struct {
 	sshKey string
