@@ -21,3 +21,11 @@
   # verify that Docker installed succesfully and is running
   - name: verify docker is installed
     command: docker ps
+
+  - name: load local docker images
+    command: docker load -i /opt/node-images/{{ item }}.tar
+    with_items:
+      - calico
+      - nginx
+      - busybox
+      - pause

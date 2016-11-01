@@ -113,9 +113,7 @@ docker_registry_address: "{{ hostvars[groups['master'][0]].ansible_host }}"
 docker_registry_port: 443
 
 calico_docker_version: v0.22.0
-calico_node_orig_img: calico/node:{{calico_docker_version}}
-calico_node_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/calico/node:{{calico_docker_version}}"
-calico_node_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ calico_node_priv_img }}{% else %}{{ calico_node_orig_img }}{% endif %}'
+calico_node_img: calico/node:{{calico_docker_version}}
 
 calico_kube_policy_controller_orig_img: calico/kube-policy-controller
 calico_kube_policy_controller_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/calico/kube-policy-controller"
@@ -137,16 +135,18 @@ kubernetes_dashboard_orig_img: gcr.io/google_containers/kubernetes-dashboard-amd
 kubernetes_dashboard_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/kubernetes-dashboard-amd64:v1.4.0"
 kubernetes_dashboard_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ kubernetes_dashboard_priv_img }}{% else %}{{ kubernetes_dashboard_orig_img }}{% endif %}'
 
-pause_orig_img: gcr.io/google_containers/pause-amd64:3.0
-pause_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/pause-amd64:3.0"
-pause_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ pause_priv_img }}{% else %}{{ pause_orig_img }}{% endif %}'
-#===============================================================================
+pause_img: gcr.io/google_containers/pause-amd64:3.0
 # kismatic packages
 allow_package_installation: true
 yum_repository_url: https://kismatic-rpm.s3-accelerate.amazonaws.com/
 yum_gpg_key_url: https://kismatic-rpm.s3-accelerate.amazonaws.com/public.key
 deb_repository_url: https://kismatic-deb.s3-accelerate.amazonaws.com/
 deb_gpg_key_url: https://kismatic-deb.s3-accelerate.amazonaws.com/public.key
+# Uncomment below to use test repo
+# yum_repository_url: https://s3.amazonaws.com/kismatic-repo-test
+# yum_gpg_key_url: https://s3.amazonaws.com/kismatic-repo-test/public.key
+# deb_repository_url: https://s3.amazonaws.com/kismatic-repo-test
+# deb_gpg_key_url: https://s3.amazonaws.com/kismatic-repo-test/public.key
 # Uncomment below to use local repo
 # yum_repository_url: http://192.168.200.80/
 # yum_gpg_key_url: http://192.168.200.80/public.key
