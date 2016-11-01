@@ -14,7 +14,7 @@ kismatic install apply
 ### Options
 
 ```
-      --generated-assets-dir string   path to the directory where assets generated during the installation process will be stored (default "generated/")
+      --generated-assets-dir string   path to the directory where assets generated during the installation process will be stored (default "generated")
   -o, --output string                 installation output format (options "simple"|"raw") (default "simple")
       --restart-services              force restart cluster services (Use with care)
       --skip-preflight                skip pre-flight checks, useful when rerunning kismatic

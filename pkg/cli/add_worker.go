@@ -39,7 +39,7 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 			return doAddWorker(out, installOpts.planFilename, opts, newWorker)
 		},
 	}
-	cmd.Flags().StringVar(&opts.GeneratedAssetsDirectory, "generated-assets-dir", "generated/", "path to the directory where assets generated during the installation process will be stored")
+	cmd.Flags().StringVar(&opts.GeneratedAssetsDirectory, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
 	cmd.Flags().BoolVar(&opts.RestartServices, "restart-services", false, "force restart clusters services (Use with care)")
 	cmd.Flags().BoolVar(&opts.Verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&opts.OutputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
