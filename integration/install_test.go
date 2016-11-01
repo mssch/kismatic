@@ -52,7 +52,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		})
 	})
 	Describe("Calling installer with a plan targeting bad infrastructure", func() {
-		Context("Using a 1/1/1 Ubtunu 16.04 layout pointing to bad ip addresses", func() {
+		Context("Using a 1/1/1 Ubuntu 16.04 layout pointing to bad ip addresses", func() {
 			It("should bomb validate and apply", func() {
 				if !completesInTime(installKismaticWithABadNode, 30*time.Second) {
 					Fail("It shouldn't take 30 seconds for Kismatic to fail with bad nodes.")
@@ -62,141 +62,84 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Installing with package installation enabled", func() {
+		installOpts := installOptions{
+			allowPackageInstallation: true,
+		}
 		Context("Targetting AWS infrastructure", func() {
-			Context("Using a 1/1/1 Ubuntu 16.04 layout", func() {
+			Context("using a 1/1/1 layout with Ubuntu 16.04 LTS", func() {
 				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					installKismaticPkgInstallEnabled(awsClient, NodeCount{1, 1, 1}, Ubuntu1604LTS, "ubuntu")
+					WithInfrastructure(NodeCount{1, 1, 1}, Ubuntu1604LTS, awsClient, "ubuntu", func(nodes provisionedNodes, sshUser, sshKey string) {
+						err := installKismatic(nodes, installOpts, sshUser, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
 				})
 			})
-
-			Context("Using a 1/1/1 CentOS 7 layout", func() {
+			Context("using a 1/1/1 layout with CentOS 7", func() {
 				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					installKismaticPkgInstallEnabled(awsClient, NodeCount{1, 1, 1}, CentOS7, "centos")
+					WithInfrastructure(NodeCount{1, 1, 1}, CentOS7, awsClient, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
+						err := installKismatic(nodes, installOpts, sshUser, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
 				})
 			})
-
-			Context("Using a 3/2/3 CentOS 7 layout", func() {
+			Context("using a 3/2/3 layout with CentOS 7", func() {
 				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-					installKismaticPkgInstallEnabled(awsClient, NodeCount{3, 2, 3}, CentOS7, "centos")
+					WithInfrastructure(NodeCount{3, 2, 3}, CentOS7, awsClient, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
+						err := installKismatic(nodes, installOpts, sshUser, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
 				})
 			})
 		})
 	})
 
 	Describe("Installing against a minikube layout", func() {
-		Context("Using CentOS 7", func() {
-			ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-				By("Provisioning nodes")
-				nodes, err := provisionAWSNodes(awsClient, NodeCount{Worker: 1}, CentOS7)
-				defer terminateNodes(awsClient, nodes)
-				Expect(err).ToNot(HaveOccurred())
-
-				By("Waiting until nodes are SSH-accessible")
-				sshUser := "centos"
-				sshKey, err := GetSSHKeyFile()
-				Expect(err).ToNot(HaveOccurred())
-				err = waitForSSH(nodes, sshUser, sshKey)
-				Expect(err).ToNot(HaveOccurred())
-
-				theNode := nodes.worker[0]
-				err = installKismaticMini(theNode, sshUser, sshKey)
-				Expect(err).ToNot(HaveOccurred())
+		Context("Targetting AWS infrastructure", func() {
+			Context("Using CentOS 7", func() {
+				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
+					WithMiniInfrastructure(CentOS7, awsClient, "centos", func(node AWSNodeDeets, sshUser, sshKey string) {
+						err := installKismaticMini(node, sshUser, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
 			})
-		})
-		Context("Using Ubuntu 16.04", func() {
-			ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
-				By("Provisioning nodes")
-				nodes, err := provisionAWSNodes(awsClient, NodeCount{Worker: 1}, Ubuntu1604LTS)
-				defer terminateNodes(awsClient, nodes)
-				Expect(err).ToNot(HaveOccurred())
-
-				By("Waiting until nodes are SSH-accessible")
-				sshUser := "ubuntu"
-				sshKey, err := GetSSHKeyFile()
-				Expect(err).ToNot(HaveOccurred())
-				err = waitForSSH(nodes, sshUser, sshKey)
-				Expect(err).ToNot(HaveOccurred())
-
-				theNode := nodes.worker[0]
-				err = installKismaticMini(theNode, sshUser, sshKey)
-				Expect(err).ToNot(HaveOccurred())
+			Context("Using Ubuntu 16.04 LTS", func() {
+				ItOnAWS("should result in a working cluster", func(awsClient *aws.Client) {
+					WithMiniInfrastructure(Ubuntu1604LTS, awsClient, "ubuntu", func(node AWSNodeDeets, sshUser, sshKey string) {
+						err := installKismaticMini(node, sshUser, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
 			})
 		})
 	})
 
 	Describe("Installing with package installation disabled", func() {
+		installOpts := installOptions{
+			allowPackageInstallation: false,
+		}
 		Context("Targetting AWS infrastructure", func() {
-			Context("Using a 1/1/1 Ubuntu 16.04 layout", func() {
+			Context("Using a 1/1/1 layout with Ubuntu 16.04 LTS", func() {
 				ItOnAWS("Should result in a working cluster", func(awsClient *aws.Client) {
-					By("Provisioning nodes")
-					distro := Ubuntu1604LTS
-					nodes, err := provisionAWSNodes(awsClient, NodeCount{1, 1, 1}, distro)
-					defer terminateNodes(awsClient, nodes)
-					Expect(err).ToNot(HaveOccurred())
-
-					By("Waiting until nodes are SSH-accessible")
-					sshUser := "ubuntu"
-					sshKey, err := GetSSHKeyFile()
-					Expect(err).ToNot(HaveOccurred())
-					err = waitForSSH(nodes, sshUser, sshKey)
-					Expect(err).ToNot(HaveOccurred())
-
-					By("Installing the Kismatic RPMs")
-					InstallKismaticRPMs(nodes, distro, sshUser, sshKey)
-
-					installOpts := installOptions{
-						allowPackageInstallation: false,
-					}
-					err = installKismatic(nodes, installOpts, sshUser, sshKey)
-					Expect(err).ToNot(HaveOccurred())
+					WithInfrastructure(NodeCount{1, 1, 1}, Ubuntu1604LTS, awsClient, "ubuntu", func(nodes provisionedNodes, sshUser, sshKey string) {
+						By("Installing the Kismatic RPMs")
+						InstallKismaticRPMs(nodes, Ubuntu1604LTS, sshUser, sshKey)
+						err := installKismatic(nodes, installOpts, sshUser, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
 				})
 			})
 
 			Context("Using a 1/1/1 CentOS 7 layout", func() {
 				ItOnAWS("Should result in a working cluster", func(awsClient *aws.Client) {
-					By("Provisioning nodes")
-					distro := CentOS7
-					nodes, err := provisionAWSNodes(awsClient, NodeCount{1, 1, 1}, distro)
-					defer terminateNodes(awsClient, nodes)
-					Expect(err).ToNot(HaveOccurred())
-
-					By("Waiting until nodes are SSH-accessible")
-					sshUser := "centos"
-					sshKey, err := GetSSHKeyFile()
-					Expect(err).ToNot(HaveOccurred())
-					err = waitForSSH(nodes, sshUser, sshKey)
-					Expect(err).ToNot(HaveOccurred())
-
-					By("Installing the Kismatic RPMs")
-					InstallKismaticRPMs(nodes, distro, sshUser, sshKey)
-
-					installOpts := installOptions{
-						allowPackageInstallation: false,
-					}
-					err = installKismatic(nodes, installOpts, sshUser, sshKey)
-					Expect(err).ToNot(HaveOccurred())
+					WithInfrastructure(NodeCount{1, 1, 1}, CentOS7, awsClient, "centos", func(nodes provisionedNodes, sshUser, sshKey string) {
+						By("Installing the Kismatic RPMs")
+						InstallKismaticRPMs(nodes, CentOS7, sshUser, sshKey)
+						err := installKismatic(nodes, installOpts, sshUser, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
 				})
 			})
 		})
 	})
 })
-
-func installKismaticPkgInstallEnabled(awsClient *aws.Client, nodeCount NodeCount, distro linuxDistro, sshUser string) {
-	By("Provisioning nodes")
-	nodes, err := provisionAWSNodes(awsClient, nodeCount, distro)
-	defer terminateNodes(awsClient, nodes)
-	Expect(err).ToNot(HaveOccurred())
-
-	By("Waiting until nodes are SSH-accessible")
-	sshKey, err := GetSSHKeyFile()
-	Expect(err).ToNot(HaveOccurred())
-	err = waitForSSH(nodes, sshUser, sshKey)
-	Expect(err).ToNot(HaveOccurred())
-
-	By("Running installation against infrastructure")
-	installOpts := installOptions{
-		allowPackageInstallation: true,
-	}
-	err = installKismatic(nodes, installOpts, sshUser, sshKey)
-	Expect(err).ToNot(HaveOccurred())
-}
