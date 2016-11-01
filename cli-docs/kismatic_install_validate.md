@@ -14,7 +14,7 @@ kismatic install validate
 ### Options
 
 ```
-  -o, --output string    installation output format. Supported options: simple|raw (default "simple")
+  -o, --output string    installation output format (options simple|raw) (default "simple")
       --skip-preflight   skip pre-flight checks
       --verbose          enable verbose logging from the installation
 ```

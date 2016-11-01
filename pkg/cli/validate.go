@@ -34,7 +34,7 @@ func NewCmdValidate(out io.Writer, installOpts *installOpts) *cobra.Command {
 		},
 	}
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
-	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options simple|raw)")
 	cmd.Flags().BoolVar(&opts.skipPreFlight, "skip-preflight", false, "skip pre-flight checks")
 	return cmd
 }

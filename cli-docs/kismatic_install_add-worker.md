@@ -14,10 +14,10 @@ kismatic install add-worker WORKER_NAME WORKER_IP [WORKER_INTERNAL_IP]
 ### Options
 
 ```
-      --generated-assets-dir string   path to the directory where assets generated during the installation process are to be stored (default "generated")
-  -o, --output string                 installation output format. Supported options: simple|raw (default "simple")
+      --generated-assets-dir string   path to the directory where assets generated during the installation process will be stored (default "generated/")
+  -o, --output string                 installation output format (options "simple"|"raw") (default "simple")
       --restart-services              force restart clusters services (Use with care)
-      --skip-preflight                skip pre-flight checks
+      --skip-preflight                skip pre-flight checks, useful when rerunning kismatic
       --verbose                       enable verbose logging from the installation
 ```
 
