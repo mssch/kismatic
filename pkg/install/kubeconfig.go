@@ -17,7 +17,6 @@ type ConfigOptions struct {
 	Cluster string
 	User    string
 	Context string
-	Token   string
 	Cert    string
 	Key     string
 }
@@ -39,7 +38,6 @@ preferences: {}
 users:
 - name: {{.User}}
   user:
-    token: {{.Token}}
     client-certificate-data: {{.Cert}}
     client-key-data: {{.Key}}
 `
@@ -47,7 +45,6 @@ users:
 // GenerateKubeconfig generate a kubeconfig file for a specific user
 func GenerateKubeconfig(p *Plan, generatedAssetsDir string) error {
 	user := "admin"
-	token := p.Cluster.AdminPassword
 	server := "https://" + p.Master.LoadBalancedFQDN + ":6443"
 	cluster := p.Cluster.Name
 	context := p.Cluster.Name + "-" + user
@@ -75,7 +72,7 @@ func GenerateKubeconfig(p *Plan, generatedAssetsDir string) error {
 	if err != nil {
 		return fmt.Errorf("error reading config template: %v", err)
 	}
-	configOptions := ConfigOptions{caEncoded, server, cluster, user, context, token, certEncoded, keyEncoded}
+	configOptions := ConfigOptions{caEncoded, server, cluster, user, context, certEncoded, keyEncoded}
 	var kubeconfig bytes.Buffer
 	err = tmpl.Execute(&kubeconfig, configOptions)
 	if err != nil {
