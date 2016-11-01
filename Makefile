@@ -93,4 +93,4 @@ mine-marvel: dist get-test-deps
 cli-docs:
 	mkdir cli-docs
 	go run cmd/kismatic/main.go
-	mv cli-docs/kismatic.md cli-docs/README.md
+	cp cli-docs/kismatic.md cli-docs/README.md
