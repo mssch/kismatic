@@ -25,9 +25,9 @@ The Kismatic tools include:
 | Etcd (for Kubernetes) | 3.0.10 |
 | Etcd (for Calico) | 2.37 |
 
-[Download latest install tarball (OSX)](https://s3.amazonaws.com/kismatic-installer/latest-darwin/kismatic.tar.gz)
+[Download latest install tarball (OSX)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest-darwin/kismatic.tar.gz)
 
-[Download latest install tarball (Linux)](https://s3.amazonaws.com/kismatic-installer/latest/kismatic.tar.gz)
+[Download latest install tarball (Linux)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kismatic.tar.gz)
 
 # Kismatic Documentation
 
