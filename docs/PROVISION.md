@@ -112,8 +112,8 @@ If you are building a large cluster or one that won't have access to these repos
     <td>Kismatic package of Docker 1.11.2</td>
     <td>hosting containers</td>
     <td></td>
-    <td>yes*</td>
-    <td>yes*</td>
+    <td>yes</td>
+    <td>yes</td>
   </tr>
   <tr>
     <td>Kismatic package of Calico 0.22.0</td>
