@@ -72,21 +72,29 @@ func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, 
 	By("Prepping nodes for the test")
 	prep := getPrepForDistro(distro)
 	prepNode := []NodeDeets{theNode}
-	runViaSSH(prep.CommandsToPrepRepo, sshUser, prepNode, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToPrepRepo, prepNode, sshKey, 5*time.Minute)
+	FailIfError(err, "Failed to prep repo on the node")
+
 	By("Installing etcd on the node")
-	runViaSSH(prep.CommandsToInstallEtcd, sshUser, prepNode, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallEtcd, prepNode, sshKey, 5*time.Minute)
+	FailIfError(err, "Failed to install etcd on the node")
+
 	if err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey); err == nil {
 		Fail("Missing dependencies, but still passed")
 	}
 
 	By("Installing Docker")
-	runViaSSH(prep.CommandsToInstallDocker, sshUser, prepNode, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallDocker, prepNode, sshKey, 5*time.Minute)
+	FailIfError(err, "failed to install docker over SSH")
+
 	if err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey); err == nil {
 		Fail("Missing dependencies, but still passed")
 	}
 
 	By("Installing Master")
-	runViaSSH(prep.CommandsToInstallK8sMaster, sshUser, prepNode, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8sMaster, prepNode, sshKey, 5*time.Minute)
+	FailIfError(err, "Failed to install master on node via SSH")
+
 	err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey)
 	Expect(err).To(BeNil())
 }

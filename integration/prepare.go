@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -55,22 +54,26 @@ var centos7Prep = nodePrep{
 
 func InstallKismaticRPMs(nodes provisionedNodes, distro linuxDistro, sshKey string) {
 	prep := getPrepForDistro(distro)
-	sshUser := nodes.master[0].SSHUser
 	By("Configuring package repository")
-	runViaSSH(prep.CommandsToPrepRepo, sshUser, append(append(nodes.etcd, nodes.master...), nodes.worker...), 5*time.Minute)
+	err := runViaSSH(prep.CommandsToPrepRepo, append(append(nodes.etcd, nodes.master...), nodes.worker...), sshKey, 5*time.Minute)
+	FailIfError(err, "failed to configure package repository over SSH")
 
 	By("Installing Etcd")
-	runViaSSH(prep.CommandsToInstallEtcd, sshUser, nodes.etcd, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallEtcd, nodes.etcd, sshKey, 5*time.Minute)
+	FailIfError(err, "failed to install Etcd over SSH")
 
 	By("Installing Docker")
 	dockerNodes := append(nodes.master, nodes.worker...)
-	runViaSSH(prep.CommandsToInstallDocker, sshUser, dockerNodes, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallDocker, dockerNodes, sshKey, 5*time.Minute)
+	FailIfError(err, "failed to install docker over SSH")
 
 	By("Installing Master:")
-	runViaSSH(prep.CommandsToInstallK8sMaster, sshUser, nodes.master, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8sMaster, nodes.master, sshKey, 5*time.Minute)
+	FailIfError(err, "failed to install the master over SSH")
 
 	By("Installing Worker:")
-	runViaSSH(prep.CommandsToInstallK8s, sshUser, nodes.worker, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8s, nodes.worker, sshKey, 5*time.Minute)
+	FailIfError(err, "failed to install the worker over SSH")
 }
 
 func getPrepForDistro(distro linuxDistro) nodePrep {
@@ -91,10 +94,8 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 		"sudo systemctl start docker",
 		"mkdir ~/certs",
 	}
-	ok := runViaSSH(installDockerCmds, node.SSHUser, []NodeDeets{node}, 10*time.Minute)
-	if !ok {
-		return "", errors.New("Failed to install Docker on the node")
-	}
+	err := runViaSSH(installDockerCmds, []NodeDeets{node}, sshKey, 10*time.Minute)
+	FailIfError(err, "Failed to install docker over SSH")
 	// Generate CA
 	subject := tls.Subject{
 		Organization:       "someOrg",
@@ -150,9 +151,8 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 	startDockerRegistryCmd := []string{fmt.Sprintf("sudo docker run -d -p %d:5000 --restart=always ", listeningPort) +
 		"--name registry -v ~/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker.pem " +
 		"-e REGISTRY_HTTP_TLS_KEY=/certs/docker-key.pem registry"}
-	if ok := runViaSSH(startDockerRegistryCmd, node.SSHUser, []NodeDeets{node}, 1*time.Minute); !ok {
-		return "", fmt.Errorf("failed to start docker registry")
-	}
+	err = runViaSSH(startDockerRegistryCmd, []NodeDeets{node}, sshKey, 1*time.Minute)
+	FailIfError(err, "Failed to start docker registry over SSH")
 
 	// Need the full path, otherwise ansible looks for it in the wrong place
 	pwd, _ := os.Getwd()
