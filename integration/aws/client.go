@@ -64,7 +64,7 @@ func (c *Client) getAPIClient() (*ec2.EC2, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Error with credentials provided: %v", err)
 		}
-		config := aws.NewConfig().WithRegion(c.Config.Region).WithCredentials(creds)
+		config := aws.NewConfig().WithRegion(c.Config.Region).WithCredentials(creds).WithMaxRetries(10)
 		c.ec2Client = ec2.New(session.New(config))
 	}
 	return c.ec2Client, nil
