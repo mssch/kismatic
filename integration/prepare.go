@@ -68,7 +68,7 @@ func InstallKismaticRPMs(nodes provisionedNodes, distro linuxDistro, sshKey stri
 	FailIfError(err, "failed to install docker over SSH")
 
 	By("Installing Master:")
-	err = runViaSSH(prep.CommandsToInstallK8sMaster, nodes.master, sshKey, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8sMaster, nodes.master, sshKey, 7*time.Minute)
 	FailIfError(err, "failed to install the master over SSH")
 
 	By("Installing Worker:")
@@ -145,8 +145,10 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 		return "", fmt.Errorf("error writing private key to file: %v", err)
 	}
 
-	copyFileToRemote("docker.pem", "~/certs/docker.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
-	copyFileToRemote("docker-key.pem", "~/certs/docker-key.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
+	err = copyFileToRemote("docker.pem", "~/certs/docker.pem", node, sshKey, 1*time.Minute)
+	FailIfError(err, "failed to copy docker.pem file")
+	err = copyFileToRemote("docker-key.pem", "~/certs/docker-key.pem", node, sshKey, 1*time.Minute)
+	FailIfError(err, "failed to copy docker-key.pem")
 
 	startDockerRegistryCmd := []string{fmt.Sprintf("sudo docker run -d -p %d:5000 --restart=always ", listeningPort) +
 		"--name registry -v ~/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker.pem " +
