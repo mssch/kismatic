@@ -11,7 +11,7 @@ import (
 )
 
 // Run the given command(s) as the given user on all hosts via SSH within the given period
-func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Duration) bool {
+func RunViaSSH(cmds []string, user string, hosts []NodeDeets, period time.Duration) bool {
 	results := make(chan string, 10)
 	success := true
 	timeout := time.After(period)
@@ -28,7 +28,7 @@ func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Dur
 			for _, cmd := range cmds {
 				results <- executeCmd(cmd, hostname, config)
 			}
-		}(host.Publicip)
+		}(host.PublicIP)
 	}
 
 	for i := 0; i < len(hosts)*len(cmds); i++ {
@@ -44,7 +44,7 @@ func RunViaSSH(cmds []string, user string, hosts []AWSNodeDeets, period time.Dur
 	return success
 }
 
-func CopyFileToRemote(file string, destFile string, user string, hosts []AWSNodeDeets, period time.Duration) bool {
+func CopyFileToRemote(file string, destFile string, user string, hosts []NodeDeets, period time.Duration) bool {
 	results := make(chan string, 10)
 	success := true
 	timeout := time.After(period)
@@ -59,7 +59,7 @@ func CopyFileToRemote(file string, destFile string, user string, hosts []AWSNode
 	for _, host := range hosts {
 		go func(hostname string) {
 			results <- scpFile(file, destFile, hostname, config)
-		}(host.Publicip)
+		}(host.PublicIP)
 	}
 
 	for i := 0; i < len(hosts); i++ {
@@ -98,6 +98,25 @@ func executeCmd(cmd, hostname string, config *ssh.ClientConfig) string {
 	verText := string(verbytes)
 
 	return hostname + ": " + verText
+}
+
+// BlockUntilSSHOpen waits until the node with the given IP is accessible via SSH.
+func BlockUntilSSHOpen(publicIP, sshUser, sshKey string) {
+	for {
+		cmd := exec.Command("ssh")
+		cmd.Args = append(cmd.Args, "-i", sshKey)
+		cmd.Args = append(cmd.Args, "-o", "ConnectTimeout=5")
+		cmd.Args = append(cmd.Args, "-o", "BatchMode=yes")
+		cmd.Args = append(cmd.Args, "-o", "StrictHostKeyChecking=no")
+		cmd.Args = append(cmd.Args, fmt.Sprintf("%s@%s", sshUser, publicIP), "exit") // just call exit if we are able to connect
+		if err := cmd.Run(); err == nil {
+			// command succeeded
+			fmt.Println()
+			return
+		}
+		fmt.Printf("?")
+		time.Sleep(3 * time.Second)
+	}
 }
 
 func scpFile(filePath string, destFilePath string, hostname string, config *ssh.ClientConfig) string {

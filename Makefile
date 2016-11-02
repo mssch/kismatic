@@ -67,9 +67,6 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	mv kismatic.tar.gz out
 
 get-test-deps:
-ifndef AWS_SECRET_ACCESS_KEY
-	$(error Must export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to run integration tests)
-endif
 	go get github.com/onsi/ginkgo/ginkgo
 	go get github.com/onsi/gomega
 	go get github.com/jmcvetta/guid
@@ -80,6 +77,7 @@ endif
 	go get golang.org/x/crypto/ssh
 	go get github.com/cloudflare/cfssl/csr
 	go get github.com/fatih/color
+	go get github.com/packethost/packngo
 
 just-integration-test: get-test-deps
 	ginkgo -p -v integration
