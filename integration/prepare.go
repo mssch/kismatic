@@ -57,20 +57,20 @@ func InstallKismaticRPMs(nodes provisionedNodes, distro linuxDistro, sshKey stri
 	prep := getPrepForDistro(distro)
 	sshUser := nodes.master[0].SSHUser
 	By("Configuring package repository")
-	RunViaSSH(prep.CommandsToPrepRepo, sshUser, append(append(nodes.etcd, nodes.master...), nodes.worker...), 5*time.Minute)
+	runViaSSH(prep.CommandsToPrepRepo, sshUser, append(append(nodes.etcd, nodes.master...), nodes.worker...), 5*time.Minute)
 
 	By("Installing Etcd")
-	RunViaSSH(prep.CommandsToInstallEtcd, sshUser, nodes.etcd, 5*time.Minute)
+	runViaSSH(prep.CommandsToInstallEtcd, sshUser, nodes.etcd, 5*time.Minute)
 
 	By("Installing Docker")
 	dockerNodes := append(nodes.master, nodes.worker...)
-	RunViaSSH(prep.CommandsToInstallDocker, sshUser, dockerNodes, 5*time.Minute)
+	runViaSSH(prep.CommandsToInstallDocker, sshUser, dockerNodes, 5*time.Minute)
 
 	By("Installing Master:")
-	RunViaSSH(prep.CommandsToInstallK8sMaster, sshUser, nodes.master, 5*time.Minute)
+	runViaSSH(prep.CommandsToInstallK8sMaster, sshUser, nodes.master, 5*time.Minute)
 
 	By("Installing Worker:")
-	RunViaSSH(prep.CommandsToInstallK8s, sshUser, nodes.worker, 5*time.Minute)
+	runViaSSH(prep.CommandsToInstallK8s, sshUser, nodes.worker, 5*time.Minute)
 }
 
 func getPrepForDistro(distro linuxDistro) nodePrep {
@@ -91,7 +91,7 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 		"sudo systemctl start docker",
 		"mkdir ~/certs",
 	}
-	ok := RunViaSSH(installDockerCmds, node.SSHUser, []NodeDeets{node}, 10*time.Minute)
+	ok := runViaSSH(installDockerCmds, node.SSHUser, []NodeDeets{node}, 10*time.Minute)
 	if !ok {
 		return "", errors.New("Failed to install Docker on the node")
 	}
@@ -144,13 +144,13 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 		return "", fmt.Errorf("error writing private key to file: %v", err)
 	}
 
-	CopyFileToRemote("docker.pem", "~/certs/docker.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
-	CopyFileToRemote("docker-key.pem", "~/certs/docker-key.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
+	copyFileToRemote("docker.pem", "~/certs/docker.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
+	copyFileToRemote("docker-key.pem", "~/certs/docker-key.pem", node.SSHUser, []NodeDeets{node}, 1*time.Minute)
 
 	startDockerRegistryCmd := []string{fmt.Sprintf("sudo docker run -d -p %d:5000 --restart=always ", listeningPort) +
 		"--name registry -v ~/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker.pem " +
 		"-e REGISTRY_HTTP_TLS_KEY=/certs/docker-key.pem registry"}
-	if ok := RunViaSSH(startDockerRegistryCmd, node.SSHUser, []NodeDeets{node}, 1*time.Minute); !ok {
+	if ok := runViaSSH(startDockerRegistryCmd, node.SSHUser, []NodeDeets{node}, 1*time.Minute); !ok {
 		return "", fmt.Errorf("failed to start docker registry")
 	}
 

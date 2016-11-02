@@ -10,8 +10,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// Run the given command(s) as the given user on all hosts via SSH within the given period
-func RunViaSSH(cmds []string, user string, hosts []NodeDeets, period time.Duration) bool {
+func runViaSSH(cmds []string, user string, hosts []NodeDeets, period time.Duration) bool {
 	results := make(chan string, 10)
 	success := true
 	timeout := time.After(period)
@@ -44,7 +43,7 @@ func RunViaSSH(cmds []string, user string, hosts []NodeDeets, period time.Durati
 	return success
 }
 
-func CopyFileToRemote(file string, destFile string, user string, hosts []NodeDeets, period time.Duration) bool {
+func copyFileToRemote(file string, destFile string, user string, hosts []NodeDeets, period time.Duration) bool {
 	results := make(chan string, 10)
 	success := true
 	timeout := time.After(period)

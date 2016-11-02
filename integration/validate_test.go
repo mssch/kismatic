@@ -72,21 +72,21 @@ func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, 
 	By("Prepping nodes for the test")
 	prep := getPrepForDistro(distro)
 	prepNode := []NodeDeets{theNode}
-	RunViaSSH(prep.CommandsToPrepRepo, sshUser, prepNode, 5*time.Minute)
+	runViaSSH(prep.CommandsToPrepRepo, sshUser, prepNode, 5*time.Minute)
 	By("Installing etcd on the node")
-	RunViaSSH(prep.CommandsToInstallEtcd, sshUser, prepNode, 5*time.Minute)
+	runViaSSH(prep.CommandsToInstallEtcd, sshUser, prepNode, 5*time.Minute)
 	if err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey); err == nil {
 		Fail("Missing dependencies, but still passed")
 	}
 
 	By("Installing Docker")
-	RunViaSSH(prep.CommandsToInstallDocker, sshUser, prepNode, 5*time.Minute)
+	runViaSSH(prep.CommandsToInstallDocker, sshUser, prepNode, 5*time.Minute)
 	if err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey); err == nil {
 		Fail("Missing dependencies, but still passed")
 	}
 
 	By("Installing Master")
-	RunViaSSH(prep.CommandsToInstallK8sMaster, sshUser, prepNode, 5*time.Minute)
+	runViaSSH(prep.CommandsToInstallK8sMaster, sshUser, prepNode, 5*time.Minute)
 	err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey)
 	Expect(err).To(BeNil())
 }
