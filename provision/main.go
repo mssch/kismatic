@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 
 	"github.com/apprenda/kismatic-platform/integration"
 )
@@ -15,18 +14,23 @@ func main() {
 	}
 	os.Setenv("BAIL_BEFORE_ANSIBLE", "true")
 
-	kisPath := integration.CopyKismaticToTemp()
-
-	fmt.Println("Unpacking kismatic to", kisPath)
-	c := exec.Command("tar", "-zxf", "out/kismatic.tar.gz", "-C", kisPath)
-	tarOut, tarErr := c.CombinedOutput()
-	if tarErr != nil {
-		log.Fatal("Error unpacking installer", string(tarOut), tarErr)
+	kisPath, err := integration.ExtractKismaticToTemp()
+	if err != nil {
+		log.Fatalln("Error unpacking installer", err)
 	}
 	os.Chdir(kisPath)
 
-	cluster := integration.InstallBigKismatic(integration.NodeCount{Etcd: 1, Master: 1, Worker: 1}, integration.UbuntuEast)
+	aws, ok := integration.AWSClientFromEnvironment()
+	if !ok {
+		log.Fatal("Required AWS environment variables not defined")
+	}
 
-	fmt.Println("Your cluster is ready.\n")
-	integration.PrintNodes(&cluster)
+	nodes, err := aws.ProvisionNodes(integration.NodeCount{Etcd: 1, Master: 1, Worker: 1}, integration.Ubuntu1604LTS)
+	if err != nil {
+		aws.TerminateNodes(nodes)
+		log.Fatal("Failed to provision nodes")
+	}
+
+	fmt.Println("Your cluster is ready.")
+	fmt.Println(nodes)
 }

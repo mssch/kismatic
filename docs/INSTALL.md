@@ -21,8 +21,7 @@
 
 # The Install Workflow
 
-First thing first: know what you want to build and how you want to build it.
-**[Intent](INTENT.md)**
+First thing first: [know what you want to build and how you want to build it](INTENT.md).
 
 ![High-level workflow](installer-workflow.png)
 
