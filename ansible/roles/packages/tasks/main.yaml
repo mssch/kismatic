@@ -4,7 +4,7 @@
     uri: url="{{ yum_gpg_key_url }}"
     notify:
       - add Kismatic yum repository
-      - clean yum cache # required to get new versions of packagess
+      - clean Kismatic yum cache # required to get new versions of packagess
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
     ignore_errors: yes
     register: result

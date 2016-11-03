@@ -8,8 +8,8 @@
       gpgcheck: yes
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
-  - name: clean yum cache
-    command: 'run yum --enablerepo=kismatic clean metadata'
+  - name: clean Kismatic yum cache
+    command: 'yum --enablerepo=kismatic clean metadata'
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
   - name: install apt-transport-https package
