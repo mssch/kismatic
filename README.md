@@ -31,6 +31,8 @@ The Kismatic tools include:
 
 # Kismatic Documentation
 
+[What you can build with Kismatic](docs/INTENT.md)
+
 [Plan & Install a Kubernetes cluster](docs/INSTALL.md)
 
 [Cert Generation](docs/cert_generation.md)
