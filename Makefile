@@ -88,7 +88,7 @@ serial-integration-test: get-test-deps
 mine-marvel: dist get-test-deps
 	go run provision/main.go
 
-cli-docs:
-	mkdir cli-docs
-	go run cmd/kismatic/main.go
-	cp cli-docs/kismatic.md cli-docs/README.md
+kismatic-cli-docs:
+	mkdir kismatic-cli-docs
+	go run cmd/kismatic-docs/main.go
+	cp kismatic-cli-docs/kismatic.md kismatic-cli-docs/README.md
