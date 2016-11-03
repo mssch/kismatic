@@ -1,103 +1,87 @@
 package integration
 
 import (
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"time"
-
-	"golang.org/x/crypto/ssh"
 )
 
-// Run the given command(s) as the given user on all hosts via SSH within the given period
-func RunViaSSH(cmds []string, user string, hosts []NodeDeets, period time.Duration) bool {
-	results := make(chan string, 10)
-	success := true
+func runViaSSH(cmds []string, hosts []NodeDeets, sshKey string, period time.Duration) error {
 	timeout := time.After(period)
-
-	config := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			PublicKeyFile(os.Getenv("HOME") + "/.ssh/kismatic-integration-testing.pem"),
-		},
-	}
-
+	bail := make(chan struct{})
+	cmdSuccess := make(chan bool)
+	// Create a goroutine per host. Each goroutine runs the commands serially on the host
+	// until one of these is true:
+	// a) all commands were executed successfully,
+	// b) an error occurred when running a command,
+	// c) the goroutine got a signal to bail
 	for _, host := range hosts {
-		go func(hostname string) {
+		go func(node NodeDeets) {
 			for _, cmd := range cmds {
-				results <- executeCmd(cmd, hostname, config)
+				res, err := executeCmd(cmd, node.PublicIP, node.SSHUser, sshKey)
+				fmt.Println(res)
+				select {
+				case cmdSuccess <- err == nil:
+					if err != nil {
+						return
+					}
+				case <-bail:
+					return
+				}
 			}
-		}(host.PublicIP)
+		}(host)
 	}
 
+	// The bail channel is closed if we encounter an error, or if the timeout is reached.
+	// This will signal all goroutines to return.
+	defer close(bail)
+
+	// At most, we will get a total of hosts * cmds status messages in the channel.
 	for i := 0; i < len(hosts)*len(cmds); i++ {
 		select {
-		case res := <-results:
-			fmt.Print(res)
+		case ok := <-cmdSuccess:
+			if !ok {
+				return fmt.Errorf("error running command on node")
+			}
 		case <-timeout:
-			fmt.Printf("%v timed out!", hosts[i])
-			return false
-
+			return fmt.Errorf("timed out running commands on nodes")
 		}
 	}
-	return success
+	return nil
 }
 
-func CopyFileToRemote(file string, destFile string, user string, hosts []NodeDeets, period time.Duration) bool {
-	results := make(chan string, 10)
-	success := true
+func executeCmd(cmd, hostname, user, sshKey string) (string, error) {
+	sshCmd := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "-t", "-t", "-i", sshKey, user+"@"+hostname, cmd)
+	sshCmd.Stdin = os.Stdin
+	sshOut, sshErr := sshCmd.CombinedOutput()
+	return hostname + ": " + string(sshOut), sshErr
+}
+
+func copyFileToRemote(file string, destFile string, node NodeDeets, sshKey string, period time.Duration) error {
 	timeout := time.After(period)
-
-	config := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			PublicKeyFile(os.Getenv("HOME") + "/.ssh/kismatic-integration-testing.pem"),
-		},
-	}
-
-	for _, host := range hosts {
-		go func(hostname string) {
-			results <- scpFile(file, destFile, hostname, config)
-		}(host.PublicIP)
-	}
-
-	for i := 0; i < len(hosts); i++ {
-		select {
-		case res := <-results:
-			fmt.Print(res)
-		case <-timeout:
-			fmt.Printf("%v timed out!", hosts[i])
-			return false
+	success := make(chan bool)
+	go func() {
+		out, err := scpFile(file, destFile, node.SSHUser, node.PublicIP, sshKey)
+		fmt.Println(out)
+		success <- err == nil
+	}()
+	select {
+	case ok := <-success:
+		if !ok {
+			return errors.New("failed to copy file to node")
 		}
+	case <-timeout:
+		return errors.New("timed out copying file to node")
 	}
-	return success
+	return nil
 }
 
-func PublicKeyFile(file string) ssh.AuthMethod {
-	buffer, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil
-	}
-
-	key, err := ssh.ParsePrivateKey(buffer)
-	if err != nil {
-		return nil
-	}
-	return ssh.PublicKeys(key)
-}
-
-func executeCmd(cmd, hostname string, config *ssh.ClientConfig) string {
-	ver := exec.Command("ssh", "-o", "StrictHostKeyChecking no", "-t", "-t", "-i", os.Getenv("HOME")+"/.ssh/kismatic-integration-testing.pem", config.User+"@"+hostname, cmd)
-	ver.Stdin = os.Stdin
-
-	verbytes, verErr := ver.CombinedOutput()
-	if verErr != nil {
-		fmt.Printf("Oops: %v", verErr)
-	}
-	verText := string(verbytes)
-
-	return hostname + ": " + verText
+func scpFile(filePath string, destFilePath string, user, hostname, sshKey string) (string, error) {
+	ver := exec.Command("scp", "-o", "StrictHostKeyChecking no", "-i", sshKey, filePath, user+"@"+hostname+":"+destFilePath)
+	out, err := ver.CombinedOutput()
+	return string(out), err
 }
 
 // BlockUntilSSHOpen waits until the node with the given IP is accessible via SSH.
@@ -117,17 +101,4 @@ func BlockUntilSSHOpen(publicIP, sshUser, sshKey string) {
 		fmt.Printf("?")
 		time.Sleep(3 * time.Second)
 	}
-}
-
-func scpFile(filePath string, destFilePath string, hostname string, config *ssh.ClientConfig) string {
-	ver := exec.Command("scp", "-o", "StrictHostKeyChecking no", "-i", os.Getenv("HOME")+"/.ssh/kismatic-integration-testing.pem", filePath, config.User+"@"+hostname+":"+destFilePath)
-	ver.Stdin = os.Stdin
-
-	verbytes, verErr := ver.CombinedOutput()
-	if verErr != nil {
-		fmt.Printf("Oops: %v", verErr)
-	}
-	verText := string(verbytes)
-
-	return hostname + ": " + verText
 }
