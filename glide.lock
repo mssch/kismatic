@@ -1,5 +1,5 @@
-hash: d2683ab31f741f964c041d941b292d2ea34d7c770512eb4d7343b70d49fca909
-updated: 2016-10-13T12:39:51.765706874-04:00
+hash: 0af3f8c34eb433ce9581977884eb4da7250b9124d77630dc7e0a93237b49a3a6
+updated: 2016-10-14T18:01:49.252668324-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: afb8bf514d9344600dcb0f45e364d2b628b6c6d3
@@ -8,9 +8,9 @@ imports:
   - aws/session
   - service/ec2
   - aws/awserr
+  - aws/credentials
   - aws/client
   - aws/corehandlers
-  - aws/credentials
   - aws/credentials/stscreds
   - aws/defaults
   - aws/request
@@ -101,6 +101,8 @@ imports:
   - internal/leafnodes
   - internal/spec
   - internal/specrunner
+- name: github.com/packethost/packngo
+  version: 7cd5fed006859e86dd5641a6cf9812e855b7574a
 - name: github.com/spf13/cobra
   version: ec2fe7859914a5106dcab4e7901633d959bfc2f4
   subpackages:
@@ -111,8 +113,8 @@ imports:
   version: 1f22c0103821b9390939b6776727195525381532
   subpackages:
   - ssh
-  - pkcs12
   - curve25519
+  - pkcs12
   - pkcs12/internal/rc2
 - name: golang.org/x/sys
   version: 9bb9f0998d48b31547d975974935ae9b48c7a03c
