@@ -56,8 +56,7 @@ The installation consists of three phases:
    2. If the installation plan is valid, Kismatic will build you a cluster.
    3. After installation, Kismatic performs a basic test of scaling and networking on the cluster
 
----
-##Using your cluster
+###Using your cluster
 
 The installer automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) running in the cluster, open the link provided at the end of the installation in your browser to use it.    
 It will be in the form of `https://%load_balanced_fqdn%:6443/ui`, using `%load_balanced_fqdn%`(from your `kismatic-cluster.yaml` file).      
