@@ -24,7 +24,7 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 	opts := &addWorkerOpts{}
 	cmd := &cobra.Command{
 		Use:   "add-worker WORKER_NAME WORKER_IP [WORKER_INTERNAL_IP]",
-		Short: "add a Worker node to an existing Kismatic cluster",
+		Short: "add a Worker node to an existing Kubernetes cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 2 || len(args) > 3 {
 				return cmd.Usage()

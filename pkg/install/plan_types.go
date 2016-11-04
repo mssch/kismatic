@@ -21,7 +21,7 @@ type SSHConfig struct {
 	Port int    `yaml:"ssh_port"`
 }
 
-// Cluster describes a Kismatic cluster
+// Cluster describes a Kubernetes cluster
 type Cluster struct {
 	Name                     string
 	AdminPassword            string `yaml:"admin_password"`

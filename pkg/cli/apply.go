@@ -34,7 +34,7 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	applyOpts := applyOpts{}
 	cmd := &cobra.Command{
 		Use:   "apply",
-		Short: "apply your plan file to create a Kismatic cluster",
+		Short: "apply your plan file to create a Kubernetes cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 0 {
 				return fmt.Errorf("Unexpected args: %v", args)

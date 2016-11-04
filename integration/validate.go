@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-// ValidateKismaticMini runs validation against a mini kismatic cluster
+// ValidateKismaticMini runs validation against a mini Kubernetes cluster
 func ValidateKismaticMini(node NodeDeets, user, sshKey string) PlanAWS {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
