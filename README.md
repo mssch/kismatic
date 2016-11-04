@@ -14,14 +14,15 @@ The Kismatic tools include:
 3. [`kuberang`](https://github.com/apprenda/kuberang)
    * Tests a cluster to be sure that its networking and scaling work as intended. This tool is used to "smoke test" a newly built cluster.
 4. [Kismatic RPM & DEB packages](docs/PACKAGES.md)
-   * Packages for installing Kubernetes and its dependendencies, focused on specific roles in an HA cluster
+   * Packages for installing Kubernetes and its dependencies, focused on specific roles in an HA cluster
    * With these packages installed on a local repo it is possible to use Kismatic to install Kubernetes to nodes that do not have access to the public internet.
 
+## Dependencies
 | Dependency | Current version |
 | --- | --- |
 | Kubernetes | 1.4.5 |
 | Docker | 1.11.2 |
-| Calicoctl | 0.22.0 |
+| Calico | 1.6 |
 | Etcd (for Kubernetes) | 3.0.13 |
 | Etcd (for Calico) | 2.37 |
 
@@ -30,6 +31,8 @@ The Kismatic tools include:
 [Download latest install tarball (Linux)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kismatic.tar.gz)
 
 # Kismatic Documentation
+
+[Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/kismatic-cli-docs)
 
 [What you can build with Kismatic](docs/INTENT.md)
 
