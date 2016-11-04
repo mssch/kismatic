@@ -172,7 +172,7 @@ func (m debManager) isPackageListed(p PackageQuery) (bool, error) {
 			continue
 		}
 		maybeName := strings.Split(f[1], ".")[0]
-		maybeVersion := strings.Split(f[2], "-")[0]
+		maybeVersion := f[2]
 		if p.Name == maybeName && p.Version == maybeVersion {
 			return true, nil
 		}
