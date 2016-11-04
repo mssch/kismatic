@@ -83,10 +83,10 @@ just-integration-test: get-test-deps
 	ginkgo -p -v integration
 
 serial-integration-test: get-test-deps
-	ginkgo -p -v integration
+	ginkgo -v integration
 
-mine-marvel: dist get-test-deps
-	go run provision/main.go
+build-provisioner: get-test-deps
+	go build -o bin/provision ./provision
 
 kismatic-cli-docs:
 	mkdir kismatic-cli-docs

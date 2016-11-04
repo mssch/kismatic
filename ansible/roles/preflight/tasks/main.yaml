@@ -6,11 +6,11 @@
     # Kill any existing inspector before attempting
     # to start a new one.
   - name: check if Kismatic Inspector is running
-    command: pgrep -f kismatic-inspector
+    command: "pgrep -f ^{{bin_dir}}/kismatic-inspector"
     register: inspector_running
     ignore_errors: yes
   - name: kill existing Kismatic Inspector
-    command: pkill -f kismatic-inspector
+    command: "pkill -f ^{{bin_dir}}/kismatic-inspector"
     when: inspector_running.failed is not defined
   - name: copy Kismatic Inspector to node
     copy:
@@ -31,4 +31,4 @@
       become: no
     always:
       - name: stop the inspector
-        command: pkill -f kismatic-inspector
+        command: "pkill -f ^{{bin_dir}}/kismatic-inspector"
