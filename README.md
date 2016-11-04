@@ -77,4 +77,4 @@ The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-
 
 [Code of Conduct](code-of-conduct.md)
 
-[Release process](docs/RELEASE.md)
+[Release process](RELEASE.md)
