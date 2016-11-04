@@ -1,10 +1,7 @@
 package integration
 
 import (
-	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
@@ -16,25 +13,6 @@ import (
 )
 
 var _ = Describe("Happy Path Installation Tests", func() {
-	kisPath := CopyKismaticToTemp()
-
-	BeforeSuite(func() {
-		fmt.Println("Unpacking kismatic to", kisPath)
-		c := exec.Command("tar", "-zxf", "../out/kismatic.tar.gz", "-C", kisPath)
-		tarOut, tarErr := c.CombinedOutput()
-		if tarErr != nil {
-			log.Fatal("Error unpacking installer", string(tarOut), tarErr)
-		}
-		CopyDir("test-tls/", kisPath+"/test-tls")
-		os.Chdir(kisPath)
-	})
-
-	AfterSuite(func() {
-		if !leaveInstallDir() {
-			os.RemoveAll(kisPath)
-		}
-	})
-
 	Describe("Calling installer with no input", func() {
 		It("should output help text", func() {
 			c := exec.Command("./kismatic")
