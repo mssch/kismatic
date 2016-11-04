@@ -13,7 +13,7 @@ import (
 func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plan",
-		Short: "plan your Kismatic cluster and generate a plan file",
+		Short: "plan your Kubernetes cluster and generate a plan file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 0 {
 				return fmt.Errorf("Unexpected args: %v", args)
@@ -27,7 +27,7 @@ func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Comman
 }
 
 func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile string) error {
-	fmt.Fprintln(out, "Plan your Kismatic cluster:")
+	fmt.Fprintln(out, "Plan your Kubernetes cluster:")
 
 	// etcd nodes
 	etcdNodes, err := util.PromptForInt(in, out, "Number of etcd nodes", 3)

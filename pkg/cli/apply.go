@@ -34,7 +34,7 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	applyOpts := applyOpts{}
 	cmd := &cobra.Command{
 		Use:   "apply",
-		Short: "apply your plan file to create a Kismatic cluster",
+		Short: "apply your plan file to create a Kubernetes cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 0 {
 				return fmt.Errorf("Unexpected args: %v", args)
@@ -68,11 +68,11 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 	}
 
 	// Flags
-	cmd.Flags().StringVar(&applyOpts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process are to be stored")
-	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart clusters services (Use with care)")
+	cmd.Flags().StringVar(&applyOpts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
+	cmd.Flags().BoolVar(&applyOpts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
 	cmd.Flags().BoolVar(&applyOpts.verbose, "verbose", false, "enable verbose logging from the installation")
-	cmd.Flags().StringVarP(&applyOpts.outputFormat, "output", "o", "simple", "installation output format. Supported options: simple|raw")
-	cmd.Flags().BoolVar(&applyOpts.skipPreFlight, "skip-preflight", false, "skip pre-flight checks")
+	cmd.Flags().StringVarP(&applyOpts.outputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
+	cmd.Flags().BoolVar(&applyOpts.skipPreFlight, "skip-preflight", false, "skip pre-flight checks, useful when rerunning kismatic")
 
 	return cmd
 }

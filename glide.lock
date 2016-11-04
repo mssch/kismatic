@@ -1,14 +1,14 @@
-hash: 0af3f8c34eb433ce9581977884eb4da7250b9124d77630dc7e0a93237b49a3a6
-updated: 2016-10-14T18:01:49.252668324-04:00
+hash: 00fb10c1e917625929aad1cf7462cb1de211ea8c601d0362f0ce1e0277e1818b
+updated: 2016-11-03T16:36:39.776463218-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: afb8bf514d9344600dcb0f45e364d2b628b6c6d3
+  version: 707203bc55114ed114446bf57949c5c211d8b7c0
   subpackages:
   - aws
+  - aws/credentials
   - aws/session
   - service/ec2
   - aws/awserr
-  - aws/credentials
   - aws/client
   - aws/corehandlers
   - aws/credentials/stscreds
@@ -52,6 +52,10 @@ imports:
   - signer/remote
   - api/client
   - api
+- name: github.com/cpuguy83/go-md2man
+  version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
+  subpackages:
+  - md2man
 - name: github.com/fatih/color
   version: 87d4004f2ab62d0d255e0a38f1680aa534549fe3
 - name: github.com/go-ini/ini
@@ -67,12 +71,10 @@ imports:
   - go/x509/pkix
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
-- name: github.com/jmcvetta/guid
-  version: e7917749ba20917e5ca9ae3b23e044253ba98c71
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/mattn/go-colorable
-  version: 6c903ff4aa50920ca86087a280590b36b3152b9c
+  version: d228849504861217f796da67fae4f6e347643f15
 - name: github.com/mattn/go-isatty
   version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
 - name: github.com/michaelbironneau/garbler
@@ -85,7 +87,7 @@ imports:
   version: 63fe23f7434723dc904c901043af07931f293c47
   repo: https://github.com/mreiferson/go-httpclient
 - name: github.com/onsi/ginkgo
-  version: acfa16ac8e9e0d2c6b11cfe78c79d8652c3ee3fd
+  version: a8ccd817611666211fdf6e6a752174a0db8374a8
   subpackages:
   - config
   - internal/codelocation
@@ -101,30 +103,10 @@ imports:
   - internal/leafnodes
   - internal/spec
   - internal/specrunner
-- name: github.com/packethost/packngo
-  version: 7cd5fed006859e86dd5641a6cf9812e855b7574a
-- name: github.com/spf13/cobra
-  version: ec2fe7859914a5106dcab4e7901633d959bfc2f4
-  subpackages:
-  - cobra
-- name: github.com/spf13/pflag
-  version: bf8481a6aebc13a8aab52e699ffe2e79771f5a3f
-- name: golang.org/x/crypto
-  version: 1f22c0103821b9390939b6776727195525381532
-  subpackages:
-  - ssh
-  - curve25519
-  - pkcs12
-  - pkcs12/internal/rc2
-- name: golang.org/x/sys
-  version: 9bb9f0998d48b31547d975974935ae9b48c7a03c
-  subpackages:
-  - unix
-- name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
-testImports:
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
 - name: github.com/onsi/gomega
-  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  version: ff4bc6b6f9f5affa66635cd04d31d2a7ee21ffd6
   subpackages:
   - internal/assertion
   - internal/asyncassertion
@@ -137,3 +119,32 @@ testImports:
   - matchers/support/goraph/edge
   - matchers/support/goraph/node
   - matchers/support/goraph/util
+- name: github.com/packethost/packngo
+  version: 7cd5fed006859e86dd5641a6cf9812e855b7574a
+- name: github.com/russross/blackfriday
+  version: 5f33e7b7878355cd2b7e6b8eefc48a5472c69f70
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 1dba4b3954bc059efc3991ec364f9f9a35f597d2
+- name: github.com/spf13/cobra
+  version: 6e91dded25d73176bf7f60b40dd7aa1f0bf9be8d
+  subpackages:
+  - cobra
+  - doc
+- name: github.com/spf13/pflag
+  version: 5ccb023bc27df288a957c5e994cd44fd19619465
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  repo: https://go.googlesource.com/crypto
+  subpackages:
+  - ocsp
+  - pbkdf2
+  - pkcs12
+  - scrypt
+  - pkcs12/internal/rc2
+- name: golang.org/x/sys
+  version: c200b10b5d5e122be351b67af224adc6128af5bf
+  subpackages:
+  - unix
+- name: gopkg.in/yaml.v2
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+testImports: []

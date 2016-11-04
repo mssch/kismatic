@@ -9,3 +9,5 @@ import:
 - package: github.com/fatih/color
   version: ~1.0.0
 - package: github.com/packethost/packngo
+- package: github.com/cpuguy83/go-md2man
+  version: ~1.0.6

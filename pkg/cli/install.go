@@ -16,7 +16,7 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "install",
-		Short: "install your Kismatic cluster",
+		Short: "install your Kubernetes cluster",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},

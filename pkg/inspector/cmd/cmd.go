@@ -7,7 +7,7 @@ import (
 )
 
 const long string = `The Kismatic Inspector verifies the infrastructure that has
-been provisioned for installing a Kismatic cluster.
+been provisioned for installing a Kubernetes cluster.
 `
 
 // NewCmdKismaticInspector builds the kismatic-inspector command

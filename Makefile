@@ -87,4 +87,8 @@ serial-integration-test: get-test-deps
 
 build-provisioner: get-test-deps
 	go build -o bin/provision ./provision
-	
+
+kismatic-cli-docs:
+	mkdir kismatic-cli-docs
+	go run cmd/kismatic-docs/main.go
+	cp kismatic-cli-docs/kismatic.md kismatic-cli-docs/README.md
