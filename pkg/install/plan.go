@@ -3,11 +3,12 @@ package install
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"regexp"
-	"strings"
 
 	"github.com/apprenda/kismatic-platform/pkg/util"
 	garbler "github.com/michaelbironneau/garbler/lib"
@@ -53,12 +54,12 @@ func (fp *FilePlanner) Write(p *Plan) error {
 	oneTimeComments := commentMap
 	bytez, marshalErr := yaml.Marshal(p)
 	if marshalErr != nil {
-		return fmt.Errorf("error marshalling plan to yaml", marshalErr)
+		return fmt.Errorf("error marshalling plan to yaml: %v", marshalErr)
 	}
 
 	f, err := os.Create(fp.File)
 	if err != nil {
-		return fmt.Errorf("error making plan file", err)
+		return fmt.Errorf("error making plan file: %v", err)
 	}
 	defer f.Close()
 
@@ -90,9 +91,10 @@ func (fp *FilePlanner) PlanExists() bool {
 func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 	// Set sensible defaults
 	p.Cluster.Name = "kubernetes"
-	generatedAdminPass, _ := garbler.NewPassword(nil)
-	// Cannot contain ":" in kubecofig
-	generatedAdminPass = strings.Replace(generatedAdminPass, ":", "new", -1)
+	generatedAdminPass, err := generateAlphaNumericPassword()
+	if err != nil {
+		return fmt.Errorf("error generating random password: %v", err)
+	}
 	p.Cluster.AdminPassword = generatedAdminPass
 	p.Cluster.AllowPackageInstallation = false
 
@@ -149,6 +151,31 @@ func getDNSServiceIP(p *Plan) (string, error) {
 		return "", fmt.Errorf("error getting DNS service IP: %v", err)
 	}
 	return ip.To4().String(), nil
+}
+
+func generateAlphaNumericPassword() (string, error) {
+	attempts := 0
+	for {
+		reqs := &garbler.PasswordStrengthRequirements{
+			MinimumTotalLength: 16,
+			Uppercase:          rand.Intn(6),
+			Digits:             rand.Intn(6),
+			Punctuation:        -1, // disable punctuation
+		}
+		pass, err := garbler.NewPassword(reqs)
+		if err != nil {
+			return "", err
+		}
+		// validate that the library actually returned an alphanumeric password
+		re := regexp.MustCompile("^[a-zA-Z1-9]+$")
+		if re.MatchString(pass) {
+			return pass, nil
+		}
+		if attempts == 5 {
+			return "", errors.New("failed to generate alphanumeric password")
+		}
+		attempts++
+	}
 }
 
 var commentMap = map[string]string{
