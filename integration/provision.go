@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/apprenda/kismatic-platform/integration/aws"
@@ -155,50 +156,42 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 	// Wait until all instances have their public IPs assigned
 	for i := range provisioned.etcd {
 		etcd := &provisioned.etcd[i]
-		node, err := p.waitForPublicIP(etcd.id)
-		if err != nil {
+		if err := p.updateNodeWithDeets(etcd.id, etcd); err != nil {
 			return provisioned, err
 		}
-		etcd.Hostname = node.Hostname
-		etcd.PrivateIP = node.PrivateIP
-		etcd.PublicIP = node.PublicIP
-		etcd.SSHUser = node.SSHUser
 	}
 	for i := range provisioned.master {
 		master := &provisioned.master[i]
-		node, err := p.waitForPublicIP(master.id)
-		if err != nil {
+		if err := p.updateNodeWithDeets(master.id, master); err != nil {
 			return provisioned, err
 		}
-		master.Hostname = node.Hostname
-		master.PrivateIP = node.PrivateIP
-		master.PublicIP = node.PublicIP
-		master.SSHUser = node.SSHUser
 	}
 	for i := range provisioned.worker {
 		worker := &provisioned.worker[i]
-		node, err := p.waitForPublicIP(worker.id)
-		if err != nil {
+		if err := p.updateNodeWithDeets(worker.id, worker); err != nil {
 			return provisioned, err
 		}
-		worker.Hostname = node.Hostname
-		worker.PrivateIP = node.PrivateIP
-		worker.PublicIP = node.PublicIP
-		worker.SSHUser = node.SSHUser
 	}
 	return provisioned, nil
 }
 
-func (p awsProvisioner) waitForPublicIP(nodeID string) (*aws.Node, error) {
+func (p awsProvisioner) updateNodeWithDeets(nodeID string, node *NodeDeets) error {
 	for {
 		fmt.Print(".")
-		node, err := p.client.GetNode(nodeID)
+		awsNode, err := p.client.GetNode(nodeID)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		if node.PublicIP != "" {
-			fmt.Println()
-			return node, nil
+		node.PublicIP = awsNode.PublicIP
+		node.PrivateIP = awsNode.PrivateIP
+		node.SSHUser = awsNode.SSHUser
+
+		// Get the hostname from the DNS name
+		re := regexp.MustCompile("[^.]*")
+		hostname := re.FindString(awsNode.PrivateDNSName)
+		node.Hostname = hostname
+		if node.PublicIP != "" && node.Hostname != "" && node.PrivateIP != "" {
+			return nil
 		}
 		time.Sleep(5 * time.Second)
 	}
