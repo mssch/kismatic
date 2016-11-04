@@ -38,7 +38,7 @@ The Kismatic tools include:
 
 [Plan & Install a Kubernetes cluster](docs/INSTALL.md)
 
-[Cert Generation](docs/cert_generation.md)
+[Cert Generation](docs/CERT_GENERATION.md)
 
 [Roadmap](ROADMAP.md)
 
