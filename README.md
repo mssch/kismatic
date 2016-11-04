@@ -1,5 +1,5 @@
-# Kismatic Enterprise Toolkit (KET): Automated Production-Operations for Kubernetes Clusters
-[![Build Status](https://snap-ci.com/On8xdVQV0xY5VXICf0Fx0Vq7fVMDUAfU6JFc8Wtt94A/build_image)](https://snap-ci.com/apprenda/kismatic-platform/branch/master)
+# Kismatic -- The Enterprise Toolkit for Kubernetes Reliability Engineering (KRE)
+[![Build Status](https://snap-ci.com/On8xdVQV0xY5VXICf0Fx0Vq7fVMDUAfU6JFc8Wtt94A/build_image)](https://snap-ci.com/apprenda/kismatic/branch/master)
 
 Kismatic is a set of tools for designing, deploying and operating enterprise-tuned production ready Kubernetes clusters.
 

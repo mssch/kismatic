@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector"
+	"github.com/apprenda/kismatic/pkg/inspector"
 	"github.com/spf13/cobra"
 )
 

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/apprenda/kismatic-platform/pkg/install"
+	"github.com/apprenda/kismatic/pkg/install"
 )
 
 func TestApplyCmdInvalidPlanFound(t *testing.T) {

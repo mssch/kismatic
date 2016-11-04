@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/apprenda/kismatic/pkg/tls"
 	"github.com/cloudflare/cfssl/csr"
 	. "github.com/onsi/ginkgo"
 )

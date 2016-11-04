@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
+	"github.com/apprenda/kismatic/pkg/inspector/rule"
 	"github.com/spf13/cobra"
 )
 

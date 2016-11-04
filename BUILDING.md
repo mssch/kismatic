@@ -1,6 +1,6 @@
 # Kismatic
 
-[![Build Status](https://snap-ci.com/On8xdVQV0xY5VXICf0Fx0Vq7fVMDUAfU6JFc8Wtt94A/build_image)](https://snap-ci.com/apprenda/kismatic-platform/branch/master)
+[![Build Status](https://snap-ci.com/On8xdVQV0xY5VXICf0Fx0Vq7fVMDUAfU6JFc8Wtt94A/build_image)](https://snap-ci.com/apprenda/kismatic/branch/master)
 ### Pre-requisites
 - Darwin (OSX) or Linux x86-64
 - Go installed
@@ -32,4 +32,4 @@ GOOS=linux make build
 ### Continuous Integration
 Kismatic uses Snap for CI.
 
-https://snap-ci.com/apprenda/kismatic-platform/
+https://snap-ci.com/apprenda/kismatic/

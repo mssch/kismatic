@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/apprenda/kismatic-platform/pkg/install"
-	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/apprenda/kismatic/pkg/install"
+	"github.com/apprenda/kismatic/pkg/tls"
 )
 
 type fakePlanner struct {

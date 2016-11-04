@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/apprenda/kismatic-platform/pkg/cli"
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/cli"
+	"github.com/apprenda/kismatic/pkg/util"
 )
 
 // Set via linker flag

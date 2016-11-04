@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/apprenda/kismatic-platform/integration"
+	"github.com/apprenda/kismatic/integration"
 	"github.com/spf13/cobra"
 )
 

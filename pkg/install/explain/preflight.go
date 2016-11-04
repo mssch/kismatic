@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/apprenda/kismatic-platform/pkg/ansible"
-	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/ansible"
+	"github.com/apprenda/kismatic/pkg/inspector/rule"
+	"github.com/apprenda/kismatic/pkg/util"
 )
 
 // PreflightEventExplainer explains the Ansible events that run

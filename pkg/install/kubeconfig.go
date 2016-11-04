@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/util"
 )
 
 // ConfigOptions sds

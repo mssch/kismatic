@@ -5,8 +5,8 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/apprenda/kismatic-platform/pkg/tls"
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/tls"
+	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/cloudflare/cfssl/csr"
 )
 

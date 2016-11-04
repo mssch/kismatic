@@ -6,8 +6,8 @@ import (
 
 	"os"
 
-	"github.com/apprenda/kismatic-platform/pkg/install"
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/install"
+	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/spf13/cobra"
 )
 
