@@ -77,7 +77,7 @@ Congratulations! You've got a Kubernetes cluster.
 
 # Using your cluster
 
-The installer automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) running in the cluster, open the link provided at the end of the installation in your browser to use it.    
+The installer automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) in the cluster, open the link provided at the end of the installation in your browser to use it.    
 It will be in the form of `https://%load_balanced_fqdn%:6443/ui`, using `%load_balanced_fqdn%`(from your `kismatic-cluster.yaml` file).      
 You will also be prompted for credentials, use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
 
