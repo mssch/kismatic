@@ -3,7 +3,6 @@ package aws
 import (
 	"fmt"
 	"os"
-	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -24,10 +23,10 @@ const (
 
 // A Node on AWS
 type Node struct {
-	Hostname  string
-	PrivateIP string
-	PublicIP  string
-	SSHUser   string
+	PrivateDNSName string
+	PrivateIP      string
+	PublicIP       string
+	SSHUser        string
 }
 
 // AMI is the Amazon Machine Image
@@ -109,7 +108,7 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 	}
 	_, err = api.ModifyInstanceAttribute(modifyReq)
 	if err != nil {
-		if err := c.DestroyNodes([]string{*instanceID}); err != nil {
+		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
 			fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", instanceID)
 		}
 		return "", err
@@ -130,15 +129,17 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 		},
 	}
 	if _, err = api.CreateTags(tagReq); err != nil {
-		if err := c.DestroyNodes([]string{*instanceID}); err != nil {
-			fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", instanceID)
+		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
+			fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
 		}
 		return "", err
 	}
 	return *res.Instances[0].InstanceId, nil
 }
 
-// GetNode returns information about a specific node
+// GetNode returns information about a specific node. The consumer of this method
+// is responsible for checking that the information it needs has been returned
+// in the Node. (i.e. it's possible for the hostname, public IP to be empty)
 func (c Client) GetNode(id string) (*Node, error) {
 	api, err := c.getAPIClient()
 	if err != nil {
@@ -158,20 +159,16 @@ func (c Client) GetNode(id string) (*Node, error) {
 		return nil, fmt.Errorf("Attempted to get a single node, but API returned %d instances", len(resp.Reservations[0].Instances))
 	}
 	instance := resp.Reservations[0].Instances[0]
-	re := regexp.MustCompile("[^.]*")
-	hostname := re.FindString(*instance.PrivateDnsName)
-	if hostname == "" {
-		return nil, fmt.Errorf("Failed to get hostname from instance's DNS name %q", *instance.PrivateDnsName)
-	}
+
 	var publicIP string
 	if instance.PublicIpAddress != nil {
 		publicIP = *instance.PublicIpAddress
 	}
 	return &Node{
-		Hostname:  hostname,
-		PrivateIP: *instance.PrivateIpAddress,
-		PublicIP:  publicIP,
-		SSHUser:   defaultSSHUserForAMI(AMI(*instance.ImageId)),
+		PrivateDNSName: *instance.PrivateDnsName,
+		PrivateIP:      *instance.PrivateIpAddress,
+		PublicIP:       publicIP,
+		SSHUser:        defaultSSHUserForAMI(AMI(*instance.ImageId)),
 	}, nil
 }
 
