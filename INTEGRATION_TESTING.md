@@ -23,5 +23,3 @@ Kismatic is tested using AWS. This means that to run the integration test suite 
  This step will complain if your keys aren't set up, with clues as to how you can remedy the issue.
 
  Test early. Test often. Test hard. 
-
- - MMM
