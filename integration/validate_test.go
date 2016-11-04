@@ -92,7 +92,7 @@ func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, 
 	}
 
 	By("Installing Master")
-	err = runViaSSH(prep.CommandsToInstallK8sMaster, prepNode, sshKey, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8sMaster, prepNode, sshKey, 8*time.Minute)
 	FailIfError(err, "Failed to install master on node via SSH")
 
 	err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey)
