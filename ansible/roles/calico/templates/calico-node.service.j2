@@ -10,7 +10,7 @@ Environment=INTERNAL_IP={{ internal_ipv4 }}
 Environment=DOCKER_IMAGE={{ calico_node_img }}
 EnvironmentFile={{ network_environment_path }}
 PermissionsStartOnly=true
-ExecStart={{ bin_dir }}/calicoctl node --ip=${INTERNAL_IP} --node-image=${DOCKER_IMAGE} --detach=false
+ExecStart={{ bin_dir }}/calicoctl node --ip=${INTERNAL_IP} --node-image=${DOCKER_IMAGE} --no-pull --detach=false
 Restart=always
 RestartSec=10
 

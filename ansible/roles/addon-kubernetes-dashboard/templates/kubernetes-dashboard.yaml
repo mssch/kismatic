@@ -21,7 +21,7 @@ apiVersion: extensions/v1beta1
 metadata:
   labels:
     app: kubernetes-dashboard
-    version: v1.4.0-beta2
+    version: "{{ kubernetes_dashboard_version }}"
   name: kubernetes-dashboard
   namespace: kube-system
 spec:

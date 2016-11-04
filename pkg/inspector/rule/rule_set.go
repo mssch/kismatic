@@ -87,7 +87,7 @@ const defaultRuleSet = `---
 - kind: PackageAvailable
   when: ["etcd"]
   packageName: kismatic-etcd
-  packageVersion: 1.4.3
+  packageVersion: 1.4.5-1
 - kind: PackageAvailable
   when: ["master","worker"]
   packageName: kismatic-docker-engine
@@ -95,11 +95,11 @@ const defaultRuleSet = `---
 - kind: PackageAvailable
   when: ["master"]
   packageName: kismatic-kubernetes-master
-  packageVersion: 1.4.3
+  packageVersion: 1.4.5-1
 - kind: PackageAvailable
   when: ["worker"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.4.3
+  packageVersion: 1.4.5-1
 `
 
 // DefaultRules returns the list of rules that are built into the inspector
