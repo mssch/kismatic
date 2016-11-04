@@ -4,6 +4,7 @@
     name: "Smoke test Master Nodes"
     remote_user: root
     become_method: sudo
+    serial: 1
     vars_files:
       - group_vars/all.yaml
       - group_vars/kubelet-master.yaml
