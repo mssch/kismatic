@@ -6,8 +6,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/apprenda/kismatic-platform/pkg/ansible"
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/ansible"
+	"github.com/apprenda/kismatic/pkg/util"
 )
 
 // AnsibleEventStreamExplainer explains the incoming ansible event stream

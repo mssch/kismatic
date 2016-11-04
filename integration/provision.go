@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/apprenda/kismatic-platform/integration/aws"
-	"github.com/apprenda/kismatic-platform/integration/packet"
+	"github.com/apprenda/kismatic/integration/aws"
+	"github.com/apprenda/kismatic/integration/packet"
 	homedir "github.com/mitchellh/go-homedir"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
+	"github.com/apprenda/kismatic/pkg/inspector/check"
 )
 
 // CheckMapper implements a mapping between a

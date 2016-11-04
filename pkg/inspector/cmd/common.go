@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
+	"github.com/apprenda/kismatic/pkg/inspector/rule"
 )
 
 func getNodeRoles(commaSepRoles string) ([]string, error) {

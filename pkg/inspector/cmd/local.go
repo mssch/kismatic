@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
-	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
+	"github.com/apprenda/kismatic/pkg/inspector/check"
+	"github.com/apprenda/kismatic/pkg/inspector/rule"
 	"github.com/spf13/cobra"
 )
 

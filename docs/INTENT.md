@@ -89,7 +89,7 @@
 
 ### Hardware Provisioner
 1. Make an **install machine**. This is a small (1 CPU, 1 GB ram, <8 GB hard drive) basic Linux VM with an encrypted disk and very limited access -- just potential cluster administrators.
-2. Create an [RSA keypair](https://github.com/apprenda/kismatic-platform/blob/master/docs/PROVISION.md#providing-access-to-the-installer) on the install machine under `/opt/kismatic`
+2. Create an [RSA keypair](https://github.com/apprenda/kismatic/blob/master/docs/PROVISION.md#providing-access-to-the-installer) on the install machine under `/opt/kismatic`
 3. Make at least 5 more small machines -- these will be your etcd and master machines 
    * Machines must have a `kismaticuser` with
      * sudo access to root
@@ -161,7 +161,7 @@
 
 ### Hardware Provisioner
 1. Make an install machine. This is a small (1 CPU, 1 GB ram, <8 GB hard drive) Linux VM with an encrypted disk and very limited access -- just potential cluster administrators.
-2. Create an [RSA keypair](https://github.com/apprenda/kismatic-platform/blob/master/docs/PROVISION.md#providing-access-to-the-installer) on the install machine under `/opt/kismatic`
+2. Create an [RSA keypair](https://github.com/apprenda/kismatic/blob/master/docs/PROVISION.md#providing-access-to-the-installer) on the install machine under `/opt/kismatic`
 3. Since this is a larger cluster, much bandwidth will be saved by [Syncing a local repository with Kismatic](PACKAGES.md)
 4. You will also want to sync a local Docker Registry (one can be installed optionally with Kismatic) with Kismatic's container dependencies
 3. Make at least 5 more [small machines](PLAN.md#hardware--operating-system) -- these will be your etcd and master machines 

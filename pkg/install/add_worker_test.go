@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/apprenda/kismatic-platform/pkg/ansible"
-	"github.com/apprenda/kismatic-platform/pkg/install/explain"
-	"github.com/apprenda/kismatic-platform/pkg/tls"
+	"github.com/apprenda/kismatic/pkg/ansible"
+	"github.com/apprenda/kismatic/pkg/install/explain"
+	"github.com/apprenda/kismatic/pkg/tls"
 )
 
 func mustGetTempDir(t *testing.T) string {

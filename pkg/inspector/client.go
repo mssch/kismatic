@@ -7,7 +7,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
+	"github.com/apprenda/kismatic/pkg/inspector/rule"
 )
 
 // The Client executes rules against a remote inspector

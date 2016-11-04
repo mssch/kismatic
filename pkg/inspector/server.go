@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
-	"github.com/apprenda/kismatic-platform/pkg/inspector/rule"
+	"github.com/apprenda/kismatic/pkg/inspector/check"
+	"github.com/apprenda/kismatic/pkg/inspector/rule"
 )
 
 // Server supports the execution of inspector rules from a remote node

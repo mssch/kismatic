@@ -3,7 +3,7 @@ package rule
 import (
 	"sync"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
+	"github.com/apprenda/kismatic/pkg/inspector/check"
 )
 
 // The Engine executes rules and reports the results

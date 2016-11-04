@@ -2,7 +2,7 @@ package main // Set via linker flag
 import (
 	"os"
 
-	"github.com/apprenda/kismatic-platform/pkg/cli"
+	"github.com/apprenda/kismatic/pkg/cli"
 	"github.com/spf13/cobra/doc"
 )
 

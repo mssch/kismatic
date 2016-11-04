@@ -1,6 +1,6 @@
 package explain
 
-import "github.com/apprenda/kismatic-platform/pkg/ansible"
+import "github.com/apprenda/kismatic/pkg/ansible"
 
 // StreamExplainer wraps the Explain method, which reads the incoming stream, and explains to the user what is
 // happening

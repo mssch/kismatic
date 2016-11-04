@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/apprenda/kismatic-platform/pkg/ansible"
-	"github.com/apprenda/kismatic-platform/pkg/install/explain"
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/ansible"
+	"github.com/apprenda/kismatic/pkg/install/explain"
+	"github.com/apprenda/kismatic/pkg/util"
 )
 
 var errMissingClusterCA = errors.New("The Certificate Authority's private key and certificate used to install " +

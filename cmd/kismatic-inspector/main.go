@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/cmd"
+	"github.com/apprenda/kismatic/pkg/inspector/cmd"
 )
 
 func main() {

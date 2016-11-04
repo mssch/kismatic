@@ -10,7 +10,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/apprenda/kismatic-platform/pkg/util"
+	"github.com/apprenda/kismatic/pkg/util"
 	garbler "github.com/michaelbironneau/garbler/lib"
 
 	yaml "gopkg.in/yaml.v2"

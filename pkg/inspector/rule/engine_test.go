@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/apprenda/kismatic-platform/pkg/inspector/check"
+	"github.com/apprenda/kismatic/pkg/inspector/check"
 )
 
 type fakeCheck struct {
