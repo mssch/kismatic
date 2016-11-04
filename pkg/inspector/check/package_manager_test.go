@@ -44,7 +44,7 @@ NetworkManager.x86_64           1:1.0.6-30.el7_2               @koji-override-1`
 	m := rpmManager{
 		run: mock.run,
 	}
-	p := PackageQuery{"NetworkManager", "1:1.0.6"}
+	p := PackageQuery{"NetworkManager", "1:1.0.6-30.el7_2"}
 	ok, _ := m.IsAvailable(p)
 	if !ok {
 		t.Error("expected true, but got false")

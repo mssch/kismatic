@@ -82,24 +82,33 @@ const defaultRuleSet = `---
   when: ["master"]
   port: 443
   timeout: 5s
-  
+
 # TODO: Add kismatic package checks
 - kind: PackageAvailable
-  when: ["etcd"]
+  when: ["etcd", "ubuntu"]
   packageName: kismatic-etcd
   packageVersion: 1.4.5-1
 - kind: PackageAvailable
-  when: ["master","worker"]
-  packageName: kismatic-docker-engine
-  packageVersion: 1.11.2
-- kind: PackageAvailable
-  when: ["master"]
+  when: ["master","ubuntu"]
   packageName: kismatic-kubernetes-master
   packageVersion: 1.4.5-1
 - kind: PackageAvailable
-  when: ["worker"]
+  when: ["worker","ubuntu"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.4.5-1
+
+- kind: PackageAvailable
+  when: ["etcd", "centos"]
+  packageName: kismatic-etcd
+  packageVersion: 1.4.5_1-1
+- kind: PackageAvailable
+  when: ["master","centos"]
+  packageName: kismatic-kubernetes-master
+  packageVersion: 1.4.5_1-1
+- kind: PackageAvailable
+  when: ["worker","centos"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.4.5_1-1
 `
 
 // DefaultRules returns the list of rules that are built into the inspector

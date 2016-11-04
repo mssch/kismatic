@@ -114,7 +114,7 @@ func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 			continue
 		}
 		maybeName := strings.Split(f[0], ".")[0]
-		maybeVersion := strings.Split(f[1], "-")[0]
+		maybeVersion := f[1]
 		if p.Name == maybeName && p.Version == maybeVersion {
 			return true
 		}
