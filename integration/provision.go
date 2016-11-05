@@ -133,14 +133,14 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 	provisioned := provisionedNodes{}
 	var i uint16
 	for i = 0; i < nodeCount.Etcd; i++ {
-		nodeID, err := p.client.CreateNode(ami, aws.T2Micro)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
 		if err != nil {
 			return provisioned, err
 		}
 		provisioned.etcd = append(provisioned.etcd, NodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Master; i++ {
-		nodeID, err := p.client.CreateNode(ami, aws.T2Micro)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
 		if err != nil {
 			return provisioned, err
 		}
