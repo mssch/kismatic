@@ -29,5 +29,5 @@
   # add ons
   - include: _addon-network-policy.yaml
     when: enable_calico_policy|bool == true
-  - include: _addon-kubernetes-dashboard.yaml
   - include: _addon-kubernetes-dns.yaml
+  - include: _addon-kubernetes-dashboard.yaml
