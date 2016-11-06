@@ -1,6 +1,6 @@
 # Kismatic Install CLI
 
-[CLI documentation](../cli-docs)
+[CLI documentation](https://github.com/apprenda/kismatic/tree/master/kismatic-cli-docs)
 
 ## What the Kismatic CLI will do:
 
@@ -20,13 +20,13 @@
 
 # Kismatic Install Workflow
 
-First thing first: [know what you want to build and how you want to build it](INTENT.md).
+First, review the following document to learn about a few example Kubernetes cluster deployment architectures and the various approaches therein: [know what you want to build and how you want to build it](INTENT.md).
 
 ![High-level workflow](installer-workflow.png)
 
 | [Plan](PLAN.md) | [Provision](PROVISION.md) | [Validate](#validate) | [Apply](#apply) |
 | --- | --- | --- | --- |
-| Read these docs to learn more about the resources Kubernetes will require of your infrastructure provider. You may engage with other departments in your organization (storage, network, security, IT, etc.) to make decisions and arrange required work. | Work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. Collect information about your infrastructure and enter it into a **Plan File** | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable.|
+| Read these docs to learn more about the resources Kubernetes will require of your infrastructure provider. You may engage with other departments in your organization (storage, network, security, IT, etc.) to make decisions and arrange required work. | Work with infrastucture providers to build out the machines and network changes that you'll need to install Kubernetes. Collect information about your infrastructure and enter it into a Plan File. | Kismatic will check the readiness of the machines and network you've specified in the Plan File. | Kismatic will configure the machines you've specified in the Plan File and run a smoke test to ensure that the resulting cluster is usable.|
 
 1. **Plan**: `kismatic install plan`
    1. The installer will ask basic questions about the intent of your cluster.
