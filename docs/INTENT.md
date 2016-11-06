@@ -1,23 +1,23 @@
-# Cluster Intent
+# Cluster Intent Examples
 
 | Why do you want to install Kubernetes? | Example Cluster |
 | --- | --- |
 | I want to run a small prototype cluster on my laptop| [Minikube-style](#minikube) |
 | I want to run a small development cluster in AWS | [Developer](#junior) |
-| I want to run a reliable, permanent labratory cluster to host mostly services for my team. | [Skunkworks](#skunkworks) |
+| I want to run a reliable, permanent labratory cluster to host services mostly for my team. | [Skunkworks](#skunkworks) |
 | I want to run a reliable, permanent production cluster to host services for my team and others. | [Production](#production) | 
 
 # <a name="minikube"></a>Minikube style
 
-*Just heard about Kubernetes. Love Docker and want to see what the fuss is about.*
+*Just heard about Kubernetes. Love Docker and want to see what the fuss is about!*
 
 ![](minikube.jpg)
 
 ## What you need:
 
-* A developer's laptop (Running OSX or Linux)
+* A laptop or PC/Mac (Running OSX or Linux)
 * A desktop virtualizer (such as Oracle VirtualBox)
-* A VM lifecycle tool (such as Vagrant) can dramatically speed up set up time for virtual machines
+* A VM lifecycle tool (such as Vagrant) can dramatically improve set up time for virtual machines
 
 ## How you install:
 
@@ -42,14 +42,14 @@
 
 ## What you need:
 
-* A developer's laptop (Running OSX or Linux)
+* A laptop or PC/Mac (Running OSX or Linux)
 * An AWS account
 
 ## How you install:
 
 1. Download the [latest Kismatic](PROVISION.md#get) for your OS and unpack it to `~/kismatic`
 2. Make a new [Keypair](https://aws.console.aws.amazon.com/ec2/v2/home?#KeyPairs:sort=keyName) for your cluster. Download its private key to `~/kismatic/kismaticuser.key` 
-3. `chmod 0600 kistmaticuser.key` to allow its use for SSH 
+3. `chmod 0600 kismaticuser.key` to allow its use for SSH 
 3. Make 2 small (micro) instances using Ubuntu 16.04 or RHEL. One of these will be your etcd and the other will be your master.
    * Assign public IPs -- we can always remove them later, but this will ease installation
    * Add the new instances to a security group that will allow access to any port from your machine
@@ -74,7 +74,7 @@
 
 ![](skunkworks.jpg)
 
-*I would like to build and grow a big cluster for my team to share and work with. I don't need to share much with other people in the company, want to avoid introducing complexity to our network or I prefer the security of not having all of my Kubernetes pods addressable automatically by anybody with access to the network. This is a production environment, but we can probably survive a major disaster so long as it is low risk.*
+*I would like to build and grow a production cluster for my team to share and work with. I don't need to share much with other people in the company, want to avoid introducing complexity to our network or I prefer the security of not having all of my Kubernetes pods addressable automatically by anybody with access to the network. This is a production environment, but we can probably survive a major disaster so long as it is low risk to workloads.*
 
 ## What you need:
 
@@ -97,21 +97,21 @@
      * The public key generated above in `~/.ssh/id_rsa.pub`
    * You may choose to [pre-install](PROVISION.md#pre-install-configuration) packages, or let Kismatic install them for you.
      * It's okay to make a golden image of each if it improves your workflow. Runtime configuration will be set up by kismatic
-   * A lab that does not have internet access will require
-     * [Syncing a local repository with Kismatic](PACKAGES.md)
-     * A Docker Registry (which can be installed optionally with kismatic) with Kismatic's container dependencies included
+   * A lab that does not have internet access will require the following:
+     * [Syncing a local repository with Kismatic](PACKAGES.md).
+     * A Docker Registry (which can be installed optionally with kismatic) with Kismatic's container dependencies included.
    * Both Etcd and Master machines should be spread across hardware within your datacenter to provide availability in the event of a network or hardware failure
 4. Make your worker pool (2 or more machines, each sized to hold your largest workload) 
-   * Don't oversubscribe. Let Kubernetes have entire cores. This will allow you to get the maximum benefit from the binpacking aspect of Kubernetes' schedulers.
+   * Don't oversubscribe. Let Kubernetes have entire cores. This will allow you to get the maximum benefit from Kubernetes' binpacking capabilities.
    * Machines must have a `kismaticuser` with
      * sudo access to root
      * Public Key auth for sudo & sshd
      * The public key generated above in `~/.ssh/id_rsa.pub`
    * You may choose to [pre-install](PROVISION.md#pre-install-configuration) packages, or let Kismatic install them for you.
      * It's okay to make a golden image of each if it improves your workflow
-   * A lab that does not have internet access will require
-     * [Syncing a local repository with Kismatic](PACKAGES.md)
-     * A Docker Registry (which can be installed optionally by Kismatic) with Kismatic's container dependencies included
+   * A lab that does not have internet access will require the following:
+     * [Syncing a local repository with Kismatic](PACKAGES.md).
+     * A Docker Registry (which can be installed optionally by Kismatic) with Kismatic's container dependencies included.
    * Spread machines across hardware within your datacenter to provide availability in the event of a network or hardware failure
 5. Add a load balanced endpoint for the master nodes
    * If you have an internal load balancer that offers Virtual IP based load balancing, use that to balance between master nodes
