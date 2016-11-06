@@ -6,13 +6,13 @@ KET is a set of tools for creating enterprise-tuned Kubernetes clusters. KET was
 The KET tools include:
 
 1. [`Kismatic CLI`](docs/INSTALL.md)
-   * Command-line control plane and lifecycle tool for installing and configuring Kubernetes on provisioned infrastructure
+   * Command-line control plane and lifecycle tool for installing and configuring Kubernetes on provisioned infrastructure.
 2. [`Kismatic Inspector`](cmd/kismatic-inspector/README.md)
-   * Cluster health and validation utility for assuring that software and network configurations of cluster nodes are correct when installing Kubernetes
+   * Cluster health and validation utility for assuring that software and network configurations of cluster nodes are correct when installing Kubernetes.
 3. [`Kuberang`](https://github.com/apprenda/kuberang)
    * Cluster build verificatoin to ensure networking and scaling work as intended. This tool is used to smoke-test a newly built cluster.
 4. [Kismatic RPM & DEB Packages](docs/PACKAGES.md)
-   * Packages for installing Kubernetes and its dependencies, focused on specific roles in an HA cluster
+   * Packages for installing Kubernetes and its dependencies, focused on specific roles in an HA cluster.
    * With these packages installed on a local repo, it is possible to use Kismatic to install Kubernetes on nodes that do not have access to the public internet.
 
 ## Dependencies
