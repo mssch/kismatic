@@ -64,7 +64,7 @@ The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-
 
 [Plan & Install a Kubernetes cluster](docs/INSTALL.md) -- Overview and details for each phase of the KET installation lifecycle.
 
-[Using KET with Linkerd](docs/LINKERD.md) -- Instructions on how to use KET with Linkerd in 1 command.
+[Using KET with linkerd](docs/LINKERD.md) -- Instructions on how to use KET with linkerd in 1 command.
 
 [Using KET with Calico](docs/NETWORKING.md) -- Instructions on how to use KET with the built-in SDN controller Project Calico.
 
