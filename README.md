@@ -32,15 +32,15 @@ The KET tools include:
 
 # Kismatic Documentation
 
-[Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/kismatic-cli-docs)
+[What you can build with Kismatic](docs/INTENT.md) -- Useful examples for various ways you can use Kismatic in your organization.
 
-[What you can build with Kismatic](docs/INTENT.md)
+[Plan & Install a Kubernetes cluster](docs/INSTALL.md) -- Overview and details for each phase of the KET installation lifecycle.
 
-[Plan & Install a Kubernetes cluster](docs/INSTALL.md)
+[Cert Generation](docs/CERT_GENERATION.md) -- Information on how KET handles certificates.
 
-[Cert Generation](docs/CERT_GENERATION.md)
+[Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/kismatic-cli-docs) -- Dynamically generated Cobra documentation for the Kismatic CLI.
 
-[Roadmap](ROADMAP.md)
+[Roadmap](ROADMAP.md) -- Insight into the near-term features roadmap for the next few releases of KET.
 
 # Dangerously Basic Installation Instructions
 Use the `kismatic install` command to work through installation of a cluster. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
