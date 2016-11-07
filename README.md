@@ -1,6 +1,8 @@
 # Kismatic Enterprise Toolkit (KET): Production-Tuned System for Designing, Deploying and Operating Kubernetes
 [![Build Status](https://snap-ci.com/ulSrRsof30gMr7eaXZ_eufLs7XQtmS6Lw4eYwkmATn4/build_image)](https://snap-ci.com/apprenda/kismatic/branch/master)
 
+![KET](logo.png?raw=true "KET Logo")
+
 KET is a set of tools for creating enterprise-tuned Kubernetes clusters. KET was built to make it simple for organizations who fully manage their own infrastructure to deploy and run secure, highly-available Kubernetes installations with built-in sane defaults for networking, circuit-breaking, cluster health-checking and much more!
 
 The KET tools include:
