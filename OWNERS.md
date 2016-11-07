@@ -1,3 +1,0 @@
-* abrand
-* dkoshkin
-* mmiller
