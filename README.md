@@ -30,18 +30,6 @@ The KET tools include:
 
 [Download latest install tarball (Linux)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kismatic.tar.gz)
 
-# Kismatic Documentation
-
-[What you can build with Kismatic](docs/INTENT.md) -- Useful examples for various ways you can use Kismatic in your organization.
-
-[Plan & Install a Kubernetes cluster](docs/INSTALL.md) -- Overview and details for each phase of the KET installation lifecycle.
-
-[Cert Generation](docs/CERT_GENERATION.md) -- Information on how KET handles certificates.
-
-[Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/kismatic-cli-docs) -- Dynamically generated Cobra documentation for the Kismatic CLI.
-
-[Roadmap](ROADMAP.md) -- Insight into the near-term features roadmap for the next few releases of KET.
-
 # Dangerously Basic Installation Instructions
 Use the `kismatic install` command to work through installation of a cluster. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
 
@@ -63,9 +51,21 @@ The installation consists of three phases:
 
 KET automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) in your new cluster. Open the link provided at the end of the installation in your browser to use it. This link will be in the form of `https://%load_balanced_fqdn%:6443/ui`, using `%load_balanced_fqdn%`(from your `kismatic-cluster.yaml` file). You will also be prompted for credentials: use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
 
-The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/), just follow the instructions provided at the end of the installation to use it.   
+The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/), just follow the instructions provided at the end of the installation to use it. 
 
-# Development documentation
+# Usage Documentation
+
+[What you can build with Kismatic](docs/INTENT.md) -- Useful examples for various ways you can use Kismatic in your organization.
+
+[Plan & Install a Kubernetes cluster](docs/INSTALL.md) -- Overview and details for each phase of the KET installation lifecycle.
+
+[Cert Generation](docs/CERT_GENERATION.md) -- Information on how KET handles certificates.
+
+[Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/kismatic-cli-docs) -- Dynamically generated Cobra documentation for the Kismatic CLI.
+
+[Roadmap](ROADMAP.md) -- Insight into the near-term features roadmap for the next few releases of KET.
+
+# Development Documentation
 
 [How to Build KET](BUILDING.md)
 
