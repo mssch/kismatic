@@ -64,6 +64,10 @@ The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-
 
 [Plan & Install a Kubernetes cluster](docs/INSTALL.md) -- Overview and details for each phase of the KET installation lifecycle.
 
+[Using KET with Linkerd](docs/CERT_GENERATION.md) -- Instructions on how to use KET with Linkerd.
+
+[Using KET with Calico](docs/CERT_GENERATION.md) -- Instructions on how to use KET with Calico.
+
 [Cert Generation](docs/CERT_GENERATION.md) -- Information on how KET handles certificates.
 
 [Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/kismatic-cli-docs) -- Dynamically generated Cobra documentation for the Kismatic CLI.
