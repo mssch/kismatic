@@ -39,7 +39,7 @@ var _ = Describe("kismatic install validate tests", func() {
 
 func validateMiniPkgInstallEnabled(provisioner infrastructureProvisioner, distro linuxDistro) {
 	By("Provisioning nodes on AWS")
-	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro)
+	nodes, err := provisioner.ProvisionNodesWithRetry(NodeCount{Worker: 1}, distro, infraProvisionRetry)
 	defer provisioner.TerminateNodes(nodes)
 	FailIfError(err, "Failed to provision nodes for test")
 
@@ -53,7 +53,7 @@ func validateMiniPkgInstallEnabled(provisioner infrastructureProvisioner, distro
 
 func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, distro linuxDistro) {
 	By("Provisioning nodes on AWS")
-	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro)
+	nodes, err := provisioner.ProvisionNodesWithRetry(NodeCount{Worker: 1}, distro, infraProvisionRetry)
 	defer provisioner.TerminateNodes(nodes)
 	FailIfError(err, "Failed to provision nodes for test")
 

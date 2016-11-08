@@ -5,6 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const infraProvisionRetry = 2
+
 // ItOnAWS runs a spec if the AWS details have been provided
 func ItOnAWS(description string, f func(infrastructureProvisioner)) {
 	It(description, func() {
@@ -32,7 +34,7 @@ type infraDependentTest func(nodes provisionedNodes, sshKey string)
 // WithInfrastructure runs the spec with the requested infrastructure
 func WithInfrastructure(nodeCount NodeCount, distro linuxDistro, provisioner infrastructureProvisioner, f infraDependentTest) {
 	By("Provisioning nodes")
-	nodes, err := provisioner.ProvisionNodes(nodeCount, distro)
+	nodes, err := provisioner.ProvisionNodesWithRetry(nodeCount, distro, infraProvisionRetry)
 	if !leaveIt() {
 		defer provisioner.TerminateNodes(nodes)
 	}
@@ -51,7 +53,7 @@ type miniInfraDependentTest func(node NodeDeets, sshKey string)
 // WithMiniInfrastructure runs the spec with a Minikube-like infrastructure setup.
 func WithMiniInfrastructure(distro linuxDistro, provisioner infrastructureProvisioner, f miniInfraDependentTest) {
 	By("Provisioning nodes")
-	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro)
+	nodes, err := provisioner.ProvisionNodesWithRetry(NodeCount{Worker: 1}, distro, infraProvisionRetry)
 	if !leaveIt() {
 		defer provisioner.TerminateNodes(nodes)
 	}

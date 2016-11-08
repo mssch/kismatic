@@ -26,6 +26,7 @@ const (
 
 type infrastructureProvisioner interface {
 	ProvisionNodes(NodeCount, linuxDistro) (provisionedNodes, error)
+	ProvisionNodesWithRetry(NodeCount, linuxDistro, int) (provisionedNodes, error)
 	TerminateNodes(provisionedNodes) error
 	SSHKey() string
 }
@@ -118,6 +119,21 @@ func AWSClientFromEnvironment() (infrastructureProvisioner, bool) {
 		p.sshKey = filepath.Join(dir, ".ssh", "kismatic-integration-testing.pem")
 	}
 	return p, true
+}
+
+func (p awsProvisioner) ProvisionNodesWithRetry(nodeCount NodeCount, distro linuxDistro, retry int) (provisionedNodes, error) {
+	var err error
+	var nodes provisionedNodes
+	for i := 0; i <= retry; i++ {
+		nodes, err = p.ProvisionNodes(nodeCount, distro)
+		// always try to terminate nodes when errors occur
+		p.TerminateNodes(nodes)
+		// no error, return
+		if err == nil {
+			break
+		}
+	}
+	return nodes, err
 }
 
 func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
@@ -229,6 +245,21 @@ func packetClientFromEnv() (infrastructureProvisioner, bool) {
 		p.sshKey = filepath.Join(dir, ".ssh", "packet-kismatic-integration-testing.pem")
 	}
 	return p, true
+}
+
+func (p packetProvisioner) ProvisionNodesWithRetry(nodeCount NodeCount, distro linuxDistro, retry int) (provisionedNodes, error) {
+	var err error
+	var nodes provisionedNodes
+	for i := 0; i <= retry; i++ {
+		nodes, err = p.ProvisionNodes(nodeCount, distro)
+		// always try to terminate nodes when errors occur
+		p.TerminateNodes(nodes)
+		// no error, return
+		if err == nil {
+			break
+		}
+	}
+	return nodes, err
 }
 
 func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
