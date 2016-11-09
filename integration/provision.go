@@ -22,11 +22,11 @@ const (
 	AWSSecurityGroupID  = "sg-d1dc4dab"
 	AMIUbuntu1604USEAST = "ami-29f96d3e"
 	AMICentos7UsEast    = "ami-6d1c2007"
+	InfraProvisionRetry = 2
 )
 
 type infrastructureProvisioner interface {
 	ProvisionNodes(NodeCount, linuxDistro) (provisionedNodes, error)
-	ProvisionNodesWithRetry(NodeCount, linuxDistro, int) (provisionedNodes, error)
 	TerminateNodes(provisionedNodes) error
 	SSHKey() string
 }
@@ -121,11 +121,11 @@ func AWSClientFromEnvironment() (infrastructureProvisioner, bool) {
 	return p, true
 }
 
-func (p awsProvisioner) ProvisionNodesWithRetry(nodeCount NodeCount, distro linuxDistro, retry int) (provisionedNodes, error) {
+func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
 	var err error
 	var nodes provisionedNodes
-	for i := 0; i <= retry; i++ {
-		nodes, err = p.ProvisionNodes(nodeCount, distro)
+	for i := 0; i <= InfraProvisionRetry; i++ {
+		nodes, err = p.provisionNodes(nodeCount, distro)
 		// always try to terminate nodes when errors occur
 		p.TerminateNodes(nodes)
 		// no error, return
@@ -136,7 +136,7 @@ func (p awsProvisioner) ProvisionNodesWithRetry(nodeCount NodeCount, distro linu
 	return nodes, err
 }
 
-func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
+func (p awsProvisioner) provisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
 	var ami aws.AMI
 	switch distro {
 	case Ubuntu1604LTS:
@@ -247,11 +247,11 @@ func packetClientFromEnv() (infrastructureProvisioner, bool) {
 	return p, true
 }
 
-func (p packetProvisioner) ProvisionNodesWithRetry(nodeCount NodeCount, distro linuxDistro, retry int) (provisionedNodes, error) {
+func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
 	var err error
 	var nodes provisionedNodes
-	for i := 0; i <= retry; i++ {
-		nodes, err = p.ProvisionNodes(nodeCount, distro)
+	for i := 0; i <= InfraProvisionRetry; i++ {
+		nodes, err = p.provisionNodes(nodeCount, distro)
 		// always try to terminate nodes when errors occur
 		p.TerminateNodes(nodes)
 		// no error, return
@@ -262,7 +262,7 @@ func (p packetProvisioner) ProvisionNodesWithRetry(nodeCount NodeCount, distro l
 	return nodes, err
 }
 
-func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
+func (p packetProvisioner) provisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
 	var packetDistro packet.OS
 	switch distro {
 	case Ubuntu1604LTS:
