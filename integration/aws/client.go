@@ -3,6 +3,7 @@ package aws
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -19,6 +20,9 @@ const (
 	T2Micro = InstanceType(ec2.InstanceTypeT2Micro)
 	// T2Medium is the T2 Medium instance type
 	T2Medium = InstanceType(ec2.InstanceTypeT2Medium)
+	// UpdateRetry is the number of times will try before failing
+	// Exponential backoff for AWS eventual consistency
+	UpdateRetry = 3
 )
 
 // A Node on AWS
@@ -106,12 +110,22 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			Value: aws.Bool(false),
 		},
 	}
-	_, err = api.ModifyInstanceAttribute(modifyReq)
-	if err != nil {
-		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
-			fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", instanceID)
+	// Use exponential backoff here due to eventual consistency nature of AWS API.
+	var attempts uint
+	for {
+		_, err = api.ModifyInstanceAttribute(modifyReq)
+		if err == nil {
+			break
 		}
-		return "", err
+		if err != nil && attempts == UpdateRetry { // we failed to modify the instance attributes...
+			if err = c.DestroyNodes([]string{*instanceID}); err != nil {
+				fmt.Printf("Failed to modify instance attributes")
+				fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
+			}
+			return "", err
+		}
+		time.Sleep((1 << attempts) * time.Second)
+		attempts++
 	}
 	// Tag the nodes
 	thisHost, _ := os.Hostname()
@@ -128,11 +142,21 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			},
 		},
 	}
-	if _, err = api.CreateTags(tagReq); err != nil {
-		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
-			fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
+	attempts = 0
+	for {
+		_, err = api.CreateTags(tagReq)
+		if err == nil {
+			break
 		}
-		return "", err
+		if err != nil && attempts == UpdateRetry { // Failed to tag the nodes after retrying a couple of times
+			if err = c.DestroyNodes([]string{*instanceID}); err != nil {
+				fmt.Printf("Failed to tag instance")
+				fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
+			}
+			return "", err
+		}
+		time.Sleep((1 << attempts) * time.Second)
+		attempts++
 	}
 	return *res.Instances[0].InstanceId, nil
 }

@@ -22,7 +22,6 @@ const (
 	AWSSecurityGroupID  = "sg-d1dc4dab"
 	AMIUbuntu1604USEAST = "ami-29f96d3e"
 	AMICentos7UsEast    = "ami-6d1c2007"
-	InfraProvisionRetry = 2
 )
 
 type infrastructureProvisioner interface {
@@ -122,21 +121,6 @@ func AWSClientFromEnvironment() (infrastructureProvisioner, bool) {
 }
 
 func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
-	var err error
-	var nodes provisionedNodes
-	for i := 0; i <= InfraProvisionRetry; i++ {
-		nodes, err = p.provisionNodes(nodeCount, distro)
-		// always try to terminate nodes when errors occur
-		p.TerminateNodes(nodes)
-		// no error, return
-		if err == nil {
-			break
-		}
-	}
-	return nodes, err
-}
-
-func (p awsProvisioner) provisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
 	var ami aws.AMI
 	switch distro {
 	case Ubuntu1604LTS:
@@ -248,21 +232,6 @@ func packetClientFromEnv() (infrastructureProvisioner, bool) {
 }
 
 func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
-	var err error
-	var nodes provisionedNodes
-	for i := 0; i <= InfraProvisionRetry; i++ {
-		nodes, err = p.provisionNodes(nodeCount, distro)
-		// always try to terminate nodes when errors occur
-		p.TerminateNodes(nodes)
-		// no error, return
-		if err == nil {
-			break
-		}
-	}
-	return nodes, err
-}
-
-func (p packetProvisioner) provisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
 	var packetDistro packet.OS
 	switch distro {
 	case Ubuntu1604LTS:
