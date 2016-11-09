@@ -59,20 +59,20 @@ func InstallKismaticRPMs(nodes provisionedNodes, distro linuxDistro, sshKey stri
 	FailIfError(err, "failed to configure package repository over SSH")
 
 	By("Installing Etcd")
-	err = runViaSSH(prep.CommandsToInstallEtcd, nodes.etcd, sshKey, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallEtcd, nodes.etcd, sshKey, 10*time.Minute)
 	FailIfError(err, "failed to install Etcd over SSH")
 
 	By("Installing Docker")
 	dockerNodes := append(nodes.master, nodes.worker...)
-	err = runViaSSH(prep.CommandsToInstallDocker, dockerNodes, sshKey, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallDocker, dockerNodes, sshKey, 10*time.Minute)
 	FailIfError(err, "failed to install docker over SSH")
 
 	By("Installing Master:")
-	err = runViaSSH(prep.CommandsToInstallK8sMaster, nodes.master, sshKey, 7*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8sMaster, nodes.master, sshKey, 15*time.Minute)
 	FailIfError(err, "failed to install the master over SSH")
 
 	By("Installing Worker:")
-	err = runViaSSH(prep.CommandsToInstallK8s, nodes.worker, sshKey, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8s, nodes.worker, sshKey, 10*time.Minute)
 	FailIfError(err, "failed to install the worker over SSH")
 }
 
