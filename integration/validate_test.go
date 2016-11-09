@@ -40,7 +40,9 @@ var _ = Describe("kismatic install validate tests", func() {
 func validateMiniPkgInstallEnabled(provisioner infrastructureProvisioner, distro linuxDistro) {
 	By("Provisioning nodes on AWS")
 	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro)
-	defer provisioner.TerminateNodes(nodes)
+	if !leaveIt() {
+		defer provisioner.TerminateNodes(nodes)
+	}
 	FailIfError(err, "Failed to provision nodes for test")
 
 	By("Waiting until nodes are SSH-accessible")
@@ -54,7 +56,9 @@ func validateMiniPkgInstallEnabled(provisioner infrastructureProvisioner, distro
 func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, distro linuxDistro) {
 	By("Provisioning nodes on AWS")
 	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro)
-	defer provisioner.TerminateNodes(nodes)
+	if !leaveIt() {
+		defer provisioner.TerminateNodes(nodes)
+	}
 	FailIfError(err, "Failed to provision nodes for test")
 
 	By("Waiting until nodes are SSH-accessible")
