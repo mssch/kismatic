@@ -76,7 +76,7 @@ func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, 
 	FailIfError(err, "Failed to prep repo on the node")
 
 	By("Installing etcd on the node")
-	err = runViaSSH(prep.CommandsToInstallEtcd, prepNode, sshKey, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallEtcd, prepNode, sshKey, 10*time.Minute)
 	FailIfError(err, "Failed to install etcd on the node")
 
 	if err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey); err == nil {
@@ -84,7 +84,7 @@ func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, 
 	}
 
 	By("Installing Docker")
-	err = runViaSSH(prep.CommandsToInstallDocker, prepNode, sshKey, 5*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallDocker, prepNode, sshKey, 10*time.Minute)
 	FailIfError(err, "failed to install docker over SSH")
 
 	if err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey); err == nil {
@@ -92,7 +92,7 @@ func validateMiniPkgInstallationDisabled(provisioner infrastructureProvisioner, 
 	}
 
 	By("Installing Master")
-	err = runViaSSH(prep.CommandsToInstallK8sMaster, prepNode, sshKey, 8*time.Minute)
+	err = runViaSSH(prep.CommandsToInstallK8sMaster, prepNode, sshKey, 15*time.Minute)
 	FailIfError(err, "Failed to install master on node via SSH")
 
 	err = ValidateKismaticMiniDenyPkgInstallation(theNode, sshUser, sshKey)
