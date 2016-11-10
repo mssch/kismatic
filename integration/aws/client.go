@@ -22,7 +22,7 @@ const (
 	T2Medium = InstanceType(ec2.InstanceTypeT2Medium)
 	// UpdateRetry is the number of times will try before failing
 	// Exponential backoff for AWS eventual consistency
-	UpdateRetry = 3
+	UpdateRetry = 5
 )
 
 // A Node on AWS
@@ -118,8 +118,8 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			break
 		}
 		if err != nil && attempts == UpdateRetry { // we failed to modify the instance attributes...
+			fmt.Println("Failed to modify instance attributes")
 			if err = c.DestroyNodes([]string{*instanceID}); err != nil {
-				fmt.Printf("Failed to modify instance attributes")
 				fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
 			}
 			return "", err
@@ -149,8 +149,8 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			break
 		}
 		if err != nil && attempts == UpdateRetry { // Failed to tag the nodes after retrying a couple of times
+			fmt.Println("Failed to tag instance")
 			if err = c.DestroyNodes([]string{*instanceID}); err != nil {
-				fmt.Printf("Failed to tag instance")
 				fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
 			}
 			return "", err
