@@ -8,9 +8,9 @@
       name: kube-apiserver.service
       state: restarted
       enabled: yes
-
-  # verify service
   - name: verify kube-apiserver is running
     command: systemctl status kube-apiserver
-    retries: 5
-    delay: 3
+    register: running
+    until: running|success
+    retries: 3
+    delay: 5

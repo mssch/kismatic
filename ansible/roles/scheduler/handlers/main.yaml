@@ -8,9 +8,9 @@
       name: kube-scheduler.service
       state: restarted
       enabled: yes
-
-  # verify service
   - name: verify kube-scheduler is running
     command: systemctl status kube-scheduler
-    retries: 5
-    delay: 3
+    register: running
+    until: running|success
+    retries: 3
+    delay: 5

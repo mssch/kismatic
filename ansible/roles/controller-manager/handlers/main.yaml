@@ -8,9 +8,9 @@
       name: kube-controller-manager.service
       state: restarted
       enabled: yes
-
-  # verify service
   - name: verify kube-controller-manager is running
     command: systemctl status kube-controller-manager
-    retries: 5
-    delay: 3
+    register: running
+    until: running|success
+    retries: 3
+    delay: 5

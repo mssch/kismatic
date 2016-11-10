@@ -22,7 +22,7 @@ ExecStart={{ bin_dir }}/kube-controller-manager \
   --service-cluster-ip-range=${SERVICES_CIDR} \
   --v=2
 Restart=on-failure
-RestartSec=10
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target

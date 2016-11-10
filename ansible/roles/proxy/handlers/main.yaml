@@ -8,9 +8,9 @@
       name: kube-proxy.service
       state: restarted
       enabled: yes
-
-  # verify service
   - name: verify kube-proxy is running
     command: systemctl status kube-proxy
-    retries: 5
-    delay: 3
+    register: running
+    until: running|success
+    retries: 3
+    delay: 5

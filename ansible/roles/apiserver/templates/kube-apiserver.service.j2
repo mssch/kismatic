@@ -36,7 +36,7 @@ ExecStart={{ bin_dir }}/kube-apiserver \
   --runtime-config=extensions/v1beta1=true,extensions/v1beta1/networkpolicies=true \
   --v=2
 Restart=on-failure
-RestartSec=10
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
