@@ -10,8 +10,8 @@
       src: "{{ kismatic_preflight_checker }}"
       dest: "{{ bin_dir }}/kismatic-inspector"
       mode: 0744
-  - debug: msg="{{ bin_dir }}/kismatic-inspector server --node-roles {{ \",\".join(group_names) }} --port 8888 {{ (allow_package_installation == 'true') | ternary('', '-e') }}"
-  - name: copy calico-node.service to remote
+
+  - name: copy kismatic-inspector.service to remote
     template:
       src: kismatic-inspector.service.j2
       dest: "{{ init_system_dir }}/kismatic-inspector.service"
