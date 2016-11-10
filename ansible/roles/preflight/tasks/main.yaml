@@ -3,32 +3,33 @@
     fail: msg="systemd is required"
     when: ansible_service_mgr != "systemd"
     changed_when: false
-    # Kill any existing inspector before attempting
-    # to start a new one.
-  - name: check if Kismatic Inspector is running
-    command: "pgrep -f ^{{bin_dir}}/kismatic-inspector"
-    register: inspector_running
-    ignore_errors: yes
-  - name: kill existing Kismatic Inspector
-    command: "pkill -f ^{{bin_dir}}/kismatic-inspector"
-    when: inspector_running.failed is not defined
+
+  # setup Kismatic Inspector
   - name: copy Kismatic Inspector to node
     copy:
       src: "{{ kismatic_preflight_checker }}"
       dest: "{{ bin_dir }}/kismatic-inspector"
       mode: 0744
-  - name: start the Kismatic Inspector in server mode
-    command: "{{ bin_dir }}/kismatic-inspector server --node-roles {{ \",\".join(group_names) }} --port 8888 {{ (allow_package_installation == 'true') | ternary('', '-e') }}"
-    async: 300
-    register: start_inspector
-  - name: ensure Kismatic Inspector server is running
-    async_status: jid={{ start_inspector.ansible_job_id }}
-    register: job_result
+
+  - name: copy kismatic-inspector.service to remote
+    template:
+      src: kismatic-inspector.service.j2
+      dest: "{{ init_system_dir }}/kismatic-inspector.service"
+    notify:
+      - reload services
+
+  - name: start kismatic-inspector service
+    service:
+      name: kismatic-inspector.service
+      state: started
+
   # Run the pre-flights checks, and always stop the checker regardless of result
   - block:
     - name: run pre-flight checks using Kismatic Inspector
       local_action: command {{ kismatic_preflight_checker_local | default(kismatic_preflight_checker) }} client {{ ansible_host }}:8888 -o json --node-roles {{ ",".join(group_names) }}
       become: no
     always:
-      - name: stop the inspector
-        command: "pkill -f ^{{bin_dir}}/kismatic-inspector"
+      - name: stop kismatic-inspector service
+        service:
+          name: kismatic-inspector.service
+          state: stopped

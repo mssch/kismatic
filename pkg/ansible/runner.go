@@ -148,7 +148,7 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	os.Setenv("ANSIBLE_JSON_LINES_PIPE", r.namedPipe)
 
 	// Print Ansible command
-	fmt.Fprint(r.out, strings.Join(cmd.Args, " "))
+	fmt.Fprintln(r.out, strings.Join(cmd.Args, " "))
 	// Starts async execution of ansible, which will block until
 	// we start reading from the named pipe
 	err = cmd.Start()
