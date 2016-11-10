@@ -25,6 +25,7 @@ func TestClient(t *testing.T) {
 			SecurityGroupID: os.Getenv("AWS_SECURITY_GROUP_ID"),
 		},
 	}
+	fmt.Println("Creating node")
 	nodeID, err := c.CreateNode(Ubuntu1604LTSEast, T2Micro)
 	if err != nil {
 		t.Fatalf("Failed to create node: %v", err)

@@ -20,9 +20,9 @@ const (
 	T2Micro = InstanceType(ec2.InstanceTypeT2Micro)
 	// T2Medium is the T2 Medium instance type
 	T2Medium = InstanceType(ec2.InstanceTypeT2Medium)
-	// UpdateRetry is the number of times will try before failing
+	// exponentialBackoffMaxAttempts is the number of times will try before failing
 	// Exponential backoff for AWS eventual consistency
-	UpdateRetry = 3
+	exponentialBackoffMaxAttempts = 5
 )
 
 // A Node on AWS
@@ -110,22 +110,17 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			Value: aws.Bool(false),
 		},
 	}
-	// Use exponential backoff here due to eventual consistency nature of AWS API.
-	var attempts uint
-	for {
-		_, err = api.ModifyInstanceAttribute(modifyReq)
-		if err == nil {
-			break
+	err = retryWithBackoff(func() error {
+		var err2 error
+		_, err2 = api.ModifyInstanceAttribute(modifyReq)
+		return err2
+	})
+	if err != nil {
+		fmt.Println("Failed to modify instance attributes")
+		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
+			fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
 		}
-		if err != nil && attempts == UpdateRetry { // we failed to modify the instance attributes...
-			if err = c.DestroyNodes([]string{*instanceID}); err != nil {
-				fmt.Printf("Failed to modify instance attributes")
-				fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
-			}
-			return "", err
-		}
-		time.Sleep((1 << attempts) * time.Second)
-		attempts++
+		return "", err
 	}
 	// Tag the nodes
 	thisHost, _ := os.Hostname()
@@ -142,21 +137,17 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			},
 		},
 	}
-	attempts = 0
-	for {
-		_, err = api.CreateTags(tagReq)
-		if err == nil {
-			break
+	err = retryWithBackoff(func() error {
+		var err2 error
+		_, err2 = api.CreateTags(tagReq)
+		return err2
+	})
+	if err != nil {
+		fmt.Println("Failed to tag instance")
+		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
+			fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
 		}
-		if err != nil && attempts == UpdateRetry { // Failed to tag the nodes after retrying a couple of times
-			if err = c.DestroyNodes([]string{*instanceID}); err != nil {
-				fmt.Printf("Failed to tag instance")
-				fmt.Printf("AWS NODE %q MUST BE CLEANED UP MANUALLY\n", *instanceID)
-			}
-			return "", err
-		}
-		time.Sleep((1 << attempts) * time.Second)
-		attempts++
+		return "", err
 	}
 	return *res.Instances[0].InstanceId, nil
 }
@@ -172,8 +163,14 @@ func (c Client) GetNode(id string) (*Node, error) {
 	req := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{aws.String(id)},
 	}
-	resp, err := api.DescribeInstances(req)
+	var resp *ec2.DescribeInstancesOutput
+	err = retryWithBackoff(func() error {
+		var err2 error
+		resp, err2 = api.DescribeInstances(req)
+		return err2
+	})
 	if err != nil {
+		fmt.Println("Failed to get node information")
 		return nil, err
 	}
 	if len(resp.Reservations) != 1 {
@@ -210,6 +207,23 @@ func (c Client) DestroyNodes(nodeIDs []string) error {
 		return err
 	}
 	return nil
+}
+
+func retryWithBackoff(fn func() error) error {
+	var attempts uint
+	var err error
+	for {
+		err = fn()
+		if err == nil {
+			break
+		}
+		if attempts == exponentialBackoffMaxAttempts {
+			break
+		}
+		time.Sleep((1 << attempts) * time.Second)
+		attempts++
+	}
+	return err
 }
 
 func defaultSSHUserForAMI(ami AMI) string {
