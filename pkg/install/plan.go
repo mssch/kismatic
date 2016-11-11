@@ -187,7 +187,7 @@ var commentMap = map[string]string{
 	"policy_enabled":           "When true, enables network policy enforcement on the Kubernetes Pod network. This is an advanced feature.",
 	"update_hosts_files":       "When true, the installer will add entries for all nodes to other nodes' hosts files. Use when you don't have access to DNS.",
 	"expiry":                   "Self-signed certificate expiration period in hours; default is 2 years.",
-	"ssh_key":                  "Absolute path to the ssh public key we should use to manage nodes.",
+	"ssh_key":                  "Absolute path to the ssh private key we should use to manage nodes.",
 	"etcd":                     "Here you will identify all of the nodes that should play the etcd role on your cluster.",
 	"master":                   "Here you will identify all of the nodes that should play the master role.",
 	"worker":                   "Here you will identify all of the nodes that will be workers.",
