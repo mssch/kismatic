@@ -8,6 +8,9 @@
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
     ignore_errors: yes
     register: result
+    until: "result.status is defined and result.status == 200"
+    retries: 3
+    delay: 1
     changed_when: "result.status is defined and result.status == 200"
 
   # DEB repo
@@ -21,6 +24,9 @@
     when: ansible_distribution == 'Ubuntu'
     ignore_errors: yes
     register: result
+    until: "result.status is defined and result.status == 200"
+    retries: 3
+    delay: 1
     changed_when: "result.status is defined and result.status == 200"
 
   - meta: flush_handlers  #Run handlers
