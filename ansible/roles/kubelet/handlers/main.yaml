@@ -8,9 +8,9 @@
       name: kubelet.service
       state: restarted
       enabled: yes
-
-  # verify service
   - name: verify kubelet is running
     command: systemctl status kubelet
-    retries: 12
-    delay: 10
+    register: running
+    until: running|success
+    retries: 3
+    delay: 5
