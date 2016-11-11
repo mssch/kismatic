@@ -23,7 +23,7 @@ type PackageAvailableCheck struct {
 func (c PackageAvailableCheck) Check() (bool, error) {
 	ok, err := IsPackageReadyToContinue(c.PackageManager, c.PackageQuery)
 	if err != nil {
-		return false, fmt.Errorf("failed to determine if %s is available from the operating system's package manager: %v", c.PackageQuery, err)
+		return false, err
 	}
 	return ok, nil
 }
