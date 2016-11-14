@@ -110,17 +110,18 @@ func (r *runner) StartPlaybookOnNode(playbookFile string, inv Inventory, vars Ex
 }
 
 func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVars, limitArg string) (<-chan Event, error) {
+	playbook := filepath.Join(r.ansibleDir, "playbooks", playbookFile)
+	if _, err := os.Stat(playbook); os.IsNotExist(err) {
+		return nil, fmt.Errorf("playbook %q does not exist", playbook)
+	}
 	extraVars, err := vars.commandLineVars()
 	if err != nil {
 		return nil, fmt.Errorf("error building extra vars: %v", err)
 	}
-
 	inventoryFile := filepath.Join(r.ansibleDir, "inventory.ini")
 	if err = ioutil.WriteFile(inventoryFile, inv.ToINI(), 0644); err != nil {
 		return nil, fmt.Errorf("error writing inventory file to %q: %v", inventoryFile, err)
 	}
-
-	playbook := filepath.Join(r.ansibleDir, "playbooks", playbookFile)
 	cmd := exec.Command(filepath.Join(r.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbook, "--extra-vars", extraVars)
 	cmd.Stdout = r.out
 	cmd.Stderr = r.errOut
