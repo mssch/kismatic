@@ -19,7 +19,6 @@ ExecStart=/usr/bin/kubelet \
   --cloud-provider= \
   --cluster-dns=${CLUSTER_DNS} \
   --cluster-domain=cluster.local \
-  --configure-cbr0=true \
   --container-runtime=docker \
   --docker=unix:///var/run/docker.sock \
   --hostname-override=${HOSTNAME} \
