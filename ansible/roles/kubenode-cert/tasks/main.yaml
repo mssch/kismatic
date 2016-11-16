@@ -1,6 +1,6 @@
 ---
   # setup directories
-  - name: create directory for certificates 
+  - name: create directory for certificates
     file:
       path: "{{ kubernetes_install_dir }}"
       state: directory
@@ -23,6 +23,20 @@
     copy:
       src: "{{ tls_directory }}/{{ inventory_hostname }}-key.pem"
       dest: "{{ kubernetes_certificates_key_path }}"
+      owner: "{{ kubernetes_certificates_owner }}"
+      group: "{{ kubernetes_certificates_group }}"
+      mode: "{{ kubernetes_certificates_mode }}"
+  - name: copy {{ kubernetes_certificates_service_account_cert_path }}
+    copy:
+      src: "{{ tls_directory }}/{{ kubernetes_certificates_service_account_cert_file_name }}"
+      dest: "{{ kubernetes_certificates_service_account_cert_path }}"
+      owner: "{{ kubernetes_certificates_owner }}"
+      group: "{{ kubernetes_certificates_group }}"
+      mode: "{{ kubernetes_certificates_mode }}"
+  - name: copy {{ kubernetes_certificates_service_account_key_path }}
+    copy:
+      src: "{{ tls_directory }}/{{ kubernetes_certificates_service_account_key_file_name }}"
+      dest: "{{ kubernetes_certificates_service_account_key_path }}"
       owner: "{{ kubernetes_certificates_owner }}"
       group: "{{ kubernetes_certificates_group }}"
       mode: "{{ kubernetes_certificates_mode }}"

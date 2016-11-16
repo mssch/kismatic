@@ -111,9 +111,13 @@ kubernetes_master_ip: https://{{ hostvars[groups['master'][0]].internal_ipv4 }}:
 kubernetes_certificates_ca_file_name: ca.pem
 kubernetes_certificates_cert_file_name: kubenode.pem
 kubernetes_certificates_key_file_name: kubenode-key.pem
+kubernetes_certificates_service_account_cert_file_name: service-account.pem
+kubernetes_certificates_service_account_key_file_name: service-account-key.pem
 kubernetes_certificates_ca_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_ca_file_name }}"
 kubernetes_certificates_cert_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_cert_file_name }}"
 kubernetes_certificates_key_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_key_file_name }}"
+kubernetes_certificates_service_account_cert_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_service_account_cert_file_name }}"
+kubernetes_certificates_service_account_key_path: "{{ kubernetes_install_dir }}/{{ kubernetes_certificates_service_account_key_file_name }}"
 # etcd IPs
 #etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}{% if hostvars[host]['inventory_hostname'] is defined %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
 #etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}{% if hostvars[host]['inventory_hostname'] is defined %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"

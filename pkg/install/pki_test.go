@@ -298,7 +298,7 @@ func TestNodeCertExistsSkipGeneration(t *testing.T) {
 	}
 
 	// Assert no other files were created
-	expectedFiles := []string{"ca.pem", "ca-key.pem", node.Host + ".pem", node.Host + "-key.pem", "admin.pem", "admin-key.pem"}
+	expectedFiles := []string{"ca.pem", "ca-key.pem", node.Host + ".pem", node.Host + "-key.pem", "admin.pem", "admin-key.pem", "service-account.pem", "service-account-key.pem"}
 	files, err := ioutil.ReadDir(pki.GeneratedCertsDirectory)
 	if err != nil {
 		t.Fatalf("error getting generated dir contents: %v", err)
@@ -343,6 +343,7 @@ func TestGenerateClusterCertificatesMultipleNodes(t *testing.T) {
 		"etcd.pem", "etcd-key.pem",
 		"worker.pem", "worker-key.pem",
 		"admin.pem", "admin-key.pem",
+		"service-account.pem", "service-account-key.pem",
 	}
 	files, err := ioutil.ReadDir(pki.GeneratedCertsDirectory)
 	if err != nil {
