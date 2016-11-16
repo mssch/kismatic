@@ -181,13 +181,21 @@ func (c Client) GetNode(id string) (*Node, error) {
 	}
 	instance := resp.Reservations[0].Instances[0]
 
+	var privateDNSName string
+	if instance.PrivateDnsName != nil {
+		privateDNSName = *instance.PrivateDnsName
+	}
+	var privateIP string
+	if instance.PrivateIpAddress != nil {
+		privateIP = *instance.PrivateIpAddress
+	}
 	var publicIP string
 	if instance.PublicIpAddress != nil {
 		publicIP = *instance.PublicIpAddress
 	}
 	return &Node{
-		PrivateDNSName: *instance.PrivateDnsName,
-		PrivateIP:      *instance.PrivateIpAddress,
+		PrivateDNSName: privateDNSName,
+		PrivateIP:      privateIP,
 		PublicIP:       publicIP,
 		SSHUser:        defaultSSHUserForAMI(AMI(*instance.ImageId)),
 	}, nil
