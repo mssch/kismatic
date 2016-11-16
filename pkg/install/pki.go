@@ -124,6 +124,10 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []str
 			return err
 		}
 	}
+	// Create key for service account signing
+	if err := lp.generateServiceAccountCert(p, ca); err != nil {
+		return err
+	}
 	// Finally, create certs for user if they are missing
 	for _, user := range users {
 		if err := lp.generateUserCert(p, user, ca); err != nil {
@@ -190,6 +194,27 @@ func (lp *LocalPKI) generateDockerRegistryCert(p *Plan, ca *tls.CA) error {
 	if err != nil {
 		return fmt.Errorf("error writing cert files for docker registry")
 	}
+	return nil
+}
+
+func (lp *LocalPKI) generateServiceAccountCert(p *Plan, ca *tls.CA) error {
+	certName := "service-account"
+	exists, err := tls.CertKeyPairExists(certName, lp.GeneratedCertsDirectory)
+	if err != nil {
+		return fmt.Errorf("error verifying service account certs: %v", err)
+	}
+	if exists {
+		util.PrettyPrintOk(lp.Log, "Found key and certificate for service accounts")
+		return nil
+	}
+	key, cert, err := generateCert("kube-service-account", p, []string{}, ca)
+	if err != nil {
+		return fmt.Errorf("error generating service account certs: %v", err)
+	}
+	if err = tls.WriteCert(key, cert, certName, lp.GeneratedCertsDirectory); err != nil {
+		return fmt.Errorf("error writing generated service account cert: %v", err)
+	}
+	util.PrettyPrintOk(lp.Log, "Generating certificates for service accounts")
 	return nil
 }
 
