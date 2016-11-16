@@ -27,6 +27,7 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdValidate(out, opts))
 	cmd.AddCommand(NewCmdApply(out, opts))
 	cmd.AddCommand(NewCmdAddWorker(out, opts))
+	cmd.AddCommand(NewCmdStep(out, opts))
 
 	// PersistentFlags
 	cmd.PersistentFlags().StringVarP(&opts.planFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")

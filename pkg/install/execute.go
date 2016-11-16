@@ -27,6 +27,7 @@ type Executor interface {
 	Install(p *Plan) error
 	RunSmokeTest(*Plan) error
 	AddWorker(*Plan, Node) (*Plan, error)
+	RunTask(string, *Plan) error
 }
 
 // ExecutorOptions are used to configure the executor
@@ -143,19 +144,41 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 	}
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(p)
-	dnsIP, err := getDNSServiceIP(p)
-	if err != nil {
-		return fmt.Errorf("error getting DNS service IP: %v", err)
-	}
+
 	// Need absolute path for ansible. Otherwise ansible looks for it in the wrong place.
 	tlsDir, err := filepath.Abs(ae.certsDir)
 	if err != nil {
 		return fmt.Errorf("failed to determine absolute path to %s: %v", ae.certsDir, err)
 	}
+	ev, err := ae.buildInstallExtraVars(p, tlsDir)
+	if err != nil {
+		return err
+	}
+	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
+	ansibleLogFile, err := os.Create(ansibleLogFilename)
+	if err != nil {
+		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
+	}
+	// Run the installation playbook
+	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
+	playbook := "kubernetes.yaml"
+	eventExplainer := &explain.DefaultEventExplainer{}
+	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, *ev, ansibleLogFile); err != nil {
+		return err
+	}
+	return nil
+}
+
+// creates the extra vars that are required for the installation playbook.
+func (ae *ansibleExecutor) buildInstallExtraVars(p *Plan, tlsDirectory string) (*ansible.ExtraVars, error) {
+	dnsIP, err := getDNSServiceIP(p)
+	if err != nil {
+		return nil, fmt.Errorf("error getting DNS service IP: %v", err)
+	}
 	ev := ansible.ExtraVars{
 		"kubernetes_cluster_name":    p.Cluster.Name,
 		"kubernetes_admin_password":  p.Cluster.AdminPassword,
-		"tls_directory":              tlsDir,
+		"tls_directory":              tlsDirectory,
 		"calico_network_type":        p.Cluster.Networking.Type,
 		"kubernetes_services_cidr":   p.Cluster.Networking.ServiceCIDRBlock,
 		"kubernetes_pods_cidr":       p.Cluster.Networking.PodCIDRBlock,
@@ -183,19 +206,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
 		}
 	}
-	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
-	ansibleLogFile, err := os.Create(ansibleLogFilename)
-	if err != nil {
-		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
-	}
-	// Run the installation playbook
-	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
-	playbook := "kubernetes.yaml"
-	eventExplainer := &explain.DefaultEventExplainer{}
-	if err = ae.runPlaybookWithExplainer(playbook, eventExplainer, inventory, ev, ansibleLogFile); err != nil {
-		return err
-	}
-	return nil
+	return &ev, nil
 }
 
 func (ae *ansibleExecutor) RunSmokeTest(p *Plan) error {
@@ -267,6 +278,40 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	}
 	if err = ae.runPlaybookWithExplainer(playbook, explainer, inventory, ev, ansibleLogFile); err != nil {
 		return fmt.Errorf("error running preflight: %v", err)
+	}
+	return nil
+}
+
+func (ae *ansibleExecutor) RunTask(taskName string, plan *Plan) error {
+	runDir, err := ae.createRunDirectory("step")
+	if err != nil {
+		return err
+	}
+	// Save the plan file that was used for this execution
+	fp := FilePlanner{
+		File: filepath.Join(runDir, "kismatic-cluster.yaml"),
+	}
+	if err = fp.Write(plan); err != nil {
+		return fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
+	}
+	ansibleLogFilename := filepath.Join(runDir, "ansible.log")
+	ansibleLogFile, err := os.Create(ansibleLogFilename)
+	if err != nil {
+		return fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
+	}
+	explainer := &explain.DefaultEventExplainer{}
+	inventory := buildInventoryFromPlan(plan)
+	tlsDir, err := filepath.Abs(ae.certsDir)
+	if err != nil {
+		return fmt.Errorf("failed to determine absolute path to %s: %v", ae.certsDir, err)
+	}
+	ev, err := ae.buildInstallExtraVars(plan, tlsDir)
+	if err != nil {
+		return err
+	}
+	util.PrintHeader(ae.stdout, "Running Task", '=')
+	if err := ae.runPlaybookWithExplainer(taskName, explainer, inventory, *ev, ansibleLogFile); err != nil {
+		return fmt.Errorf("error running task: %v", err)
 	}
 	return nil
 }
