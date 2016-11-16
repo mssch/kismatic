@@ -85,7 +85,6 @@
 
 1. Take a meeting between the parties responsible for the network infrastructure, machine infrastructure and the cluster you are building
 2. Discuss the size of the cluster and its machines -- both initial and considering six months to a year of growth.
-   * You should also allocate enough capacity to handle hardware failure...for example, in the three rack cluster above, if we wanted to absorb the failure of a rack, we would need 50% more worker capacity on each of the other nodes. 
 3. Discuss [HA needs](PLAN.md#planning-for-etcd-nodes)
 4. Discuss the need for a local package repository and a docker registry.
 
