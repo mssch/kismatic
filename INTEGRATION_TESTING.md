@@ -24,6 +24,7 @@ Our AWS infrastructure provisioner has defaults for other pieces of information,
 the AMI ID, the subnet ID, etc. All these options can be overridden using environment variables:
 - AWS_TARGET_REGION: The AWS region to be used for provisioning machines (e.g. "us-east-1")
 - AWS_SUBNET_ID: The ID of the VPC subnet to use
+- AWS_HOSTED_ZONE_ID: The Route53 ID configured for the VPC
 - AWS_KEY_NAME: The name of the AWS key pair to use when creating the machines
 - AWS_SECURITY_GROUP_ID: The ID of the security group
 - AWS_SSH_KEY_PATH: The path to the SSH key to be used for SSH'ing into the machines

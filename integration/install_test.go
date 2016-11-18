@@ -83,8 +83,18 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			})
 			Context("using a 3/2/3 layout with CentOS 7", func() {
 				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructure(NodeCount{3, 2, 3}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructureAndDNS(NodeCount{3, 2, 3}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+			})
+			Context("using a 1/2/1 layout with CentOS 7, with DNS", func() {
+				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
+					WithInfrastructureAndDNS(NodeCount{1, 2, 1}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
+						err := installKismaticWithDNS(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+						err = verifyMasterNodeFailure(nodes, installOpts, provisioner, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})

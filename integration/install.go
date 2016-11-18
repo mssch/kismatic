@@ -127,6 +127,58 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+
+}
+
+func installKismaticWithDNS(nodes provisionedNodes, installOpts installOptions, sshKey string) error {
+	By("Building a template")
+	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
+	FailIfError(err, "Couldn't parse template")
+
+	By("Building a plan to set up an overlay network cluster on this hardware")
+	sshUser := nodes.master[0].SSHUser
+	plan := PlanAWS{
+		AllowPackageInstallation: installOpts.allowPackageInstallation,
+		Etcd:                 nodes.etcd,
+		Master:               nodes.master,
+		Worker:               nodes.worker,
+		MasterNodeFQDN:       nodes.dnsRecord.Name,
+		MasterNodeShortName:  nodes.dnsRecord.Name,
+		SSHKeyFile:           sshKey,
+		SSHUser:              sshUser,
+		DockerRegistryCAPath: installOpts.dockerRegistryCAPath,
+		DockerRegistryIP:     installOpts.dockerRegistryIP,
+		DockerRegistryPort:   installOpts.dockerRegistryPort,
+	}
+
+	f, err := os.Create("kismatic-testing.yaml")
+	FailIfError(err, "Error creating plan")
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	err = template.Execute(w, &plan)
+	FailIfError(err, "Error filling in plan template")
+	w.Flush()
+
+	By("Punch it Chewie!")
+	cmd := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func verifyMasterNodeFailure(nodes provisionedNodes, installOpts installOptions, provisioner infrastructureProvisioner, sshKey string) error {
+	By("Removing a Kubernetes master node")
+	if err := provisioner.TerminateNode(nodes.master[0]); err != nil {
+		return fmt.Errorf("Could not remove node: %v", err)
+	}
+
+	By("Rerunning Kuberang")
+	if err := runViaSSH([]string{"sudo kuberang"}, []NodeDeets{nodes.master[1]}, sshKey, 5*time.Minute); err != nil {
+		return fmt.Errorf("Failed to run kuberang: %v", err)
+	}
+
+	return nil
 }
 
 func installKismaticWithABadNode() {

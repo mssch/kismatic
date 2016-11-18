@@ -22,12 +22,16 @@ const (
 	AWSSecurityGroupID  = "sg-d1dc4dab"
 	AMIUbuntu1604USEAST = "ami-29f96d3e"
 	AMICentos7UsEast    = "ami-6d1c2007"
+	AWSHostedZoneID     = "Z1LNBHSE28OF08"
 )
 
 type infrastructureProvisioner interface {
 	ProvisionNodes(NodeCount, linuxDistro) (provisionedNodes, error)
 	TerminateNodes(provisionedNodes) error
+	TerminateNode(NodeDeets) error
 	SSHKey() string
+	ConfigureDNS(masterIPs []string) (*DNSRecord, error)
+	RemoveDNS(dnsRecord *DNSRecord) error
 }
 
 type linuxDistro string
@@ -43,9 +47,10 @@ func (nc NodeCount) Total() uint16 {
 }
 
 type provisionedNodes struct {
-	etcd   []NodeDeets
-	master []NodeDeets
-	worker []NodeDeets
+	etcd      []NodeDeets
+	master    []NodeDeets
+	worker    []NodeDeets
+	dnsRecord *DNSRecord
 }
 
 func (p provisionedNodes) allNodes() []NodeDeets {
@@ -62,6 +67,11 @@ type NodeDeets struct {
 	PublicIP  string
 	PrivateIP string
 	SSHUser   string
+}
+
+type DNSRecord struct {
+	Name   string
+	Values []string
 }
 
 type sshMachineProvisioner struct {
@@ -89,6 +99,7 @@ func AWSClientFromEnvironment() (infrastructureProvisioner, bool) {
 			SubnetID:        AWSSubnetID,
 			Keyname:         AWSKeyName,
 			SecurityGroupID: AWSSecurityGroupID,
+			HostedZoneID:    AWSHostedZoneID,
 		},
 		Credentials: aws.Credentials{
 			ID:     accessKeyID,
@@ -110,6 +121,10 @@ func AWSClientFromEnvironment() (infrastructureProvisioner, bool) {
 	overrideSecGroup := os.Getenv("AWS_SECURITY_GROUP_ID")
 	if overrideSecGroup != "" {
 		c.Config.SecurityGroupID = overrideSecGroup
+	}
+	overrideHostedZoneID := os.Getenv("AWS_HOSTED_ZONE_ID")
+	if overrideHostedZoneID != "" {
+		c.Config.HostedZoneID = overrideHostedZoneID
 	}
 	p := awsProvisioner{client: c}
 	p.sshKey = os.Getenv("AWS_SSH_KEY_PATH")
@@ -206,6 +221,45 @@ func (p awsProvisioner) TerminateNodes(runningNodes provisionedNodes) error {
 	return p.client.DestroyNodes(nodeIDs)
 }
 
+// TerminateNode will attempt to terminate a node and wait for the state to not be available
+func (p awsProvisioner) TerminateNode(node NodeDeets) error {
+	err := aws.RetryWithBackoff(func() error {
+		if err2 := p.client.DestroyNodes([]string{node.id}); err2 != nil {
+			return fmt.Errorf("Could not terminate node: %v", err2)
+		}
+
+		node, err3 := p.client.GetNode(node.id)
+		if err3 != nil {
+			return fmt.Errorf("Something went wrong after terminating node: %v", err3)
+		}
+		if node.State == aws.StateAvailable {
+			return fmt.Errorf("Terminating machine took too long")
+		}
+		return nil
+	}, 7)
+
+	return err
+}
+
+func (p awsProvisioner) ConfigureDNS(masterIPs []string) (*DNSRecord, error) {
+	// add DNS name
+	awsDNSRecord, err := p.client.CreateDNSRecords(masterIPs)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DNSRecord{Name: awsDNSRecord.Name, Values: awsDNSRecord.Values}, nil
+}
+
+func (p awsProvisioner) RemoveDNS(dnsRecord *DNSRecord) error {
+	err := p.client.DeleteDNSRecords(&aws.DNSRecord{Name: dnsRecord.Name, Values: dnsRecord.Values})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type packetProvisioner struct {
 	sshMachineProvisioner
 	client packet.Client
@@ -293,6 +347,20 @@ func (p packetProvisioner) TerminateNodes(nodes provisionedNodes) error {
 		return fmt.Errorf("FAILED TO DELETE THE FOLLOWING NODES ON PACKET: %v", failedDeletes)
 	}
 	return nil
+}
+
+func (p packetProvisioner) TerminateNode(node NodeDeets) error {
+	return p.client.DeleteNode(node.id)
+}
+
+func (p packetProvisioner) ConfigureDNS(masterIPs []string) (*DNSRecord, error) {
+	// TODO
+	return nil, fmt.Errorf("ConfigureDNS not implemented")
+}
+
+func (p packetProvisioner) RemoveDNS(dnsRecord *DNSRecord) error {
+	// TODO
+	return fmt.Errorf("RemoveDNS not implemented")
 }
 
 func (p packetProvisioner) createNode(distro packet.OS, count uint16) (string, error) {

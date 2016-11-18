@@ -46,6 +46,36 @@ func WithInfrastructure(nodeCount NodeCount, distro linuxDistro, provisioner inf
 	f(nodes, sshKey)
 }
 
+// WithInfrastructureAndDNS runs the spec with the requested infrastructure and DNS
+func WithInfrastructureAndDNS(nodeCount NodeCount, distro linuxDistro, provisioner infrastructureProvisioner, f infraDependentTest) {
+	By("Provisioning nodes")
+	nodes, err := provisioner.ProvisionNodes(nodeCount, distro)
+	if !leaveIt() {
+		defer provisioner.TerminateNodes(nodes)
+	}
+	Expect(err).ToNot(HaveOccurred())
+
+	By("Waiting until nodes are SSH-accessible")
+	sshKey := provisioner.SSHKey()
+	err = waitForSSH(nodes, sshKey)
+	Expect(err).ToNot(HaveOccurred())
+
+	By("Configuring DNS entries")
+	var masterIPs []string
+	for _, node := range nodes.master {
+		masterIPs = append(masterIPs, node.PrivateIP)
+	}
+	dnsRecord, err := provisioner.ConfigureDNS(masterIPs)
+	nodes.dnsRecord = dnsRecord
+	Expect(err).ToNot(HaveOccurred())
+	if !leaveIt() {
+		By("Removing DNS entries")
+		defer provisioner.RemoveDNS(dnsRecord)
+	}
+
+	f(nodes, sshKey)
+}
+
 type miniInfraDependentTest func(node NodeDeets, sshKey string)
 
 // WithMiniInfrastructure runs the spec with a Minikube-like infrastructure setup.

@@ -3,15 +3,19 @@ package aws
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/route53"
 )
 
 const (
+	// StateAvailable is the AWS string returned when machine is available
+	StateAvailable = ec2.StateAvailable
 	// Ubuntu1604LTSEast is the AMI for Ubuntu 16.04 LTS
 	Ubuntu1604LTSEast = AMI("ami-29f96d3e")
 	// CentOS7East is the AMI for CentOS 7
@@ -22,7 +26,8 @@ const (
 	T2Medium = InstanceType(ec2.InstanceTypeT2Medium)
 	// exponentialBackoffMaxAttempts is the number of times will try before failing
 	// Exponential backoff for AWS eventual consistency
-	exponentialBackoffMaxAttempts = 5
+	exponentialBackoffMaxEC2Attempts     = 5
+	exponentialBackoffMaxRoute53Attempts = 10
 )
 
 // A Node on AWS
@@ -31,6 +36,13 @@ type Node struct {
 	PrivateIP      string
 	PublicIP       string
 	SSHUser        string
+	State          string
+}
+
+// DNSRecord in Router53 on AWS
+type DNSRecord struct {
+	Name   string
+	Values []string
 }
 
 // AMI is the Amazon Machine Image
@@ -45,6 +57,7 @@ type ClientConfig struct {
 	SubnetID        string
 	Keyname         string
 	SecurityGroupID string
+	HostedZoneID    string
 }
 
 // Credentials to be used for accessing the AI
@@ -57,26 +70,40 @@ type Credentials struct {
 type Client struct {
 	Config      ClientConfig
 	Credentials Credentials
-	ec2Client   *ec2.EC2
+	session     *session.Session
 }
 
-func (c *Client) getAPIClient() (*ec2.EC2, error) {
-	if c.ec2Client == nil {
+func (c *Client) getEC2APIClient() (*ec2.EC2, error) {
+	if err := c.prepareSession(); err != nil {
+		return nil, err
+	}
+	return ec2.New(c.session), nil
+}
+
+func (c *Client) getRoute53APIClient() (*route53.Route53, error) {
+	if err := c.prepareSession(); err != nil {
+		return nil, err
+	}
+	return route53.New(c.session), nil
+}
+
+func (c *Client) prepareSession() error {
+	if c.session == nil {
 		creds := credentials.NewStaticCredentials(c.Credentials.ID, c.Credentials.Secret, "")
 		_, err := creds.Get()
 		if err != nil {
-			return nil, fmt.Errorf("Error with credentials provided: %v", err)
+			return fmt.Errorf("Error with credentials provided: %v", err)
 		}
 		config := aws.NewConfig().WithRegion(c.Config.Region).WithCredentials(creds).WithMaxRetries(10)
-		c.ec2Client = ec2.New(session.New(config))
+		c.session = session.New(config)
 	}
-	return c.ec2Client, nil
+	return nil
 }
 
 // CreateNode is for creating a machine on AWS using the given AMI and InstanceType.
 // Returns the ID of the newly created machine.
 func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
-	api, err := c.getAPIClient()
+	api, err := c.getEC2APIClient()
 	if err != nil {
 		return "", err
 	}
@@ -110,11 +137,11 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			Value: aws.Bool(false),
 		},
 	}
-	err = retryWithBackoff(func() error {
+	err = RetryWithBackoff(func() error {
 		var err2 error
 		_, err2 = api.ModifyInstanceAttribute(modifyReq)
 		return err2
-	})
+	}, exponentialBackoffMaxEC2Attempts)
 	if err != nil {
 		fmt.Println("Failed to modify instance attributes")
 		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
@@ -137,11 +164,11 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 			},
 		},
 	}
-	err = retryWithBackoff(func() error {
+	err = RetryWithBackoff(func() error {
 		var err2 error
 		_, err2 = api.CreateTags(tagReq)
 		return err2
-	})
+	}, exponentialBackoffMaxEC2Attempts)
 	if err != nil {
 		fmt.Println("Failed to tag instance")
 		if err = c.DestroyNodes([]string{*instanceID}); err != nil {
@@ -156,7 +183,7 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 // is responsible for checking that the information it needs has been returned
 // in the Node. (i.e. it's possible for the hostname, public IP to be empty)
 func (c Client) GetNode(id string) (*Node, error) {
-	api, err := c.getAPIClient()
+	api, err := c.getEC2APIClient()
 	if err != nil {
 		return nil, err
 	}
@@ -164,11 +191,11 @@ func (c Client) GetNode(id string) (*Node, error) {
 		InstanceIds: []*string{aws.String(id)},
 	}
 	var resp *ec2.DescribeInstancesOutput
-	err = retryWithBackoff(func() error {
+	err = RetryWithBackoff(func() error {
 		var err2 error
 		resp, err2 = api.DescribeInstances(req)
 		return err2
-	})
+	}, exponentialBackoffMaxEC2Attempts)
 	if err != nil {
 		fmt.Println("Failed to get node information")
 		return nil, err
@@ -193,17 +220,19 @@ func (c Client) GetNode(id string) (*Node, error) {
 	if instance.PublicIpAddress != nil {
 		publicIP = *instance.PublicIpAddress
 	}
+
 	return &Node{
 		PrivateDNSName: privateDNSName,
 		PrivateIP:      privateIP,
 		PublicIP:       publicIP,
 		SSHUser:        defaultSSHUserForAMI(AMI(*instance.ImageId)),
+		State:          instance.State.GoString(),
 	}, nil
 }
 
 // DestroyNodes destroys the nodes identified by the ID.
 func (c Client) DestroyNodes(nodeIDs []string) error {
-	api, err := c.getAPIClient()
+	api, err := c.getEC2APIClient()
 	if err != nil {
 		return err
 	}
@@ -217,7 +246,112 @@ func (c Client) DestroyNodes(nodeIDs []string) error {
 	return nil
 }
 
-func retryWithBackoff(fn func() error) error {
+// CreateDNSRecords generates an Route53 configured with the master nodes
+func (c Client) CreateDNSRecords(nodeIPs []string) (*DNSRecord, error) {
+	api, err := c.getRoute53APIClient()
+	if err != nil {
+		return nil, err
+	}
+	// Setup variables to modify hosted zone
+	name := strconv.FormatInt(time.Now().Unix(), 10) + ".kismatic.integration."
+	dnsRecord := &DNSRecord{Name: name, Values: nodeIPs}
+	err = modifyHostedZone(dnsRecord, route53.ChangeActionUpsert, c.Config.HostedZoneID, api)
+	if err != nil {
+		return nil, err
+	}
+
+	return dnsRecord, nil
+}
+
+// GetDNSRecords returns all Record Sets for the Hosted Zone
+func (c Client) GetDNSRecords() ([]*route53.ResourceRecordSet, error) {
+	api, err := c.getRoute53APIClient()
+	if err != nil {
+		return nil, err
+	}
+	req := &route53.ListResourceRecordSetsInput{
+		HostedZoneId: aws.String(c.Config.HostedZoneID), // Required
+	}
+
+	resp, err := api.ListResourceRecordSets(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.ResourceRecordSets, nil
+}
+
+// DeleteDNSRecords deletes the specified Record Set
+func (c Client) DeleteDNSRecords(dnsRecord *DNSRecord) error {
+	api, err := c.getRoute53APIClient()
+	if err != nil {
+		return err
+	}
+	err = modifyHostedZone(dnsRecord, route53.ChangeActionDelete, c.Config.HostedZoneID, api)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func modifyHostedZone(record *DNSRecord, action string, hostedZoneID string, api *route53.Route53) error {
+	if len(record.Values) == 0 && action != route53.ChangeActionDelete {
+		return fmt.Errorf("Values cannot be empty when setting up DNS records")
+	}
+	var records []*route53.ResourceRecord
+	for _, value := range record.Values {
+		records = append(records, &route53.ResourceRecord{Value: aws.String(value)})
+	}
+
+	req := &route53.ChangeResourceRecordSetsInput{
+		ChangeBatch: &route53.ChangeBatch{
+			Changes: []*route53.Change{
+				{
+					Action: aws.String(action),
+					ResourceRecordSet: &route53.ResourceRecordSet{
+						Name:            aws.String(record.Name),
+						Type:            aws.String(route53.RRTypeA),
+						ResourceRecords: records,
+						TTL:             aws.Int64(300),
+					},
+				},
+			},
+		},
+		HostedZoneId: aws.String(hostedZoneID),
+	}
+
+	resp, err := api.ChangeResourceRecordSets(req)
+	if err != nil {
+		return err
+	}
+	changeID := resp.ChangeInfo.Id
+	if changeID == nil || *changeID == "" {
+		return fmt.Errorf("Something went wrong, DNS change ID is nil")
+	}
+
+	changeReq := &route53.GetChangeInput{
+		Id: aws.String(*changeID),
+	}
+
+	err = RetryWithBackoff(func() error {
+		changeResp, err2 := api.GetChange(changeReq)
+		if err2 != nil {
+			return err2
+		}
+		if *changeResp.ChangeInfo.Status != route53.ChangeStatusInsync {
+			return fmt.Errorf("DNS change status is still %s, took too long", *changeResp.ChangeInfo.Status)
+		}
+		return nil
+	}, exponentialBackoffMaxRoute53Attempts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RetryWithBackoff will retry a function specified number of times
+func RetryWithBackoff(fn func() error, retries uint) error {
 	var attempts uint
 	var err error
 	for {
@@ -225,7 +359,7 @@ func retryWithBackoff(fn func() error) error {
 		if err == nil {
 			break
 		}
-		if attempts == exponentialBackoffMaxAttempts {
+		if attempts == retries {
 			break
 		}
 		time.Sleep((1 << attempts) * time.Second)
