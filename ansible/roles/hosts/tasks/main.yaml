@@ -2,6 +2,14 @@
   lineinfile: dest=/etc/hosts regexp='.*{{ inventory_hostname }}$' state=absent
 
 - name: add nodes to hosts file
-  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$'  line="{{ hostvars[item].internal_ipv4 }} {{item}}" state=present
-  when: hostvars[item].internal_ipv4 is defined
-  with_items: "{{ groups['all'] }}"
+  blockinfile:
+    dest: /etc/hosts
+    state: present
+    marker: "# Kismatic hosts {mark}"
+    backup: yes
+    block: |-
+      {% for item in groups['all'] %}
+      {% if hostvars[item].internal_ipv4 is defined %}
+      {{ hostvars[item].internal_ipv4 }} {{ item }}
+      {% endif %}
+      {% endfor %}
