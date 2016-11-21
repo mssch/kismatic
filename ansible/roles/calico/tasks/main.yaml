@@ -1,46 +1,7 @@
 ---
-  # install Calico network plugin
-  # setup directories
-  - name: create {{ network_plugin_dir }} directory
-    file:
-      path: "{{ network_plugin_dir }}"
-      state: directory
-  - name: create {{ network_plugin_bin_dir }} directory
-    file:
-      path: "{{ network_plugin_bin_dir }}"
-      state: directory
-
-  # install calicoctl
-  # start calico-node service
-  - name: copy calico-node.service to remote
-    template:
-      src: calico-node.service.j2
-      dest: "{{ kubernetes_service_dir }}/calico-node.service"
-      owner: "{{ kubernetes_owner }}"
-      group: "{{ kubernetes_group }}"
-      mode: "{{ kubernetes_service_mode }}"
-    notify:
-      - reload services
-      - enable calico-node
-      - restart calico-node service
-      - verify calico-node is running
-
-  # force_calico_node_restart=true to force restart
-  - name: force restart calico-node
-    command: /bin/true
-    notify:
-      - enable calico-node
-      - restart calico-node service
-      - verify calico-node is running
-    when: force_calico_node_restart is defined and force_calico_node_restart|bool == true
-
-  - meta: flush_handlers  #Run handlers
-
-  # configure calcico
-  - name: copy 10-calico.conf to remote
-    template:
-      src: 10-calico.conf.j2
-      dest: "{{ network_plugin_dir }}/10-calico.conf"
+  ## Configure a calico pool for the nodes. We need to configure calico
+  ## before starting calico-node on the nodes due to
+  ## https://github.com/projectcalico/calico-containers/issues/716
   # Check if default pool exists
   - name: check if default pool ({{default_cidr}})  exists
     command: calicoctl pool show --ipv4
@@ -86,3 +47,35 @@
       ETCD_KEY_FILE: "{{ kubernetes_certificates_key_path }}"
     when: "'master' in group_names and calico_network_type == 'overlay'"
     run_once: true
+
+  ## Start calico-node serivce on the nodes after configuring the calico pool.
+  - name: create {{ network_plugin_dir }} directory
+    file:
+      path: "{{ network_plugin_dir }}"
+      state: directory
+  - name: copy 10-calico.conf to remote
+    template:
+      src: 10-calico.conf.j2
+      dest: "{{ network_plugin_dir }}/10-calico.conf"
+  - name: copy calico-node.service to remote
+    template:
+      src: calico-node.service.j2
+      dest: "{{ kubernetes_service_dir }}/calico-node.service"
+      owner: "{{ kubernetes_owner }}"
+      group: "{{ kubernetes_group }}"
+      mode: "{{ kubernetes_service_mode }}"
+    notify:
+      - reload services
+      - enable calico-node
+      - restart calico-node service
+      - verify calico-node is running
+  # force_calico_node_restart=true to force restart
+  - name: force restart calico-node
+    command: /bin/true
+    notify:
+      - enable calico-node
+      - restart calico-node service
+      - verify calico-node is running
+    when: force_calico_node_restart is defined and force_calico_node_restart|bool == true
+
+  - meta: flush_handlers  #Run handlers
