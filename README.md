@@ -8,9 +8,11 @@ Join Slack to chat in real-time with the maintainers and community users of KET:
 
 ![KET](logo.png?raw=true "KET Logo")
 
-KET is a set of tools for creating enterprise-tuned Kubernetes clusters. KET was built to make it simple for organizations who fully manage their own infrastructure to deploy and run secure, highly-available Kubernetes installations with built-in sane defaults for networking, circuit-breaking, cluster health-checking and much more!
+## Introduction
 
-The KET tools include:
+KET is a set of production-ready defaults and best practice tools for creating enterprise-tuned Kubernetes clusters. KET was built to make it simple for organizations who fully manage their own infrastructure to deploy and run secure, highly-available Kubernetes installations with built-in sane defaults for scalable cross-cluster networking, distributed tracing, circuit-breaking, request-level routing, cluster health-checking and much more!
+
+KET operational tools include:
 
 1. [`Kismatic CLI`](docs/INSTALL.md)
    * Command-line control plane and lifecycle tool for installing and configuring Kubernetes on provisioned infrastructure.
@@ -34,29 +36,6 @@ The KET tools include:
 [Download latest install tarball (OSX)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest-darwin/kismatic.tar.gz)
 
 [Download latest install tarball (Linux)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kismatic.tar.gz)
-
-# Dangerously Basic Installation Instructions
-Use the `kismatic install` command to work through installation of a cluster. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
-
-The installation consists of three phases:
-
-1. **Plan**: `kismatic install plan`
-   1. The installer will ask basic questions about the intent of your cluster.
-   2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
-2. **Provision**
-   1. You provision your own machines (can also happen before the Plan phase)
-   2. You tweak your network
-   3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
-3. **Install**: `kismatic install apply`
-   1. The installer checks your provisioned infrastructure against your intent.
-   2. If the installation plan is valid, Kismatic will build you a cluster.
-   3. After installation, Kismatic performs a basic test of scaling and networking on the cluster
-
-###Using your cluster
-
-KET automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) in your new cluster. Open the link provided at the end of the installation in your browser to use it. This link will be in the form of `https://%load_balanced_fqdn%:6443/ui`, using `%load_balanced_fqdn%`(from your `kismatic-cluster.yaml` file). You will also be prompted for credentials: use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
-
-The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/), just follow the instructions provided at the end of the installation to use it. 
 
 # Usage Documentation
 
@@ -85,3 +64,26 @@ The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-
 [KET Code of Conduct](code-of-conduct.md)
 
 [KET Release Process](RELEASE.md)
+
+# Basic Installation Instructions
+Use the `kismatic install` command to work through installation of a cluster. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
+
+The installation consists of three phases:
+
+1. **Plan**: `kismatic install plan`
+   1. The installer will ask basic questions about the intent of your cluster.
+   2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
+2. **Provision**
+   1. You provision your own machines (can also happen before the Plan phase)
+   2. You tweak your network
+   3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
+3. **Install**: `kismatic install apply`
+   1. The installer checks your provisioned infrastructure against your intent.
+   2. If the installation plan is valid, Kismatic will build you a cluster.
+   3. After installation, Kismatic performs a basic test of scaling and networking on the cluster
+
+###Using your cluster
+
+KET automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) in your new cluster. Open the link provided at the end of the installation in your browser to use it. This link will be in the form of `https://%load_balanced_fqdn%:6443/ui`, using `%load_balanced_fqdn%`(from your `kismatic-cluster.yaml` file). You will also be prompted for credentials: use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
+
+The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/), just follow the instructions provided at the end of the installation to use it. 
