@@ -7,13 +7,14 @@
       gpgkey: "{{ yum_gpg_key_url }}"
       gpgcheck: yes
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-
   - name: clean Kismatic yum cache
     command: 'yum --enablerepo=kismatic clean metadata'
     when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
-
   - name: install apt-transport-https package
-    package: name=apt-transport-https state=latest
+    apt:
+      name: apt-transport-https
+      state: latest
+      update_cache: yes
     when: ansible_distribution == 'Ubuntu'
   - name: add Kismatic deb repository
     apt_repository:
