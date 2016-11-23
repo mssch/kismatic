@@ -85,6 +85,10 @@ The installation consists of three phases:
 
 ###Using your cluster
 
-KET automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) in your new cluster. Open the link provided at the end of the installation in your browser to use it. This link will be in the form of `https://%load_balanced_fqdn%:6443/ui`, using `%load_balanced_fqdn%`(from your `kismatic-cluster.yaml` file). You will also be prompted for credentials: use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
+KET automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) in your new cluster. Open the link provided at the end of the installation in your browser to use it. 
+
+This link will be in the form of `https://%load_balanced_fqdn%:6443/ui`, using `%load_balanced_fqdn%`(from your `kismatic-cluster.yaml` file). 
+
+You will also be prompted for credentials: use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
 
 The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/), just follow the instructions provided at the end of the installation to use it. 
