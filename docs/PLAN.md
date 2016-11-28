@@ -60,20 +60,16 @@ Minimum hardware requirements:
 <table>
   <tr>
     <td>Node Role</td>
-    <td>CPU (Prototyping)</td>
-    <td>Ram (Prototyping)</td>
-    <td>Disk (Prototyping)</td>
-    <td>CPU (Production)</td>
-    <td>Ram (Production)</td>
-    <td>Disk (Production)</td>
+    <td>CPU</td>
+    <td>Ram</td>
+    <td>Disk (Prototyping<sup>1</sup>)</td>
+    <td>Disk (Production<sup>1</sup>)</td>
   </tr>
   <tr>
     <td>etcd</td>
     <td>1 CPU Core, 2 GHz</td>
     <td>1 GB</td>
     <td>8 GB</td>
-    <td>1 CPU Core, 2 GHz</td>
-    <td>1 GB</td>
     <td>50 GB</td>
   </tr>
   <tr>
@@ -81,8 +77,6 @@ Minimum hardware requirements:
     <td>1 CPU Cores, 2 GHz</td>
     <td>2 GB</td>
     <td>8 GB</td>
-    <td>2 CPU Cores, 2 GHz</td>
-    <td>2 GB</td>
     <td>50 GB</td>
   </tr>
   <tr>
@@ -90,11 +84,22 @@ Minimum hardware requirements:
     <td>1 CPU Core, 2 GHz</td>
     <td>1 GB</td>
     <td>8 GB</td>
-    <td>1 CPU Core, 2 GHz</td>
-    <td>1 GB</td>
     <td>200 GB</td>
   </tr>
 </table>
+
+<sup>1</sup>A Prototype cluster is one you build for a short term use case (less than a week or so). It can have smaller drives, but you wouldn't want to run like this for extended use.
+
+[Recommended Master sizing:](http://kubernetes.io/docs/admin/cluster-large/#size-of-master-and-master-components)
+
+Worker Count | CPUs | RAM
+---          | ---  | ---
+< 5          | 1    | 3.75
+< 10	       | 2	  | 7.5
+< 100	       | 4	  | 15
+< 250	       | 8	  | 30
+< 500	       | 16	  | 30
+< 1000	     | 32	  | 60
 
 ### Planning for etcd nodes:
 
