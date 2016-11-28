@@ -85,9 +85,6 @@ just-integration-test: get-test-deps
 serial-integration-test: get-test-deps
 	ginkgo -v integration
 
-build-provisioner: get-test-deps
-	go build -o bin/provision ./provision
-
 kismatic-cli-docs:
 	mkdir kismatic-cli-docs
 	go run cmd/kismatic-docs/main.go
