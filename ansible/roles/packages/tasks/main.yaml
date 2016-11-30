@@ -5,7 +5,7 @@
     notify:
       - add Kismatic yum repository
       - clean Kismatic yum cache # required to get new versions of packagess
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_os_family == 'RedHat'
     ignore_errors: yes
     register: result
     until: "result.status is defined and result.status == 200"
@@ -21,7 +21,7 @@
       - add Kismatic deb key
       - add Kismatic deb repository
       - apt-get update
-    when: ansible_distribution == 'Ubuntu'
+    when: ansible_os_family == 'Debian'
     ignore_errors: yes
     register: result
     until: "result.status is defined and result.status == 200"
@@ -38,7 +38,7 @@
       - install etcd yum package
       - install kubernetes master yum package
       - install kubernetes worker yum package
-    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+    when: ansible_os_family == 'RedHat'
 
   - name: install deb packages
     command: /bin/true
@@ -48,4 +48,4 @@
       - install kubernetes networking package
       - install kubernetes worker deb package
       - install kubernetes master deb package
-    when: ansible_distribution == 'Ubuntu'
+    when: ansible_os_family == 'Debian'
