@@ -24,8 +24,10 @@ var _ = BeforeSuite(func() {
 	if err != nil {
 		Fail("Failed to extract kismatic")
 	}
-	CopyDir("test-tls/", filepath.Join(kisPath, "test-tls"))
-	os.Chdir(kisPath)
+	err = CopyDir("test-tls/", filepath.Join(kisPath, "test-tls"))
+	if err != nil {
+		Fail("Failed to copy test certs")
+	}
 })
 
 var _ = AfterSuite(func() {
