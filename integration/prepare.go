@@ -49,7 +49,7 @@ var ubuntu1604Prep = nodePrep{
 	CommandsToInstallK8s:       []string{installKubernetesApt},
 }
 
-var centos7Prep = nodePrep{
+var rhel7FamilyPrep = nodePrep{
 	CommandsToPrepRepo:         []string{copyKismaticYumRepo},
 	CommandsToInstallEtcd:      []string{installEtcdYum},
 	CommandsToInstallDocker:    []string{installDockerEngineYum},
@@ -122,8 +122,8 @@ func getPrepForDistro(distro linuxDistro) nodePrep {
 	switch distro {
 	case Ubuntu1604LTS:
 		return ubuntu1604Prep
-	case CentOS7:
-		return centos7Prep
+	case CentOS7, RedHat7:
+		return rhel7FamilyPrep
 	default:
 		panic(fmt.Sprintf("Unsupported distro %s", distro))
 	}
