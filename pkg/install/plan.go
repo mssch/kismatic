@@ -96,7 +96,7 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 		return fmt.Errorf("error generating random password: %v", err)
 	}
 	p.Cluster.AdminPassword = generatedAdminPass
-	p.Cluster.AllowPackageInstallation = false
+	p.Cluster.AllowPackageInstallation = true
 
 	// Set SSH defaults
 	p.Cluster.SSH.User = "kismaticuser"
