@@ -47,8 +47,7 @@ etcd_service_owner: root
 etcd_service_group: root
 etcd_service_mode: 0664
 # etcd cluster setup
-etcd_service_cluster_string: "{% for host in groups['etcd'] %}{{ host }}=https://{{ host }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endfor %}"
-#etcd_service_cluster_string: "{% for host in groups['etcd'] %}{% if hostvars[host]['inventory_hostname'] is defined %}{{ host }}=https://{{ host }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endif %}{% endfor %}"
+etcd_service_cluster_string: "{% for host in groups['etcd'] %}{{ host }}=https://{{ hostvars[host]['internal_ipv4'] }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 #===============================================================================
 # docker-install
 docker_install_dir: /etc/docker
