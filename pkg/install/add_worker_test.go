@@ -253,8 +253,14 @@ func TestAddWorkerHostsFilesDNSEnabled(t *testing.T) {
 		t.Errorf("unexpected error")
 	}
 	expectedPlaybook := "_hosts.yaml"
-	if fakeRunner.allNodesPlaybook != expectedPlaybook {
-		t.Errorf("expected playbook %s, but ran %s", expectedPlaybook, fakeRunner.allNodesPlaybook)
+	found := false
+	for _, p := range fakeRunner.allNodesPlaybooks {
+		if p == expectedPlaybook {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected playbook %s was not run during add-worker. The following plays ran: %v", expectedPlaybook, fakeRunner.allNodesPlaybooks)
 	}
 }
 
@@ -281,14 +287,14 @@ func (f *fakePKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 func (f *fakePKI) GenerateClusterCertificates(p *Plan, ca *tls.CA, users []string) error { return f.err }
 
 type fakeRunner struct {
-	eventChan        chan ansible.Event
-	err              error
-	incomingVars     map[string]ansible.ExtraVars
-	allNodesPlaybook string
+	eventChan         chan ansible.Event
+	err               error
+	incomingVars      map[string]ansible.ExtraVars
+	allNodesPlaybooks []string
 }
 
 func (f *fakeRunner) StartPlaybook(playbookFile string, inventory ansible.Inventory, vars ansible.ExtraVars) (<-chan ansible.Event, error) {
-	f.allNodesPlaybook = playbookFile
+	f.allNodesPlaybooks = append(f.allNodesPlaybooks, playbookFile)
 	return f.eventChan, f.err
 }
 func (f *fakeRunner) WaitPlaybook() error { return f.err }
