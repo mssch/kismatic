@@ -118,7 +118,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	if err != nil {
 		return nil, err
 	}
-	eventStream, err = runner.StartPlaybookOnNode(playbook, inventory, ev, newWorker.Host)
+	eventStream, err = runner.StartPlaybook(playbook, inventory, ev)
 	if err != nil {
 		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
 	}
