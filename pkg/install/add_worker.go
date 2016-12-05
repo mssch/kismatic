@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/apprenda/kismatic/pkg/ansible"
 	"github.com/apprenda/kismatic/pkg/install/explain"
@@ -43,29 +42,13 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	}
 	// Build the ansible inventory
 	inventory := buildInventoryFromPlan(&updatedPlan)
-	dnsIP, err := getDNSServiceIP(&updatedPlan)
-	if err != nil {
-		return nil, fmt.Errorf("error getting DNS service IP: %v", err)
-	}
 	tlsDir, err := filepath.Abs(ae.certsDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to determine absolute path to %s: %v", ae.certsDir, err)
 	}
-	ev := ansible.ExtraVars{
-		"kubernetes_cluster_name":   updatedPlan.Cluster.Name,
-		"tls_directory":             tlsDir,
-		"calico_network_type":       updatedPlan.Cluster.Networking.Type,
-		"kubernetes_pods_cidr":      updatedPlan.Cluster.Networking.PodCIDRBlock,
-		"kubernetes_dns_service_ip": dnsIP,
-		"modify_hosts_file":         strconv.FormatBool(updatedPlan.Cluster.Networking.UpdateHostsFiles),
-		"enable_calico_policy":      strconv.FormatBool(updatedPlan.Cluster.Networking.PolicyEnabled),
-		"enable_docker_registry":    strconv.FormatBool(updatedPlan.DockerRegistry.SetupInternal),
-	}
-	if ae.options.RestartServices {
-		services := []string{"proxy", "kubelet", "calico_node", "docker"}
-		for _, s := range services {
-			ev[fmt.Sprintf("force_%s_restart", s)] = strconv.FormatBool(true)
-		}
+	ev, err := ae.buildInstallExtraVars(&updatedPlan, tlsDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate ansible vars: %v", err)
 	}
 	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
 	ansibleLogFile, err := os.Create(ansibleLogFilename)
@@ -80,7 +63,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	if err != nil {
 		return nil, err
 	}
-	eventStream, err := runner.StartPlaybookOnNode(playbook, inventory, ev, newWorker.Host)
+	eventStream, err := runner.StartPlaybookOnNode(playbook, inventory, *ev, newWorker.Host)
 	if err != nil {
 		return nil, fmt.Errorf("error running ansible playbook: %v", err)
 	}
@@ -98,7 +81,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 		if err != nil {
 			return nil, err
 		}
-		eventStream, err := runner.StartPlaybook(playbook, inventory, ev)
+		eventStream, err := runner.StartPlaybook(playbook, inventory, *ev)
 		if err != nil {
 			return nil, fmt.Errorf("error running playbook to update hosts files on all nodes: %v", err)
 		}
@@ -110,7 +93,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	// Verify that the node registered with API server
 	util.PrintHeader(ae.stdout, "Running New Worker Smoke Test", '=')
 	playbook = "_worker-smoke-test.yaml"
-	ev = ansible.ExtraVars{
+	ev = &ansible.ExtraVars{
 		"worker_node": newWorker.Host,
 	}
 	eventExplainer = &explain.DefaultEventExplainer{}
@@ -118,7 +101,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	if err != nil {
 		return nil, err
 	}
-	eventStream, err = runner.StartPlaybook(playbook, inventory, ev)
+	eventStream, err = runner.StartPlaybook(playbook, inventory, *ev)
 	if err != nil {
 		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
 	}
