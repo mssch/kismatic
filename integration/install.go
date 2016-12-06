@@ -211,6 +211,12 @@ func FailIfError(err error, message ...string) {
 	}
 }
 
+func FailIfSuccess(err error, message ...string) {
+	if err == nil {
+		Fail("Expected failure")
+	}
+}
+
 func FileExists(path string) bool {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return false

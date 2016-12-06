@@ -6,7 +6,13 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
+	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh"
+
+	"github.com/apprenda/kismatic/pkg/util"
 )
 
 // TODO: There is need to run validation against anything that is validatable.
@@ -29,12 +35,37 @@ func ValidateNode(node *Node) (bool, []error) {
 	return v.valid()
 }
 
+// ValidatePlanSSHConnection tries to establish SSH connections to all nodes in the cluster
+func ValidatePlanSSHConnection(p *Plan) (bool, []error) {
+	v := newValidator()
+
+	v.validateWithErrPrefix("Etcd nodes", &SSHConnection{&p.Cluster.SSH, p.Etcd.Nodes})
+	v.validateWithErrPrefix("Master nodes", &SSHConnection{&p.Cluster.SSH, p.Master.Nodes})
+	v.validateWithErrPrefix("Worker nodes", &SSHConnection{&p.Cluster.SSH, p.Worker.Nodes})
+
+	return v.valid()
+}
+
+// ValidateSSHConnection tries to establish SSH connection with the details provieded
+func ValidateSSHConnection(con *SSHConnection, prefix string) (bool, []error) {
+	v := newValidator()
+
+	v.validateWithErrPrefix(prefix, con)
+
+	return v.valid()
+}
+
 type validatable interface {
 	validate() (bool, []error)
 }
 
 type validator struct {
 	errs []error
+}
+
+type SSHConnection struct {
+	SSHConfig *SSHConfig
+	Nodes     []Node
 }
 
 func newValidator() *validator {
@@ -147,6 +178,69 @@ func (s *SSHConfig) validate() (bool, []error) {
 		v.addError(fmt.Errorf("SSH port %d is invalid. Port must be in the range 1-65535", s.Port))
 	}
 	return v.valid()
+}
+
+// validate SSH access to the nodes
+func (s *SSHConnection) validate() (bool, []error) {
+	v := newValidator()
+
+	auth, err := util.GetUnencryptedPublicKeyAuth(s.SSHConfig.Key)
+	if err != nil {
+		v.addError(fmt.Errorf("error parsing SSH key: %v", err))
+	} else {
+		sshClientConfig := &ssh.ClientConfig{
+			User: s.SSHConfig.User,
+			Auth: []ssh.AuthMethod{
+				auth,
+			},
+		}
+		var wg sync.WaitGroup
+		errQueue := make(chan error, len(s.Nodes))
+		// number of nodes
+		wg.Add(len(s.Nodes))
+		for _, node := range s.Nodes {
+			go func(node Node) {
+				defer wg.Done()
+				sshErr := verifySSH(&node, s.SSHConfig, sshClientConfig)
+				// Need to send something the buffered channel
+				if sshErr != nil {
+					errQueue <- fmt.Errorf("error SSH into node: %s, %v", node.InternalIP, sshErr)
+				} else {
+					errQueue <- nil
+				}
+			}(node)
+		}
+		// Wait for all nodes to complete, then close channel
+		go func() {
+			wg.Wait()
+			close(errQueue)
+		}()
+
+		// Read any error
+		for err := range errQueue {
+			if err != nil {
+				v.addError(err)
+			}
+		}
+	}
+
+	return v.valid()
+}
+
+func verifySSH(node *Node, sshConfig *SSHConfig, sshClientConfig *ssh.ClientConfig) error {
+	server := node.IP + ":" + strconv.Itoa(sshConfig.Port)
+	conn, err := net.DialTimeout("tcp", server, time.Second*5)
+	if err != nil {
+		return err
+	}
+
+	// Try to connect with a timeout
+	sshConn, _, _, err := ssh.NewClientConn(conn, server, sshClientConfig)
+	if err == nil {
+		conn.Close()
+		sshConn.Close()
+	}
+	return err
 }
 
 func (ng *NodeGroup) validate() (bool, []error) {
