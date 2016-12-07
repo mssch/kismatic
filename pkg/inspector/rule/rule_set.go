@@ -83,6 +83,22 @@ const defaultRuleSet = `---
   port: 443
   timeout: 5s
 
+# Port used by Ingress
+- kind: TCPPortAvailable
+  when: ["ingress"]
+  port: 80
+- kind: TCPPortAccessible
+  when: ["ingress"]
+  port: 80
+  timeout: 5s
+- kind: TCPPortAvailable
+  when: ["ingress"]
+  port: 443
+- kind: TCPPortAccessible
+  when: ["ingress"]
+  port: 443
+  timeout: 5s
+
 # TODO: Add kismatic package checks
 - kind: PackageAvailable
   when: ["etcd", "ubuntu"]
@@ -94,6 +110,10 @@ const defaultRuleSet = `---
   packageVersion: 1.4.6-1
 - kind: PackageAvailable
   when: ["worker","ubuntu"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.4.6-1
+- kind: PackageAvailable
+  when: ["ingress","ubuntu"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.4.6-1
 
@@ -109,6 +129,10 @@ const defaultRuleSet = `---
   when: ["worker","centos"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.4.6_1-1
+- kind: PackageAvailable
+  when: ["ingress","centos"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.4.6_1-1
 
 - kind: PackageAvailable
   when: ["etcd", "rhel"]
@@ -120,6 +144,10 @@ const defaultRuleSet = `---
   packageVersion: 1.4.6_1-1
 - kind: PackageAvailable
   when: ["worker","rhel"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.4.6_1-1
+- kind: PackageAvailable
+  when: ["ingress","rhel"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.4.6_1-1
 `

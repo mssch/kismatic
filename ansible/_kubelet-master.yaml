@@ -6,7 +6,8 @@
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
-      - group_vars/kubelet-master.yaml
+    vars:
+      - kubernetes_schedulable: false
 
     roles:
       - network-environment

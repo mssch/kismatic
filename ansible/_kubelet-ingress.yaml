@@ -1,13 +1,13 @@
 ---
-  - hosts: worker
+  - hosts: ingress:!master:!worker  # only install if wasn't already installed by the master or worker
     any_errors_fatal: true
-    name: "Install Kubernetes Kubelet on Worker Nodes"
+    name: "Install Kubernetes Kubelet on Ingress Nodes"
     remote_user: root
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
     vars:
-      - kubernetes_schedulable: true
+      - kubernetes_schedulable: false
 
     roles:
       - network-environment
