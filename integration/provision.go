@@ -38,19 +38,21 @@ type infrastructureProvisioner interface {
 type linuxDistro string
 
 type NodeCount struct {
-	Etcd   uint16
-	Master uint16
-	Worker uint16
+	Etcd    uint16
+	Master  uint16
+	Worker  uint16
+	Ingress uint16
 }
 
 func (nc NodeCount) Total() uint16 {
-	return nc.Etcd + nc.Master + nc.Worker
+	return nc.Etcd + nc.Master + nc.Worker + nc.Ingress
 }
 
 type provisionedNodes struct {
 	etcd      []NodeDeets
 	master    []NodeDeets
 	worker    []NodeDeets
+	ingress   []NodeDeets
 	dnsRecord *DNSRecord
 }
 
@@ -59,6 +61,7 @@ func (p provisionedNodes) allNodes() []NodeDeets {
 	n = append(n, p.etcd...)
 	n = append(n, p.master...)
 	n = append(n, p.worker...)
+	n = append(n, p.ingress...)
 	return n
 }
 

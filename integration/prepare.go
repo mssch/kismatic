@@ -143,7 +143,7 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 		Organization:       "someOrg",
 		OrganizationalUnit: "someOrgUnit",
 	}
-	key, caCert, err := tls.NewCACert("test-tls/ca-csr.json", "someCommonName", subject)
+	key, caCert, err := tls.NewCACert("test-resources/ca-csr.json", "someCommonName", subject)
 	if err != nil {
 		return "", fmt.Errorf("error generating CA cert for Docker: %v", err)
 	}
@@ -155,7 +155,7 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 	ca := &tls.CA{
 		Key:        key,
 		Cert:       caCert,
-		ConfigFile: "test-tls/ca-config.json",
+		ConfigFile: "test-resources/ca-config.json",
 		Profile:    "kubernetes",
 	}
 	certHosts := []string{node.Hostname, node.PrivateIP, node.PublicIP}
