@@ -202,22 +202,18 @@ func ingressRequest(url string) error {
 	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		fmt.Printf("Could not create request for ingress via %s, %v", url, err)
 		return fmt.Errorf("Could not create request for ingress via %s, %v", url, err)
 	}
 	// Set the host header since this is not a real domain, curl $IP/echo -H 'Host: kismaticintegration.com'
 	req.Host = "kismaticintegration.com"
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Could not reach ingress via %s, %v", url, err)
 		return fmt.Errorf("Could not reach ingress via %s, %v", url, err)
 	}
 	if resp.StatusCode != 200 {
-		fmt.Printf("Ingress status code is not 200, got %d vi %s", resp.StatusCode, url)
 		return fmt.Errorf("Ingress status code is not 200, got %d vi %s", resp.StatusCode, url)
 	}
 
-	fmt.Println("GOT TO THE END")
 	return nil
 }
 
