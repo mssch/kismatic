@@ -212,7 +212,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				ItOnAWS("should result in a working cluster", func(aws infrastructureProvisioner) {
 					WithInfrastructure(nodeCount, distro, aws, func(nodes provisionedNodes, sshKey string) {
 						By("Installing an external Docker registry on one of the etcd nodes")
-						dockerRegistryPort := 443
+						dockerRegistryPort := 8443
 						caFile, err := deployDockerRegistry(nodes.etcd[0], dockerRegistryPort, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						installOpts := installOptions{
