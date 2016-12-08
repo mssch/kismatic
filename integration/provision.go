@@ -175,6 +175,13 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 		}
 		provisioned.worker = append(provisioned.worker, NodeDeets{id: nodeID})
 	}
+	for i = 0; i < nodeCount.Ingress; i++ {
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
+		if err != nil {
+			return provisioned, err
+		}
+		provisioned.ingress = append(provisioned.ingress, NodeDeets{id: nodeID})
+	}
 	// Wait until all instances have their public IPs assigned
 	for i := range provisioned.etcd {
 		etcd := &provisioned.etcd[i]
@@ -191,6 +198,12 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 	for i := range provisioned.worker {
 		worker := &provisioned.worker[i]
 		if err := p.updateNodeWithDeets(worker.id, worker); err != nil {
+			return provisioned, err
+		}
+	}
+	for i := range provisioned.ingress {
+		ingress := &provisioned.ingress[i]
+		if err := p.updateNodeWithDeets(ingress.id, ingress); err != nil {
 			return provisioned, err
 		}
 	}
@@ -325,6 +338,13 @@ func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistr
 		}
 		nodes.worker = append(nodes.worker, NodeDeets{id: id})
 	}
+	for i := uint16(0); i < nodeCount.Ingress; i++ {
+		id, err := p.createNode(packetDistro, i)
+		if err != nil {
+			return nodes, err
+		}
+		nodes.ingress = append(nodes.ingress, NodeDeets{id: id})
+	}
 	// Wait until all nodes are ready
 	err := p.updateNodeUntilPublicIPAvailable(nodes.etcd)
 	if err != nil {
@@ -335,6 +355,10 @@ func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistr
 		return nodes, err
 	}
 	err = p.updateNodeUntilPublicIPAvailable(nodes.worker)
+	if err != nil {
+		return nodes, err
+	}
+	err = p.updateNodeUntilPublicIPAvailable(nodes.ingress)
 	if err != nil {
 		return nodes, err
 	}

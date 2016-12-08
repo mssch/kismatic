@@ -189,7 +189,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Installing with private Docker registry", func() {
-		Context("Using a 1/1/1 CentOS 7 layout", func() {
+		Context("Using a 1/1/1/1 CentOS 7 layout", func() {
 			nodeCount := NodeCount{1, 1, 1, 1}
 			distro := CentOS7
 
