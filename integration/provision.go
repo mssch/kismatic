@@ -9,6 +9,7 @@ import (
 
 	"github.com/apprenda/kismatic/integration/aws"
 	"github.com/apprenda/kismatic/integration/packet"
+	"github.com/apprenda/kismatic/integration/retry"
 	homedir "github.com/mitchellh/go-homedir"
 )
 
@@ -229,7 +230,7 @@ func (p awsProvisioner) TerminateNodes(runningNodes provisionedNodes) error {
 
 // TerminateNode will attempt to terminate a node and wait for the state to not be available
 func (p awsProvisioner) TerminateNode(node NodeDeets) error {
-	err := aws.RetryWithBackoff(func() error {
+	err := retry.WithBackoff(func() error {
 		if err2 := p.client.DestroyNodes([]string{node.id}); err2 != nil {
 			return fmt.Errorf("Could not terminate node: %v", err2)
 		}

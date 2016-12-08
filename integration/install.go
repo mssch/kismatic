@@ -2,6 +2,7 @@ package integration
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"html/template"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/apprenda/kismatic/integration/retry"
 	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 )
@@ -145,7 +147,7 @@ func verifyIngressNodes(nodes provisionedNodes, sshKey string) error {
 
 	By("Verifying the service is accessible via the ingress point(s)")
 	for _, ingNode := range nodes.ingress {
-		if err := verifyIngressPoint(ingNode, sshKey); err != nil {
+		if err := verifyIngressPoint(ingNode); err != nil {
 			return err
 		}
 	}
@@ -158,36 +160,64 @@ func verifyIngressNode(node NodeDeets, sshKey string) error {
 	addIngressResource(node, sshKey)
 
 	By("Verifying the service is accessible via the ingress point(s)")
-	return verifyIngressPoint(node, sshKey)
+	return verifyIngressPoint(node)
 }
 
 func addIngressResource(node NodeDeets, sshKey string) {
 	err := copyFileToRemote("test-resources/ingress.yaml", "/tmp/ingress.yaml", node, sshKey, 1*time.Minute)
 	FailIfError(err, "Error copying ingress test file")
 
+	err = runViaSSH([]string{"sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/tls.key -out /tmp/tls.crt -subj \"/CN=kismaticintegration.com\""}, []NodeDeets{node}, sshKey, 1*time.Minute)
+	FailIfError(err, "Error creating certificates for HTTPs")
+
+	err = runViaSSH([]string{"sudo kubectl create secret tls kismaticintegration-tls --cert=/tmp/tls.crt --key=/tmp/tls.key"}, []NodeDeets{node}, sshKey, 1*time.Minute)
+	FailIfError(err, "Error creating tls secret")
+
 	err = runViaSSH([]string{"sudo kubectl apply -f /tmp/ingress.yaml"}, []NodeDeets{node}, sshKey, 1*time.Minute)
-	FailIfError(err, "Error creating ingress resource")
+	FailIfError(err, "Error creating ingress resources")
 }
 
-func verifyIngressPoint(node NodeDeets, sshKey string) error {
-	client := http.Client{
-		Timeout: 1000 * time.Millisecond,
-	}
+func verifyIngressPoint(node NodeDeets) error {
+	// HTTP ingress
+
 	url := "http://" + node.PublicIP + "/echo"
+	if err := retry.WithBackoff(func() error { return ingressRequest(url) }, 10); err != nil {
+		return err
+	}
+	// HTTPs ingress
+	url = "https://" + node.PublicIP + "/echo-tls"
+	if err := retry.WithBackoff(func() error { return ingressRequest(url) }, 7); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ingressRequest(url string) error {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := http.Client{
+		Timeout:   1000 * time.Millisecond,
+		Transport: tr,
+	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		fmt.Printf("Could not create request for ingress via %s, %v", url, err)
 		return fmt.Errorf("Could not create request for ingress via %s, %v", url, err)
 	}
 	// Set the host header since this is not a real domain, curl $IP/echo -H 'Host: kismaticintegration.com'
 	req.Host = "kismaticintegration.com"
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Printf("Could not reach ingress via %s, %v", url, err)
 		return fmt.Errorf("Could not reach ingress via %s, %v", url, err)
 	}
 	if resp.StatusCode != 200 {
+		fmt.Printf("Ingress status code is not 200, got %d vi %s", resp.StatusCode, url)
 		return fmt.Errorf("Ingress status code is not 200, got %d vi %s", resp.StatusCode, url)
 	}
 
+	fmt.Println("GOT TO THE END")
 	return nil
 }
 
