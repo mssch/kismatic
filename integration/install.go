@@ -3,8 +3,10 @@ package integration
 import (
 	"bufio"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -167,8 +169,12 @@ func addIngressResource(node NodeDeets, sshKey string) {
 	err := copyFileToRemote("test-resources/ingress.yaml", "/tmp/ingress.yaml", node, sshKey, 1*time.Minute)
 	FailIfError(err, "Error copying ingress test file")
 
-	err = runViaSSH([]string{"sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /tmp/tls.key -out /tmp/tls.crt -subj \"/CN=kismaticintegration.com\""}, []NodeDeets{node}, sshKey, 1*time.Minute)
-	FailIfError(err, "Error creating certificates for HTTPs")
+	FailIfError(newTestIngressCert(), "Error creating certificates for HTTPS")
+
+	err = copyFileToRemote("test-resources/ingress.yaml", "/tmp/tls.crt", node, sshKey, 1*time.Minute)
+	FailIfError(err, "Error copying certificate to %s", node.PublicIP)
+	err = copyFileToRemote("test-resources/ingress.yaml", "/tmp/tls.key", node, sshKey, 1*time.Minute)
+	FailIfError(err, "Error copying certificate key to %s", node.PublicIP)
 
 	err = runViaSSH([]string{"sudo kubectl create secret tls kismaticintegration-tls --cert=/tmp/tls.crt --key=/tmp/tls.key"}, []NodeDeets{node}, sshKey, 1*time.Minute)
 	FailIfError(err, "Error creating tls secret")
@@ -177,24 +183,39 @@ func addIngressResource(node NodeDeets, sshKey string) {
 	FailIfError(err, "Error creating ingress resources")
 }
 
+func newTestIngressCert() error {
+	err := exec.Command("openssl", "req", "-x509", "-nodes", "-days", "365", "-newkey", "rsa:2048", "-keyout", "/tmp/tls.key", "-out", "/tmp/tls.crt", "-subj", "/CN=kismaticintegration.com").Run()
+	return err
+}
+
 func verifyIngressPoint(node NodeDeets) error {
 	// HTTP ingress
-
+	certPath := "/tmp/tls.crt"
 	url := "http://" + node.PublicIP + "/echo"
-	if err := retry.WithBackoff(func() error { return ingressRequest(url) }, 10); err != nil {
+	if err := retry.WithBackoff(func() error { return ingressRequest(url, certPath) }, 10); err != nil {
 		return err
 	}
-	// HTTPs ingress
+	// HTTPS ingress
 	url = "https://" + node.PublicIP + "/echo-tls"
-	if err := retry.WithBackoff(func() error { return ingressRequest(url) }, 7); err != nil {
+	if err := retry.WithBackoff(func() error { return ingressRequest(url, certPath) }, 7); err != nil {
 		return err
 	}
 	return nil
 }
 
-func ingressRequest(url string) error {
+func ingressRequest(url, certPath string) error {
+	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool()}
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: tlsConfig,
+	}
+	// Load the self signed cert
+	cert, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		return fmt.Errorf("Could not read certificate file, %v", err)
+	}
+	ok := tlsConfig.RootCAs.AppendCertsFromPEM(cert)
+	if !ok {
+		return fmt.Errorf("Could not read certificate PEM data, %v", err)
 	}
 	client := http.Client{
 		Timeout:   1000 * time.Millisecond,
