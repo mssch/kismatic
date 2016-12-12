@@ -33,5 +33,5 @@
     when: enable_calico_policy|bool == true
   - include: _addon-kubernetes-dns.yaml
   - include: _addon-kubernetes-ingress.yaml
-    when: confgiure_ingress|bool == true
+    when: configure_ingress|bool == true
   - include: _addon-kubernetes-dashboard.yaml

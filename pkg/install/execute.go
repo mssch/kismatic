@@ -214,9 +214,9 @@ func (ae *ansibleExecutor) buildInstallExtraVars(p *Plan, tlsDirectory string) (
 	}
 	// Need to pass variable to Ansible to skip cleanly
 	if p.Ingress.Nodes != nil && len(p.Ingress.Nodes) > 0 {
-		ev["confgiure_ingress"] = "true"
+		ev["configure_ingress"] = "true"
 	} else {
-		ev["confgiure_ingress"] = "false"
+		ev["configure_ingress"] = "false"
 	}
 	return &ev, nil
 }

@@ -48,8 +48,7 @@ ingress:
     internalip: 8.8.8.1
 ```
 
-To `ingress` node types an optional section  
-When an ingress section is not provided, the ingress controller will NOT be setup  
+The `ingress` section is optional, when this section is not provided the ingress controller will NOT be setup  
 `ingress` can have 1 or more nodes, these nodes can be unique from the other roles or can be shared
 * On an `ingress` node the kubelet will be **unschedulable**, ie. `node4.somehost.com` from the example
 * If the node is only shared with `etcd` or/and `master ` the kubelet will be **unschedulable**
@@ -58,7 +57,7 @@ When an ingress section is not provided, the ingress controller will NOT be setu
 ### Example Ingress Resources
 Assumptions:
 * at least 1 `ingress` node was provided when setting up the cluster
-* a service named `echoserver` with `port: 80` is running in the cluster and the `deafult` namespace
+* a service named `echoserver` with `port: 80` is running in the cluster and the `default` namespace
 * replace `mydomain.com` with your actual domain
 * you configured `mydomain.com` to resolve to your ingress node(s)
 
@@ -120,10 +119,10 @@ spec:
           servicePort: 80
 ```
 
-After running the above, your service will be accessible vi `http://mydomain.com/echoserver` and `https://mydomain.com/echoserver`
+After running the above, your service will be accessible via `http://mydomain.com/echoserver` and `https://mydomain.com/echoserver`
 
 ### Out of Scope
 * Integrating with any cloud provider for Load Balance functionality - it is up to the user of the cluster to configure their Load Balancers with the ingress nodes
-* Automatic HTTPs cert generation
+* Automatic HTTPS cert generation
   * TLS certificates can be provided via kubernetes secretes
   * For integration with Let's Encrypt please see [kube-lego](https://github.com/jetstack/kube-lego) and [this example](https://github.com/jetstack/kube-lego/tree/master/examples/nginx#enable-kube-lego)

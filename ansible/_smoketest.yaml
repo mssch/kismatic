@@ -7,8 +7,6 @@
     serial: 1
     vars_files:
       - group_vars/all.yaml
-    vars:
-      - kubernetes_schedulable: false
 
     roles:
       - smoketest
