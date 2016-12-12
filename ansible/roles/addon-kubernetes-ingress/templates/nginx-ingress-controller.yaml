@@ -14,7 +14,7 @@ spec:
       nodeSelector:
         ingress: "true"
       containers:
-      - image: gcr.io/google_containers/nginx-ingress-controller:0.8.3
+      - image: {{ nginx_ingress_controller_img }}
         name: ingress
         imagePullPolicy: Always
         readinessProbe:
