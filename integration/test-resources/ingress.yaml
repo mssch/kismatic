@@ -65,6 +65,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     ingress.kubernetes.io/ssl-redirect: "false"
+    ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
   - host: kismaticintegration.com
@@ -81,6 +82,7 @@ metadata:
   name: echoserver-tls
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
   - hosts:

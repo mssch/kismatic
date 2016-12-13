@@ -70,6 +70,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     ingress.kubernetes.io/ssl-redirect: "false"
+    ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
   - host: mydomain.com
@@ -81,9 +82,13 @@ spec:
           servicePort: 80
 
 ```
-Please note the `ingress.kubernetes.io/ssl-redirect: "false"` annotation,
+Please note the `annotations` optopns:
+ * `ingress.kubernetes.io/ssl-redirect: "false"`  
 by default the controller redirects (301) to HTTPS,
 include this annotation for any ingress resource you want available over HTTP
+
+* `ingress.kubernetes.io/rewrite-target: /`  
+include this annotation if the exposed URL in the service differs from the specified path. Without a rewrite any request will return 404. Set this annotation to the path expected by the service.
 
 To expose via HTTPS on port 443 of the ingress node, `kubectl apply`:
 ```
@@ -104,6 +109,7 @@ metadata:
   name: echoserver
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
   - hosts:
