@@ -43,7 +43,7 @@ func ValidatePlanSSHConnection(p *Plan) (bool, []error) {
 	v.validateWithErrPrefix("Master nodes", &SSHConnection{&p.Cluster.SSH, p.Master.Nodes})
 	v.validateWithErrPrefix("Worker nodes", &SSHConnection{&p.Cluster.SSH, p.Worker.Nodes})
 	// Optional
-	if p.Ingress.Nodes != nil && p.Ingress.ExpectedCount > 0 {
+	if p.Ingress.Nodes != nil || p.Ingress.ExpectedCount > 0 {
 		v.validateWithErrPrefix("Ingress nodes", &SSHConnection{&p.Cluster.SSH, p.Ingress.Nodes})
 	}
 
@@ -113,7 +113,7 @@ func (p *Plan) validate() (bool, []error) {
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
-	if p.Ingress.Nodes != nil && p.Ingress.ExpectedCount > 0 {
+	if p.Ingress.Nodes != nil || p.Ingress.ExpectedCount > 0 {
 		v.validateWithErrPrefix("Ingress nodes", &p.Ingress)
 	}
 
