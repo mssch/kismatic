@@ -82,7 +82,7 @@ spec:
           servicePort: 80
 
 ```
-Please note the `annotations` optopns:
+Please note the `annotations` options:
  * `ingress.kubernetes.io/ssl-redirect: "false"`  
 by default the controller redirects (301) to HTTPS,
 include this annotation for any ingress resource you want available over HTTP
