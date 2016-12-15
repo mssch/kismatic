@@ -38,6 +38,7 @@ type installOptions struct {
 	dockerRegistryIP            string
 	dockerRegistryPort          int
 	dockerRegistryCAPath        string
+	modifyHostsFiles            bool
 }
 
 func installKismaticMini(node NodeDeets, sshKey string) error {
@@ -108,6 +109,7 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 		DockerRegistryCAPath:         installOpts.dockerRegistryCAPath,
 		DockerRegistryIP:             installOpts.dockerRegistryIP,
 		DockerRegistryPort:           installOpts.dockerRegistryPort,
+		ModifyHostsFiles:             installOpts.modifyHostsFiles,
 	}
 
 	f, err := os.Create("kismatic-testing.yaml")
@@ -124,7 +126,27 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
+}
 
+func installKismaticWithPlan(plan PlanAWS, sshKey string) error {
+	By("Building a template")
+	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
+	FailIfError(err, "Couldn't parse template")
+
+	f, err := os.Create("kismatic-testing.yaml")
+	FailIfError(err, "Error creating plan")
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	err = template.Execute(w, &plan)
+	FailIfError(err, "Error filling in plan template")
+	w.Flush()
+
+	By("Punch it Chewie!")
+	cmd := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }
 
 func verifyMasterNodeFailure(nodes provisionedNodes, provisioner infrastructureProvisioner, sshKey string) error {
