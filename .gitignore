@@ -49,3 +49,4 @@ kismatic-cluster.yaml
 vendor/*
 package/source
 package/out
+integration/vendor
