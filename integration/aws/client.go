@@ -29,7 +29,7 @@ const (
 	// exponentialBackoffMaxAttempts is the number of times will try before failing
 	// Exponential backoff for AWS eventual consistency
 	exponentialBackoffMaxEC2Attempts     = 5
-	exponentialBackoffMaxRoute53Attempts = 10
+	exponentialBackoffMaxRoute53Attempts = 5
 )
 
 // A Node on AWS
