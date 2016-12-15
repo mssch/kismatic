@@ -19,18 +19,18 @@ import (
 
 const (
 	copyKismaticYumRepo        = `sudo curl https://kismatic-packages-rpm.s3-accelerate.amazonaws.com/kismatic.repo -o /etc/yum.repos.d/kismatic.repo`
-	installEtcdYum             = `sudo yum -y install kismatic-etcd`
-	installDockerEngineYum     = `sudo yum -y install kismatic-docker-engine`
-	installKubernetesMasterYum = `sudo yum -y install kismatic-kubernetes-master`
-	installKubernetesYum       = `sudo yum -y install kismatic-kubernetes-node`
+	installEtcdYum             = `sudo yum -y install kismatic-etcd-1.5.1_1-1`
+	installDockerEngineYum     = `sudo yum -y install kismatic-docker-engine-1.11.2-1`
+	installKubernetesMasterYum = `sudo yum -y install kismatic-kubernetes-master-1.5.1_1-1`
+	installKubernetesYum       = `sudo yum -y install kismatic-kubernetes-node-1.5.1_1-1`
 
 	copyKismaticKeyDeb         = `wget -qO - https://kismatic-packages-deb.s3-accelerate.amazonaws.com/public.key | sudo apt-key add - `
 	copyKismaticRepoDeb        = `sudo add-apt-repository "deb https://kismatic-packages-deb.s3-accelerate.amazonaws.com xenial main"`
 	updateAptGet               = `sudo apt-get update`
-	installEtcdApt             = `sudo apt-get -y install kismatic-etcd`
-	installDockerApt           = `sudo apt-get -y install kismatic-docker-engine`
-	installKubernetesMasterApt = `sudo apt-get -y install kismatic-kubernetes-master`
-	installKubernetesApt       = `sudo apt-get -y install kismatic-kubernetes-node`
+	installEtcdApt             = `sudo apt-get -y install kismatic-etcd=1.5.1-1`
+	installDockerApt           = `sudo apt-get -y install kismatic-docker-engine=1.11.2-0~xenial`
+	installKubernetesMasterApt = `sudo apt-get -y install kismatic-kubernetes-networking=1.5.1-1 kismatic-kubernetes-node=1.5.1-1 kismatic-kubernetes-master=1.5.1-1`
+	installKubernetesApt       = `sudo apt-get -y install kismatic-kubernetes-networking=1.5.1-1 kismatic-kubernetes-node=1.5.1-1`
 )
 
 type nodePrep struct {
