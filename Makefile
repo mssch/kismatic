@@ -66,23 +66,14 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	tar -cvzf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
 
-get-test-deps:
+integration/vendor: tools/glide
 	go get github.com/onsi/ginkgo/ginkgo
-	go get github.com/onsi/gomega
-	go get github.com/jmcvetta/guid
-	go get gopkg.in/yaml.v2
-	go get -u github.com/aws/aws-sdk-go
-	go get github.com/mitchellh/go-homedir
-	go install github.com/onsi/ginkgo/ginkgo
-	go get golang.org/x/crypto/ssh
-	go get github.com/cloudflare/cfssl/csr
-	go get github.com/fatih/color
-	go get github.com/packethost/packngo
+	cd integration && ../tools/glide install
 
-just-integration-test: get-test-deps
+just-integration-test: integration/vendor
 	ginkgo -p -v integration
 
-serial-integration-test: get-test-deps
+serial-integration-test: integration/vendor
 	ginkgo -v integration
 
 docs/kismatic-cli:
