@@ -26,6 +26,8 @@
     command: docker load -i /opt/images/{{ item }}.tar
     with_items:
       - calico
+      - defaultbackend
+      - nginx-ingress-controller
       - nginx
       - busybox
       - pause
