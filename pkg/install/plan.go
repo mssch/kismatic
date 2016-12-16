@@ -131,6 +131,10 @@ func WritePlanTemplate(p Plan, w PlanReadWriter) error {
 		p.Worker.Nodes = append(p.Worker.Nodes, n)
 	}
 
+	for i := 0; i < p.Ingress.ExpectedCount; i++ {
+		p.Ingress.Nodes = append(p.Ingress.Nodes, n)
+	}
+
 	if err := w.Write(&p); err != nil {
 		return fmt.Errorf("error writing installation plan template: %v", err)
 	}

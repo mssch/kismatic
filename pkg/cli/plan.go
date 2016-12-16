@@ -54,10 +54,19 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 		return fmt.Errorf("The number of worker nodes must be greater than zero")
 	}
 
-	fmt.Fprintf(out, "Generating installation plan file with %d etcd nodes, %d master nodes and %d worker nodes\n",
-		etcdNodes, masterNodes, workerNodes)
+	// ingress nodes
+	ingressNodes, err := util.PromptForInt(in, out, "Number of ingress nodes(optional, set to 0 if not required)", 2)
+	if err != nil {
+		return fmt.Errorf("Error reading number of ingress nodes: %v", err)
+	}
+	if ingressNodes < 0 {
+		return fmt.Errorf("The number of ingress nodes must be greater than or equal to zero")
+	}
 
-	plan := buildPlan(etcdNodes, masterNodes, workerNodes)
+	fmt.Fprintf(out, "Generating installation plan file with %d etcd nodes, %d master nodes, %d worker nodes and %d ingress nodes\n",
+		etcdNodes, masterNodes, workerNodes, ingressNodes)
+
+	plan := buildPlan(etcdNodes, masterNodes, workerNodes, ingressNodes)
 	// Write out the plan
 	err = install.WritePlanTemplate(plan, planner)
 	if err != nil {
@@ -69,7 +78,7 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	return nil
 }
 
-func buildPlan(etcdNodes int, masterNodes int, workerNodes int) install.Plan {
+func buildPlan(etcdNodes int, masterNodes int, workerNodes int, ingressNodes int) install.Plan {
 	// Create a plan
 	masterNodeGroup := install.MasterNodeGroup{}
 	masterNodeGroup.ExpectedCount = masterNodes
@@ -81,6 +90,12 @@ func buildPlan(etcdNodes int, masterNodes int, workerNodes int) install.Plan {
 		Worker: install.NodeGroup{
 			ExpectedCount: workerNodes,
 		},
+	}
+
+	if ingressNodes > 0 {
+		plan.Ingress = install.NodeGroup{
+			ExpectedCount: ingressNodes,
+		}
 	}
 
 	return plan
