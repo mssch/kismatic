@@ -35,7 +35,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				helpbytes, helperr := c.Output()
 				Expect(helperr).To(BeNil())
 				helpText := string(helpbytes)
-				Expect(helpText).To(ContainSubstring("Generating installation plan file with 3 etcd nodes, 2 master nodes and 3 worker nodes"))
+				Expect(helpText).To(ContainSubstring("Generating installation plan file with 3 etcd nodes, 2 master nodes, 3 worker nodes and 2 ingress nodes"))
 				Expect(FileExists("kismatic-cluster.yaml")).To(Equal(true))
 
 				By("Outputing a file with valid YAML")
