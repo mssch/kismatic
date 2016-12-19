@@ -2,9 +2,6 @@
   # YUM repo
   - name: ping Kismatic yum repository
     uri: url="{{ yum_gpg_key_url }}"
-    notify:
-      - add Kismatic yum repository
-      - clean Kismatic yum cache # required to get new versions of packagess
     when: ansible_os_family == 'RedHat'
     ignore_errors: yes
     register: result
@@ -13,14 +10,22 @@
     delay: 1
     changed_when: "result.status is defined and result.status == 200"
 
+    # only configure repository if it is reachable
+  - name: add Kismatic yum repository
+    yum_repository:
+      name: kismatic
+      description: Kismatic Packages
+      baseurl: "{{ yum_repository_url }}"
+      gpgkey: "{{ yum_gpg_key_url }}"
+      gpgcheck: yes
+    when: ansible_os_family == 'RedHat' and result.status is defined and result.status == 200
+  - name: clean Kismatic yum cache
+    command: 'yum --enablerepo=kismatic clean metadata'
+    when: ansible_os_family == 'RedHat' and result.status is defined and result.status == 200
+
   # DEB repo
   - name: ping Kismatic deb repository
     uri: url="{{ deb_gpg_key_url }}"
-    notify:
-      - install apt-transport-https package
-      - add Kismatic deb key
-      - add Kismatic deb repository
-      - apt-get update
     when: ansible_os_family == 'Debian'
     ignore_errors: yes
     register: result
@@ -29,7 +34,27 @@
     delay: 1
     changed_when: "result.status is defined and result.status == 200"
 
-  - meta: flush_handlers  #Run handlers
+    # only configure repository if it is reachable
+  - name: install apt-transport-https package
+    apt:
+      name: apt-transport-https
+      state: latest
+      update_cache: yes
+    when: ansible_os_family == 'Debian' and result.status is defined and result.status == 200
+  - name: add Kismatic deb key
+    apt_key:
+      url: "{{ deb_gpg_key_url }}"
+      validate_certs: no
+    when: ansible_os_family == 'Debian' and result.status is defined and result.status == 200
+  - name: add Kismatic deb repository
+    apt_repository:
+      repo: 'deb {{ deb_repository_url }} xenial main'
+      validate_certs: no
+    when: ansible_os_family == 'Debian' and result.status is defined and result.status == 200
+  - name: apt-get update
+    apt:
+      update_cache: yes
+    when: ansible_os_family == 'Debian' and result.status is defined and result.status == 200
 
   # install packages
   - name: install yum packages
