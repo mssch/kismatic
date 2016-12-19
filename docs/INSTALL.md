@@ -11,12 +11,13 @@
 * Install and properly configure Kubernetes control plane components
 * Install useful add-ons such as a Docker Registry, Kubernetes DNS and the native Kubernetes Dashboard
 * Allow for the addition of worker nodes to an existing cluster built with Kismatic
+* Allow for the installation of basic Ingress
 
 ## What the CLI will **not** do:
 
 * Allow you to manage Kubernetes clusters that weren't built using Kismatic
 * Provision infrastructure (make machines or alter your network)
-* Install load balancers or Ingress
+* Install load balancers
 
 # Kismatic Install Workflow
 
