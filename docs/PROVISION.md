@@ -32,7 +32,7 @@ You will be asked a few questions regarding the decisions you made in the Plan s
 
 As machines are being provisioned, you must record their identity and credentials in this file.
 
-## Create Virtual Machines
+## Create Machines
 
 ### <a name="access"></a>Providing access to the Installer
 
