@@ -93,7 +93,7 @@ func buildPlan(etcdNodes int, masterNodes int, workerNodes int, ingressNodes int
 	}
 
 	if ingressNodes > 0 {
-		plan.Ingress = install.NodeGroup{
+		plan.Ingress = install.OptionalNodeGroup{
 			ExpectedCount: ingressNodes,
 		}
 	}

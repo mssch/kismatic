@@ -44,6 +44,9 @@ type NodeGroup struct {
 	Nodes         []Node
 }
 
+// An OptionalNodeGroup is a collection of nodes that can be empty
+type OptionalNodeGroup NodeGroup
+
 // MasterNodeGroup is the collection of master nodes
 type MasterNodeGroup struct {
 	ExpectedCount         int    `yaml:"expected_count"`
@@ -67,5 +70,5 @@ type Plan struct {
 	Etcd           NodeGroup
 	Master         MasterNodeGroup
 	Worker         NodeGroup
-	Ingress        NodeGroup
+	Ingress        OptionalNodeGroup
 }
