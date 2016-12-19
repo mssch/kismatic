@@ -82,7 +82,6 @@ spec:
         # command = "/kube-dns"
         - --domain=cluster.local
         - --dns-port=10053
-        - --kubecfg-file={{ kubernetes_kubeconfig_path }}
         volumeMounts:
         - mountPath: {{ kubernetes_certificates_ca_path }}
           name: "ssl-certs"
