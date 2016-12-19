@@ -39,15 +39,20 @@ In order to run tests against Packet.net, you'll need to define the following en
 
  You run integration tests via
 
- ```make integration-tests```
+ ```make integration-test```
 
  which will also build a distributable for your machine's architecture.
 
  To avoid rebuild, you can also call
 
- ```make just-integration-tests```
+ ```make just-integration-test```
 
  This step will complain if your keys aren't set up, with clues as to how you can remedy the issue.
+
+To run a specific test, you can call:
+```
+FOCUS=[pattern to match here] make focus-integration-test
+```
 
  Test early. Test often. Test hard.
 
