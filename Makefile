@@ -76,6 +76,9 @@ just-integration-test: integration/vendor
 serial-integration-test: integration/vendor
 	ginkgo -v integration
 
+focus-integration-test: integration/vendor
+	ginkgo --focus $(FOCUS) -v integration
+
 docs/kismatic-cli:
 	mkdir docs/kismatic-cli
 	go run cmd/kismatic-docs/main.go
