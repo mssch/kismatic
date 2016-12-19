@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/apprenda/kismatic/integration/retry"
 	"github.com/apprenda/kismatic/pkg/tls"
 	"github.com/cloudflare/cfssl/csr"
 	. "github.com/onsi/ginkgo"
@@ -94,27 +95,37 @@ func DownloadKismaticRelease(version string) (string, error) {
 	return tmpDir, nil
 }
 
-func InstallKismaticRPMs(nodes provisionedNodes, distro linuxDistro, sshKey string) {
+func InstallKismaticPackages(nodes provisionedNodes, distro linuxDistro, sshKey string) {
 	prep := getPrepForDistro(distro)
 	By("Configuring package repository")
-	err := runViaSSH(prep.CommandsToPrepRepo, append(append(nodes.etcd, nodes.master...), nodes.worker...), sshKey, 5*time.Minute)
+	err := retry.WithBackoff(func() error {
+		return runViaSSH(prep.CommandsToPrepRepo, append(append(nodes.etcd, nodes.master...), nodes.worker...), sshKey, 5*time.Minute)
+	}, 3)
 	FailIfError(err, "failed to configure package repository over SSH")
 
 	By("Installing Etcd")
-	err = runViaSSH(prep.CommandsToInstallEtcd, nodes.etcd, sshKey, 10*time.Minute)
+	err = retry.WithBackoff(func() error {
+		return runViaSSH(prep.CommandsToInstallEtcd, nodes.etcd, sshKey, 10*time.Minute)
+	}, 3)
 	FailIfError(err, "failed to install Etcd over SSH")
 
 	By("Installing Docker")
 	dockerNodes := append(nodes.master, nodes.worker...)
-	err = runViaSSH(prep.CommandsToInstallDocker, dockerNodes, sshKey, 10*time.Minute)
+	err = retry.WithBackoff(func() error {
+		return runViaSSH(prep.CommandsToInstallDocker, dockerNodes, sshKey, 10*time.Minute)
+	}, 3)
 	FailIfError(err, "failed to install docker over SSH")
 
 	By("Installing Master:")
-	err = runViaSSH(prep.CommandsToInstallK8sMaster, nodes.master, sshKey, 15*time.Minute)
+	err = retry.WithBackoff(func() error {
+		return runViaSSH(prep.CommandsToInstallK8sMaster, nodes.master, sshKey, 15*time.Minute)
+	}, 3)
 	FailIfError(err, "failed to install the master over SSH")
 
 	By("Installing Worker:")
-	err = runViaSSH(prep.CommandsToInstallK8s, nodes.worker, sshKey, 10*time.Minute)
+	err = retry.WithBackoff(func() error {
+		return runViaSSH(prep.CommandsToInstallK8s, nodes.worker, sshKey, 10*time.Minute)
+	}, 3)
 	FailIfError(err, "failed to install the worker over SSH")
 }
 

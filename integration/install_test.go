@@ -156,7 +156,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				ItOnAWS("Should result in a working cluster", func(provisioner infrastructureProvisioner) {
 					WithInfrastructure(NodeCount{1, 1, 1}, Ubuntu1604LTS, provisioner, func(nodes provisionedNodes, sshKey string) {
 						By("Installing the Kismatic RPMs")
-						InstallKismaticRPMs(nodes, Ubuntu1604LTS, sshKey)
+						InstallKismaticPackages(nodes, Ubuntu1604LTS, sshKey)
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
@@ -167,7 +167,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				ItOnAWS("Should result in a working cluster", func(provisioner infrastructureProvisioner) {
 					WithInfrastructure(NodeCount{1, 1, 1}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						By("Installing the Kismatic RPMs")
-						InstallKismaticRPMs(nodes, CentOS7, sshKey)
+						InstallKismaticPackages(nodes, CentOS7, sshKey)
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
