@@ -1,11 +1,11 @@
 # Cluster Intent Examples
 
-| Why do you want to install Kubernetes? | Example Cluster |
-| --- | --- |
-| I want to run a small prototype cluster on my laptop| [Minikube-style](#minikube) |
-| I want to run a small development cluster in AWS | [Developer](#junior) |
-| I want to run a reliable, permanent labratory cluster to host services mostly for my team. | [Skunkworks](#skunkworks) |
-| I want to run a reliable, permanent production cluster to host services for my team and others. | [Production](#production) | 
+| Why do you want to install Kubernetes? | Example Cluster | Size
+| --- | --- | --- |
+| I want to run a small prototype cluster on my laptop| [Mini-style](#minikube) | Single VM 
+| I want to run a small development cluster in AWS | [Developer](#junior) | 3+ VMs
+| I want to run a reliable, permanent labratory cluster to host services mostly for my team. | [Skunkworks](#skunkworks) | 7+ machines
+| I want to run a reliable, permanent production cluster to host services for my team and others. | [Production](#production) | 9+ machines
 
 # <a name="minikube"></a>Minikube style
 
