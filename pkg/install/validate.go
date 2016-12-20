@@ -206,7 +206,7 @@ func (s *SSHConnection) validate() (bool, []error) {
 				sshErr := verifySSH(&node, s.SSHConfig, sshClientConfig)
 				// Need to send something the buffered channel
 				if sshErr != nil {
-					errQueue <- fmt.Errorf("error SSH into node: %s, %v", node.InternalIP, sshErr)
+					errQueue <- fmt.Errorf("SSH connectivity validation failed for %q: %v", node.IP, sshErr)
 				} else {
 					errQueue <- nil
 				}
