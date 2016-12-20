@@ -24,6 +24,8 @@ KET operational tools include:
 4. [Kismatic RPM & DEB Packages](docs/PACKAGES.md)
    * Packages for installing Kubernetes and its dependencies, focused on specific roles in an HA cluster.
    * With these packages installed on a local repo, it is possible to use Kismatic to install Kubernetes on nodes that do not have access to the public internet.
+5. [Kismatic Provision](https://github.com/apprenda/kismatic-provision)
+   * Quickly provision infrastructure on public clouds such as AWS and Packet. Makes building demo and development clusters a 2-step process.
 
 ## Dependencies
 | Dependency | Current version |
@@ -34,15 +36,15 @@ KET operational tools include:
 | Etcd (for Kubernetes) | 3.0.15 |
 | Etcd (for Calico) | 2.37 |
 
-[Download latest install tarball (OSX)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest-darwin/kismatic.tar.gz)
+[Download latest install tarball (Mac)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest-darwin/kismatic.tar.gz)
 
 [Download latest install tarball (Linux)](https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kismatic.tar.gz)
 
 # Usage Documentation
 
-[What you can build with Kismatic](docs/INTENT.md) -- Useful examples for various ways you can use Kismatic in your organization.
+[Installation Overview](docs/INTENT.md) -- Useful examples for various ways you can use Kismatic in your organization.
 
-[Plan & Install a Kubernetes cluster](docs/INSTALL.md) -- Overview and details for each phase of the KET installation lifecycle.
+[Plan & Build a Kubernetes cluster](docs/INSTALL.md) -- Details instructions on using KET to install a Kubernetes cluster.
 
 [Using KET with linkerd](docs/LINKERD.md) -- Instructions on how to use KET with linkerd in 1 command.
 
@@ -75,7 +77,7 @@ The installation consists of three phases:
    1. The installer will ask basic questions about the intent of your cluster.
    2. The installer will produce a `kismatic-cluster.yaml` which you will edit to capture your intent.
 2. **Provision**
-   1. You provision your own machines (can also happen before the Plan phase)
+   1. You provision your own machines
    2. You tweak your network
    3. Review the installation plan in `kismatic-cluster.yaml` and add information for each node.
 3. **Install**: `kismatic install apply`
