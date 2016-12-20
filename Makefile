@@ -10,7 +10,9 @@ GLIDE_VERSION = v0.11.1
 ifeq ($(origin GLIDE_GOOS), undefined)
 	GLIDE_GOOS := $(HOST_GOOS)
 endif
-
+ifeq ($(origin GOOS), undefined)
+	GOOS := $(HOST_GOOS)
+endif
 
 build: vendor
 	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
@@ -23,6 +25,7 @@ clean:
 	rm -rf vendor
 	rm -rf vendor-ansible/out
 	rm -rf vendor-cfssl/out
+	rm -rf vendor-provision/out
 
 test: vendor
 	go test ./cmd/... ./pkg/... $(TEST_OPTS)
@@ -49,7 +52,13 @@ vendor-cfssl/out:
 	curl -L https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64 -o vendor-cfssl/out/cfssl_darwin-amd64
 	curl -L https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64 -o vendor-cfssl/out/cfssljson_darwin-amd64
 
-dist: vendor-ansible/out vendor-cfssl/out build
+vendor-provision/out:
+	mkdir -p vendor-provision/out/
+	curl -L https://github.com/apprenda/kismatic-provision/releases/download/v1.0/provision-darwin-amd64 -o vendor-provision/out/provision-darwin-amd64
+	curl -L https://github.com/apprenda/kismatic-provision/releases/download/v1.0/provision-linux-amd64 -o vendor-provision/out/provision-linux-amd64
+	chmod +x vendor-provision/out/*
+
+dist: vendor-ansible/out vendor-cfssl/out vendor-provision/out build
 	mkdir -p out
 	cp bin/kismatic out
 	mkdir -p out/ansible
@@ -62,6 +71,7 @@ dist: vendor-ansible/out vendor-cfssl/out build
 	curl https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kuberang -o out/ansible/playbooks/kuberang/linux/amd64/kuberang
 	mkdir -p out/cfssl
 	cp -r vendor-cfssl/out/* out/cfssl
+	cp vendor-provision/out/provision-$(GOOS)-amd64 out/provision
 	rm -f out/kismatic.tar.gz
 	tar -cvzf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
