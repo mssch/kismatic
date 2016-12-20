@@ -68,7 +68,7 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	if !ok {
 		util.PrettyPrintErr(out, "Validating SSH connections to nodes")
 		printValidationErrors(out, errs)
-		return fmt.Errorf("node SSH error prevents installation from proceeding")
+		return fmt.Errorf("SSH connectivity validation failure prevents installation from proceeding")
 	}
 
 	if opts.skipPreFlight {
