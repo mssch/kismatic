@@ -24,7 +24,7 @@ KET operational tools include:
 4. [Kismatic RPM & DEB Packages](docs/PACKAGES.md)
    * Packages for installing Kubernetes and its dependencies, focused on specific roles in an HA cluster.
    * With these packages installed on a local repo, it is possible to use Kismatic to install Kubernetes on nodes that do not have access to the public internet.
-5. [Kismatic Provision](https://github.com/apprenda/kismatic-provision)
+5. [`Kismatic Provision`](https://github.com/apprenda/kismatic-provision)
    * Quickly provision infrastructure on public clouds such as AWS and Packet. Makes building demo and development clusters a 2-step process.
 
 ## Dependencies
