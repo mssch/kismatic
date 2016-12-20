@@ -42,10 +42,7 @@ func ValidatePlanSSHConnection(p *Plan) (bool, []error) {
 	v.validateWithErrPrefix("Etcd nodes", &SSHConnection{&p.Cluster.SSH, p.Etcd.Nodes})
 	v.validateWithErrPrefix("Master nodes", &SSHConnection{&p.Cluster.SSH, p.Master.Nodes})
 	v.validateWithErrPrefix("Worker nodes", &SSHConnection{&p.Cluster.SSH, p.Worker.Nodes})
-	// Optional
-	if p.Ingress.Nodes != nil || p.Ingress.ExpectedCount > 0 {
-		v.validateWithErrPrefix("Ingress nodes", &SSHConnection{&p.Cluster.SSH, p.Ingress.Nodes})
-	}
+	v.validateWithErrPrefix("Ingress nodes", &SSHConnection{&p.Cluster.SSH, p.Ingress.Nodes})
 
 	return v.valid()
 }
@@ -113,9 +110,7 @@ func (p *Plan) validate() (bool, []error) {
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
-	if p.Ingress.Nodes != nil || p.Ingress.ExpectedCount > 0 {
-		v.validateWithErrPrefix("Ingress nodes", &p.Ingress)
-	}
+	v.validateWithErrPrefix("Ingress nodes", &p.Ingress)
 
 	return v.valid()
 }
@@ -265,6 +260,25 @@ func (ng *NodeGroup) validate() (bool, []error) {
 		v.validateWithErrPrefix(fmt.Sprintf("Node #%d", i+1), &n)
 	}
 	return v.valid()
+}
+
+// In order to make this node group optional, we consider it to be valid if:
+// - it's nil
+// - the number of nodes is zero, and the expected count is zero
+// We eagerly test the mismatch between given and expected node counts
+// because otherwise the regular NodeGroup validation returns confusing errors.
+func (ong *OptionalNodeGroup) validate() (bool, []error) {
+	if ong == nil {
+		return true, nil
+	}
+	if len(ong.Nodes) == 0 && ong.ExpectedCount == 0 {
+		return true, nil
+	}
+	if len(ong.Nodes) != ong.ExpectedCount {
+		return false, []error{fmt.Errorf("Expected node count (%d) does not match the number of nodes provided (%d)", ong.ExpectedCount, len(ong.Nodes))}
+	}
+	ng := NodeGroup(*ong)
+	return ng.validate()
 }
 
 func (mng *MasterNodeGroup) validate() (bool, []error) {
