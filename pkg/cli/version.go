@@ -13,7 +13,7 @@ func NewCmdVersion(version string, out io.Writer) *cobra.Command {
 		Use:   "version",
 		Short: "display the Kismatic CLI version",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(out, "Kismatic version: %s", version)
+			fmt.Fprintf(out, "Kismatic version: %s\n", version)
 		},
 	}
 }
