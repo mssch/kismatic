@@ -62,6 +62,12 @@ func (v ExtraVars) commandLineVars() (string, error) {
 
 // NewRunner returns a new runner for running Ansible playbooks.
 func NewRunner(out, errOut io.Writer, ansibleDir string) (Runner, error) {
+	// Ansible depends on python 2.7 being installed and on the path as "python".
+	// Validate that it is available
+	if _, err := exec.LookPath("python"); err != nil {
+		return nil, fmt.Errorf("Could not find 'python' in the PATH. Ensure that python 2.7 is installed and in the path as 'python'.")
+	}
+
 	ppath, err := getPythonPath()
 	if err != nil {
 		return nil, err
