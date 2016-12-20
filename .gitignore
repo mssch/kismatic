@@ -50,3 +50,4 @@ vendor/*
 package/source
 package/out
 integration/vendor
+vendor-provision/*
