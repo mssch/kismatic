@@ -363,6 +363,9 @@ func (ae *ansibleExecutor) generateTLSAssets(p *Plan) error {
 func (ae *ansibleExecutor) runPlaybookWithExplainer(playbook string, eventExplainer explain.AnsibleEventExplainer, inv ansible.Inventory, ev ansible.ExtraVars, ansibleLog io.Writer) error {
 	// Setup sinks for explainer and ansible stdout
 	runner, explainer, err := ae.getAnsibleRunnerAndExplainer(eventExplainer, ansibleLog)
+	if err != nil {
+		return err
+	}
 
 	// Start running ansible with the given playbook
 	eventStream, err := runner.StartPlaybook(playbook, inv, ev)
