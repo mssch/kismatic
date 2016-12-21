@@ -130,5 +130,5 @@ After running the above, your service will be accessible via `http://mydomain.co
 ### Out of Scope
 * Integrating with any cloud provider for Load Balance functionality - it is up to the user of the cluster to configure their Load Balancers with the ingress nodes
 * Automatic HTTPS cert generation
-  * TLS certificates can be provided via kubernetes secretes
+  * TLS certificates can be provided via kubernetes secrets
   * For integration with Let's Encrypt please see [kube-lego](https://github.com/jetstack/kube-lego) and [this example](https://github.com/jetstack/kube-lego/tree/master/examples/nginx#enable-kube-lego)
