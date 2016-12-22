@@ -104,7 +104,6 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 		explainer.printPlayStatus = true
 		explainer.printPlayMessage = true
 	case *ansible.RunnerFailedEvent:
-		// An error
 		// Print newline before first task status
 		if explainer.printPlayStatus {
 			fmt.Fprintln(buf)
@@ -178,9 +177,43 @@ func (explainer *DefaultEventExplainer) ExplainEvent(e ansible.Event, verbose bo
 			util.PrettyPrintOk(buf, "  %s", event.Host)
 		}
 	case *ansible.RunnerItemOKEvent:
-		if verbose {
-			util.PrettyPrintOk(buf, "  %s", event.Host)
+		msg := fmt.Sprintf("  %s", event.Host)
+		if event.Result.Item != "" {
+			msg = msg + fmt.Sprintf(" with %q", event.Result.Item)
 		}
+		if verbose {
+			util.PrettyPrintOk(buf, msg)
+		}
+	case *ansible.RunnerItemFailedEvent:
+		msg := fmt.Sprintf("  %s", event.Host)
+		if event.Result.Item != "" {
+			msg = msg + fmt.Sprintf(" with %q", event.Result.Item)
+		}
+		// Print newline before first task status
+		if explainer.printPlayStatus {
+			fmt.Fprintln(buf)
+			// Dont print play success status on error
+			explainer.printPlayStatus = false
+		}
+		// Tasks only print at verbose level, on ERROR also print task name
+		if !verbose {
+			fmt.Fprintf(buf, "- Task: %s\n", explainer.currentTask)
+		}
+		if event.IgnoreErrors {
+			util.PrettyPrintErrorIgnored(buf, msg)
+		} else {
+			util.PrettyPrintErr(buf, "  %s %s", msg, event.Result.Message)
+		}
+		if event.Result.Stdout != "" {
+			util.PrintColor(buf, util.Red, "---- STDOUT ----\n%s\n", event.Result.Stdout)
+		}
+		if event.Result.Stderr != "" {
+			util.PrintColor(buf, util.Red, "---- STDERR ----\n%s\n", event.Result.Stderr)
+		}
+		if event.Result.Stderr != "" || event.Result.Stdout != "" {
+			util.PrintColor(buf, util.Red, "---------------\n")
+		}
+
 	case *ansible.RunnerItemRetryEvent:
 		return ""
 	case *ansible.PlaybookStartEvent:

@@ -88,6 +88,12 @@ func eventFromJSONLine(line []byte) (Event, error) {
 			return nil, fmt.Errorf("error reading event data: %v\nline was:\n%s\n", err, string(line))
 		}
 		return e, nil
+	case "RUNNER_ITEM_FAILED":
+		e := &RunnerItemFailedEvent{}
+		if err := json.Unmarshal(data, e); err != nil {
+			return nil, fmt.Errorf("error reading event data: %v\nline was:\n%s\n", err, string(line))
+		}
+		return e, nil
 	case "RUNNER_ITEM_RETRY":
 		e := &RunnerItemRetryEvent{}
 		if err := json.Unmarshal(data, e); err != nil {
