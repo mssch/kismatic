@@ -4,6 +4,70 @@
     when: ansible_service_mgr != "systemd"
     changed_when: false
 
+  # Every etcd node should be able to reach all etcd nodes. This is quadratic,
+  # but we can live with it because etcd count is usually <= 5
+  - name: verify etcd to etcd node connectivity using IP
+    command: ping -c 2 {{ item }}
+    # Using map here to get the right item shown in stdout
+    with_items: "{{ groups['etcd']|map('extract', hostvars, 'internal_ipv4')|list }}"
+    when: "'etcd' in group_names"
+  - name: verify etcd to etcd node connectivity using hostname
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['etcd'] }}"
+    when: "'etcd' in group_names"
+
+  # Every master node should be able to reach all etcd nodes
+  - name: verify master node to etcd node connectivity using IP
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['etcd']|map('extract', hostvars, 'internal_ipv4')|list }}"
+    when: "'master' in group_names"
+  - name: verify master node to etcd node connectivity using hostname
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['etcd'] }}"
+    when: "'master' in group_names"
+
+  # Every worker node should be able to reach all master nodes
+  - name: verify worker node to master node connectivity using IP
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['master']|map('extract', hostvars, 'internal_ipv4')|list }}"
+    when: "'worker' in group_names"
+  - name: verify worker node to master node connectivity using hostname
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['master'] }}"
+    when: "'worker' in group_names"
+
+  # Every ingress node should be able to reach all master nodes
+  - name: verify ingress node to master node connectivity using IP
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['master']|map('extract', hostvars, 'internal_ipv4')|list }}"
+    when: "'ingress' in group_names"
+  - name: verify ingress node to master node connectivity using hostname
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['master'] }}"
+    when: "'ingress' in group_names"
+
+  # Every ingress node should be able to reach all worker nodes
+  - name: verify ingress node to worker node connectivity using IP
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['worker']|map('extract', hostvars, 'internal_ipv4')|list }}"
+    when: "'ingress' in group_names"
+  - name: verify ingress node to worker node connectivity using hostname
+    command: ping -c 2 {{ item }}
+    with_items: "{{ groups['worker'] }}"
+    when: "'ingress' in group_names"
+
+  # Every worker node should be able to reach all worker nodes.
+  # We use a random sampling of worker nodes to avoid quadratic complexity.
+  - name: verify worker to worker node connectivity with random sample
+    include: random_ping.yaml
+    with_items: # Ping three nodes at random
+      - 1
+      - 2
+      - 3
+    loop_control:
+      loop_var: outer_item # Define this (even thought we don't use it) so that ansible doesn't complain.
+    when: "'worker' in group_names"
+
   # setup Kismatic Inspector
   - name: copy Kismatic Inspector to node
     copy:
