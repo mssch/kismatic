@@ -137,10 +137,9 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	}
 
 	os.Setenv("PYTHONPATH", r.pythonPath)
-	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
 	os.Setenv("ANSIBLE_CALLBACK_WHITELIST", "json_lines")
-	os.Setenv("ANSIBLE_TIMEOUT", "60")
+	os.Setenv("ANSIBLE_CONFIG", filepath.Join(r.ansibleDir, "playbooks", "ansible.cfg"))
 
 	// We always want the most verbose output from Ansible. If it's not going to
 	// stdout, it's going to a log file.
