@@ -42,6 +42,6 @@
           name: kismatic-inspector.service
           state: stopped
 
-  - assert:
-      that:
-        - "out.rc == 0"
+  - name: verify Kismatic Inspector succeeded
+    command: /bin/true
+    failed_when: "out.rc != 0"
