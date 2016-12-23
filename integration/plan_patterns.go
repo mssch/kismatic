@@ -15,6 +15,7 @@ type PlanAWS struct {
 	DockerRegistryIP             string
 	DockerRegistryPort           int
 	DockerRegistryCAPath         string
+	ModifyHostsFiles             bool
 }
 
 const planAWSOverlay = `cluster:
@@ -26,7 +27,7 @@ const planAWSOverlay = `cluster:
     pod_cidr_block: 172.16.0.0/16
     service_cidr_block: 172.17.0.0/16
     policy_enabled: false
-    update_hosts_files: false
+    update_hosts_files: {{.ModifyHostsFiles}}
   certificates:
     expiry: 17520h
     location_city: Troy
