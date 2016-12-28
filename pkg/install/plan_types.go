@@ -71,4 +71,5 @@ type Plan struct {
 	Master         MasterNodeGroup
 	Worker         NodeGroup
 	Ingress        OptionalNodeGroup
+	Storage        OptionalNodeGroup
 }
