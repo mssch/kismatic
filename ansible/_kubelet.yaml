@@ -1,14 +1,11 @@
 ---
-  - hosts: worker
+  - hosts: master:worker:ingress:storage
     any_errors_fatal: true
-    name: "Install Kubernetes Kubelet on Worker Nodes"
+    name: "Install Kubernetes Kubelet"
     remote_user: root
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
-    vars:
-      - kubernetes_schedulable: true
-
     roles:
       - network-environment
       - kubeconfig

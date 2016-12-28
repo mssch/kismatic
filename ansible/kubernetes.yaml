@@ -21,11 +21,7 @@
   - include: _apiserver.yaml
   - include: _scheduler.yaml
   - include: _controller-manager.yaml
-  - include: _kubelet-master.yaml
-  # worker
-  - include: _kubelet-worker.yaml
-  # ingress
-  - include: _kubelet-ingress.yaml
+  - include: _kubelet.yaml
   # master:worker:ingress
   - include: _proxy.yaml
   - include: _storage.yaml
