@@ -217,10 +217,13 @@ func (ae *ansibleExecutor) buildInstallExtraVars(p *Plan, tlsDirectory string) (
 		}
 	}
 	// Need to pass variable to Ansible to skip cleanly
+	ev["configure_ingress"] = "false"
 	if p.Ingress.Nodes != nil && len(p.Ingress.Nodes) > 0 {
 		ev["configure_ingress"] = "true"
-	} else {
-		ev["configure_ingress"] = "false"
+	}
+	ev["configure_storage"] = "false"
+	if p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0 {
+		ev["configure_storage"] = "true"
 	}
 	return &ev, nil
 }
@@ -435,6 +438,12 @@ func buildInventoryFromPlan(p *Plan) ansible.Inventory {
 			ingressNodes = append(ingressNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
 		}
 	}
+	storageNodes := []ansible.Node{}
+	if p.Storage.Nodes != nil {
+		for _, n := range p.Storage.Nodes {
+			storageNodes = append(storageNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+		}
+	}
 	inventory := ansible.Inventory{
 		{
 			Name:  "etcd",
@@ -451,6 +460,10 @@ func buildInventoryFromPlan(p *Plan) ansible.Inventory {
 		{
 			Name:  "ingress",
 			Nodes: ingressNodes,
+		},
+		{
+			Name:  "storage",
+			Nodes: storageNodes,
 		},
 	}
 

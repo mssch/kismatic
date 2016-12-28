@@ -28,6 +28,8 @@
   - include: _kubelet-ingress.yaml
   # master:worker:ingress
   - include: _proxy.yaml
+  - include: _storage.yaml
+    when: configure_storage|bool == true
   # add ons
   - include: _addon-network-policy.yaml
     when: enable_calico_policy|bool == true

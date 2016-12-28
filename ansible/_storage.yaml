@@ -1,0 +1,9 @@
+---
+  - hosts: storage
+    any_errors_fatal: true
+    name: "Bootstrap Persistent Storage Cluster"
+    remote_user: root
+    become_method: sudo
+    roles:
+      - { role: packages-glusterfs, when: allow_package_installation|bool == true }
+      - glusterfs
