@@ -1,0 +1,7 @@
+---
+  - name: verify worker to worker node connectivty using IP
+    command: ping -c 2 {{ item }}
+    with_random_choice: "{{ groups['worker']|map('extract', hostvars, 'internal_ipv4')|list }}"
+  - name: verify worker to worker node connectivity using hostname
+    command: ping -c 2 {{ item }}
+    with_random_choice: "{{ groups['worker']|map('extract', hostvars, 'internal_ipv4')|list }}"

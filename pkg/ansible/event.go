@@ -19,6 +19,9 @@ type runnerResult struct {
 	Stderr string
 	// Message returned by the runner
 	Message string `json:"msg"`
+	// Item that corresponds to this result. Avaliable only when event is related
+	// to an item
+	Item string
 }
 
 type runnerResultEvent struct {
@@ -98,6 +101,15 @@ type RunnerItemOKEvent struct {
 
 func (e *RunnerItemOKEvent) Type() string {
 	return "Runner Item OK"
+}
+
+// RunnerItemFailedEvent signals the failure of a task with a specific item
+type RunnerItemFailedEvent struct {
+	runnerResultEvent
+}
+
+func (e *RunnerItemFailedEvent) Type() string {
+	return "Runner Item Failed"
 }
 
 // RunnerItemRetryEvent signals the retry of a runner item
