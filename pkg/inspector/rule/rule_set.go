@@ -99,7 +99,6 @@ const defaultRuleSet = `---
   port: 443
   timeout: 5s
 
-# TODO: Add kismatic package checks
 - kind: PackageAvailable
   when: ["etcd", "ubuntu"]
   packageName: kismatic-etcd
@@ -150,6 +149,20 @@ const defaultRuleSet = `---
   when: ["ingress","rhel"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.5.1_1-1
+
+  # Gluster packages
+- kind: PackageAvailable
+	when: ["storage", "centos"]
+	packageName: glusterfs-server
+	packageVersion: ""
+- kind: PackageAvailable
+	when: ["storage", "ubuntu"]
+	packageName: glusterfs-server
+	packageVersion: ""
+- kind: PackageAvailable
+	when: ["storage", "ubuntu"]
+	packageName: nfs-common
+	packageVersion: ""
 `
 
 // DefaultRules returns the list of rules that are built into the inspector
