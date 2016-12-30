@@ -3,7 +3,8 @@ package explain
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+
+	"log"
 
 	"github.com/apprenda/kismatic/pkg/ansible"
 	"github.com/apprenda/kismatic/pkg/inspector/rule"
@@ -51,7 +52,7 @@ func (explainer *PreflightEventExplainer) ExplainEvent(e ansible.Event, verbose 
 				}
 			}
 		}
-		fmt.Fprintln(buf)
+		log.Println(buf)
 		explainer.DefaultExplainer.printPlayStatus = false
 		return buf.String()
 	}

@@ -3,8 +3,8 @@
   - include: _all.yaml
   - include: _packages.yaml
     when: allow_package_installation|bool == true
-  - include: _hosts.yaml
-    when: modify_hosts_file|bool == true
+  #- include: _hosts.yaml
+  #  when: modify_hosts_file|bool == true
   # etcd
   - include: _etcd-k8s.yaml
   - include: _etcd-networking.yaml
