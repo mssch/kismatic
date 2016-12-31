@@ -129,7 +129,7 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	if err = ioutil.WriteFile(inventoryFile, inv.ToINI(), 0644); err != nil {
 		return nil, fmt.Errorf("error writing inventory file to %q: %v", inventoryFile, err)
 	}
-	cmd := exec.Command(filepath.Join(r.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-f", "20", "-s", playbook, "--extra-vars", extraVars)
+	cmd := exec.Command(filepath.Join(r.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbook, "--extra-vars", extraVars)
 	cmd.Stdout = r.out
 	cmd.Stderr = r.errOut
 
