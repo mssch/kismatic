@@ -150,7 +150,7 @@ const defaultRuleSet = `---
   packageName: kismatic-kubernetes-node
   packageVersion: 1.5.1_1-1
 
-  # Gluster packages
+# Gluster packages
 - kind: PackageAvailable
 	when: ["storage", "centos"]
 	packageName: glusterfs-server
@@ -163,6 +163,22 @@ const defaultRuleSet = `---
 	when: ["storage", "ubuntu"]
 	packageName: nfs-common
 	packageVersion: ""
+
+# Ports required for NFS
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 111
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 111
+  timeout: 5s
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 2049
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 2049
+  timeout: 5s
 `
 
 // DefaultRules returns the list of rules that are built into the inspector
