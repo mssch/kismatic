@@ -1,24 +1,23 @@
 ---
-  
   # Start the gluster service
-  - name: Reload systemd daemon
+  - name: reload systemd daemon
     command: systemctl daemon-reload
-  - name: Start glusterfs-server service
+  - name: start glusterfs-server service
     service:
       name: glusterfs-server.service
       state: started
       enabled: yes
     when: ansible_os_family == 'Debian'
-  - name: Start glusterd service
+  - name: start glusterd service
     service:
       name: glusterd.service
       state: started
       enabled: yes
     when: ansible_os_family == 'RedHat'
-  - name: Probe peer nodes from the first node
+  - name: probe peer nodes from the first node
     command: gluster peer probe {{ item }}
     with_items: "{{ groups['storage'][1:] }}" # avoid probing itself
     when: "{{ inventory_hostname == groups['storage'][0] }}" # Do the probing on the first storage node
-  - name: Probe the first peer from the second peer
+  - name: probe the first peer from the second peer
     command: gluster peer probe {{ groups['storage'][1] }}
     when: "{{ groups['storage'] | length > 1 and inventory_hostname == groups['storage'][1] }}"

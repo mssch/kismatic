@@ -22,5 +22,10 @@ var _ = Describe("Storage", func() {
 				testGlusterCluster(aws, Ubuntu1604LTS)
 			})
 		})
+		Context("targetting RHEL", func() {
+			ItOnAWS("should result in a working storage cluster", func(aws infrastructureProvisioner) {
+				testGlusterCluster(aws, RedHat7)
+			})
+		})
 	})
 })

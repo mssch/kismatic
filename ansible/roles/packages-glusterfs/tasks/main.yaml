@@ -1,28 +1,31 @@
 ---
   # Install packages
-  - name: Install EPEL repository
+  - name: add EPEL repository
     yum:
       name: http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
       state: present
-    when: ansible_distribution == "CentOS"
-  - name: Install Gluster yum repository
-    yum:
-      name: centos-release-gluster
-      state: latest
-    when: ansible_distribution == "CentOS"
-  - name: Install glusterfs-server package
-    yum:
+    when: ansible_os_family == 'RedHat'
+  - name: add Gluster yum repository
+    yum_repository:
+      name: gluster
+      description: Gluster 3.8
+      baseurl: "http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/"
+      gpgcheck: no
+    when: ansible_os_family == 'RedHat'
+
+  - name: install glusterfs-server package
+    package:
       name: glusterfs-server
       state: latest
-    when: ansible_distribution == "CentOS"
-  - name: Install glusterfs-server package
-    apt:
-      name: glusterfs-server
-      update_cache: yes
-      state: latest
-    when: ansible_os_family == 'Debian'
-  - name: Install nfs-common package
+
+  # TODO remove when included in packages
+  - name: install nfs-common package
     apt:
       name: nfs-common
       state: latest
     when: ansible_os_family == 'Debian'
+  - name: install nfs-utils package
+    yum:
+      name: nfs-utils
+      state: latest
+    when: ansible_os_family == 'RedHat'
