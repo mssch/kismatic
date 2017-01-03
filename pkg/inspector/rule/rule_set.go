@@ -152,17 +152,17 @@ const defaultRuleSet = `---
 
 # Gluster packages
 - kind: PackageAvailable
-	when: ["storage", "centos"]
-	packageName: glusterfs-server
-	packageVersion: ""
+  when: ["storage", "centos"]
+  packageName: glusterfs-server
+  packageVersion: ""
 - kind: PackageAvailable
-	when: ["storage", "ubuntu"]
-	packageName: glusterfs-server
-	packageVersion: ""
+  when: ["storage", "ubuntu"]
+  packageName: glusterfs-server
+  packageVersion: ""
 - kind: PackageAvailable
-	when: ["storage", "ubuntu"]
-	packageName: nfs-common
-	packageVersion: ""
+  when: ["storage", "ubuntu"]
+  packageName: nfs-common
+  packageVersion: ""
 
 # Ports required for NFS
 - kind: TCPPortAvailable
