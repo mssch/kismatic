@@ -7,6 +7,6 @@
   - include: _docker.yaml
   - include: _kubenode-cert.yaml
   - include: _calico.yaml
-  - include: _kubelet-worker.yaml
+  - include: _kubelet.yaml
   - include: _proxy.yaml
   - include: _worker-smoke-test.yaml
