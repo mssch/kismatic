@@ -7,3 +7,11 @@
     roles:
       - { role: packages-glusterfs, when: allow_package_installation|bool == true }
       - glusterfs
+  - hosts: master
+    any_errors_fatal: true
+    name: "Create NFS service on the cluster"
+    run_once: true
+    remote_user: root
+    become_method: sudo
+    roles:
+      - glusterfs-k8s-endpoint

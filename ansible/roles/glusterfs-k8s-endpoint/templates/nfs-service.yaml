@@ -1,0 +1,26 @@
+---
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: "kismatic-storage"
+  spec:
+    ports:
+      - name: rpcbind
+        port: 111
+      - name: nfs
+        port: 2049
+---
+  kind: Endpoints
+  apiVersion: v1
+  metadata:
+    name: "kismatic-storage"
+  subsets:
+    - addresses:
+{% for host in groups['storage'] %}
+      - ip: {{ hostvars[host]['internal_ipv4'] }}
+{% endfor %}
+      ports:
+        - name: rpcbind
+          port: 111
+        - name: nfs
+          port: 2049
