@@ -101,6 +101,7 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 		Master:              nodes.master,
 		Worker:              nodes.worker,
 		Ingress:             nodes.ingress,
+		Storage:             nodes.storage,
 		MasterNodeFQDN:      masterDNS,
 		MasterNodeShortName: masterDNS,
 		SSHKeyFile:          sshKey,
