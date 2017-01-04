@@ -1,6 +1,10 @@
 # Set the build version
 ifeq ($(origin VERSION), undefined)
-	VERSION := $(shell git rev-parse --short HEAD)
+	VERSION := $(shell git describe --tags --always --dirty)
+endif
+# build date
+ifeq ($(origin BUILD_DATE), undefined)
+	BUILD_DATE := $(shell date -u)
 endif
 
 # Setup some useful vars
@@ -15,7 +19,7 @@ ifeq ($(origin GOOS), undefined)
 endif
 
 build: vendor
-	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION)" ./cmd/kismatic
+	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'" ./cmd/kismatic
 	GOOS=linux go build -o bin/inspector/linux/$(HOST_GOARCH)/kismatic-inspector ./cmd/kismatic-inspector
 	GOOS=darwin go build -o bin/inspector/darwin/$(HOST_GOARCH)/kismatic-inspector ./cmd/kismatic-inspector
 

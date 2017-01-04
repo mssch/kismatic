@@ -1,4 +1,5 @@
-package main // Set via linker flag
+package main
+
 import (
 	"os"
 
@@ -7,9 +8,9 @@ import (
 )
 
 var version string
+var buildDate string
 
 func main() {
-
-	cmd, _ := cli.NewKismaticCommand(version, os.Stdin, os.Stdout)
+	cmd, _ := cli.NewKismaticCommand(version, buildDate, os.Stdin, os.Stdout)
 	doc.GenMarkdownTree(cmd, "./docs/kismatic-cli")
 }
