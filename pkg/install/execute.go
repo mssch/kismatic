@@ -1,6 +1,7 @@
 package install
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -388,15 +389,16 @@ func (ae *ansibleExecutor) getAnsibleRunnerAndExplainer(explainer explain.Ansibl
 	if ae.runnerExplainerFactory != nil {
 		return ae.runnerExplainerFactory(explainer, ansibleLog)
 	}
+
 	// Setup sinks for explainer and ansible stdout
 	var explainerOut, ansibleOut io.Writer
 	switch ae.consoleOutputFormat {
 	case ansible.JSONLinesFormat:
 		explainerOut = ae.stdout
-		ansibleOut = ansibleLog
+		ansibleOut = timestampWriter(ansibleLog)
 	case ansible.RawFormat:
 		explainerOut = ioutil.Discard
-		ansibleOut = io.MultiWriter(ae.stdout, ansibleLog)
+		ansibleOut = io.MultiWriter(ae.stdout, timestampWriter(ansibleLog))
 	}
 
 	// Send stdout and stderr to ansibleOut
@@ -465,4 +467,16 @@ func installNodeToAnsibleNode(n *Node, s *SSHConfig) ansible.Node {
 		SSHUser:       s.User,
 		SSHPort:       s.Port,
 	}
+}
+
+// Prepend each line of the incoming stream with a timestamp
+func timestampWriter(out io.Writer) io.Writer {
+	pr, pw := io.Pipe()
+	go func(r io.Reader) {
+		s := bufio.NewScanner(r)
+		for s.Scan() {
+			fmt.Fprintf(out, "%s - %s\n", time.Now().UTC().Format("2006-01-02 15:04:05.000-0700"), s.Text())
+		}
+	}(pr)
+	return pw
 }
