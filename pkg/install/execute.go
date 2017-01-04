@@ -186,6 +186,7 @@ func (ae *ansibleExecutor) buildInstallExtraVars(p *Plan, tlsDirectory string) (
 		"modify_hosts_file":          strconv.FormatBool(p.Cluster.Networking.UpdateHostsFiles),
 		"enable_calico_policy":       strconv.FormatBool(p.Cluster.Networking.PolicyEnabled),
 		"allow_package_installation": strconv.FormatBool(p.Cluster.AllowPackageInstallation),
+		"kuberang_path":              filepath.Join("kuberang", "linux", "amd64", "kuberang"),
 	}
 
 	// Setup FQDN or default to first master
