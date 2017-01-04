@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -132,6 +133,8 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	cmd.Stdout = r.out
 	cmd.Stderr = r.errOut
 
+	log.SetOutput(r.out)
+
 	if limitArg != "" {
 		cmd.Args = append(cmd.Args, "--limit", limitArg)
 	}
@@ -154,7 +157,12 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	os.Setenv("ANSIBLE_JSON_LINES_PIPE", r.namedPipe)
 
 	// Print Ansible command
-	fmt.Fprintln(r.out, strings.Join(cmd.Args, " "))
+	fmt.Fprintf(r.out, "export PYTHONPATH=%v\n", os.Getenv("PYTHONPATH"))
+	fmt.Fprintf(r.out, "export ANSIBLE_CALLBACK_PLUGINS=%v\n", os.Getenv("ANSIBLE_CALLBACK_PLUGINS"))
+	fmt.Fprintf(r.out, "export ANSIBLE_CALLBACK_WHITELIST=%v\n", os.Getenv("ANSIBLE_CALLBACK_WHITELIST"))
+	fmt.Fprintf(r.out, "export ANSIBLE_CONFIG=%v\n", os.Getenv("ANSIBLE_CONFIG"))
+	fmt.Fprintf(r.out, strings.Join(cmd.Args, " "))
+
 	// Starts async execution of ansible, which will block until
 	// we start reading from the named pipe
 	err = cmd.Start()
