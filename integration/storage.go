@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"time"
@@ -42,6 +43,20 @@ func testGlusterCluster(aws infrastructureProvisioner, distro linuxDistro) {
 			err = cmd.Run()
 			FailIfError(err, "Error running all play")
 		}
+
+		// The gluster play will attempt to create the endpoint using kubectl
+		By("Mocking kubectl on the first master node")
+		kubectlDummy := `#!/bin/bash
+# This is a dummy generated for a Kismatic integration test
+exit 0
+`
+		kubectlDummyFile, err := ioutil.TempFile("", "kubectl-dummy")
+		FailIfError(err, "Error creating temp file")
+		err = ioutil.WriteFile(kubectlDummyFile.Name(), []byte(kubectlDummy), 0644)
+		FailIfError(err, "Error writing kubectl dummy file")
+		err = copyFileToRemote(kubectlDummyFile.Name(), "~/kubectl", plan.Master[0], sshKey, 1*time.Minute)
+		FailIfError(err, "Error copying kubectl dummy")
+		err = runViaSSH([]string{"sudo mv ~/kubectl /usr/bin/kubectl", "sudo chmod +x /usr/bin/kubectl"}, nodes.worker[0:1], sshKey, 1*time.Minute)
 
 		By("Running the storage play with the plan")
 		cmd := exec.Command("./kismatic", "install", "step", "_storage.yaml", "-f", f.Name())
