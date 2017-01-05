@@ -9,9 +9,14 @@
     yum_repository:
       name: gluster
       description: Gluster 3.8
-      baseurl: "http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/"
+      baseurl: "http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.8/"
       gpgcheck: no
     when: ansible_os_family == 'RedHat'
+  - name: add Gluster deb repository
+    apt_repository:
+      repo: ppa:gluster/glusterfs-3.8
+      update_cache: yes
+    when: ansible_os_family == 'Debian'
   - name: install glusterfs-server package
     package:
       name: "glusterfs-server{{glusterfs_server_version}}"
