@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv0003
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "slow"
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  nfs:
+    path: /tmp
+    server: 172.17.0.2
+
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: calico-policy-controller
+  namespace: kube-system
+  labels:
+    k8s-app: calico-policy
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 1
+  selector:
+    k8s-app: calico-policy
+  template:
+    metadata:
+      name: calico-policy-controller
+      namespace: kube-system
+      labels:
+        kubernetes.io/cluster-service: "true"
+        k8s-app: calico-policy
+    spec:
+      hostNetwork: true
+      volumes:
+        - name: "ca"
+          hostPath:
+            path: "{{kubernetes_certificates_ca_path}}"
+        - name: "cert"
+          hostPath:
+            path: "{{kubernetes_certificates_cert_path}}"
+        - name: "key"
+          hostPath:
+            path: "{{kubernetes_certificates_key_path}}"
+      containers:
+        - name: calico-policy-controller
+          image: "{{ calico_kube_policy_controller_img }}"
+          volumeMounts:
+            - mountPath: "{{kubernetes_certificates_ca_path}}"
+              name: "ca"
+            - mountPath: "{{kubernetes_certificates_cert_path}}"
+              name: "cert"
+            - mountPath: "{{kubernetes_certificates_key_path}}"
+              name: "key"
+          env:
+            # Configure the policy controller with the location of your etcd cluster.
+            - name: ETCD_ENDPOINTS
+              value: "{{etcd_networking_cluster_ip_list}}"
+            - name: ETCD_CA_CERT_FILE
+              value: "{{kubernetes_certificates_ca_path}}"
+            - name: ETCD_CERT_FILE
+              value: "{{kubernetes_certificates_cert_path}}"
+            - name: ETCD_KEY_FILE
+              value: "{{kubernetes_certificates_key_path}}"
+            - name: K8S_API
+              value: "https://kubernetes.default:443"
+            - name: CONFIGURE_ETC_HOSTS
+              value: "true"
