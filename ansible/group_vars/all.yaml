@@ -19,6 +19,10 @@ defaultbackend_version: "1.0"
 nginx_ingress_controller_version: "0.8.3"
 docker_registry_version: "2.5.1"
 pause_version: "3.0"
+glusterfs_server_version_rhel: "3.8.5-1.el7"
+glusterfs_server_version_ubuntu: "3.7.6-1ubuntu1"
+# RHEL needs dash between name-version, Ubuntu needs equals sign between name=version
+glusterfs_server_version: "{% if ansible_os_family == 'RedHat' %}-{{ glusterfs_server_version_rhel }}{% elif ansible_os_family == 'Ubuntu' %}={{ glusterfs_server_version_ubuntu }}{% endif %}"
 #===============================================================================
 # common variables for all hosts
 temprary_download_dir: /tmp/kismatic

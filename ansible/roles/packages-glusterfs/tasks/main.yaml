@@ -12,12 +12,10 @@
       baseurl: "http://mirror.centos.org/centos/7/storage/x86_64/gluster-3.8/"
       gpgcheck: no
     when: ansible_os_family == 'RedHat'
-
   - name: install glusterfs-server package
     package:
-      name: glusterfs-server
-      state: latest
-
+      name: "glusterfs-server{{glusterfs_server_version}}"
+      state: present
   # TODO remove when included in packages
   - name: install nfs-common package
     apt:
