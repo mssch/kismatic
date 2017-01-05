@@ -179,6 +179,26 @@ const defaultRuleSet = `---
   when: ["storage"]
   port: 2049
   timeout: 5s
+- kind: TCPPortAvailable 
+  when: ["storage"] 
+  port: 38465 
+- kind: TCPPortAccessible 
+  when: ["storage"] 
+  port: 38465   timeout: 5s
+ - kind: TCPPortAvailable 
+  when: ["storage"] 
+  port: 38466
+ - kind: TCPPortAccessible 
+  when: ["storage"] 
+  port: 38466 
+  timeout: 5s
+ - kind: TCPPortAvailable 
+  when: ["storage"] 
+  port: 38467 
+- kind: TCPPortAccessible 
+  when: ["storage"] 
+  port: 38467 
+  timeout: 5s
 `
 
 // DefaultRules returns the list of rules that are built into the inspector

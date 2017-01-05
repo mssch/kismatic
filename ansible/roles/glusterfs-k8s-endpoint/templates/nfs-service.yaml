@@ -9,6 +9,12 @@
         port: 111
       - name: nfs
         port: 2049
+      - name: gluster-nfs-38465
+        port: 38465
+      - name: gluster-nfs-38466
+        port: 38466
+      - name: gluster-nfs-38467
+        port: 38467
 ---
   kind: Endpoints
   apiVersion: v1
@@ -24,3 +30,9 @@
           port: 111
         - name: nfs
           port: 2049
+        - name: gluster-nfs-38465
+          port: 38465
+        - name: gluster-nfs-38466
+          port: 38466
+        - name: gluster-nfs-38467
+          port: 38467
