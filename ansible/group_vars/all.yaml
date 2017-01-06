@@ -133,7 +133,7 @@ etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{
 # docker registry
 use_private_docker_registry: false
 setup_internal_docker_registry: false
-docker_registry_address: "{{ hostvars[groups['master'][0]].ansible_host }}"
+docker_registry_address: "{{ hostvars[groups['master'][0]].internal_ipv4 }}"
 docker_registry_port: 8443
 
 calico_node_img: calico/node:{{calico_docker_version}}
