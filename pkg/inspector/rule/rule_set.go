@@ -102,53 +102,53 @@ const defaultRuleSet = `---
 - kind: PackageAvailable
   when: ["etcd", "ubuntu"]
   packageName: kismatic-etcd
-  packageVersion: 1.5.1-1
+  packageVersion: 1.5.1-2
 - kind: PackageAvailable
   when: ["master","ubuntu"]
   packageName: kismatic-kubernetes-master
-  packageVersion: 1.5.1-1
+  packageVersion: 1.5.1-2
 - kind: PackageAvailable
   when: ["worker","ubuntu"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1-1
+  packageVersion: 1.5.1-2
 - kind: PackageAvailable
   when: ["ingress","ubuntu"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1-1
+  packageVersion: 1.5.1-2
 
 - kind: PackageAvailable
   when: ["etcd", "centos"]
   packageName: kismatic-etcd
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 - kind: PackageAvailable
   when: ["master","centos"]
   packageName: kismatic-kubernetes-master
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 - kind: PackageAvailable
   when: ["worker","centos"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 - kind: PackageAvailable
   when: ["ingress","centos"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 
 - kind: PackageAvailable
   when: ["etcd", "rhel"]
   packageName: kismatic-etcd
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 - kind: PackageAvailable
   when: ["master","rhel"]
   packageName: kismatic-kubernetes-master
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 - kind: PackageAvailable
   when: ["worker","rhel"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 - kind: PackageAvailable
   when: ["ingress","rhel"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_1-1
+  packageVersion: 1.5.1_2-1
 
 # Gluster packages
 - kind: PackageAvailable
@@ -179,25 +179,26 @@ const defaultRuleSet = `---
   when: ["storage"]
   port: 2049
   timeout: 5s
-- kind: TCPPortAvailable 
-  when: ["storage"] 
-  port: 38465 
-- kind: TCPPortAccessible 
-  when: ["storage"] 
-  port: 38465   timeout: 5s
- - kind: TCPPortAvailable 
-  when: ["storage"] 
-  port: 38466
- - kind: TCPPortAccessible 
-  when: ["storage"] 
-  port: 38466 
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 38465
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 38465
   timeout: 5s
- - kind: TCPPortAvailable 
-  when: ["storage"] 
-  port: 38467 
-- kind: TCPPortAccessible 
-  when: ["storage"] 
-  port: 38467 
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 38466
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 38466
+  timeout: 5s
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 38467
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 38467
   timeout: 5s
 `
 
