@@ -138,16 +138,15 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 	if limitArg != "" {
 		cmd.Args = append(cmd.Args, "--limit", limitArg)
 	}
+	
+	// We always want the most verbose output from Ansible. If it's not going to
+	// stdout, it's going to a log file.
+	cmd.Args = append(cmd.Args, "-vvvv")
 
 	os.Setenv("PYTHONPATH", r.pythonPath)
 	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
 	os.Setenv("ANSIBLE_CALLBACK_WHITELIST", "json_lines")
 	os.Setenv("ANSIBLE_CONFIG", filepath.Join(r.ansibleDir, "playbooks", "ansible.cfg"))
-
-	// We always want the most verbose output from Ansible. If it's not going to
-	// stdout, it's going to a log file.
-	cmd.Args = append(cmd.Args, "-vvvv")
-
 	// Create named pipe for getting JSON lines event stream
 	start := time.Now()
 	r.namedPipe = filepath.Join(os.TempDir(), fmt.Sprintf("ansible-pipe-%s", start.Format("2006-01-02-15-04-05.99999")))
@@ -155,12 +154,13 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, vars ExtraVar
 		return nil, fmt.Errorf("error creating named pipe %q: %v", r.namedPipe, err)
 	}
 	os.Setenv("ANSIBLE_JSON_LINES_PIPE", r.namedPipe)
-
+	
 	// Print Ansible command
 	fmt.Fprintf(r.out, "export PYTHONPATH=%v\n", os.Getenv("PYTHONPATH"))
 	fmt.Fprintf(r.out, "export ANSIBLE_CALLBACK_PLUGINS=%v\n", os.Getenv("ANSIBLE_CALLBACK_PLUGINS"))
 	fmt.Fprintf(r.out, "export ANSIBLE_CALLBACK_WHITELIST=%v\n", os.Getenv("ANSIBLE_CALLBACK_WHITELIST"))
 	fmt.Fprintf(r.out, "export ANSIBLE_CONFIG=%v\n", os.Getenv("ANSIBLE_CONFIG"))
+	fmt.Fprintf(r.out, "export ANSIBLE_JSON_LINES_PIPE=%v\n", os.Getenv("ANSIBLE_JSON_LINES_PIPE"))
 	fmt.Fprintf(r.out, strings.Join(cmd.Args, " "))
 
 	// Starts async execution of ansible, which will block until
