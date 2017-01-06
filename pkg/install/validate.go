@@ -44,6 +44,7 @@ func ValidatePlanSSHConnection(p *Plan) (bool, []error) {
 	v.validateWithErrPrefix("Master nodes", &SSHConnection{&p.Cluster.SSH, p.Master.Nodes})
 	v.validateWithErrPrefix("Worker nodes", &SSHConnection{&p.Cluster.SSH, p.Worker.Nodes})
 	v.validateWithErrPrefix("Ingress nodes", &SSHConnection{&p.Cluster.SSH, p.Ingress.Nodes})
+	v.validateWithErrPrefix("Storage nodes", &SSHConnection{&p.Cluster.SSH, p.Storage.Nodes})
 
 	return v.valid()
 }
@@ -112,6 +113,7 @@ func (p *Plan) validate() (bool, []error) {
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
 	v.validateWithErrPrefix("Ingress nodes", &p.Ingress)
+	v.validateWithErrPrefix("Storage nodes", &p.Storage)
 
 	return v.valid()
 }

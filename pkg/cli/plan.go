@@ -29,7 +29,6 @@ func NewCmdPlan(in io.Reader, out io.Writer, options *installOpts) *cobra.Comman
 func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile string) error {
 	fmt.Fprintln(out, "Plan your Kubernetes cluster:")
 
-	// etcd nodes
 	etcdNodes, err := util.PromptForInt(in, out, "Number of etcd nodes", 3)
 	if err != nil {
 		return fmt.Errorf("Error reading number of etcd nodes: %v", err)
@@ -37,7 +36,6 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	if etcdNodes <= 0 {
 		return fmt.Errorf("The number of etcd nodes must be greater than zero")
 	}
-	// master nodes
 	masterNodes, err := util.PromptForInt(in, out, "Number of master nodes", 2)
 	if err != nil {
 		return fmt.Errorf("Error reading number of master nodes: %v", err)
@@ -45,7 +43,6 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	if masterNodes <= 0 {
 		return fmt.Errorf("The number of master nodes must be greater than zero")
 	}
-	// worker nodes
 	workerNodes, err := util.PromptForInt(in, out, "Number of worker nodes", 3)
 	if err != nil {
 		return fmt.Errorf("Error reading number of worker nodes: %v", err)
@@ -53,28 +50,37 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	if workerNodes <= 0 {
 		return fmt.Errorf("The number of worker nodes must be greater than zero")
 	}
-
-	// ingress nodes
-	ingressNodes, err := util.PromptForInt(in, out, "Number of ingress nodes(optional, set to 0 if not required)", 2)
+	ingressNodes, err := util.PromptForInt(in, out, "Number of ingress nodes (optional, set to 0 if not required)", 2)
 	if err != nil {
 		return fmt.Errorf("Error reading number of ingress nodes: %v", err)
 	}
 	if ingressNodes < 0 {
 		return fmt.Errorf("The number of ingress nodes must be greater than or equal to zero")
 	}
+	storageNodes, err := util.PromptForInt(in, out, "Number of storage nodes (optional, set to 0 if not required)", 0)
+	if err != nil {
+		return fmt.Errorf("Error reading number of storage nodes: %v", err)
+	}
+	if storageNodes < 0 {
+		return fmt.Errorf("The number of storage nodes must be greater than or equal to zero")
+	}
 
-	fmt.Fprintf(out, "Generating installation plan file with %d etcd nodes, %d master nodes, %d worker nodes and %d ingress nodes\n",
-		etcdNodes, masterNodes, workerNodes, ingressNodes)
+	fmt.Fprintln(out)
+	fmt.Fprintf(out, "Generating installation plan file template with: \n")
+	fmt.Fprintf(out, "- %d etcd nodes\n", etcdNodes)
+	fmt.Fprintf(out, "- %d master nodes\n", masterNodes)
+	fmt.Fprintf(out, "- %d worker nodes\n", workerNodes)
+	fmt.Fprintf(out, "- %d ingress nodes\n", ingressNodes)
+	fmt.Fprintf(out, "- %d storage nodes\n", storageNodes)
+	fmt.Fprintln(out)
 
 	plan := buildPlan(etcdNodes, masterNodes, workerNodes, ingressNodes)
 	// Write out the plan
-	err = install.WritePlanTemplate(plan, planner)
-	if err != nil {
+	if err = install.WritePlanTemplate(plan, planner); err != nil {
 		return fmt.Errorf("error planning installation: %v", err)
 	}
-
-	fmt.Fprintf(out, "Edit the file to further describe your cluster. Once ready, execute the \"install validate\" command to proceed\n")
-
+	fmt.Fprintf(out, "Wrote plan file template to %q\n", planFile)
+	fmt.Fprintf(out, "Edit the plan file to further describe your cluster. Once ready, execute the \"install validate\" command to proceed.\n")
 	return nil
 }
 

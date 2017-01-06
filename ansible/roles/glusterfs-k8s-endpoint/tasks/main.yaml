@@ -1,0 +1,7 @@
+---
+  - name: Copy service definition to remote node
+    template:
+      src: nfs-service.yaml
+      dest: /tmp/nfs-service.yaml
+  - name: Create NFS service on the cluster
+    command: kubectl apply -f /tmp/nfs-service.yaml
