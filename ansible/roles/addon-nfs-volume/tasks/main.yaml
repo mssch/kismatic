@@ -1,24 +1,4 @@
 ---
-  - name: mount share read/write
-    mount: 
-      name: /mnt/test
-      src: 
-      fstype: nfs 
-      state: mounted
-
-  - name: mount share read/write
-    mount: 
-      name: /mnt/test
-      src: 
-      fstype: nfs 
-      state: unmounted
-
-  - name: copy policy-controller.yaml to remote
-    template:
-      src: add-persistent-volume.yaml
-      dest: /tmp/add-persistent-volume.yaml
-  - name: start calico policy controller
-    command: kubectl apply -f /tmp/add-persistent-volume.yaml
-    register: out
-
-  - debug: var=out.stdout_lines
+  - name: Install all NFS shares as PersistentVolumes
+    include: "new-share.yaml"
+    with_indexed_items: nfsvolumes
