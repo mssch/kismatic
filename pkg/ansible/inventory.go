@@ -7,8 +7,7 @@ import (
 
 // Inventory is a collection of Nodes, keyed by role.
 type Inventory struct {
-	Roles      []Role
-	NFSVolumes []NFSVolume
+	Roles []Role
 }
 
 // Role is an Ansible role, containing nodes that belong to the role.

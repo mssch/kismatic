@@ -227,11 +227,8 @@ func (ae *ansibleExecutor) buildInstallExtraVars(p *Plan) (*ansible.ClusterCatal
 			Path: n.Path,
 			Host: n.Host,
 		})
-    }
-	ev["configure_storage"] = "false"
-	if p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0 {
-		ev["configure_storage"] = "true"
 	}
+	cc.EnableGluster = p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0
 
 	return &cc, nil
 }
@@ -444,27 +441,35 @@ func buildInventoryFromPlan(p *Plan) ansible.Inventory {
 			ingressNodes = append(ingressNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
 		}
 	}
+	storageNodes := []ansible.Node{}
+	if p.Storage.Nodes != nil {
+		for _, n := range p.Storage.Nodes {
+			storageNodes = append(storageNodes, installNodeToAnsibleNode(&n, &p.Cluster.SSH))
+		}
+	}
 
 	inventory := ansible.Inventory{
-		{
-			Name:  "etcd",
-			Nodes: etcdNodes,
-		},
-		{
-			Name:  "master",
-			Nodes: masterNodes,
-		},
-		{
-			Name:  "worker",
-			Nodes: workerNodes,
-		},
-		{
-			Name:  "ingress",
-			Nodes: ingressNodes,
-		},
-		{
-			Name:  "storage",
-			Nodes: storageNodes,
+		Roles: []ansible.Role{
+			{
+				Name:  "etcd",
+				Nodes: etcdNodes,
+			},
+			{
+				Name:  "master",
+				Nodes: masterNodes,
+			},
+			{
+				Name:  "worker",
+				Nodes: workerNodes,
+			},
+			{
+				Name:  "ingress",
+				Nodes: ingressNodes,
+			},
+			{
+				Name:  "storage",
+				Nodes: storageNodes,
+			},
 		},
 	}
 

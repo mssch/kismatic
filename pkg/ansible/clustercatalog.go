@@ -43,6 +43,8 @@ type ClusterCatalog struct {
 	WorkerNode string `yaml:"worker_node"`
 
 	NFSVolumes []NFSVolume
+
+	EnableGluster bool `yaml:"configure_storage"`
 }
 
 type NFSVolume struct {
