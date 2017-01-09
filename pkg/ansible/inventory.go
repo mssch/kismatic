@@ -11,11 +11,6 @@ type Inventory struct {
 	NFSVolumes []NFSVolume
 }
 
-type NFSVolume struct {
-	Host string
-	Path string
-}
-
 // Role is an Ansible role, containing nodes that belong to the role.
 type Role struct {
 	// Name of the role
@@ -51,13 +46,6 @@ func (i Inventory) ToINI() []byte {
 				internalIP = n.InternalIP
 			}
 			fmt.Fprintf(w, "%q ansible_host=%q internal_ipv4=%q ansible_ssh_private_key_file=%q ansible_port=%d ansible_user=%q\n", n.Host, n.PublicIP, internalIP, n.SSHPrivateKey, n.SSHPort, n.SSHUser)
-		}
-	}
-
-	if len(i.NFSVolumes) > 0 {
-		fmt.Fprintln(w, "[NFSVolume]")
-		for _, nfsvol := range i.NFSVolumes {
-			fmt.Fprintf(w, "%q path=%q", nfsvol.Host, nfsvol.Path)
 		}
 	}
 
