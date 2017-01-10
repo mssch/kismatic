@@ -12,6 +12,9 @@
     fstype: nfs 
     state: mounted
 
+#Backslash escaped Regex to find the available size in df output such as this:
+#Filesystem      1K-blocks   Used Available Use% Mounted on
+#/mnt/test-0      12246332 882716  10760892   8% /
 - name: Grab share size
   shell: "df /mnt/test-{{index}} | grep -oP '\\K\\d+(?=\\s+\\d+%)'"
   register: nfs_size_blob

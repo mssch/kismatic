@@ -126,8 +126,12 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, cc ClusterCat
 		return nil, fmt.Errorf("error writing inventory file to %q: %v", inventoryFile, err)
 	}
 
-	copyFileContents(clusterCatalogFile, filepath.Join(r.runDir, "clustercatalog.yaml"))
-	copyFileContents(inventoryFile, filepath.Join(r.runDir, "inventory.ini"))
+	if err := copyFileContents(clusterCatalogFile, filepath.Join(r.runDir, "clustercatalog.yaml")); err != nil {
+		return nil, fmt.Errorf("error copying clustercatalog.yaml to %q: %v", r.runDir, err)
+	}
+	if err := copyFileContents(inventoryFile, filepath.Join(r.runDir, "inventory.ini")); err != nil {
+		return nil, fmt.Errorf("error copying inventory.ini to %q: %v", r.runDir, err)
+	}
 
 	cmd := exec.Command(filepath.Join(r.ansibleDir, "bin", "ansible-playbook"), "-i", inventoryFile, "-s", playbook, "--extra-vars", "@"+clusterCatalogFile)
 	cmd.Stdout = r.out
@@ -194,22 +198,16 @@ func getPythonPath() (string, error) {
 func copyFileContents(src, dst string) (err error) {
 	in, err := os.Open(src)
 	if err != nil {
-		return
+		return err
 	}
 	defer in.Close()
 	out, err := os.Create(dst)
 	if err != nil {
-		return
+		return err
 	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
+	defer out.Close()
 	if _, err = io.Copy(out, in); err != nil {
-		return
+		return err
 	}
-	err = out.Sync()
-	return
+	return out.Sync()
 }

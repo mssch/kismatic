@@ -32,7 +32,7 @@ type ClusterCatalog struct {
 	ForceSchedulerRestart         bool `yaml:"force_scheduler_restart"`
 	ForceProxyRestart             bool `yaml:"force_proxy_restart"`
 	ForceKubeletRestart           bool `yaml:"force_kubelet_restart"`
-	ForceCalicoNodeRestart        bool `yaml:"force_calic_node_restart"`
+	ForceCalicoNodeRestart        bool `yaml:"force_calico_node_restart"`
 	ForceDockerRestart            bool `yaml:"force_docker_restart"`
 
 	EnableConfigureIngress bool `yaml:"configure_ingress"`
