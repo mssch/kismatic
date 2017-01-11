@@ -61,6 +61,14 @@ var validPlan = Plan{
 			},
 		},
 	},
+	NFS: NFS{
+		Volumes: []NFSVolume{
+			{
+				Host: "10.10.2.20",
+				Path: "/",
+			},
+		},
+	},
 }
 
 func assertInvalidPlan(t *testing.T, p Plan) {
@@ -281,5 +289,16 @@ func TestValidatePlanIngressProvidedNotExpected(t *testing.T) {
 			IP:   "192.168.205.10",
 		},
 	}
+	assertInvalidPlan(t, p)
+}
+
+func TestValidatePlanNFSDupes(t *testing.T) {
+	p := validPlan
+
+	p.NFS.Volumes = append(p.NFS.Volumes, NFSVolume{
+		Host: "10.10.2.20",
+		Path: "/",
+	})
+
 	assertInvalidPlan(t, p)
 }
