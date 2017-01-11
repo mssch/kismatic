@@ -9,7 +9,8 @@ import (
 
 	"github.com/apprenda/kismatic/integration/aws"
 	"github.com/apprenda/kismatic/integration/packet"
-	"github.com/apprenda/kismatic/pkg/retry"
+	"github.com/apprenda/kismatic/integration/retry"
+
 	homedir "github.com/mitchellh/go-homedir"
 )
 
