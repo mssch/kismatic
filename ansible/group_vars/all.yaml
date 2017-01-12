@@ -136,7 +136,12 @@ setup_internal_docker_registry: false
 docker_registry_address: "{{ hostvars[groups['master'][0]].internal_ipv4 }}"
 docker_registry_port: 8443
 
+# these images are included in the kismatic node package and get loaded on all k8s nodes
+# they will not be in the registry and loaded directly on each node in the cluster
 calico_node_img: calico/node:{{calico_docker_version}}
+defaultbackend_img: gcr.io/google_containers/defaultbackend:{{ defaultbackend_version }}
+nginx_ingress_controller_img: gcr.io/google_containers/nginx-ingress-controller:{{ nginx_ingress_controller_version }}
+pause_img: gcr.io/google_containers/pause-amd64:{{ pause_version }}
 
 calico_kube_policy_controller_orig_img: calico/kube-policy-controller:{{ calico_kube_policy_controller_version }}
 calico_kube_policy_controller_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/calico/kube-policy-controller:{{ calico_kube_policy_controller_version }}"
@@ -158,10 +163,6 @@ kubernetes_dashboard_orig_img: gcr.io/google_containers/kubernetes-dashboard-amd
 kubernetes_dashboard_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/kubernetes-dashboard-amd64:{{ kubernetes_dashboard_version }}"
 kubernetes_dashboard_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ kubernetes_dashboard_priv_img }}{% else %}{{ kubernetes_dashboard_orig_img }}{% endif %}'
 
-defaultbackend_img: gcr.io/google_containers/defaultbackend:{{ defaultbackend_version }}
-nginx_ingress_controller_img: gcr.io/google_containers/nginx-ingress-controller:{{ nginx_ingress_controller_version }}
-
-pause_img: gcr.io/google_containers/pause-amd64:{{ pause_version }}
 # kismatic packages
 allow_package_installation: true
 yum_repository_url: https://kismatic-packages-rpm.s3-accelerate.amazonaws.com
