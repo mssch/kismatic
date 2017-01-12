@@ -59,6 +59,21 @@ func ValidateSSHConnection(con *SSHConnection, prefix string) (bool, []error) {
 	return v.valid()
 }
 
+// ValidateCertificates checks if certificates exist and are valid
+func ValidateCertificates(p *Plan, pki *LocalPKI) (bool, []error) {
+	v := newValidator()
+
+	warn, err := pki.ValidateClusterCertificates(p, []string{"admin"})
+	if err != nil && len(err) > 0 {
+		v.addError(err...)
+	}
+	if warn != nil && len(warn) > 0 {
+		v.addError(warn...)
+	}
+
+	return v.valid()
+}
+
 type validatable interface {
 	validate() (bool, []error)
 }

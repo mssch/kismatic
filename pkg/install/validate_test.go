@@ -36,8 +36,8 @@ var validPlan = Plan{
 		ExpectedCount: 1,
 		Nodes: []Node{
 			{
-				Host: "etcd01",
-				IP:   "192.168.205.10",
+				Host: "master01",
+				IP:   "192.168.205.11",
 			},
 		},
 		LoadBalancedFQDN:      "test",
@@ -47,8 +47,8 @@ var validPlan = Plan{
 		ExpectedCount: 1,
 		Nodes: []Node{
 			{
-				Host: "etcd01",
-				IP:   "192.168.205.10",
+				Host: "worker01",
+				IP:   "192.168.205.12",
 			},
 		},
 	},
@@ -282,4 +282,93 @@ func TestValidatePlanIngressProvidedNotExpected(t *testing.T) {
 		},
 	}
 	assertInvalidPlan(t, p)
+}
+
+func TestValidatePlanCerts(t *testing.T) {
+	p := &validPlan
+
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	users := []string{"admin"}
+	if err := pki.GenerateClusterCertificates(p, ca, users); err != nil {
+		t.Fatalf("failed to generate certs: %v", err)
+	}
+
+	valid, errs := ValidateCertificates(p, &pki)
+	if !valid {
+		t.Errorf("expected valid, but got invalid")
+		fmt.Println(errs)
+	}
+}
+
+func TestValidatePlanBadCerts(t *testing.T) {
+	p := &validPlan
+
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	users := []string{"admin"}
+	if err := pki.GenerateClusterCertificates(p, ca, users); err != nil {
+		t.Fatalf("failed to generate certs: %v", err)
+	}
+	p.Master.Nodes[0] = Node{
+		Host:       "master01",
+		IP:         "11.12.13.14",
+		InternalIP: "22.33.44.55",
+	}
+
+	valid, _ := ValidateCertificates(p, &pki)
+	if valid {
+		t.Errorf("expected an error, but got valid")
+	}
+}
+
+func TestValidatePlanMissingCerts(t *testing.T) {
+	p := validPlan
+
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	valid, errs := ValidateCertificates(&p, &pki)
+	if !valid {
+		t.Errorf("expected valid, but got invalid")
+		fmt.Println(errs)
+	}
+}
+
+func TestValidatePlanMissingSomeCerts(t *testing.T) {
+	p := &validPlan
+
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	users := []string{"admin"}
+	if err := pki.GenerateClusterCertificates(p, ca, users); err != nil {
+		t.Fatalf("failed to generate certs: %v", err)
+	}
+
+	newNode := Node{
+		Host:       "master2",
+		IP:         "11.12.13.14",
+		InternalIP: "22.33.44.55",
+	}
+	p.Master.Nodes = append(p.Master.Nodes, newNode)
+
+	valid, errs := ValidateCertificates(p, &pki)
+	if !valid {
+		t.Errorf("expected valid, but got invalid")
+		fmt.Println(errs)
+	}
 }

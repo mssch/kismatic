@@ -62,10 +62,11 @@ func NewCmdStep(out io.Writer, opts *installOpts) *cobra.Command {
 
 func (c stepCmd) run() error {
 	valOpts := &validateOpts{
-		planFile:      c.planFile,
-		verbose:       c.verbose,
-		outputFormat:  c.outputFormat,
-		skipPreFlight: true,
+		planFile:           c.planFile,
+		verbose:            c.verbose,
+		outputFormat:       c.outputFormat,
+		skipPreFlight:      true,
+		generatedAssetsDir: c.generatedAssetsDir,
 	}
 	if err := doValidate(c.out, c.planner, valOpts); err != nil {
 		return err

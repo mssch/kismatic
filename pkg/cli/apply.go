@@ -80,10 +80,11 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 func (c *applyCmd) run() error {
 	// Validate and run pre-flight
 	opts := &validateOpts{
-		planFile:      c.planFile,
-		verbose:       c.verbose,
-		outputFormat:  c.outputFormat,
-		skipPreFlight: c.skipPreFlight,
+		planFile:           c.planFile,
+		verbose:            c.verbose,
+		outputFormat:       c.outputFormat,
+		skipPreFlight:      c.skipPreFlight,
+		generatedAssetsDir: c.generatedAssetsDir,
 	}
 	err := doValidate(c.out, c.planner, opts)
 	if err != nil {

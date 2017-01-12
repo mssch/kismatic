@@ -123,6 +123,7 @@ func addWorkerToPlan(plan Plan, worker Node) Plan {
 func checkAddWorkerPrereqs(pki PKI, newWorker Node) error {
 	// 1. if the node certificate is not there, we need to ensure that
 	// the CA is available for generating the new worker's cert
+	// don't check for a valid cert here since its already being done in GenerateNodeCertificate()
 	certExists, err := pki.NodeCertificateExists(newWorker)
 	if err != nil {
 		return fmt.Errorf("error while checking if node's certificate exists: %v", err)

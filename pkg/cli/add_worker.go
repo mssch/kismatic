@@ -68,11 +68,11 @@ func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, newWorker 
 		return fmt.Errorf("failed to read plan file: %v", err)
 	}
 	if _, errs := install.ValidateNode(&newWorker); errs != nil {
-		printValidationErrors(out, errs)
+		util.PrintValidationErrors(out, errs)
 		return errors.New("information provided about the new worker node is invalid")
 	}
 	if _, errs := install.ValidatePlan(plan); errs != nil {
-		printValidationErrors(out, errs)
+		util.PrintValidationErrors(out, errs)
 		return errors.New("the plan file failed validation")
 	}
 	workerSSHCon := &install.SSHConnection{
@@ -80,7 +80,7 @@ func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, newWorker 
 		Node:      &newWorker,
 	}
 	if _, errs := install.ValidateSSHConnection(workerSSHCon, "New worker node"); errs != nil {
-		printValidationErrors(out, errs)
+		util.PrintValidationErrors(out, errs)
 		return errors.New("could not establish SSH connection to the new node")
 	}
 	if err := ensureNodeIsNew(*plan, newWorker); err != nil {

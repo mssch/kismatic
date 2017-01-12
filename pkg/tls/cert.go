@@ -111,6 +111,74 @@ func CertKeyPairExists(name, dir string) (bool, error) {
 	return true, nil
 }
 
+// CertValid returns true if a matching certificate exist
+// Matching is defined as having the expected CN and SANs
+// Warnings: a certificate with a wrong CN or that doesn't contain the expected SANs,
+// Error: a file that exists but cannot be read or parsed as a valid certificate
+func CertValid(CN string, SANs []string, name, dir string) (valid bool, warn []error, err error) {
+	// check if cert exists
+	cn := certName(name)
+	if _, err = os.Stat(filepath.Join(dir, cn)); os.IsNotExist(err) {
+		return false, []error{fmt.Errorf("certificate %s does not exist", cn)}, nil
+	} else if err != nil {
+		return false, nil, fmt.Errorf("unexpected error looking for certificate %s", cn)
+	}
+
+	// read the certificate file
+	certBytes, err := ioutil.ReadFile(filepath.Join(dir, certName(name)))
+	if err != nil {
+		return false, nil, fmt.Errorf("error reding cert %s: %v", name, err)
+	}
+
+	// verify certificate
+	cert, err := helpers.ParseCertificatePEM(certBytes)
+	if err != nil {
+		return false, []error{fmt.Errorf("error parsing cert %s: %v", name, err)}, nil
+	}
+
+	if cert.Subject.CommonName != CN {
+		warn = append(warn, fmt.Errorf("error validating CN, expected %q, instead got %q", CN, cert.Subject.CommonName))
+	}
+
+	var certSANs []string
+	for _, ip := range cert.IPAddresses {
+		certSANs = append(certSANs, ip.String())
+	}
+	// DNS can be any string value
+	certSANs = append(certSANs, cert.DNSNames...)
+
+	// check if the SANs in the certificate contain the requested SANs
+	// allows for operators to add their own custom SANs in the cert
+	subset := util.Subset(util.StringToInterfaceSlice(SANs), util.StringToInterfaceSlice(certSANs))
+	if !subset {
+		warn = append(warn, fmt.Errorf("error validating SANs, expected: \n\t%v \n  instead got: \n\t%v", SANs, certSANs))
+	}
+
+	return len(warn) == 0, warn, nil
+}
+
+// CertExistsAndValid verifies that the cert exists and the CN and SANs match the expected values
+func CertExistsAndValid(CN string, SANs []string, name, dir string) (valid bool, warn []error, err error) {
+	exists, err := CertKeyPairExists(name, dir)
+	if err != nil {
+		return false, nil, fmt.Errorf("error verifying if certificates %q exists: %v", name, err)
+	}
+	if exists {
+		valid, warn, errValid := CertValid(CN, SANs, name, dir)
+		if errValid != nil {
+			return false, nil, fmt.Errorf("error validating certificate %q: %v", name, errValid)
+		}
+		// cert valid
+		if valid {
+			return true, nil, nil
+		}
+		// cert exists but is not valid
+		return false, warn, nil
+	}
+	// cert doesn't exist
+	return false, nil, nil
+}
+
 func keyName(s string) string { return fmt.Sprintf("%s-key.pem", s) }
 
 func certName(s string) string { return fmt.Sprintf("%s.pem", s) }
