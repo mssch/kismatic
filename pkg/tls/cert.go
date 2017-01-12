@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/cloudflare/cfssl/cli/genkey"
@@ -125,7 +126,7 @@ func CertValid(CN string, SANs []string, name, dir string) (valid bool, warn []e
 	}
 
 	// read the certificate file
-	certBytes, err := ioutil.ReadFile(filepath.Join(dir, certName(name)))
+	certBytes, err := ioutil.ReadFile(filepath.Join(dir, cn))
 	if err != nil {
 		return false, nil, fmt.Errorf("error reding cert %s: %v", name, err)
 	}
@@ -137,7 +138,7 @@ func CertValid(CN string, SANs []string, name, dir string) (valid bool, warn []e
 	}
 
 	if cert.Subject.CommonName != CN {
-		warn = append(warn, fmt.Errorf("error validating CN, expected %q, instead got %q", CN, cert.Subject.CommonName))
+		warn = append(warn, fmt.Errorf("Certificate %q: CN validation failed\n    expected %q, instead got %q", cn, CN, cert.Subject.CommonName))
 	}
 
 	var certSANs []string
@@ -149,9 +150,12 @@ func CertValid(CN string, SANs []string, name, dir string) (valid bool, warn []e
 
 	// check if the SANs in the certificate contain the requested SANs
 	// allows for operators to add their own custom SANs in the cert
-	subset := util.Subset(util.StringToInterfaceSlice(SANs), util.StringToInterfaceSlice(certSANs))
+	subset := util.Subset(SANs, certSANs)
 	if !subset {
-		warn = append(warn, fmt.Errorf("error validating SANs, expected: \n\t%v \n  instead got: \n\t%v", SANs, certSANs))
+		// sort for readability
+		sort.Strings(SANs)
+		sort.Strings(certSANs)
+		warn = append(warn, fmt.Errorf("Certificate %q: SANs validation failed\n    expected: \n\t%v \n    instead got: \n\t%v", cn, SANs, certSANs))
 	}
 
 	return len(warn) == 0, warn, nil

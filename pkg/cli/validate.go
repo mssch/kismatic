@@ -42,23 +42,6 @@ func NewCmdValidate(out io.Writer, installOpts *installOpts) *cobra.Command {
 	return cmd
 }
 
-func newPKI(stdout io.Writer, options *validateOpts) (*install.LocalPKI, error) {
-	ansibleDir := "ansible"
-	if options.generatedAssetsDir == "" {
-		return nil, fmt.Errorf("GeneratedAssetsDirectory option cannot be empty")
-	}
-	certsDir := filepath.Join(options.generatedAssetsDir, "keys")
-	pki := &install.LocalPKI{
-		CACsr:                   filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
-		CAConfigFile:            filepath.Join(ansibleDir, "playbooks", "tls", "ca-config.json"),
-		CASigningProfile:        "kubernetes",
-		GeneratedCertsDirectory: certsDir,
-		Log: stdout,
-	}
-
-	return pki, nil
-}
-
 func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) error {
 	util.PrintHeader(out, "Validating", '=')
 	// Check if plan file exists
@@ -79,7 +62,7 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	if !ok {
 		util.PrettyPrintErr(out, "Validating installation plan file")
 		util.PrintValidationErrors(out, errs)
-		return fmt.Errorf("validation error prevents installation from proceeding")
+		return fmt.Errorf("Plan file validation error prevents installation from proceeding")
 	}
 	util.PrettyPrintOk(out, "Validating installation plan file")
 
@@ -88,7 +71,7 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	if !ok {
 		util.PrettyPrintErr(out, "Validating SSH connections to nodes")
 		util.PrintValidationErrors(out, errs)
-		return fmt.Errorf("SSH connectivity validation failure prevents installation from proceeding")
+		return fmt.Errorf("SSH connectivity validation error prevents installation from proceeding")
 	}
 
 	// get a new pki
@@ -101,7 +84,7 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	if !ok {
 		util.PrettyPrintErr(out, "Validating cluster certificates")
 		util.PrintValidationErrors(out, errs)
-		return fmt.Errorf("Cluster certificates validation failure prevents installation from proceeding")
+		return fmt.Errorf("Cluster certificates validation error prevents installation from proceeding")
 	}
 
 	if opts.skipPreFlight {
@@ -120,4 +103,22 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 		return err
 	}
 	return nil
+}
+
+// TODO this should really not be here
+func newPKI(stdout io.Writer, options *validateOpts) (*install.LocalPKI, error) {
+	ansibleDir := "ansible"
+	if options.generatedAssetsDir == "" {
+		return nil, fmt.Errorf("GeneratedAssetsDirectory option cannot be empty")
+	}
+	certsDir := filepath.Join(options.generatedAssetsDir, "keys")
+	pki := &install.LocalPKI{
+		CACsr:                   filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
+		CAConfigFile:            filepath.Join(ansibleDir, "playbooks", "tls", "ca-config.json"),
+		CASigningProfile:        "kubernetes",
+		GeneratedCertsDirectory: certsDir,
+		Log: stdout,
+	}
+
+	return pki, nil
 }

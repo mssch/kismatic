@@ -175,14 +175,14 @@ func (lp *LocalPKI) ValidateClusterCertificates(p *Plan, users []string) (warn [
 		}
 	}
 	// Create key for service account signing
-	_, saWarn, saErr := lp.validateServiceAccountCert(p)
+	_, saWarn, saErr := lp.validateServiceAccountCert()
 	warn = append(warn, saWarn...)
 	if err != nil {
 		err = append(err, saErr)
 	}
 	// Finally, create certs for user if they are missing
 	for _, user := range users {
-		_, userWarn, userErr := lp.validateUserCert(p, user)
+		_, userWarn, userErr := lp.validateUserCert(user)
 		warn = append(warn, userWarn...)
 		if err != nil {
 			err = append(err, userErr)
@@ -332,7 +332,7 @@ func (lp *LocalPKI) generateServiceAccountCert(p *Plan, ca *tls.CA) error {
 	return nil
 }
 
-func (lp *LocalPKI) validateServiceAccountCert(p *Plan) (valid bool, warn []error, err error) {
+func (lp *LocalPKI) validateServiceAccountCert() (valid bool, warn []error, err error) {
 	CN := "kube-service-account"
 	SANs := []string{}
 	certName := "service-account"
@@ -371,7 +371,7 @@ func (lp *LocalPKI) generateUserCert(p *Plan, user string, ca *tls.CA) error {
 	return nil
 }
 
-func (lp *LocalPKI) validateUserCert(p *Plan, user string) (valid bool, warn []error, err error) {
+func (lp *LocalPKI) validateUserCert(user string) (valid bool, warn []error, err error) {
 	SANs := []string{user}
 
 	return tls.CertExistsAndValid(user, SANs, user, lp.GeneratedCertsDirectory)
