@@ -8,6 +8,7 @@ import (
 	"github.com/apprenda/kismatic/pkg/ssh"
 
 	"github.com/apprenda/kismatic/pkg/install"
+	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -76,7 +77,7 @@ func doSSH(out io.Writer, planner install.Planner, opts *sshOpts) error {
 	// validate SSH access to node
 	ok, errs := install.ValidateSSHConnection(con, "")
 	if !ok {
-		printValidationErrors(out, errs)
+		util.PrintValidationErrors(out, errs)
 		return fmt.Errorf("cannot validate SSH connection to node %q", opts.host)
 	}
 
