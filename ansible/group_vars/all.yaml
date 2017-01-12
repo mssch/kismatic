@@ -158,13 +158,8 @@ kubernetes_dashboard_orig_img: gcr.io/google_containers/kubernetes-dashboard-amd
 kubernetes_dashboard_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/kubernetes-dashboard-amd64:{{ kubernetes_dashboard_version }}"
 kubernetes_dashboard_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ kubernetes_dashboard_priv_img }}{% else %}{{ kubernetes_dashboard_orig_img }}{% endif %}'
 
-defaultbackend_orig_img: gcr.io/google_containers/defaultbackend:{{ defaultbackend_version }}
-defaultbackend_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/defaultbackend:{{ defaultbackend_version }}"
-defaultbackend_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ defaultbackend_priv_img }}{% else %}{{ defaultbackend_orig_img }}{% endif %}'
-
-nginx_ingress_controller_orig_img: gcr.io/google_containers/nginx-ingress-controller:{{ nginx_ingress_controller_version }}
-nginx_ingress_controller_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/nginx-ingress-controller:{{ nginx_ingress_controller_version }}"
-nginx_ingress_controller_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ nginx_ingress_controller_priv_img }}{% else %}{{ nginx_ingress_controller_orig_img }}{% endif %}'
+defaultbackend_img: gcr.io/google_containers/defaultbackend:{{ defaultbackend_version }}
+nginx_ingress_controller_img: gcr.io/google_containers/nginx-ingress-controller:{{ nginx_ingress_controller_version }}
 
 pause_img: gcr.io/google_containers/pause-amd64:{{ pause_version }}
 # kismatic packages

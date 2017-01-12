@@ -16,7 +16,7 @@ spec:
       containers:
       - image: {{ nginx_ingress_controller_img }}
         name: ingress
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         readinessProbe:
           httpGet:
             path: /healthz
