@@ -1,8 +1,8 @@
-hash: 5d8cd28f14a6d894f9d35ae4f4aa7e273f6e0853a51d12d3af92e49e5450109d
-updated: 2017-01-02T15:30:34.409203471-05:00
+hash: 319e9931fb72d8bae8a373c81dc17e0ff6c34fc68b1fb81c868e9535bca52c5f
+updated: 2017-01-03T09:14:04.754322412-05:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 6ad900d30b0f1a41b14ee02300f7268bdabea1eb
+  version: ddfd17ec06eee10c24c5c474633273fd034afdda
   subpackages:
   - aws
   - aws/awserr
@@ -58,6 +58,18 @@ imports:
   version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
   subpackages:
   - md2man
+- name: github.com/docker/docker
+  version: a8a31eff10544860d2188dddabdee4d727545796
+  subpackages:
+  - pkg/term
+- name: github.com/docker/machine
+  version: 7b195916ea1cd4dc7622a957915b048e9ca7b422
+  subpackages:
+  - libmachine
+  - libmachine/log
+  - libmachine/mcnutils
+  - libmachine/ssh
+  - version
 - name: github.com/fatih/color
   version: 87d4004f2ab62d0d255e0a38f1680aa534549fe3
 - name: github.com/go-ini/ini
@@ -74,7 +86,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/mattn/go-colorable
   version: d228849504861217f796da67fae4f6e347643f15
 - name: github.com/mattn/go-isatty
@@ -143,10 +155,12 @@ imports:
   - pkcs12
   - pkcs12/internal/rc2
   - ssh
+  - ssh/terminal
 - name: golang.org/x/sys
-  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  version: d9157a9621b69ad1d8d77a1933590c416593f24f
   subpackages:
   - unix
+  - windows/registry
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports: []

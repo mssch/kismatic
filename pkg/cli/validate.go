@@ -64,7 +64,7 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	util.PrettyPrintOk(out, "Validating installation plan file")
 
 	// Validate SSH connections
-	ok, errs = install.ValidatePlanSSHConnection(plan)
+	ok, errs = install.ValidatePlanSSHConnections(plan)
 	if !ok {
 		util.PrettyPrintErr(out, "Validating SSH connections to nodes")
 		printValidationErrors(out, errs)

@@ -2,8 +2,25 @@ package retry
 
 import "time"
 
-// WithBackoff will retry a function specified number of times
+type retryMethod int
+
+const (
+	withBackoff retryMethod = iota
+	linear
+)
+
+// WithBackoff will retry a function specified number of times with an exponential backoff
 func WithBackoff(fn func() error, retries uint) error {
+	return retry(fn, retries, withBackoff)
+}
+
+// Linear will retry a function specified number of times
+func Linear(fn func() error, retries uint) error {
+	return retry(fn, retries, linear)
+}
+
+// retry will retry a function specified number of times
+func retry(fn func() error, retries uint, method retryMethod) error {
 	var attempts uint
 	var err error
 	for {
@@ -14,7 +31,14 @@ func WithBackoff(fn func() error, retries uint) error {
 		if attempts == retries {
 			break
 		}
-		time.Sleep((1 << attempts) * time.Second)
+		sleep := 1 * time.Second
+		switch method {
+		case withBackoff:
+			sleep = (1 << attempts) * time.Second
+		case linear:
+			sleep = 1 * time.Second
+		}
+		time.Sleep(sleep)
 		attempts++
 	}
 	return err
