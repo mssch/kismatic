@@ -37,27 +37,30 @@ There are currently three storage options with Kismatic:
 ## Using GlusterFS storage cluster
 
 1. Use Kismatic to automatically configure `nodes` with GlusterFS by providing the details in the plan file, ie.
-```
-...
-storage:
-  expected_count: 2
-  nodes:
-  - host: storage1.somehost.com
-    ip: 8.8.8.1
-    internalip: 8.8.8.1
-  - host: storage2.somehost.com
-    ip: 8.8.8.1
-    internalip: 8.8.8.1
-```
-If you have an existing kuberntes cluster setup with Kismatic you can still have the tool configure a GlusterFS cluster by adding to your plan file similar to above and running:
-```
-kismatic install step _storage.yaml
-```
-This will setup a 2 node GlusterFS cluster and expose it as a kuberntes service with the name of `kismatic-storage`
+   ```
+   ...
+   storage:
+     expected_count: 2
+     nodes:
+     - host: storage1.somehost.com
+       ip: 8.8.8.1
+       internalip: 8.8.8.1
+     - host: storage2.somehost.com
+       ip: 8.8.8.1
+       internalip: 8.8.8.1
+   ```
+   
+ If you have an existing kuberntes cluster setup with Kismatic you can still have the tool configure a GlusterFS cluster by adding to your plan file similar to above and running:
+   ```
+   kismatic install step _storage.yaml
+   ```
+   
+ This will setup a 2 node GlusterFS cluster and expose it as a kuberntes service with the name of `kismatic-storage`  
 2. Create a new GlsuterFS volume and expose it in kuberntes as a PersistentVolume use:
-```
-kismatic volume add 10 storage01 -r 2 -d 1 -a 10.10.*.*
-```
+   ```
+   kismatic volume add 10 storage01 -r 2 -d 1 -a 10.10.*.*
+   ```
+   
   * `10` represents the volume size in GB, in this example a GlusterFS volume with a `10GB` quota and a kubernetes PersistentVolume with a capacity of `10Gi` will be created
   * `storage01` is the volume name used when creating the GlusterFS volume name, the GlusterFS brick directory(ies) and kubernetes PersistentVolume name. All GlusterFS bricks will be created under the `/data` directory on the node, using the logical disk mounted under `/`
   * `-r (replica-count)` the number of duplicates to keep of each file stored
@@ -65,37 +68,40 @@ kismatic volume add 10 storage01 -r 2 -d 1 -a 10.10.*.*
   * **NOTE**: the GlusterFS cluster must have at least `-r X -n` nodes available for a volume to be created, in this example the storage cluster must have 2 or more nodes with at least 10GB free disk space on each of the machines
   * `-a allow-address` is comma separated list of IP ranges that are permitted to mount and access the GlusterFS network volumes, by default all the nodes in the kubernetes cluster and the pods CIDR IP range will have access
 3. Create a new PersistentVolumeClaim
-```
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: my-app-frontend-claim
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "kismatic"
-spec:
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 10Gi
-```
-Use the `volume.beta.kubernetes.io/storage-class: "kismatic"` annotation for the PersistentVolumeClaim to bind to the newly created PersistentVolume
+   ```
+   kind: PersistentVolumeClaim
+   apiVersion: v1
+   metadata:
+     name: my-app-frontend-claim
+     annotations:
+       volume.beta.kubernetes.io/storage-class: "kismatic"
+   spec:
+     accessModes:
+       - ReadWriteMany
+     resources:
+       requests:
+         storage: 10Gi
+   ```
+  
+ Use the `volume.beta.kubernetes.io/storage-class: "kismatic"` annotation for the PersistentVolumeClaim to bind to the newly created PersistentVolume 
+ 
 4. Use the claim as a pod volume
-```
-kind: Pod
-apiVersion: v1
-metadata:
-  name: my-app-frontend
-spec:
-  containers:
-    - name: my-app-frontend
-      image: nginx
-      volumeMounts:
-      - mountPath: "/var/www/html"
-        name: html
-  volumes:
-    - name: html
-      persistentVolumeClaim:
-        claimName: my-app-frontend-claim
-```
+   ```
+   kind: Pod
+   apiVersion: v1
+   metadata:
+     name: my-app-frontend
+   spec:
+     containers:
+       - name: my-app-frontend
+         image: nginx
+         volumeMounts:
+         - mountPath: "/var/www/html"
+           name: html
+     volumes:
+       - name: html
+         persistentVolumeClaim:
+           claimName: my-app-frontend-claim
+   ```
+  
 5. Your pod will now have access to the `/var/www/html` directory that is backed by a GlusterFS volume
