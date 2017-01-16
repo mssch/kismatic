@@ -2,8 +2,12 @@ package tls
 
 import (
 	"bytes"
+	"io/ioutil"
 	"net"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -129,4 +133,220 @@ func TestGenerateNewCertificate(t *testing.T) {
 		t.Errorf("expected expiration date %q, got %q", expectedExpiration, parsedCert.NotAfter)
 	}
 
+}
+
+func TestCertValid(t *testing.T) {
+	tests := []struct {
+		expectedCN   string
+		expectedSANs []string
+		certCN       string
+		certSANs     []string
+		valid        bool
+	}{
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{"10.0.0.1", "192.168.99.101"},
+			valid:        true,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"node1", "10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{"node1", "10.0.0.1", "192.168.99.101"},
+			valid:        true,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{},
+			certCN:       "node1",
+			certSANs:     []string{},
+			valid:        true,
+		},
+		{
+			expectedCN: "node1",
+			certCN:     "node1",
+			valid:      true,
+		},
+		{
+			expectedCN:   "kube-service-account",
+			expectedSANs: []string{},
+			certCN:       "kube-service-account",
+			certSANs:     []string{},
+			valid:        true,
+		},
+		{
+			expectedCN:   "admin",
+			expectedSANs: []string{"admin"},
+			certCN:       "admin",
+			certSANs:     []string{"admin"},
+			valid:        true,
+		},
+		{
+			expectedCN:   "other-node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{"10.0.0.1", "192.168.99.101"},
+			valid:        false,
+		},
+		{
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{"10.0.0.1", "192.168.99.101"},
+			valid:        false,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1"},
+			certCN:       "node1",
+			certSANs:     []string{"10.0.0.1", "192.168.99.101"},
+			valid:        true,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{},
+			certCN:       "node1",
+			certSANs:     []string{"10.0.0.1", "192.168.99.101"},
+			valid:        true,
+		},
+		{
+			expectedCN: "node1",
+			certCN:     "node1",
+			certSANs:   []string{"10.0.0.1", "192.168.99.101"},
+			valid:      true,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{"10.0.0.1"},
+			valid:        false,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{},
+			valid:        false,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			valid:        false,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certSANs:     []string{"10.0.0.1", "192.168.99.101"},
+			valid:        false,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			valid:        false,
+		},
+		{
+			certCN:   "node1",
+			certSANs: []string{"10.0.0.1", "192.168.99.101"},
+			valid:    false,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"node1", "10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{"10.0.0.1", "192.168.99.101"},
+			valid:        false,
+		},
+		{
+			expectedCN:   "node1",
+			expectedSANs: []string{"10.0.0.1", "192.168.99.101"},
+			certCN:       "node1",
+			certSANs:     []string{"node1", "10.0.0.1", "192.168.99.101"},
+			valid:        true,
+		},
+	}
+
+	tempDir, err := ioutil.TempDir("", "cert-tests")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer cleanup(tempDir, t)
+
+	// Create CA Cert
+	subject := Subject{
+		Country:            "someCountry",
+		State:              "someState",
+		Locality:           "someLocality",
+		Organization:       "someOrganization",
+		OrganizationalUnit: "someOrgUnit",
+	}
+	key, caCert, err := NewCACert("test/ca-csr.json", "someCN", subject)
+	if err != nil {
+		t.Fatalf("error creating CA: %v", err)
+	}
+	ca := &CA{
+		Key:        key,
+		Cert:       caCert,
+		ConfigFile: "test/ca-config.json",
+		Profile:    "kubernetes",
+	}
+
+	// check if exists
+	valid, warn, err := CertValid(tests[0].expectedCN, tests[0].expectedSANs, "doesnotexist", tempDir)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if valid != false {
+		t.Errorf("Expected to be false, instead got %t with warning: %v\n", valid, warn)
+	}
+
+	for i, test := range tests {
+		key, cert, err := NewCert(ca, *buildReq(test.certCN, test.certSANs))
+		if err != nil {
+			t.Error(err)
+		}
+		name := "cert-test-" + strconv.Itoa(i)
+		certPath := filepath.Join(tempDir, name+".pem")
+		keyPath := filepath.Join(tempDir, name+"-key.pem")
+		fCert, _ := os.Create(certPath)
+		fCert.Write(cert)
+		fKey, _ := os.Create(keyPath)
+		fKey.Write(key)
+
+		valid, warn, err := CertValid(test.expectedCN, test.expectedSANs, name, tempDir)
+		if err != nil {
+			t.Errorf("Unexpected error for %d: %v", i, err)
+		}
+		if test.valid != valid {
+			t.Errorf("Expected to be %t, instead got %t for %d with warning: %v\n", test.valid, valid, i, warn)
+		}
+	}
+}
+
+func buildReq(CN string, SANs []string) *csr.CertificateRequest {
+	return &csr.CertificateRequest{
+		CN: CN,
+		KeyRequest: &csr.BasicKeyRequest{
+			A: "rsa",
+			S: 2048,
+		},
+		Hosts: SANs,
+		Names: []csr.Name{
+			{
+				C:  "US",
+				L:  "Troy",
+				O:  "Kubernetes",
+				OU: "Cluster",
+				ST: "New York",
+			},
+		},
+	}
+}
+
+func cleanup(dir string, t *testing.T) {
+	if err := os.RemoveAll(dir); err != nil {
+		t.Fatalf("failed cleaning up temp directory: %v", err)
+	}
 }

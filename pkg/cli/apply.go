@@ -78,10 +78,11 @@ func NewCmdApply(out io.Writer, installOpts *installOpts) *cobra.Command {
 func (c *applyCmd) run() error {
 	// Validate and run pre-flight
 	opts := &validateOpts{
-		planFile:      c.planFile,
-		verbose:       c.verbose,
-		outputFormat:  c.outputFormat,
-		skipPreFlight: c.skipPreFlight,
+		planFile:           c.planFile,
+		verbose:            c.verbose,
+		outputFormat:       c.outputFormat,
+		skipPreFlight:      c.skipPreFlight,
+		generatedAssetsDir: c.generatedAssetsDir,
 	}
 	err := doValidate(c.out, c.planner, opts)
 	if err != nil {
@@ -112,7 +113,7 @@ func (c *applyCmd) run() error {
 			"\n  * use \"kubectl --kubeconfig %s/kubeconfig\"" +
 			"\n  * or copy the config file \"cp %[1]s/kubeconfig ~/.kube/config\"\n"
 		fmt.Fprintf(c.out, msg, c.generatedAssetsDir)
-		fmt.Fprintf(c.out, "Open \"https://%s:6443/ui\" in your browser to view the Kubernetes dashboard", plan.Master.LoadBalancedFQDN)
+		fmt.Fprintf(c.out, "Use \"kismatic dashboard\" command to view the Kubernetes dashboard")
 	}
 
 	fmt.Fprintf(c.out, "\n")

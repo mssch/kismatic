@@ -81,7 +81,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 					WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, Ubuntu1604LTS, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNodes(nodes, sshKey)
+						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						testVolumeAdd(nodes.master[0], sshKey)
 					})
@@ -92,7 +92,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 					WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNodes(nodes, sshKey)
+						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						testVolumeAdd(nodes.master[0], sshKey)
 					})
@@ -103,7 +103,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 					WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, RedHat7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNodes(nodes, sshKey)
+						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						testVolumeAdd(nodes.master[0], sshKey)
 					})
@@ -114,7 +114,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 					WithInfrastructure(NodeCount{3, 2, 3, 2, 0}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNodes(nodes, sshKey)
+						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
@@ -139,7 +139,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 					WithMiniInfrastructure(CentOS7, provisioner, func(node NodeDeets, sshKey string) {
 						err := installKismaticMini(node, sshKey)
 						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNode(node, sshKey)
+						err = verifyIngressNodes(node, []NodeDeets{node}, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						testVolumeAdd(node, sshKey)
 					})
@@ -150,7 +150,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 					WithMiniInfrastructure(Ubuntu1604LTS, provisioner, func(node NodeDeets, sshKey string) {
 						err := installKismaticMini(node, sshKey)
 						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNode(node, sshKey)
+						err = verifyIngressNodes(node, []NodeDeets{node}, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						testVolumeAdd(node, sshKey)
 					})

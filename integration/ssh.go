@@ -84,21 +84,28 @@ func scpFile(filePath string, destFilePath string, user, hostname, sshKey string
 	return string(out), err
 }
 
-// BlockUntilSSHOpen waits until the node with the given IP is accessible via SSH.
-func BlockUntilSSHOpen(publicIP, sshUser, sshKey string) {
+// WaitUntilSSHOpen waits up to the given timeout for a successful SSH connection to
+// the given node. If the connection is open, returns true. If the timeout is reached, returns false.
+func WaitUntilSSHOpen(publicIP, sshUser, sshKey string, timeout time.Duration) bool {
+	tout := time.After(timeout)
+	tick := time.Tick(3 * time.Second)
 	for {
-		cmd := exec.Command("ssh")
-		cmd.Args = append(cmd.Args, "-i", sshKey)
-		cmd.Args = append(cmd.Args, "-o", "ConnectTimeout=5")
-		cmd.Args = append(cmd.Args, "-o", "BatchMode=yes")
-		cmd.Args = append(cmd.Args, "-o", "StrictHostKeyChecking=no")
-		cmd.Args = append(cmd.Args, fmt.Sprintf("%s@%s", sshUser, publicIP), "exit") // just call exit if we are able to connect
-		if err := cmd.Run(); err == nil {
-			// command succeeded
-			fmt.Println()
-			return
+		select {
+		case <-tout:
+			return false
+		case <-tick:
+			cmd := exec.Command("ssh")
+			cmd.Args = append(cmd.Args, "-i", sshKey)
+			cmd.Args = append(cmd.Args, "-o", "ConnectTimeout=5")
+			cmd.Args = append(cmd.Args, "-o", "BatchMode=yes")
+			cmd.Args = append(cmd.Args, "-o", "StrictHostKeyChecking=no")
+			cmd.Args = append(cmd.Args, fmt.Sprintf("%s@%s", sshUser, publicIP), "exit") // just call exit if we are able to connect
+			if err := cmd.Run(); err == nil {
+				// command succeeded
+				fmt.Println()
+				return true
+			}
+			fmt.Printf("?")
 		}
-		fmt.Printf("?")
-		time.Sleep(3 * time.Second)
 	}
 }

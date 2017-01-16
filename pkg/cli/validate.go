@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io"
+	"path/filepath"
 
 	"os"
 
@@ -12,10 +13,11 @@ import (
 )
 
 type validateOpts struct {
-	planFile      string
-	verbose       bool
-	outputFormat  string
-	skipPreFlight bool
+	generatedAssetsDir string
+	planFile           string
+	verbose            bool
+	outputFormat       string
+	skipPreFlight      bool
 }
 
 // NewCmdValidate creates a new install validate command
@@ -33,6 +35,7 @@ func NewCmdValidate(out io.Writer, installOpts *installOpts) *cobra.Command {
 			return doValidate(out, planner, opts)
 		},
 	}
+	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options simple|raw)")
 	cmd.Flags().BoolVar(&opts.skipPreFlight, "skip-preflight", false, "skip pre-flight checks")
@@ -58,17 +61,30 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	ok, errs := install.ValidatePlan(plan)
 	if !ok {
 		util.PrettyPrintErr(out, "Validating installation plan file")
-		printValidationErrors(out, errs)
-		return fmt.Errorf("validation error prevents installation from proceeding")
+		util.PrintValidationErrors(out, errs)
+		return fmt.Errorf("Plan file validation error prevents installation from proceeding")
 	}
 	util.PrettyPrintOk(out, "Validating installation plan file")
 
 	// Validate SSH connections
-	ok, errs = install.ValidatePlanSSHConnection(plan)
+	ok, errs = install.ValidatePlanSSHConnections(plan)
 	if !ok {
 		util.PrettyPrintErr(out, "Validating SSH connections to nodes")
-		printValidationErrors(out, errs)
-		return fmt.Errorf("SSH connectivity validation failure prevents installation from proceeding")
+		util.PrintValidationErrors(out, errs)
+		return fmt.Errorf("SSH connectivity validation error prevents installation from proceeding")
+	}
+
+	// get a new pki
+	pki, err := newPKI(out, opts)
+	if err != nil {
+		return err
+	}
+	// Validate Certificates
+	ok, errs = install.ValidateCertificates(plan, pki)
+	if !ok {
+		util.PrettyPrintErr(out, "Validating cluster certificates")
+		util.PrintValidationErrors(out, errs)
+		return fmt.Errorf("Cluster certificates validation error prevents installation from proceeding")
 	}
 
 	if opts.skipPreFlight {
@@ -89,8 +105,20 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	return nil
 }
 
-func printValidationErrors(out io.Writer, errors []error) {
-	for _, err := range errors {
-		util.PrintColor(out, util.Red, "- %v\n", err)
+// TODO this should really not be here
+func newPKI(stdout io.Writer, options *validateOpts) (*install.LocalPKI, error) {
+	ansibleDir := "ansible"
+	if options.generatedAssetsDir == "" {
+		return nil, fmt.Errorf("GeneratedAssetsDirectory option cannot be empty")
 	}
+	certsDir := filepath.Join(options.generatedAssetsDir, "keys")
+	pki := &install.LocalPKI{
+		CACsr:                   filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
+		CAConfigFile:            filepath.Join(ansibleDir, "playbooks", "tls", "ca-config.json"),
+		CASigningProfile:        "kubernetes",
+		GeneratedCertsDirectory: certsDir,
+		Log: stdout,
+	}
+
+	return pki, nil
 }

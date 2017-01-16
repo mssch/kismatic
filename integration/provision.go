@@ -468,7 +468,9 @@ func (p packetProvisioner) waitForPublicIP(nodeID string) (*packet.Node, error) 
 func waitForSSH(provisionedNodes provisionedNodes, sshKey string) error {
 	nodes := provisionedNodes.allNodes()
 	for _, n := range nodes {
-		BlockUntilSSHOpen(n.PublicIP, n.SSHUser, sshKey)
+		if open := WaitUntilSSHOpen(n.PublicIP, n.SSHUser, sshKey, 5 * time.Minute); !open {
+			return fmt.Errorf("Timed out waiting for SSH at %q", n.PublicIP)
+		}
 	}
 	return nil
 }

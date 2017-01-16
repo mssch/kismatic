@@ -1,15 +1,15 @@
 #===============================================================================
 # VERSIONS
-kismatic_kubernetes_master_yum_version: 1.5.1_2-1
-kismatic_kubernetes_node_yum_version: 1.5.1_2-1
-kismatic_kubernetes_etcd_yum_version: 1.5.1_2-1
-kismatic_kubernetes_master_apt_version: 1.5.1-2
-kismatic_kubernetes_node_apt_version: 1.5.1-2
-kismatic_kubernetes_etcd_apt_version: 1.5.1-2
+kismatic_kubernetes_master_yum_version: 1.5.1_3-1
+kismatic_kubernetes_node_yum_version: 1.5.1_3-1
+kismatic_kubernetes_etcd_yum_version: 1.5.1_3-1
+kismatic_kubernetes_master_apt_version: 1.5.1-3
+kismatic_kubernetes_node_apt_version: 1.5.1-3
+kismatic_kubernetes_etcd_apt_version: 1.5.1-3
 kismatic_docker_engine_apt_version: 1.11.2-0~xenial
 
-calico_docker_version: v0.22.0
-calico_kube_policy_controller_version: v0.4.0
+calico_docker_version: "v1.0.0"
+calico_kube_policy_controller_version: "v0.4.0"
 kubedns_version: "1.9"
 kubedns_version_id: "v19" # Used for the kube-dns replication controller's name (e.g. kube-dns-v19)
 kube_dnsmasq_version: "1.4"
@@ -68,14 +68,13 @@ docker_certificates_key_path: "{{ docker_install_dir }}/{{ docker_certificates_k
 #===============================================================================
 # calico
 # directories
-network_plugin_bin_dir: /opt/cni/bin
+calico_dir: /etc/calico
 # paths
-calico_conf_path: "{{network_plugin_dir}}/10-calico.conf"
-network_environment_path: "/etc/network-environment"
+calico_ippool_path: "{{ calico_dir }}/ip-pool.yaml"
+calicoctl_conf_path: "{{ calico_dir }}/calicoctl.cfg"
 #file modes
 calico_executable_mode: 0775
 #networking
-default_cidr: 192.168.0.0/16
 kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_master_secure_port}}
 #===============================================================================
 # kubernetes

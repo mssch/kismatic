@@ -127,3 +127,10 @@ func print(out io.Writer, msg, status string, a ...interface{}) {
 	}
 	w.Flush()
 }
+
+// PrintValidationErrors loops through the errors
+func PrintValidationErrors(out io.Writer, errors []error) {
+	for _, err := range errors {
+		PrintColor(out, Red, "- %v\n", err)
+	}
+}

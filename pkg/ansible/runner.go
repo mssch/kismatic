@@ -143,15 +143,14 @@ func (r *runner) startPlaybook(playbookFile string, inv Inventory, cc ClusterCat
 		cmd.Args = append(cmd.Args, "--limit", limitArg)
 	}
 
-	os.Setenv("PYTHONPATH", r.pythonPath)
-	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
-	os.Setenv("ANSIBLE_CALLBACK_WHITELIST", "json_lines")
-	os.Setenv("ANSIBLE_CONFIG", filepath.Join(r.ansibleDir, "playbooks", "ansible.cfg"))
-
 	// We always want the most verbose output from Ansible. If it's not going to
 	// stdout, it's going to a log file.
 	cmd.Args = append(cmd.Args, "-vvvv")
 
+	os.Setenv("PYTHONPATH", r.pythonPath)
+	os.Setenv("ANSIBLE_CALLBACK_PLUGINS", filepath.Join(r.ansibleDir, "playbooks", "callback"))
+	os.Setenv("ANSIBLE_CALLBACK_WHITELIST", "json_lines")
+	os.Setenv("ANSIBLE_CONFIG", filepath.Join(r.ansibleDir, "playbooks", "ansible.cfg"))
 	// Create named pipe for getting JSON lines event stream
 	start := time.Now()
 	r.namedPipe = filepath.Join(os.TempDir(), fmt.Sprintf("ansible-pipe-%s", start.Format("2006-01-02-15-04-05.99999")))

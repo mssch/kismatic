@@ -1,5 +1,7 @@
 package install
 
+import "fmt"
+
 // NetworkConfig describes the cluster's networking configuration
 type NetworkConfig struct {
 	Type             string
@@ -96,4 +98,78 @@ type StorageVolume struct {
 	DistributionCount int
 	// AllowAddresses is a list of address wildcards that have access to the volume
 	AllowAddresses []string
+}
+
+type SSHConnection struct {
+	SSHConfig *SSHConfig
+	Node      *Node
+}
+
+func (p *Plan) GetUniqueNodeIPs() []string {
+	ipMap := make(map[string]bool)
+	nodes := p.getAllNodes()
+	for _, node := range nodes {
+		ipMap[node.IP] = true
+	}
+
+	ips := make([]string, len(ipMap))
+
+	i := 0
+	for k := range ipMap {
+		ips[i] = k
+		i++
+	}
+
+	return ips
+}
+
+func (p *Plan) getAllNodes() []Node {
+	nodes := []Node{}
+	nodes = append(nodes, p.Etcd.Nodes...)
+	nodes = append(nodes, p.Master.Nodes...)
+	nodes = append(nodes, p.Worker.Nodes...)
+	if p.Ingress.Nodes != nil {
+		nodes = append(nodes, p.Ingress.Nodes...)
+	}
+	return nodes
+}
+
+// GetSSHConnection returns the SSHConnection struct containing the node and SSHConfig details
+func (p *Plan) GetSSHConnection(host string) (*SSHConnection, error) {
+	nodes := p.getAllNodes()
+
+	// try to find the node with the provided hostname
+	var foundNode *Node
+	for _, node := range nodes {
+		if node.Host == host {
+			foundNode = &node
+			break
+		}
+	}
+
+	if foundNode == nil {
+		switch host {
+		case "master":
+			foundNode = firstIfItExists(p.Master.Nodes)
+		case "etcd":
+			foundNode = firstIfItExists(p.Etcd.Nodes)
+		case "worker":
+			foundNode = firstIfItExists(p.Worker.Nodes)
+		case "ingress":
+			foundNode = firstIfItExists(p.Ingress.Nodes)
+		}
+	}
+
+	if foundNode == nil {
+		return nil, fmt.Errorf("node %q not found in the plan", host)
+	}
+
+	return &SSHConnection{&p.Cluster.SSH, foundNode}, nil
+}
+
+func firstIfItExists(nodes []Node) *Node {
+	if len(nodes) > 0 {
+		return &nodes[0]
+	}
+	return nil
 }

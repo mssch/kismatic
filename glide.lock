@@ -1,8 +1,8 @@
-hash: 1f681ffb9129ab7e620ad8b26c2b9891001dbe9be0f57fe0f0b7912c7b2b0c75
-updated: 2016-12-02T10:44:44.802145215-05:00
+hash: 319e9931fb72d8bae8a373c81dc17e0ff6c34fc68b1fb81c868e9535bca52c5f
+updated: 2017-01-03T09:14:04.754322412-05:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: c90e387c502d372dc08b794c02e8a837994946b3
+  version: ddfd17ec06eee10c24c5c474633273fd034afdda
   subpackages:
   - aws
   - aws/awserr
@@ -16,10 +16,10 @@ imports:
   - aws/credentials/stscreds
   - aws/defaults
   - aws/ec2metadata
+  - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
-  - private/endpoints
   - private/protocol
   - private/protocol/ec2query
   - private/protocol/query
@@ -58,10 +58,22 @@ imports:
   version: a65d4d2de4d5f7c74868dfa9b202a3c8be315aaa
   subpackages:
   - md2man
+- name: github.com/docker/docker
+  version: a8a31eff10544860d2188dddabdee4d727545796
+  subpackages:
+  - pkg/term
+- name: github.com/docker/machine
+  version: 7b195916ea1cd4dc7622a957915b048e9ca7b422
+  subpackages:
+  - libmachine
+  - libmachine/log
+  - libmachine/mcnutils
+  - libmachine/ssh
+  - version
 - name: github.com/fatih/color
   version: 87d4004f2ab62d0d255e0a38f1680aa534549fe3
 - name: github.com/go-ini/ini
-  version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
+  version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
 - name: github.com/google/certificate-transparency
   version: 6e5648d13b43cdde25cc8274b87675230ffefbd6
   repo: https://github.com/google/certificate-transparency
@@ -74,7 +86,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/mattn/go-colorable
   version: d228849504861217f796da67fae4f6e347643f15
 - name: github.com/mattn/go-isatty
@@ -84,12 +96,12 @@ imports:
   subpackages:
   - lib
 - name: github.com/mitchellh/go-homedir
-  version: 756f7b183b7ab78acdbbee5c7f392838ed459dda
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/mreiferson/go-httpclient
   version: 63fe23f7434723dc904c901043af07931f293c47
   repo: https://github.com/mreiferson/go-httpclient
 - name: github.com/onsi/ginkgo
-  version: 00054c0bb96fc880d4e0be1b90937fad438c5290
+  version: a23f924ce96d61f963fb6219b8ff069d8d768cc2
   subpackages:
   - config
   - internal/codelocation
@@ -123,17 +135,19 @@ imports:
   - types
 - name: github.com/packethost/packngo
   version: 91a3a4f65e3cd6ee66d919b4e7103ae038ce66ff
+- name: github.com/pkg/browser
+  version: 9302be274faad99162b9d48ec97b24306872ebb0
 - name: github.com/russross/blackfriday
   version: 5f33e7b7878355cd2b7e6b8eefc48a5472c69f70
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 1dba4b3954bc059efc3991ec364f9f9a35f597d2
 - name: github.com/spf13/cobra
-  version: 9495bc009a56819bdb0ddbc1a373e29c140bc674
+  version: 1dd5ff2e11b6dca62fdcb275eb804b94607d8b06
   subpackages:
   - cobra
   - doc
 - name: github.com/spf13/pflag
-  version: 5ccb023bc27df288a957c5e994cd44fd19619465
+  version: 25f8b5b07aece3207895bf19f7ab517eb3b22a40
 - name: golang.org/x/crypto
   version: 1f22c0103821b9390939b6776727195525381532
   subpackages:
@@ -141,10 +155,12 @@ imports:
   - pkcs12
   - pkcs12/internal/rc2
   - ssh
+  - ssh/terminal
 - name: golang.org/x/sys
-  version: ca83bd2cb9abb47839b50eb4da612f00158f5870
+  version: d9157a9621b69ad1d8d77a1933590c416593f24f
   subpackages:
   - unix
+  - windows/registry
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports: []
