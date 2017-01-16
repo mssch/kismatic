@@ -53,6 +53,7 @@ func installKismaticMini(node NodeDeets, sshKey string) error {
 		Master:                   []NodeDeets{node},
 		Worker:                   []NodeDeets{node},
 		Ingress:                  []NodeDeets{node},
+		Storage:                  []NodeDeets{node},
 		MasterNodeFQDN:           node.Hostname,
 		MasterNodeShortName:      node.Hostname,
 		SSHKeyFile:               sshKey,

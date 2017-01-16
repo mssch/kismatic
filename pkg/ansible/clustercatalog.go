@@ -42,9 +42,18 @@ type ClusterCatalog struct {
 
 	WorkerNode string `yaml:"worker_node"`
 
-	NFSVolumes []NFSVolume
+	NFSVolumes []NFSVolume `yaml:"nfs_volumes"`
 
 	EnableGluster bool `yaml:"configure_storage"`
+
+	// volume add vars
+	VolumeName              string `yaml:"volume_name"`
+	VolumeReplicaCount      int    `yaml:"volume_replica_count"`
+	VolumeDistributionCount int    `yaml:"volume_distribution_count"`
+	VolumeQuotaGB           int    `yaml:"volume_quota_gb"`
+	VolumeQuotaBytes        int    `yaml:"volume_quota_bytes"`
+	VolumeMount             string `yaml:"volume_mount"`
+	VolumeAllowedIPs        string `yaml:"volume_allow_ips"`
 }
 
 type NFSVolume struct {

@@ -1,0 +1,78 @@
+---
+  - name: verify volume name is unique
+    command: gluster volume list
+    register: out
+    failed_when: "'{{ volume_name }}' in out.stdout"
+
+  - name: set initial storage availability fact
+    set_fact:
+      storage_node_space: unavailable
+
+  - name: get storage nodes with enough disk space
+    set_fact:
+      storage_node_space: available
+      free_disk_space_bytes: "{{ item.size_available }}"
+    when: "{{ item.mount == volume_mount and item.size_available > volume_quota_bytes|float }}"
+    with_items: ansible_mounts
+
+  # Groups the nodes into "available_storage_nodes" and "unavailable_storage_nodes"
+  - name: create group of nodes that have enough disk space
+    group_by:
+      key: "{{storage_node_space}}_storage_nodes"
+
+  # Due to 1-node -> 1-disk mapping, we need, at least, replica_count * distribution_count storage nodes
+  - name: verify we have enough storage nodes for the requested volume
+    assert:
+      that:
+        - "groups['available_storage_nodes'] is defined"
+        - "groups['available_storage_nodes']|length >= volume_replica_count * volume_distribution_count"
+    run_once: true
+
+  - name: create brick directory
+    file:
+      path: "{{ volume_mount }}{{ volume_base_dir }}{{ volume_name }}"
+      state: directory
+      mode: "{{ volume_mode }}"
+
+  - name: create gluster volume
+    # Hack to sort hosts by free disk space
+    # sort filter is ascending by default. we want descending to get nodes with most free disk space.
+    command: >
+      gluster volume create {{ volume_name }}
+      {% if volume_replica_count|int > 1 %} replica {{ volume_replica_count|int }} {% endif %}
+      {% set nodes = [] %}
+      {% for host in groups['available_storage_nodes'] %}
+      {% if nodes.insert(0, {'inventory_hostname': host, 'free': hostvars[host]['free_disk_space_bytes']}) %}{% endif %}
+      {% endfor %}
+      {% for host in nodes|sort(attribute='free', reverse=True) %}
+      {% if loop.index0 < volume_replica_count|int * volume_distribution_count|int %}
+      {{ host.inventory_hostname }}:/data/{{ volume_name }}
+      {% endif %}
+      {% endfor %}
+      force
+    run_once: true
+
+  - name: enable NFS on the gluster volume
+    command: gluster volume set {{ volume_name }} nfs.disable off
+    run_once: true
+
+  - name: set allowed IP address whitelist on gluster volume
+    command: gluster volume set {{ volume_name }} nfs.rpc-auth-allow {{ volume_allow_ips }}
+    run_once: true
+    when: volume_allow_ips is defined
+
+  - name: start gluster volume
+    command: gluster volume start {{ volume_name }}
+    run_once: true
+
+  - name: set quota on the gluster volume
+    command: gluster volume quota {{ volume_name }} enable
+    run_once: true
+
+  - name: gluster volume quota set
+    command: gluster volume quota {{ volume_name }} limit-usage / {{ volume_quota_gb }}GB
+    run_once: true
+
+  - name: enable quota statistics on the gluster volume
+    command: gluster volume set {{ volume_name }} quota-deem-statfs on
+    run_once: true
