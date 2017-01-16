@@ -3,6 +3,7 @@
     command: gluster volume list
     register: out
     failed_when: "'{{ volume_name }}' in out.stdout"
+    run_once: true
 
   - name: set initial storage availability fact
     set_fact:
