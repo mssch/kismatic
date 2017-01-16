@@ -70,7 +70,7 @@ func testAddVolumeVerifyGluster(aws infrastructureProvisioner, distro linuxDistr
 		By("Attempting to mount the volume a node that is not part of the cluster, which should not have access to the NFS share")
 		mount := fmt.Sprintf("sudo mount -t nfs %s:/foo /mnt3", clusterNodes[0].Hostname)
 		err = runViaSSH([]string{"sudo mkdir /mnt3", mount, "sudo touch /mnt3/test-file3"}, unauthNode, sshKey, 30*time.Second)
-		FailIfSuccess(err, "Expected mount error")
+		FailIfSuccess(err)
 	})
 }
 func verifyGlusterVolume(storageNode NodeDeets, sshKey string, name string, replicationCount int, distributionCount int, allowedIpList string) {
