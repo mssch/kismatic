@@ -26,11 +26,12 @@ func NewCmdVolume(out io.Writer) *cobra.Command {
 }
 
 type volumeAddOptions struct {
-	replicaCount      int
-	distributionCount int
-	allowAddress      []string
-	verbose           bool
-	outputFormat      string
+	replicaCount       int
+	distributionCount  int
+	allowAddress       []string
+	verbose            bool
+	outputFormat       string
+	generatedAssetsDir string
 }
 
 // NewCmdVolumeAdd returns the command for adding storage volumes
@@ -55,6 +56,7 @@ This function requires a target cluster that has storage nodes.`,
 	cmd.Flags().StringSliceVarP(&opts.allowAddress, "allow-address", "a", nil, "Comma delimited list of address wildcards permitted access to the volume in addition to Kubernetes nodes.")
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging")
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", `output format (options "simple"|"raw")`)
+	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
 	return cmd
 }
 
@@ -86,7 +88,7 @@ func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []s
 		OutputFormat: opts.outputFormat,
 		Verbose:      opts.verbose,
 		// Need to refactor executor code... this will do for now as we don't need the generated assets dir in this command
-		GeneratedAssetsDirectory: "generated",
+		GeneratedAssetsDirectory: opts.generatedAssetsDir,
 	}
 	exec, err := install.NewExecutor(out, out, execOpts)
 	if err != nil {
@@ -99,10 +101,11 @@ func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []s
 
 	// Run validation
 	vopts := &validateOpts{
-		outputFormat: opts.outputFormat,
-		verbose: opts.verbose,
-		planFile: planFile,
-		skipPreFlight: true,
+		outputFormat:       opts.outputFormat,
+		verbose:            opts.verbose,
+		planFile:           planFile,
+		skipPreFlight:      true,
+		generatedAssetsDir: opts.generatedAssetsDir,
 	}
 	if err := doValidate(out, planner, vopts); err != nil {
 		return err
