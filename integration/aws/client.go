@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/apprenda/kismatic/pkg/retry"
+	"github.com/apprenda/kismatic/integration/retry"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -30,7 +30,7 @@ const (
 	// exponentialBackoffMaxAttempts is the number of times will try before failing
 	// Exponential backoff for AWS eventual consistency
 	exponentialBackoffMaxEC2Attempts     = 5
-	exponentialBackoffMaxRoute53Attempts = 5
+	exponentialBackoffMaxRoute53Attempts = 7
 )
 
 // A Node on AWS

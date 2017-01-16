@@ -22,6 +22,7 @@ more documentation is availble at https://github.com/apprenda/kismatic`,
 
 	cmd.AddCommand(NewCmdVersion(version, buildDate, out))
 	cmd.AddCommand(NewCmdInstall(in, out))
+	cmd.AddCommand(NewCmdVolume(out))
 	cmd.AddCommand(NewCmdIP(out))
 	cmd.AddCommand(NewCmdDashboard(out))
 	cmd.AddCommand(NewCmdSSH(out))

@@ -6,6 +6,9 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -74,6 +77,11 @@ func ValidateCertificates(p *Plan, pki *LocalPKI) (bool, []error) {
 	return v.valid()
 }
 
+// ValidateStorageVolume validates the storage volume attributes
+func ValidateStorageVolume(sv StorageVolume) (bool, []error) {
+	return sv.validate()
+}
+
 type validatable interface {
 	validate() (bool, []error)
 }
@@ -126,6 +134,8 @@ func (p *Plan) validate() (bool, []error) {
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
 	v.validateWithErrPrefix("Ingress nodes", &p.Ingress)
+	v.validate(&p.NFS)
+	v.validateWithErrPrefix("Storage nodes", &p.Storage)
 
 	return v.valid()
 }
@@ -337,4 +347,59 @@ func (dr *DockerRegistry) validate() (bool, []error) {
 		v.addError(fmt.Errorf("Docker Registry CA file was not found at %q", dr.CAPath))
 	}
 	return v.valid()
+}
+
+func (nfs *NFS) validate() (bool, []error) {
+	v := newValidator()
+	uniqueVolumes := make(map[NFSVolume]bool)
+	for _, vol := range nfs.Volumes {
+		if _, ok := uniqueVolumes[vol]; ok {
+			v.addError(fmt.Errorf("Duplicate NFS volume %v", vol))
+		} else {
+			uniqueVolumes[vol] = true
+		}
+	}
+	return v.valid()
+}
+
+func (sv StorageVolume) validate() (bool, []error) {
+	v := newValidator()
+	notAllowed := ": / \\ & < > |"
+	if strings.ContainsAny(sv.Name, notAllowed) {
+		v.addError(fmt.Errorf("Volume name may not contain spaces or any of the following characters: %q", notAllowed))
+	}
+	if sv.SizeGB < 1 {
+		v.addError(errors.New("Volume size must be 1GB or larger"))
+	}
+	if sv.DistributionCount < 1 {
+		v.addError(errors.New("Distribution count must be greater than zero"))
+	}
+	if sv.ReplicateCount < 1 {
+		v.addError(errors.New("Replication count must be greater than zero"))
+	}
+	for _, a := range sv.AllowAddresses {
+		if ok := validateAllowedAddress(a); !ok {
+			v.addError(fmt.Errorf("Invalid address %q in the list of allowed addresses", a))
+		}
+	}
+	return v.valid()
+}
+
+func validateAllowedAddress(address string) bool {
+	// First, validate that there are four octets with 1, 2 or 3 chars, separated by dots
+	r := regexp.MustCompile(`^[0-9*]{1,3}\.[0-9*]{1,3}\.[0-9*]{1,3}\.[0-9*]{1,3}$`)
+	if !r.MatchString(address) {
+		return false
+	}
+	// Validate each octet on its own
+	oct := strings.Split(address, ".")
+	for _, o := range oct {
+		// Valid if the octet is a wildcard, or if it's a number between 0-255 (inclusive)
+		n, err := strconv.Atoi(o)
+		valid := o == "*" || (err == nil && 0 <= n && n <= 255)
+		if !valid {
+			return false
+		}
+	}
+	return true
 }

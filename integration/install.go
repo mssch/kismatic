@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/apprenda/kismatic/pkg/retry"
+	"github.com/apprenda/kismatic/integration/retry"
 	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
 )
@@ -50,6 +50,7 @@ func installKismaticMini(node NodeDeets, sshKey string) error {
 		Master:                   []NodeDeets{node},
 		Worker:                   []NodeDeets{node},
 		Ingress:                  []NodeDeets{node},
+		Storage:                  []NodeDeets{node},
 		MasterNodeFQDN:           node.Hostname,
 		MasterNodeShortName:      node.Hostname,
 		SSHKeyFile:               sshKey,
@@ -98,6 +99,7 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 		Master:              nodes.master,
 		Worker:              nodes.worker,
 		Ingress:             nodes.ingress,
+		Storage:             nodes.storage,
 		MasterNodeFQDN:      masterDNS,
 		MasterNodeShortName: masterDNS,
 		SSHKeyFile:          sshKey,
