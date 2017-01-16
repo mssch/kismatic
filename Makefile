@@ -11,6 +11,8 @@ endif
 HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
+ANSIBLE_VERSION = 2.1.4.0
+
 ifeq ($(origin GLIDE_GOOS), undefined)
 	GLIDE_GOOS := $(HOST_GOOS)
 endif
@@ -47,7 +49,7 @@ tools/glide:
 
 vendor-ansible/out:
 	docker build -t apprenda/vendor-ansible vendor-ansible
-	docker run --rm -v $(shell pwd)/vendor-ansible/out:/ansible apprenda/vendor-ansible pip install --install-option="--prefix=/ansible" ansible==2.1.2.0
+	docker run --rm -v $(shell pwd)/vendor-ansible/out:/ansible apprenda/vendor-ansible pip install --install-option="--prefix=/ansible" ansible==$(ANSIBLE_VERSION)
 
 vendor-cfssl/out:
 	mkdir -p vendor-cfssl/out/
