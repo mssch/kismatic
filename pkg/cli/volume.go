@@ -3,11 +3,12 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"github.com/apprenda/kismatic/pkg/install"
-	"github.com/spf13/cobra"
 	"io"
 	"math/rand"
 	"strconv"
+
+	"github.com/apprenda/kismatic/pkg/install"
+	"github.com/spf13/cobra"
 )
 
 // NewCmdVolume returns the storage command
@@ -45,9 +46,10 @@ This function requires a target cluster that has storage nodes.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return doVolumeAdd(out, opts, *planFile, args)
 		},
-		Example: `# Create a distributed, replicated volume named kismatic with a 10 GB quota and
-		# grant access to any IP address starting with 10.10.
-		kismatic volume new -r 2 -d 2 -a 10.10.*.* 10 kismatic
+		Example: `  Create a distributed, replicated volume,
+  named "storage01" with a 10 GB quota,
+  grant access to any IP address starting with 10.10.
+  kismatic volume add 10 storage01 -r 2 -d 2 -a 10.10.*.*
 		`,
 	}
 	cmd.Flags().IntVarP(&opts.replicaCount, "replica-count", "r", 2, "The number of times each file will be written.")
@@ -99,9 +101,9 @@ func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []s
 
 	// Run validation
 	vopts := &validateOpts{
-		outputFormat: opts.outputFormat,
-		verbose: opts.verbose,
-		planFile: planFile,
+		outputFormat:  opts.outputFormat,
+		verbose:       opts.verbose,
+		planFile:      planFile,
 		skipPreFlight: true,
 	}
 	if err := doValidate(out, planner, vopts); err != nil {
