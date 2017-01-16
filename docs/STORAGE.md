@@ -69,7 +69,7 @@ kismatic volume add 10 storage01 -r 2 -d 1 -a 10.10.*.*
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: my-app-frontned-claim
+  name: my-app-frontend-claim
   annotations:
     volume.beta.kubernetes.io/storage-class: "kismatic"
 spec:
@@ -85,10 +85,10 @@ Use the `volume.beta.kubernetes.io/storage-class: "kismatic"` annotation for the
 kind: Pod
 apiVersion: v1
 metadata:
-  name: my-app-frontned
+  name: my-app-frontend
 spec:
   containers:
-    - name: my-app-frontned
+    - name: my-app-frontend
       image: nginx
       volumeMounts:
       - mountPath: "/var/www/html"
@@ -96,6 +96,6 @@ spec:
   volumes:
     - name: html
       persistentVolumeClaim:
-        claimName: my-app-frontned-claim
+        claimName: my-app-frontend-claim
 ```
 5. Your pod will now have access to the `/var/www/html` directory that is backed by a GlusterFS volume
