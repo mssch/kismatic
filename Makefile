@@ -77,7 +77,7 @@ dist: vendor-ansible/out vendor-cfssl/out vendor-provision/out build
 	cp -r vendor-cfssl/out/* out/cfssl
 	cp vendor-provision/out/provision-$(GOOS)-amd64 out/provision
 	rm -f out/kismatic.tar.gz
-	tar -cvzf kismatic.tar.gz -C out .
+	tar -czf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
 
 integration/vendor: tools/glide
