@@ -12,6 +12,7 @@
 * Install useful add-ons such as a Docker Registry, Kubernetes DNS and the native Kubernetes Dashboard
 * Allow for the addition of worker nodes to an existing cluster built with Kismatic
 * Allow for the installation of basic Ingress
+* Allow for the installation of basic clustered storage
 
 ## What the CLI will **not** do:
 
