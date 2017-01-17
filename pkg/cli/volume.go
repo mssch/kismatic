@@ -103,18 +103,11 @@ func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []s
 
 	// Run validation
 	vopts := &validateOpts{
-<<<<<<< HEAD
 		outputFormat:       opts.outputFormat,
 		verbose:            opts.verbose,
 		planFile:           planFile,
 		skipPreFlight:      true,
 		generatedAssetsDir: opts.generatedAssetsDir,
-=======
-		outputFormat:  opts.outputFormat,
-		verbose:       opts.verbose,
-		planFile:      planFile,
-		skipPreFlight: true,
->>>>>>> abff976bcc8e149fc2c7302a96b3ba3cd6dcf0e9
 	}
 	if err := doValidate(out, planner, vopts); err != nil {
 		return err
