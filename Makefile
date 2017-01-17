@@ -11,6 +11,8 @@ endif
 HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
+ANSIBLE_VERSION = 2.1.4.0
+
 ifeq ($(origin GLIDE_GOOS), undefined)
 	GLIDE_GOOS := $(HOST_GOOS)
 endif
@@ -28,7 +30,6 @@ clean:
 	rm -rf out
 	rm -rf vendor
 	rm -rf vendor-ansible/out
-	rm -rf vendor-cfssl/out
 	rm -rf vendor-provision/out
 	rm -rf integration/vendor
 
@@ -48,14 +49,7 @@ tools/glide:
 
 vendor-ansible/out:
 	docker build -t apprenda/vendor-ansible vendor-ansible
-	docker run --rm -v $(shell pwd)/vendor-ansible/out:/ansible apprenda/vendor-ansible pip install --install-option="--prefix=/ansible" ansible==2.1.2.0
-
-vendor-cfssl/out:
-	mkdir -p vendor-cfssl/out/
-	curl -L https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -o vendor-cfssl/out/cfssl_linux-amd64
-	curl -L https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -o vendor-cfssl/out/cfssljson_linux-amd64
-	curl -L https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64 -o vendor-cfssl/out/cfssl_darwin-amd64
-	curl -L https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64 -o vendor-cfssl/out/cfssljson_darwin-amd64
+	docker run --rm -v $(shell pwd)/vendor-ansible/out:/ansible apprenda/vendor-ansible pip install --install-option="--prefix=/ansible" ansible==$(ANSIBLE_VERSION)
 
 vendor-provision/out:
 	mkdir -p vendor-provision/out/
@@ -63,7 +57,7 @@ vendor-provision/out:
 	curl -L https://github.com/apprenda/kismatic-provision/releases/download/v1.0/provision-linux-amd64 -o vendor-provision/out/provision-linux-amd64
 	chmod +x vendor-provision/out/*
 
-dist: vendor-ansible/out vendor-cfssl/out vendor-provision/out build
+dist: vendor-ansible/out vendor-provision/out build
 	mkdir -p out
 	cp bin/kismatic out
 	mkdir -p out/ansible
@@ -74,11 +68,9 @@ dist: vendor-ansible/out vendor-cfssl/out vendor-provision/out build
 	cp -r bin/inspector/* out/ansible/playbooks/inspector
 	mkdir -p out/ansible/playbooks/kuberang/linux/amd64/
 	curl https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kuberang -o out/ansible/playbooks/kuberang/linux/amd64/kuberang
-	mkdir -p out/cfssl
-	cp -r vendor-cfssl/out/* out/cfssl
 	cp vendor-provision/out/provision-$(GOOS)-amd64 out/provision
 	rm -f out/kismatic.tar.gz
-	tar -cvzf kismatic.tar.gz -C out .
+	tar -czf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
 
 integration/vendor: tools/glide

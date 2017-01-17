@@ -19,6 +19,7 @@ spec:
         # 1. It serves a 404 page at /
         # 2. It serves 200 on a /healthz endpoint
         image: {{ defaultbackend_img }}
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz
