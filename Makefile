@@ -12,6 +12,7 @@ HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.1.4.0
+PROVISIONER_VERSION = v1.0.1
 
 ifeq ($(origin GLIDE_GOOS), undefined)
 	GLIDE_GOOS := $(HOST_GOOS)
@@ -53,8 +54,8 @@ vendor-ansible/out:
 
 vendor-provision/out:
 	mkdir -p vendor-provision/out/
-	curl -L https://github.com/apprenda/kismatic-provision/releases/download/v1.0/provision-darwin-amd64 -o vendor-provision/out/provision-darwin-amd64
-	curl -L https://github.com/apprenda/kismatic-provision/releases/download/v1.0/provision-linux-amd64 -o vendor-provision/out/provision-linux-amd64
+	curl -L https://github.com/apprenda/kismatic-provision/releases/download/$(PROVISIONER_VERSION)/provision-darwin-amd64 -o vendor-provision/out/provision-darwin-amd64
+	curl -L https://github.com/apprenda/kismatic-provision/releases/download/$(PROVISIONER_VERSION)/provision-linux-amd64 -o vendor-provision/out/provision-linux-amd64
 	chmod +x vendor-provision/out/*
 
 dist: vendor-ansible/out vendor-provision/out build
