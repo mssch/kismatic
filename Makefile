@@ -12,7 +12,7 @@ HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.1.4.0
-PROVISIONER_VERSION = v1.0.1
+PROVISIONER_VERSION = v1.1
 
 ifeq ($(origin GLIDE_GOOS), undefined)
 	GLIDE_GOOS := $(HOST_GOOS)
