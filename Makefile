@@ -31,6 +31,7 @@ clean:
 	rm -rf vendor
 	rm -rf vendor-ansible/out
 	rm -rf vendor-provision/out
+	rm -rf integration/vendor
 
 test: vendor
 	go test ./cmd/... ./pkg/... $(TEST_OPTS)

@@ -9,7 +9,8 @@ import (
 
 	"github.com/apprenda/kismatic/integration/aws"
 	"github.com/apprenda/kismatic/integration/packet"
-	"github.com/apprenda/kismatic/pkg/retry"
+	"github.com/apprenda/kismatic/integration/retry"
+
 	homedir "github.com/mitchellh/go-homedir"
 )
 
@@ -34,6 +35,11 @@ type infrastructureProvisioner interface {
 	SSHKey() string
 	ConfigureDNS(masterIPs []string) (*DNSRecord, error)
 	RemoveDNS(dnsRecord *DNSRecord) error
+	CreateNFSServers() ([]nfsServer, error)
+}
+
+type nfsServer struct {
+	IpAddress string
 }
 
 type linuxDistro string
@@ -43,10 +49,11 @@ type NodeCount struct {
 	Master  uint16
 	Worker  uint16
 	Ingress uint16
+	Storage uint16
 }
 
 func (nc NodeCount) Total() uint16 {
-	return nc.Etcd + nc.Master + nc.Worker + nc.Ingress
+	return nc.Etcd + nc.Master + nc.Worker + nc.Ingress + nc.Storage
 }
 
 type provisionedNodes struct {
@@ -54,6 +61,7 @@ type provisionedNodes struct {
 	master    []NodeDeets
 	worker    []NodeDeets
 	ingress   []NodeDeets
+	storage   []NodeDeets
 	dnsRecord *DNSRecord
 }
 
@@ -63,6 +71,7 @@ func (p provisionedNodes) allNodes() []NodeDeets {
 	n = append(n, p.master...)
 	n = append(n, p.worker...)
 	n = append(n, p.ingress...)
+	n = append(n, p.storage...)
 	return n
 }
 
@@ -182,6 +191,13 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 		}
 		provisioned.ingress = append(provisioned.ingress, NodeDeets{id: nodeID})
 	}
+	for i = 0; i < nodeCount.Storage; i++ {
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
+		if err != nil {
+			return provisioned, err
+		}
+		provisioned.storage = append(provisioned.storage, NodeDeets{id: nodeID})
+	}
 	// Wait until all instances have their public IPs assigned
 	for i := range provisioned.etcd {
 		etcd := &provisioned.etcd[i]
@@ -204,6 +220,12 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 	for i := range provisioned.ingress {
 		ingress := &provisioned.ingress[i]
 		if err := p.updateNodeWithDeets(ingress.id, ingress); err != nil {
+			return provisioned, err
+		}
+	}
+	for i := range provisioned.storage {
+		storage := &provisioned.storage[i]
+		if err := p.updateNodeWithDeets(storage.id, storage); err != nil {
 			return provisioned, err
 		}
 	}
@@ -345,6 +367,13 @@ func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistr
 		}
 		nodes.ingress = append(nodes.ingress, NodeDeets{id: id})
 	}
+	for i := uint16(0); i < nodeCount.Storage; i++ {
+		id, err := p.createNode(packetDistro, i)
+		if err != nil {
+			return nodes, err
+		}
+		nodes.storage = append(nodes.storage, NodeDeets{id: id})
+	}
 	// Wait until all nodes are ready
 	err := p.updateNodeUntilPublicIPAvailable(nodes.etcd)
 	if err != nil {
@@ -359,6 +388,10 @@ func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistr
 		return nodes, err
 	}
 	err = p.updateNodeUntilPublicIPAvailable(nodes.ingress)
+	if err != nil {
+		return nodes, err
+	}
+	err = p.updateNodeUntilPublicIPAvailable(nodes.storage)
 	if err != nil {
 		return nodes, err
 	}
@@ -440,4 +473,18 @@ func waitForSSH(provisionedNodes provisionedNodes, sshKey string) error {
 		}
 	}
 	return nil
+}
+
+func (p packetProvisioner) CreateNFSServers() ([]nfsServer, error) {
+	return []nfsServer{}, fmt.Errorf("Packet NFS not yet supported")
+}
+
+func (a awsProvisioner) CreateNFSServers() ([]nfsServer, error) {
+	server := a.client.BuildEFSDisk("KismaticIntegrationTestPrimary")
+	if server == nil {
+		return nil, fmt.Errorf("Could not provision drives")
+	}
+	return []nfsServer{
+		{IpAddress: server.IpAddress},
+	}, nil
 }

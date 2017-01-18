@@ -99,7 +99,6 @@ const defaultRuleSet = `---
   port: 443
   timeout: 5s
 
-# TODO: Add kismatic package checks
 - kind: PackageAvailable
   when: ["etcd", "ubuntu"]
   packageName: kismatic-etcd
@@ -150,6 +149,57 @@ const defaultRuleSet = `---
   when: ["ingress","rhel"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.5.1_3-1
+
+# Gluster packages
+- kind: PackageAvailable
+  when: ["storage", "centos"]
+  packageName: glusterfs-server
+  packageVersion: 3.8.7-1.el7
+- kind: PackageAvailable
+  when: ["storage", "rhel"]
+  packageName: glusterfs-server
+  packageVersion: 3.8.7-1.el7
+- kind: PackageAvailable
+  when: ["storage", "ubuntu"]
+  packageName: glusterfs-server
+  packageVersion: 3.8.7-ubuntu1~xenial1
+
+# Ports required for NFS
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 111
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 111
+  timeout: 5s
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 2049
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 2049
+  timeout: 5s
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 38465
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 38465
+  timeout: 5s
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 38466
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 38466
+  timeout: 5s
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 38467
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 38467
+  timeout: 5s
 `
 
 // DefaultRules returns the list of rules that are built into the inspector

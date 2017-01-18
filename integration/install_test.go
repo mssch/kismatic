@@ -36,7 +36,13 @@ var _ = Describe("Happy Path Installation Tests", func() {
 				helpbytes, helperr := c.Output()
 				Expect(helperr).To(BeNil())
 				helpText := string(helpbytes)
-				Expect(helpText).To(ContainSubstring("Generating installation plan file with 3 etcd nodes, 2 master nodes, 3 worker nodes and 2 ingress nodes"))
+				Expect(helpText).To(ContainSubstring("Generating installation plan file template"))
+				Expect(helpText).To(ContainSubstring("3 etcd nodes"))
+				Expect(helpText).To(ContainSubstring("2 master nodes"))
+				Expect(helpText).To(ContainSubstring("3 worker nodes"))
+				Expect(helpText).To(ContainSubstring("2 ingress nodes"))
+				Expect(helpText).To(ContainSubstring("0 storage nodes"))
+
 				Expect(FileExists("kismatic-cluster.yaml")).To(Equal(true))
 
 				By("Outputing a file with valid YAML")
@@ -71,39 +77,42 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			allowPackageInstallation: true,
 		}
 		Context("Targeting AWS infrastructure", func() {
-			Context("using a 1/1/1/1 layout with Ubuntu 16.04 LTS", func() {
+			Context("using a 1/1/1/1/1 layout with Ubuntu 16.04 LTS", func() {
 				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructure(NodeCount{1, 1, 1, 1}, Ubuntu1604LTS, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, Ubuntu1604LTS, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
+						testVolumeAdd(nodes.master[0], sshKey)
 					})
 				})
 			})
-			Context("using a 1/1/1/1 layout with CentOS 7", func() {
+			Context("using a 1/1/1/1/1 layout with CentOS 7", func() {
 				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructure(NodeCount{1, 1, 1, 1}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
+						testVolumeAdd(nodes.master[0], sshKey)
 					})
 				})
 			})
-			Context("using a 1/1/1/1 layout with RedHat 7", func() {
+			Context("using a 1/1/1/1/1 layout with RedHat 7", func() {
 				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructure(NodeCount{1, 1, 1, 1}, RedHat7, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, RedHat7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
+						testVolumeAdd(nodes.master[0], sshKey)
 					})
 				})
 			})
 			Context("using a 3/2/3/2 layout with CentOS 7", func() {
 				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructure(NodeCount{3, 2, 3, 2}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructure(NodeCount{3, 2, 3, 2, 0}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
@@ -113,7 +122,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 			})
 			Context("using a 1/2/1 layout with CentOS 7, with DNS", func() {
 				ItOnAWS("should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructureAndDNS(NodeCount{1, 2, 1, 0}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructureAndDNS(NodeCount{1, 2, 1, 0, 0}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 						err = verifyMasterNodeFailure(nodes, provisioner, sshKey)
@@ -133,6 +142,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 						Expect(err).ToNot(HaveOccurred())
 						err = verifyIngressNodes(node, []NodeDeets{node}, sshKey)
 						Expect(err).ToNot(HaveOccurred())
+						testVolumeAdd(node, sshKey)
 					})
 				})
 			})
@@ -143,6 +153,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 						Expect(err).ToNot(HaveOccurred())
 						err = verifyIngressNodes(node, []NodeDeets{node}, sshKey)
 						Expect(err).ToNot(HaveOccurred())
+						testVolumeAdd(node, sshKey)
 					})
 				})
 			})
@@ -167,7 +178,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 		Context("Targeting AWS infrastructure", func() {
 			Context("Using a 1/1/1 layout with Ubuntu 16.04 LTS", func() {
 				ItOnAWS("Should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructure(NodeCount{1, 1, 1, 0}, Ubuntu1604LTS, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, Ubuntu1604LTS, provisioner, func(nodes provisionedNodes, sshKey string) {
 						By("Installing the Kismatic RPMs")
 						InstallKismaticPackages(nodes, Ubuntu1604LTS, sshKey)
 						err := installKismatic(nodes, installOpts, sshKey)
@@ -178,7 +189,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 
 			Context("Using a 1/1/1 CentOS 7 layout", func() {
 				ItOnAWS("Should result in a working cluster", func(provisioner infrastructureProvisioner) {
-					WithInfrastructure(NodeCount{1, 1, 1, 0}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, CentOS7, provisioner, func(nodes provisionedNodes, sshKey string) {
 						By("Installing the Kismatic RPMs")
 						InstallKismaticPackages(nodes, CentOS7, sshKey)
 						err := installKismatic(nodes, installOpts, sshKey)
@@ -190,8 +201,8 @@ var _ = Describe("Happy Path Installation Tests", func() {
 	})
 
 	Describe("Installing with private Docker registry", func() {
-		Context("Using a 1/1/1/1 CentOS 7 layout", func() {
-			nodeCount := NodeCount{1, 1, 1, 1}
+		Context("Using a 1/1/1 CentOS 7 layout", func() {
+			nodeCount := NodeCount{1, 1, 1, 0, 0}
 			distro := CentOS7
 
 			Context("Using the auto-configured docker registry", func() {
@@ -202,8 +213,6 @@ var _ = Describe("Happy Path Installation Tests", func() {
 							autoConfigureDockerRegistry: true,
 						}
 						err := installKismatic(nodes, installOpts, sshKey)
-						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})
@@ -224,8 +233,6 @@ var _ = Describe("Happy Path Installation Tests", func() {
 						}
 						err = installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
-						err = verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
-						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 			})
@@ -234,7 +241,7 @@ var _ = Describe("Happy Path Installation Tests", func() {
 
 	Describe("Using the hosts file modification option", func() {
 		ItOnAWS("should result in a working cluster", func(aws infrastructureProvisioner) {
-			WithInfrastructure(NodeCount{1, 1, 2, 0}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
+			WithInfrastructure(NodeCount{1, 1, 2, 0, 0}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
 				By("Setting the hostnames to be different than the actual ones")
 				loadBalancedFQDN := nodes.master[0].PublicIP
 				nodes.etcd[0].Hostname = "etcd01"
