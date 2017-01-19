@@ -9,7 +9,7 @@ ssh into a node in the cluster
 
 HOST must be one of the following:
 - A hostname defined in the plan filepath
-- An alias: master, etcd, worker or ingress. This will ssh into the first defined node of that type.
+- An alias: master, etcd, worker, ingress or storage. This will ssh into the first defined node of that type.
 
 ```
 kismatic ssh HOST [commands]

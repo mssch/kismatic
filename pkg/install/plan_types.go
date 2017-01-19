@@ -157,6 +157,8 @@ func (p *Plan) GetSSHConnection(host string) (*SSHConnection, error) {
 			foundNode = firstIfItExists(p.Worker.Nodes)
 		case "ingress":
 			foundNode = firstIfItExists(p.Ingress.Nodes)
+		case "storage":
+			foundNode = firstIfItExists(p.Storage.Nodes)
 		}
 	}
 
