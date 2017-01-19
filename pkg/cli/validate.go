@@ -69,10 +69,11 @@ func doValidate(out io.Writer, planner install.Planner, opts *validateOpts) erro
 	// Validate SSH connections
 	ok, errs = install.ValidatePlanSSHConnections(plan)
 	if !ok {
-		util.PrettyPrintErr(out, "Validating SSH connections to nodes")
+		util.PrettyPrintErr(out, "Validating SSH connectivity to nodes")
 		util.PrintValidationErrors(out, errs)
 		return fmt.Errorf("SSH connectivity validation error prevents installation from proceeding")
 	}
+	util.PrettyPrintOk(out, "Validating SSH connectivity to nodes")
 
 	// get a new pki
 	pki, err := newPKI(out, opts)
