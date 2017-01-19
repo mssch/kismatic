@@ -115,6 +115,10 @@ const defaultRuleSet = `---
   when: ["ingress","ubuntu"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.5.1-3
+- kind: PackageAvailable
+  when: ["storage","ubuntu"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.5.1-3
 
 - kind: PackageAvailable
   when: ["etcd", "centos"]
@@ -132,6 +136,10 @@ const defaultRuleSet = `---
   when: ["ingress","centos"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.5.1_3-1
+- kind: PackageAvailable
+  when: ["storage","centos"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.5.1_3-1
 
 - kind: PackageAvailable
   when: ["etcd", "rhel"]
@@ -147,6 +155,10 @@ const defaultRuleSet = `---
   packageVersion: 1.5.1_3-1
 - kind: PackageAvailable
   when: ["ingress","rhel"]
+  packageName: kismatic-kubernetes-node
+  packageVersion: 1.5.1_3-1
+- kind: PackageAvailable
+  when: ["storage","rhel"]
   packageName: kismatic-kubernetes-node
   packageVersion: 1.5.1_3-1
 
