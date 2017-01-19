@@ -5,7 +5,7 @@ metadata:
 spec:
   ports:
   - port: 80
-    targetPort: 8080
+    targetPort: 80
     protocol: TCP
   selector:
     app: echoserver
@@ -22,11 +22,11 @@ spec:
         app: echoserver
     spec:
       containers:
-      - image: gcr.io/google_containers/echoserver:1.0
-        imagePullPolicy: Always
+      - image: nginx
+        imagePullPolicy: IfNotPresent
         name: echoserver
         ports:
-        - containerPort: 8080
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -35,7 +35,7 @@ metadata:
 spec:
   ports:
   - port: 80
-    targetPort: 8080
+    targetPort: 80
     protocol: TCP
   selector:
     app: echoserver-tls
@@ -52,11 +52,11 @@ spec:
         app: echoserver-tls
     spec:
       containers:
-      - image: gcr.io/google_containers/echoserver:1.0
-        imagePullPolicy: Always
+      - image: nginx
+        imagePullPolicy: IfNotPresent
         name: echoserver-tls
         ports:
-        - containerPort: 8080
+        - containerPort: 80
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
