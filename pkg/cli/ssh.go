@@ -29,7 +29,7 @@ func NewCmdSSH(out io.Writer) *cobra.Command {
 
 HOST must be one of the following:
 - A hostname defined in the plan filepath
-- An alias: master, etcd, worker or ingress. This will ssh into the first defined node of that type.`,
+- An alias: master, etcd, worker, ingress or storage. This will ssh into the first defined node of that type.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return cmd.Usage()
