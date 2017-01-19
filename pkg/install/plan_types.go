@@ -131,6 +131,9 @@ func (p *Plan) getAllNodes() []Node {
 	if p.Ingress.Nodes != nil {
 		nodes = append(nodes, p.Ingress.Nodes...)
 	}
+	if p.Storage.Nodes != nil {
+		nodes = append(nodes, p.Storage.Nodes...)
+	}
 	return nodes
 }
 
