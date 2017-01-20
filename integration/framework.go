@@ -7,23 +7,27 @@ import (
 
 // ItOnAWS runs a spec if the AWS details have been provided
 func ItOnAWS(description string, f func(infrastructureProvisioner)) {
-	It(description, func() {
-		awsClient, ok := AWSClientFromEnvironment()
-		if !ok {
-			Skip("AWS environment variables were not defined")
-		}
-		f(awsClient)
+	Context("When using AWS infrastructure [aws]", func() {
+		It(description, func() {
+			awsClient, ok := AWSClientFromEnvironment()
+			if !ok {
+				Skip("AWS environment variables were not defined")
+			}
+			f(awsClient)
+		})
 	})
 }
 
 // ItOnPacket runs a spec if the Packet.Net details have been provided
 func ItOnPacket(description string, f func(infrastructureProvisioner)) {
-	It(description, func() {
-		packetClient, ok := packetClientFromEnv()
-		if !ok {
-			Skip("Packet environment variables were not defined")
-		}
-		f(packetClient)
+	Context("When using Packet.net infrastructure [packet]", func() {
+		It(description, func() {
+			packetClient, ok := packetClientFromEnv()
+			if !ok {
+				Skip("Packet environment variables were not defined")
+			}
+			f(packetClient)
+		})
 	})
 }
 
