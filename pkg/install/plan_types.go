@@ -131,6 +131,9 @@ func (p *Plan) getAllNodes() []Node {
 	if p.Ingress.Nodes != nil {
 		nodes = append(nodes, p.Ingress.Nodes...)
 	}
+	if p.Storage.Nodes != nil {
+		nodes = append(nodes, p.Storage.Nodes...)
+	}
 	return nodes
 }
 
@@ -157,6 +160,8 @@ func (p *Plan) GetSSHConnection(host string) (*SSHConnection, error) {
 			foundNode = firstIfItExists(p.Worker.Nodes)
 		case "ingress":
 			foundNode = firstIfItExists(p.Ingress.Nodes)
+		case "storage":
+			foundNode = firstIfItExists(p.Storage.Nodes)
 		}
 	}
 

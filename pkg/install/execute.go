@@ -11,10 +11,11 @@ import (
 	"strconv"
 	"time"
 
+	"strings"
+
 	"github.com/apprenda/kismatic/pkg/ansible"
 	"github.com/apprenda/kismatic/pkg/install/explain"
 	"github.com/apprenda/kismatic/pkg/util"
-	"strings"
 )
 
 // The PreFlightExecutor will run pre-flight checks against the
@@ -210,6 +211,9 @@ func (ae *ansibleExecutor) buildInstallExtraVars(p *Plan) (*ansible.ClusterCatal
 		cc.EnableInternalDockerRegistry = true
 		cc.EnablePrivateDockerRegistry = true
 		cc.DockerRegistryAddress = p.Master.Nodes[0].IP
+		if p.Master.Nodes[0].InternalIP != "" {
+			cc.DockerRegistryAddress = p.Master.Nodes[0].InternalIP
+		}
 		cc.DockerCAPath = tlsDir + "/ca.pem"
 		cc.DockerRegistryPort = "8443"
 	} // Else just use DockerHub
@@ -368,7 +372,7 @@ func (ae *ansibleExecutor) AddVolume(plan *Plan, volume StorageVolume) error {
 	cc.VolumeReplicaCount = volume.ReplicateCount
 	cc.VolumeDistributionCount = volume.DistributionCount
 	cc.VolumeQuotaGB = volume.SizeGB
-	cc.VolumeQuotaBytes = volume.SizeGB * (1 << (10*3))
+	cc.VolumeQuotaBytes = volume.SizeGB * (1 << (10 * 3))
 	cc.VolumeMount = "/"
 
 	// Allow nodes and pods to access volumes
