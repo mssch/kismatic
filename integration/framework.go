@@ -7,7 +7,7 @@ import (
 
 // ItOnAWS runs a spec if the AWS details have been provided
 func ItOnAWS(description string, f func(infrastructureProvisioner)) {
-	Context("When using AWS infrastructure [aws]", func() {
+	Context("when using AWS infrastructure [aws]", func() {
 		It(description, func() {
 			awsClient, ok := AWSClientFromEnvironment()
 			if !ok {
@@ -20,7 +20,7 @@ func ItOnAWS(description string, f func(infrastructureProvisioner)) {
 
 // ItOnPacket runs a spec if the Packet.Net details have been provided
 func ItOnPacket(description string, f func(infrastructureProvisioner)) {
-	Context("When using Packet.net infrastructure [packet]", func() {
+	Context("when using Packet.net infrastructure [packet]", func() {
 		It(description, func() {
 			packetClient, ok := packetClientFromEnv()
 			if !ok {

@@ -13,7 +13,7 @@ var _ = Describe("kismatic docker registry feature", func() {
 	})
 
 	Describe("enabling the internal docker registry feature", func() {
-		ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 			WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
 				opts := installOptions{
 					allowPackageInstallation:    true,
@@ -26,7 +26,7 @@ var _ = Describe("kismatic docker registry feature", func() {
 	})
 
 	Describe("using an existing private docker registry", func() {
-		ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 			WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
 				By("Installing an external Docker registry on one of the nodes")
 				dockerRegistryPort := 8443

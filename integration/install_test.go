@@ -13,10 +13,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Kismatic", func() {
+var _ = Describe("kismatic", func() {
 	BeforeEach(func() {
 		os.Chdir(kisPath)
 	})
+
 	Describe("calling kismatic with no verb", func() {
 		It("should output help text", func() {
 			c := exec.Command("./kismatic")
@@ -114,8 +115,8 @@ var _ = Describe("Kismatic", func() {
 			})
 		})
 
-		Context("when deploying a beefy cluster", func() {
-			ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+		Context("when deploying a skunkworks cluster", func() {
+			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 				WithInfrastructure(NodeCount{3, 2, 3, 2, 2}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
 					installOpts := installOptions{allowPackageInstallation: true}
 					err := installKismatic(nodes, installOpts, sshKey)
@@ -124,12 +125,10 @@ var _ = Describe("Kismatic", func() {
 			})
 		})
 
-		Context("using Packet.net infrastructure", func() {
-			ItOnPacket("should install successfully", func(packet infrastructureProvisioner) {
-				WithMiniInfrastructure(CentOS7, packet, func(node NodeDeets, sshKey string) {
-					err := installKismaticMini(node, sshKey)
-					Expect(err).ToNot(HaveOccurred())
-				})
+		ItOnPacket("should install successfully [slow]", func(packet infrastructureProvisioner) {
+			WithMiniInfrastructure(CentOS7, packet, func(node NodeDeets, sshKey string) {
+				err := installKismaticMini(node, sshKey)
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})
