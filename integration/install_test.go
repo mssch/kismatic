@@ -80,7 +80,7 @@ var _ = Describe("kismatic", func() {
 			installOpts := installOptions{
 				allowPackageInstallation: true,
 			}
-			ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 				WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
 					err := installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())

@@ -31,7 +31,7 @@ var _ = Describe("Installing with previous version of Kismatic", func() {
 	}
 
 	Context("using Ubuntu 16.04 LTS", func() {
-		ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 			WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
 				err := installKismatic(nodes, installOpts, sshKey)
 				Expect(err).ToNot(HaveOccurred())
@@ -40,7 +40,7 @@ var _ = Describe("Installing with previous version of Kismatic", func() {
 	})
 
 	Context("using CentOS", func() {
-		ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 			WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
 				err := installKismatic(nodes, installOpts, sshKey)
 				Expect(err).ToNot(HaveOccurred())
