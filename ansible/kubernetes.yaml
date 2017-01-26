@@ -26,6 +26,8 @@
   - include: _proxy.yaml
   - include: _storage.yaml
     when: configure_storage|bool == true
+  - include: _update-version.yaml
+  # ----- CLUSTER LEVEL WORK -----
   # add ons
   - include: _addon-network-policy.yaml
     when: enable_calico_policy|bool == true

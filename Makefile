@@ -1,8 +1,6 @@
 # Set the build version
 ifeq ($(origin VERSION), undefined)
 	VERSION := $(shell git describe --tags --always --dirty)
-	#matches 1.2.0-15 in v1.2.0-15-gb3a66bc-dirty
-	SHORT_VERSION := $(shell echo $(VERSION) | sed 's/v\([^-]*-[^-]*\)-.*/\1/')
 endif
 # build date
 ifeq ($(origin BUILD_DATE), undefined)
@@ -98,7 +96,6 @@ docs/kismatic-cli:
 
 version: FORCE
 	@echo VERSION=$(VERSION)
-	@echo SHORT_VERSION=$(SHORT_VERSION)
 	@echo GLIDE_VERSION=$(GLIDE_VERSION)
 	@echo ANSIBLE_VERSION=$(ANSIBLE_VERSION)
 	@echo PROVISIONER_VERSION=$(PROVISIONER_VERSION)
