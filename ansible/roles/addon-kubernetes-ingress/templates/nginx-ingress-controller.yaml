@@ -12,7 +12,7 @@ spec:
       terminationGracePeriodSeconds: 60
       hostNetwork: true # required in a CNI networkd
       nodeSelector:
-        ingress: "true"
+        kismatic/ingress: "true"
       containers:
       - image: {{ nginx_ingress_controller_img }}
         name: ingress
