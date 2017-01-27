@@ -37,7 +37,7 @@ var AboutKismatic KismaticInfo
 
 // Takes a version in form "v{short version}-{changeset number}-{changeset ID}-{dirtyflag}"
 func SetVersion(polyVersion string) {
-	re := regexp.MustCompile("v([^-]+)-([^-]+)-([^-]+)-([^-]+)")
+	re := regexp.MustCompile("v([^-]+)-([^-]+)-([^-]+)-?([^-]+)")
 	matches := re.FindStringSubmatch(polyVersion)
 	if len(matches) > 2 {
 		AboutKismatic = KismaticInfo{matches[1], matches[2]}
