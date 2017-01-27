@@ -39,7 +39,12 @@ var AboutKismatic KismaticInfo
 func SetVersion(polyVersion string) {
 	re := regexp.MustCompile("v([^-]+)-([^-]+)-([^-]+)-([^-]+)")
 	matches := re.FindStringSubmatch(polyVersion)
-	AboutKismatic = KismaticInfo{matches[1], matches[2]}
+	if len(matches) > 2 {
+		AboutKismatic = KismaticInfo{matches[1], matches[2]}
+	} else {
+		fmt.Printf("Could not parse %v", polyVersion)
+	}
+
 }
 
 // Takes a version in form "major.minor.patch[-build]"
