@@ -14,4 +14,4 @@
     remote_user: root
     become_method: sudo
     roles:
-      - glusterfs-k8s-endpoint
+      - glusterfs-k8s

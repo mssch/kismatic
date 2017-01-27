@@ -176,6 +176,15 @@ const defaultRuleSet = `---
   packageName: glusterfs-server
   packageVersion: 3.8.7-ubuntu1~xenial1
 
+# Port required for gluster-healthz
+- kind: TCPPortAvailable
+  when: ["storage"]
+  port: 8081
+- kind: TCPPortAccessible
+  when: ["storage"]
+  port: 8081
+  timeout: 5s
+
 # Ports required for NFS
 - kind: TCPPortAvailable
   when: ["storage"]
