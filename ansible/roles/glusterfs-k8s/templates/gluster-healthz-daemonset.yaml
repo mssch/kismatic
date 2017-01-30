@@ -1,0 +1,30 @@
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: gluster-healthz
+  namespace: kube-system
+spec:
+  template:
+    metadata:
+      labels:
+        app: gluster-healthz
+    spec:
+      containers:
+        - name: tcp-healthz
+          image: "{{ apprenda_tcp_healthz_img }}"
+          command: ["/exechealthz"]
+          args:
+            - -port=8081
+            - -cmd=/tcp-healthz-amd64 --ports 111,2049,38465,38466,38468,38469
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+      hostNetwork: true
+      nodeSelector:
+        kismatic/storage: "true"

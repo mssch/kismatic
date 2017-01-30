@@ -1,11 +1,11 @@
 #===============================================================================
 # VERSIONS
-kismatic_kubernetes_master_yum_version: 1.5.2_1-1
-kismatic_kubernetes_node_yum_version: 1.5.2_1-1
-kismatic_kubernetes_etcd_yum_version: 1.5.2_1-1
-kismatic_kubernetes_master_apt_version: 1.5.2-1
-kismatic_kubernetes_node_apt_version: 1.5.2-1
-kismatic_kubernetes_etcd_apt_version: 1.5.2-1
+kismatic_kubernetes_master_yum_version: 1.5.2_2-1
+kismatic_kubernetes_node_yum_version: 1.5.2_2-1
+kismatic_kubernetes_etcd_yum_version: 1.5.2_2-1
+kismatic_kubernetes_master_apt_version: 1.5.2-2
+kismatic_kubernetes_node_apt_version: 1.5.2-2
+kismatic_kubernetes_etcd_apt_version: 1.5.2-2
 kismatic_docker_engine_apt_version: 1.11.2-0~xenial
 
 calico_docker_version: "v1.0.0"
@@ -19,6 +19,7 @@ defaultbackend_version: "1.0"
 nginx_ingress_controller_version: "0.8.3"
 docker_registry_version: "2.5.1"
 pause_version: "3.0"
+apprenda_tcp_healthz_version: "v1.0.0"
 glusterfs_server_version_rhel: "3.8.7-1.el7"
 glusterfs_server_version_ubuntu: "3.8.7-ubuntu1~xenial1"
 # RHEL needs dash between name-version, Ubuntu needs equals sign between name=version
@@ -148,6 +149,10 @@ exechealthz_img: '{% if use_private_docker_registry is defined and use_private_d
 kubernetes_dashboard_orig_img: gcr.io/google_containers/kubernetes-dashboard-amd64:{{ kubernetes_dashboard_version }}
 kubernetes_dashboard_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/kubernetes-dashboard-amd64:{{ kubernetes_dashboard_version }}"
 kubernetes_dashboard_img: '{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ kubernetes_dashboard_priv_img }}{% else %}{{ kubernetes_dashboard_orig_img }}{% endif %}'
+
+apprenda_tcp_healthz_orig_img: apprenda/tcp-healthz-amd64:{{ apprenda_tcp_healthz_version }}
+apprenda_tcp_healthz_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/tcp-healthz-amd64:{{ apprenda_tcp_healthz_version }}"
+apprenda_tcp_healthz_img: "{% if use_private_docker_registry is defined and use_private_docker_registry|bool == true %}{{ apprenda_tcp_healthz_priv_img }}{% else %}{{ apprenda_tcp_healthz_orig_img }}{% endif %}"
 
 # kismatic packages
 yum_repository_url: https://kismatic-packages-rpm.s3-accelerate.amazonaws.com
