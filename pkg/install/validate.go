@@ -260,9 +260,31 @@ func (ng *NodeGroup) validate() (bool, []error) {
 	if len(ng.Nodes) != ng.ExpectedCount && (len(ng.Nodes) > 0 && ng.ExpectedCount > 0) {
 		v.addError(fmt.Errorf("Expected node count (%d) does not match the number of nodes provided (%d)", ng.ExpectedCount, len(ng.Nodes)))
 	}
+	hostnames := map[string]int{}
+	ips := map[string]int{}
+	internalIPs := map[string]int{}
 	for i, n := range ng.Nodes {
 		v.validateWithErrPrefix(fmt.Sprintf("Node #%d", i+1), &n)
+		// Validate all hostnames are unique
+		if nodeID, ok := hostnames[n.Host]; ok && n.Host != "" {
+			v.addError(fmt.Errorf("Node #%d has the same hostname %q as node #%d", i+1, n.Host, nodeID))
+		} else if n.Host != "" {
+			hostnames[n.Host] = i + 1
+		}
+		// Validate all IPs are unique
+		if nodeID, ok := ips[n.IP]; ok && n.IP != "" {
+			v.addError(fmt.Errorf("Node #%d has the same IP %q as node #%d", i+1, n.IP, nodeID))
+		} else if n.IP != "" {
+			ips[n.IP] = i + 1
+		}
+		// Validate all internal IPs are unique
+		if nodeID, found := internalIPs[n.InternalIP]; found && n.InternalIP != "" {
+			v.addError(fmt.Errorf("Node #%d has the same internal IP %q as node #%d", i+1, n.InternalIP, nodeID))
+		} else if n.InternalIP != "" {
+			internalIPs[n.InternalIP] = i + 1
+		}
 	}
+
 	return v.valid()
 }
 
@@ -320,7 +342,7 @@ func (n *Node) validate() (bool, []error) {
 	if n.IP == "" {
 		v.addError(fmt.Errorf("Node IP field is required"))
 	}
-	if ip := net.ParseIP(n.IP); ip == nil {
+	if ip := net.ParseIP(n.IP); ip == nil && n.IP != "" {
 		v.addError(fmt.Errorf("Invalid IP provided"))
 	}
 	if ip := net.ParseIP(n.InternalIP); n.InternalIP != "" && ip == nil {

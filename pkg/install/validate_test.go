@@ -543,3 +543,62 @@ func TestValidatePlanMissingSomeCerts(t *testing.T) {
 		fmt.Println(errs)
 	}
 }
+
+func TestValidateNodeGroupDuplicateIP(t *testing.T) {
+	ng := NodeGroup{
+		ExpectedCount: 2,
+		Nodes: []Node{
+			{
+				Host: "host1",
+				IP:   "10.0.0.1",
+			},
+			{
+				Host: "host2",
+				IP:   "10.0.0.1",
+			},
+		},
+	}
+	if ok, _ := ng.validate(); ok {
+		t.Errorf("validation passed with duplicate IP")
+	}
+}
+
+func TestValidateNodeGroupDuplicateHostname(t *testing.T) {
+	ng := NodeGroup{
+		ExpectedCount: 2,
+		Nodes: []Node{
+			{
+				Host: "host1",
+				IP:   "10.0.0.1",
+			},
+			{
+				Host: "host1",
+				IP:   "10.0.0.2",
+			},
+		},
+	}
+	if ok, _ := ng.validate(); ok {
+		t.Errorf("validation passed with duplicate hostname")
+	}
+}
+
+func TestValidateNodeGroupDuplicateInternalIPs(t *testing.T) {
+	ng := NodeGroup{
+		ExpectedCount: 2,
+		Nodes: []Node{
+			{
+				Host:       "host1",
+				IP:         "10.0.0.1",
+				InternalIP: "192.168.205.10",
+			},
+			{
+				Host:       "host2",
+				IP:         "10.0.0.2",
+				InternalIP: "192.168.205.10",
+			},
+		},
+	}
+	if ok, _ := ng.validate(); ok {
+		t.Errorf("validation passed with duplicate hostname")
+	}
+}
