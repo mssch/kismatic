@@ -98,12 +98,12 @@ func ListVersions(plan *Plan) (ClusterVersion, error) {
 
 	for i, ip := range ips {
 		sshDeets := plan.Cluster.SSH
-		client, err := ssh.OpenConnection(ip, sshDeets.Port, sshDeets.User, sshDeets.Key)
+		client, err := ssh.NewClient(ip, sshDeets.Port, sshDeets.User, sshDeets.Key)
 		if err != nil {
 			return cv, fmt.Errorf("error creating SSH client: %v", err)
 		}
 
-		o, err := client.Output("cat /etc/kismatic-version")
+		o, err := client.Output(false, "cat /etc/kismatic-version")
 		var thisVersion Version
 		if err != nil {
 			thisVersion = Version{Major: 1}
