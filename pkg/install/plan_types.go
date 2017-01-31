@@ -1,6 +1,10 @@
 package install
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/apprenda/kismatic/pkg/ssh"
+)
 
 // NetworkConfig describes the cluster's networking configuration
 type NetworkConfig struct {
@@ -96,6 +100,8 @@ type StorageVolume struct {
 	ReplicateCount int
 	// DistributionCount is the degree to which data will be distributed across the cluster
 	DistributionCount int
+	// StorageClass is the annotation that will be used when creating the persistent-volume in kubernetes
+	StorageClass string
 	// AllowAddresses is a list of address wildcards that have access to the volume
 	AllowAddresses []string
 }
@@ -170,6 +176,20 @@ func (p *Plan) GetSSHConnection(host string) (*SSHConnection, error) {
 	}
 
 	return &SSHConnection{&p.Cluster.SSH, foundNode}, nil
+}
+
+// GetSSHClient is a convience method that calls GetSSHConnection and returns an SSH client with the result
+func (p *Plan) GetSSHClient(host string) (ssh.Client, error) {
+	con, err := p.GetSSHConnection(host)
+	if err != nil {
+		return nil, err
+	}
+	client, err := ssh.NewClient(con.Node.IP, con.SSHConfig.Port, con.SSHConfig.User, con.SSHConfig.Key)
+	if err != nil {
+		return nil, fmt.Errorf("error creating SSH client for host %s: %v", host, err)
+	}
+
+	return client, nil
 }
 
 func firstIfItExists(nodes []Node) *Node {

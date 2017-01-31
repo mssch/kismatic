@@ -1,6 +1,6 @@
 ---
   - name: get storage cluster IP
-    command: kubectl get svc kismatic-storage -o=jsonpath='{.spec.clusterIP}'
+    command: kubectl get svc kismatic-storage -n kube-system -o=jsonpath='{.spec.clusterIP}'
     register: out
 
   - name: set storage cluster IP

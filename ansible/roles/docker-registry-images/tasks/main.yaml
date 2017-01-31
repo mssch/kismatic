@@ -8,6 +8,7 @@
      - kube-dnsmasq
      - exechealthz
      - kubernetes-dashboard
+     - tcp-healthz-amd64
 
   - name: tag docker images
     command: docker tag {{ item }}
@@ -17,6 +18,7 @@
       - "{{kube_dnsmasq_orig_img}} {{kube_dnsmasq_priv_img}}"
       - "{{exechealthz_orig_img}} {{exechealthz_priv_img}}"
       - "{{kubernetes_dashboard_orig_img}} {{kubernetes_dashboard_priv_img}}"
+      - "{{apprenda_tcp_healthz_orig_img}} {{apprenda_tcp_healthz_priv_img}}"
 
   - name: push docker image to private registry
     command: docker push {{ item }}
@@ -26,3 +28,4 @@
       - "{{kube_dnsmasq_priv_img}}"
       - "{{exechealthz_priv_img}}"
       - "{{kubernetes_dashboard_priv_img}}"
+      - "{{apprenda_tcp_healthz_priv_img}}"

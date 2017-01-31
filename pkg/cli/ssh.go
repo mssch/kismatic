@@ -15,6 +15,7 @@ import (
 type sshOpts struct {
 	planFilename string
 	host         string
+	pty          bool
 	arguments    []string
 }
 
@@ -42,27 +43,27 @@ HOST must be one of the following:
 			opts.host = args[0]
 
 			planner := &install.FilePlanner{File: opts.planFilename}
+			// Check if plan file exists
+			if !planner.PlanExists() {
+				return fmt.Errorf("plan file not found at %q", opts.planFilename)
+			}
 
 			err := doSSH(out, planner, opts)
 			// 130 = terminated by Control-C, so not an actual error
 			if err != nil && !strings.Contains(err.Error(), "130") {
-				return fmt.Errorf("Error trying to connect to host %q: %v", opts.host, err)
+				return fmt.Errorf("SSH error %q: %v", opts.host, err)
 			}
 			return nil
 		},
 	}
 
-	// PersistentFlags
-	cmd.PersistentFlags().StringVarP(&opts.planFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
+	cmd.Flags().StringVarP(&opts.planFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
+	cmd.Flags().BoolVarP(&opts.pty, "pty", "t", false, "force PTY \"-t\" flag on the SSH connection")
 
 	return cmd
 }
 
 func doSSH(out io.Writer, planner install.Planner, opts *sshOpts) error {
-	// Check if plan file exists
-	if !planner.PlanExists() {
-		return fmt.Errorf("plan does not exist")
-	}
 	plan, err := planner.Read()
 	if err != nil {
 		return fmt.Errorf("error reading plan file: %v", err)
@@ -81,10 +82,14 @@ func doSSH(out io.Writer, planner install.Planner, opts *sshOpts) error {
 		return fmt.Errorf("cannot validate SSH connection to node %q", opts.host)
 	}
 
-	client, err := ssh.OpenConnection(con.Node.IP, con.SSHConfig.Port, con.SSHConfig.User, con.SSHConfig.Key)
+	client, err := ssh.NewClient(con.Node.IP, con.SSHConfig.Port, con.SSHConfig.User, con.SSHConfig.Key)
 	if err != nil {
 		return fmt.Errorf("error creating SSH client: %v", err)
 	}
 
-	return client.Shell(strings.Join(opts.arguments, " "))
+	if err = client.Shell(opts.pty, opts.arguments...); err != nil {
+		return fmt.Errorf("error running command: %v", err)
+	}
+
+	return err
 }

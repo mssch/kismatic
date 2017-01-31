@@ -1,7 +1,7 @@
 ---
   # add ingress label to nodes
   - name: label ingress nodeSelector
-    command: kubectl label nodes {% for host in groups['ingress'] %}{{ host }} {% endfor %} ingress=true --overwrite
+    command: kubectl label nodes {% for host in groups['ingress'] %}{{ host }} {% endfor %} kismatic/ingress=true --overwrite
 
   - name: copy default-backend.yaml to remote
     template:

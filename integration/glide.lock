@@ -1,115 +1,121 @@
 hash: 3571c3de47e367a5cd9e8fcc70ad6e342a2c6c6edb2212927f2112e858f04d0f
-updated: 2017-01-27T09:33:08.468808594-05:00
+updated: 2017-01-27T08:49:41.231448598-05:00
 imports:
+- name: github.com/apprenda/kismatic
+  version: 9ba0fa11895cb243cefcb78663c9e48ca3c8b5f3
+  subpackages:
+  - integration/aws
+  - integration/packet
+  - integration/retry
+  - integration/tls
+  - pkg/retry
 - name: github.com/aws/aws-sdk-go
   version: 1355b456f6ba4a8453249e0dc7743f16ccac362d
   subpackages:
   - aws
-  - aws/credentials
-  - aws/session
-  - service/ec2
-  - service/route53
   - aws/awserr
-  - service/efs
   - aws/awsutil
-  - service/s3
-  - aws/endpoints
   - aws/client
+  - aws/client/metadata
   - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
   - aws/credentials/stscreds
   - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
   - aws/request
-  - aws/client/metadata
+  - aws/session
   - aws/signer/v4
   - private/protocol
   - private/protocol/ec2query
-  - private/waiter
-  - private/protocol/restjson
-  - private/protocol/restxml
-  - service/sts
-  - aws/credentials/ec2rolecreds
-  - aws/credentials/endpointcreds
-  - aws/ec2metadata
-  - private/protocol/rest
-  - private/protocol/query/queryutil
-  - private/protocol/xml/xmlutil
+  - private/protocol/json/jsonutil
   - private/protocol/jsonrpc
   - private/protocol/query
-  - private/protocol/json/jsonutil
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/restjson
+  - private/protocol/restxml
+  - private/protocol/xml/xmlutil
+  - private/waiter
+  - service/ec2
+  - service/efs
+  - service/route53
+  - service/s3
+  - service/sts
 - name: github.com/cloudflare/cfssl
   version: db0d0650b6496bfe8061ec56a92edd32d8e75c30
   subpackages:
-  - csr
+  - api
+  - api/client
+  - auth
+  - certdb
+  - cli
   - cli/genkey
   - config
+  - crypto/pkcs7
+  - csr
+  - errors
   - helpers
+  - helpers/derhelpers
+  - info
   - initca
   - log
+  - ocsp/config
   - signer
   - signer/local
-  - errors
-  - cli
-  - auth
-  - ocsp/config
-  - crypto/pkcs7
-  - helpers/derhelpers
-  - certdb
-  - info
-  - signer/universal
   - signer/remote
-  - api/client
-  - api
+  - signer/universal
 - name: github.com/go-ini/ini
-  version: e3c2d47c61e5333f9aa2974695dd94396eb69c75
+  version: 03e0e7d51a13a91c765d8d0161246bc14a38001a
 - name: github.com/google/certificate-transparency
   version: 6e5648d13b43cdde25cc8274b87675230ffefbd6
   repo: https://github.com/google/certificate-transparency
   subpackages:
   - go
+  - go/asn1
   - go/client
   - go/x509
-  - go/asn1
   - go/x509/pkix
 - name: github.com/jmespath/go-jmespath
-  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/mreiferson/go-httpclient
   version: 63fe23f7434723dc904c901043af07931f293c47
   repo: https://github.com/mreiferson/go-httpclient
 - name: github.com/onsi/ginkgo
-  version: bb93381d543b0e5725244abe752214a110791d01
+  version: 74c678d97c305753605c338c6c78c49ec104b5e7
   subpackages:
   - config
   - internal/codelocation
+  - internal/containernode
   - internal/failer
+  - internal/leafnodes
   - internal/remote
+  - internal/spec
+  - internal/specrunner
   - internal/suite
   - internal/testingtproxy
   - internal/writer
   - reporters
   - reporters/stenographer
   - types
-  - internal/containernode
-  - internal/leafnodes
-  - internal/spec
-  - internal/specrunner
-  - reporters/stenographer/support/go-colorable
-  - reporters/stenographer/support/go-isatty
 - name: github.com/onsi/gomega
-  version: e85f63af4302dc0e4277c6008ecf803f1d80e4f0
+  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
   subpackages:
+  - format
   - internal/assertion
   - internal/asyncassertion
+  - internal/oraclematcher
   - internal/testingtsupport
   - matchers
-  - types
-  - internal/oraclematcher
-  - format
   - matchers/support/goraph/bipartitegraph
   - matchers/support/goraph/edge
   - matchers/support/goraph/node
   - matchers/support/goraph/util
+  - types
 - name: github.com/packethost/packngo
   version: 91a3a4f65e3cd6ee66d919b4e7103ae038ce66ff
 - name: golang.org/x/crypto
@@ -119,14 +125,12 @@ imports:
   - ocsp
   - pbkdf2
   - pkcs12
-  - scrypt
   - pkcs12/internal/rc2
+  - scrypt
 - name: golang.org/x/sys
-  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
 - name: gopkg.in/yaml.v2
-  version: 4c78c975fe7c825c6d1466c42be594d1d6f3aba6
-testImports:
-- name: gopkg.in/yaml.v2
-  version: 4c78c975fe7c825c6d1466c42be594d1d6f3aba6
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+testImports: []
