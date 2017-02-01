@@ -27,6 +27,7 @@ func GetSSHKeyFile() (string, error) {
 
 type installOptions struct {
 	allowPackageInstallation    bool
+	disconnectedInstallation    bool
 	autoConfigureDockerRegistry bool
 	dockerRegistryIP            string
 	dockerRegistryPort          int
@@ -59,6 +60,7 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 	}
 	plan := PlanAWS{
 		AllowPackageInstallation: installOpts.allowPackageInstallation,
+		DisconnectedInstallation: installOpts.disconnectedInstallation,
 		Etcd:                nodes.etcd,
 		Master:              nodes.master,
 		Worker:              nodes.worker,
