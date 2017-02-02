@@ -247,65 +247,65 @@ const upgradeRuleSet = `---
 - kind: PackageAvailableUpgrade
   when: ["etcd", "ubuntu"]
   packageName: kismatic-etcd
-  packageVersion: 1.5.1-3
+  packageVersion: 1.5.2-3
 - kind: PackageAvailableUpgrade
   when: ["master","ubuntu"]
   packageName: kismatic-kubernetes-master
-  packageVersion: 1.5.1-3
+  packageVersion: 1.5.2-3
 - kind: PackageAvailableUpgrade
   when: ["worker","ubuntu"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1-3
+  packageVersion: 1.5.2-3
 - kind: PackageAvailableUpgrade
   when: ["ingress","ubuntu"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1-3
+  packageVersion: 1.5.2-3
 - kind: PackageAvailableUpgrade
   when: ["storage","ubuntu"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1-3
+  packageVersion: 1.5.2-3
 
 - kind: PackageAvailableUpgrade
   when: ["etcd", "centos"]
   packageName: kismatic-etcd
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["master","centos"]
   packageName: kismatic-kubernetes-master
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["worker","centos"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["ingress","centos"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["storage","centos"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 
 - kind: PackageAvailableUpgrade
   when: ["etcd", "rhel"]
   packageName: kismatic-etcd
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["master","rhel"]
   packageName: kismatic-kubernetes-master
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["worker","rhel"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["ingress","rhel"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 - kind: PackageAvailableUpgrade
   when: ["storage","rhel"]
   packageName: kismatic-kubernetes-node
-  packageVersion: 1.5.1_3-1
+  packageVersion: 1.5.2_3-1
 
 # Gluster packages
 - kind: PackageAvailableUpgrade
