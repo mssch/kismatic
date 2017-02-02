@@ -193,6 +193,7 @@ func (ae *ansibleExecutor) buildInstallExtraVars(p *Plan) (*ansible.ClusterCatal
 		EnablePackageInstallation: p.Cluster.AllowPackageInstallation,
 		KuberangPath:              filepath.Join("kuberang", "linux", "amd64", "kuberang"),
 		TargetVersion:             AboutKismatic.ShortVersion,
+		DisconnectedInstallation:  p.Cluster.DisconnectedInstallation,
 	}
 
 	// Setup FQDN or default to first master
