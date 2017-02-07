@@ -1,7 +1,7 @@
 [Unit]
 Description=Calico per-node agent
 Documentation=https://github.com/projectcalico/calico-docker
-Requires=docker.service
+Wants=docker.service
 After=docker.service
 
 [Service]
