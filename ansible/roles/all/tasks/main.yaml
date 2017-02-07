@@ -1,5 +1,4 @@
 ---
-# common tasks for all hosts
 - name: Install python 2.7
   script: python27.sh
 
