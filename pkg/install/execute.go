@@ -697,12 +697,3 @@ func timestampWriter(out io.Writer) io.Writer {
 	}(pr)
 	return pw
 }
-
-func findNodeWithIP(nodes []Node, ip string) (*Node, error) {
-	for _, n := range nodes {
-		if n.IP == ip {
-			return &n, nil
-		}
-	}
-	return nil, fmt.Errorf("Node with IP %q not found", ip)
-}

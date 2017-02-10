@@ -1,59 +1,78 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 
+	"github.com/apprenda/kismatic/pkg/data"
 	"github.com/apprenda/kismatic/pkg/install"
 	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-// NewCmdUpgrade returns the upgrade command
-func NewCmdUpgrade(out io.Writer) *cobra.Command {
-	var planFile string
-	cmd := &cobra.Command{
-		Use:   "upgrade",
-		Short: "upgrade your Kubernetes cluster",
-		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
-		},
-	}
-
-	// Subcommands
-	cmd.AddCommand(NewCmdUpgradeOffline(out, &planFile))
-	addPlanFileFlag(cmd.PersistentFlags(), &planFile)
-	return cmd
-}
-
 type upgradeOpts struct {
 	generatedAssetsDir string
-	restartServices    bool
 	verbose            bool
 	outputFormat       string
 	skipPreflight      bool
+	online             bool
+	planFile           string
+	restartServices    bool
+}
+
+// NewCmdUpgrade returns the upgrade command
+func NewCmdUpgrade(out io.Writer) *cobra.Command {
+	var opts upgradeOpts
+	cmd := &cobra.Command{
+		Use:   "upgrade",
+		Short: "upgrade your Kubernetes cluster",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Help()
+		},
+	}
+
+	cmd.PersistentFlags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
+	cmd.PersistentFlags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
+	cmd.PersistentFlags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
+	cmd.PersistentFlags().BoolVar(&opts.skipPreflight, "skip-preflight", false, "skip upgrade pre-flight checks")
+	cmd.PersistentFlags().BoolVar(&opts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
+	addPlanFileFlag(cmd.PersistentFlags(), &opts.planFile)
+
+	// Subcommands
+	cmd.AddCommand(NewCmdUpgradeOffline(out, &opts))
+	cmd.AddCommand(NewCmdUpgradeOnline(out, &opts))
+	return cmd
 }
 
 // NewCmdUpgradeOffline returns the command for running offline upgrades
-func NewCmdUpgradeOffline(out io.Writer, planFile *string) *cobra.Command {
-	opts := upgradeOpts{}
+func NewCmdUpgradeOffline(out io.Writer, opts *upgradeOpts) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "offline",
 		Short: "perform an offline upgrade of your Kubernetes cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doUpgradeOffline(out, *planFile, opts)
+			return doUpgrade(out, opts)
 		},
 	}
-	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
-	cmd.Flags().BoolVar(&opts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
-	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
-	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
-	cmd.Flags().BoolVar(&opts.skipPreflight, "skip-preflight", false, "skip upgrade pre-flight checks")
 	return &cmd
 }
 
-func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
+// NewCmdUpgradeOnline returns the command for running online upgrades
+func NewCmdUpgradeOnline(out io.Writer, opts *upgradeOpts) *cobra.Command {
+	cmd := cobra.Command{
+		Use:   "online",
+		Short: "perform an online upgrade of your Kubernetes cluster",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.online = true
+			return doUpgrade(out, opts)
+		},
+	}
+	return &cmd
+}
+
+func doUpgrade(out io.Writer, opts *upgradeOpts) error {
+	planFile := opts.planFile
 	planner := install.FilePlanner{File: planFile}
 	executorOpts := install.ExecutorOptions{
 		GeneratedAssetsDirectory: opts.generatedAssetsDir,
@@ -115,16 +134,8 @@ func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
 	if len(toUpgrade) == 0 {
 		fmt.Fprintln(out, "All nodes are at the target version. Skipping node upgrades.")
 	} else {
-		// Run upgrade preflight on the nodes that are to be UpgradeNodes
-		if !opts.skipPreflight {
-			util.PrintHeader(out, "Validating nodes", '=')
-			if err := executor.RunUpgradePreFlightCheck(plan); err != nil {
-				return fmt.Errorf("Upgrade preflight check failed: %v", err)
-			}
-		}
-		// Run the upgrade on the nodes that need it
-		if err := executor.UpgradeNodes(*plan, toUpgrade); err != nil {
-			return fmt.Errorf("Failed to upgrade nodes: %v", err)
+		if err = upgradeNodes(out, *plan, *opts, toUpgrade, executor); err != nil {
+			return err
 		}
 	}
 
@@ -149,5 +160,47 @@ func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
 	fmt.Fprintln(out)
 	util.PrintColor(out, util.Green, "Upgrade complete\n")
 	fmt.Fprintln(out)
+	return nil
+}
+
+func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, toUpgrade []install.ListableNode, executor install.Executor) error {
+	// Validate that we are able to perform an online upgrade
+	if opts.online {
+		util.PrintHeader(out, "Validate Online Upgrade", '=')
+		var foundErrs bool
+		// Use the first master node for running kubectl
+		client, _ := plan.GetSSHClient(plan.Master.Nodes[0].Host)
+		kubeClient := data.RemoteKubectl{SSHClient: client}
+		for _, node := range toUpgrade {
+			util.PrettyPrint(out, "Node %q", node.Node.Host)
+			errs := install.DetectNodeUpgradeSafety(plan, node.Node, kubeClient)
+			if len(errs) != 0 {
+				foundErrs = true
+				util.PrintError(out)
+				fmt.Fprintln(out)
+				for _, err := range errs {
+					fmt.Println("-", err.Error())
+				}
+			} else {
+				util.PrintOkln(out)
+			}
+		}
+		if foundErrs {
+			return errors.New("Unable to perform an online upgrade due to the unsafe conditions detected.")
+		}
+	}
+
+	// Run upgrade preflight on the nodes that are to be UpgradeNodes
+	if !opts.skipPreflight {
+		util.PrintHeader(out, "Validating nodes", '=')
+		if err := executor.RunUpgradePreFlightCheck(&plan); err != nil {
+			return fmt.Errorf("Upgrade preflight check failed: %v", err)
+		}
+	}
+
+	// Run the upgrade on the nodes that need it
+	if err := executor.UpgradeNodes(plan, toUpgrade); err != nil {
+		return fmt.Errorf("Failed to upgrade nodes: %v", err)
+	}
 	return nil
 }
