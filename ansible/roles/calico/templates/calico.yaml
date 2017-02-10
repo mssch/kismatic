@@ -68,6 +68,7 @@ metadata:
     tier: control-plane
     component: calico-node
     k8s-app: calico-node
+    kismaticVersion: "{{ kismatic_short_version }}"
 spec:
   selector:
     matchLabels:
@@ -202,6 +203,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico
+    kismaticVersion: "{{ kismatic_short_version }}"
 spec:
   template:
     metadata:
