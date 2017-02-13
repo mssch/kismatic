@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/apprenda/kismatic/pkg/install"
+	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -46,7 +47,16 @@ func list(planner *install.FilePlanner, out io.Writer) error {
 		return fmt.Errorf("error reading plan file: %v", err)
 	}
 
+	// Validate SSH connections
+	if ok, errs := install.ValidatePlanSSHConnections(plan); !ok {
+		util.PrintValidationErrors(out, errs)
+		return fmt.Errorf("error getting info from cluster nodes")
+	}
+
 	lv, err := install.ListVersions(plan)
+	if err != nil {
+		return fmt.Errorf("error getting version: %v", err)
+	}
 
 	fmt.Fprintf(out, "Cluster: ")
 	if lv.IsTransitioning {
@@ -56,8 +66,8 @@ func list(planner *install.FilePlanner, out io.Writer) error {
 	}
 	fmt.Fprintln(out)
 	fmt.Fprintf(out, "Nodes:\n")
-	for _, node := range lv.Nodes {
-		fmt.Fprintf(out, "  - %v: v%v %v\n", node.IP, node.Version, node.Roles)
+	for _, listNode := range lv.Nodes {
+		fmt.Fprintf(out, "  - %v: v%v %v\n", listNode.Node.IP, listNode.Version, listNode.Roles)
 	}
 
 	return err

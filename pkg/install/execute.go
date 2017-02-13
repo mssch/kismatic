@@ -370,11 +370,8 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 	for _, nodeToUpgrade := range nodesToUpgrade {
 		for _, role := range nodeToUpgrade.Roles {
 			if role == "etcd" {
-				node, err := plan.getNodeWithIP(nodeToUpgrade.IP)
-				if err != nil {
-					return err
-				}
-				if err := ae.upgradeNode(plan, *node); err != nil {
+				node := nodeToUpgrade.Node
+				if err := ae.upgradeNode(plan, node); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
 				}
 				upgradedNodes[node.IP] = true
@@ -385,16 +382,13 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 
 	// Upgrade master nodes
 	for _, nodeToUpgrade := range nodesToUpgrade {
-		if upgradedNodes[nodeToUpgrade.IP] == true {
+		if upgradedNodes[nodeToUpgrade.Node.IP] == true {
 			continue
 		}
 		for _, role := range nodeToUpgrade.Roles {
 			if role == "master" {
-				node, err := plan.getNodeWithIP(nodeToUpgrade.IP)
-				if err != nil {
-					return err
-				}
-				if err := ae.upgradeNode(plan, *node); err != nil {
+				node := nodeToUpgrade.Node
+				if err := ae.upgradeNode(plan, node); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
 				}
 				upgradedNodes[node.IP] = true
@@ -405,16 +399,13 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 
 	// Upgrade the rest of the nodes
 	for _, nodeToUpgrade := range nodesToUpgrade {
-		if upgradedNodes[nodeToUpgrade.IP] == true {
+		if upgradedNodes[nodeToUpgrade.Node.IP] == true {
 			continue
 		}
 		for _, role := range nodeToUpgrade.Roles {
 			if role != "etcd" && role != "master" {
-				node, err := plan.getNodeWithIP(nodeToUpgrade.IP)
-				if err != nil {
-					return err
-				}
-				if err := ae.upgradeNode(plan, *node); err != nil {
+				node := nodeToUpgrade.Node
+				if err := ae.upgradeNode(plan, node); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
 				}
 				upgradedNodes[node.IP] = true

@@ -102,7 +102,7 @@ func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
 	if len(toSkip) > 0 {
 		util.PrintHeader(out, "Skipping nodes", '=')
 		for _, n := range toSkip {
-			util.PrettyPrintOk(out, "- %q is at the target version %q", n.IP, n.Version)
+			util.PrettyPrintOk(out, "- %q is at the target version %q", n.Node.IP, n.Version)
 		}
 		fmt.Fprintln(out)
 	}
