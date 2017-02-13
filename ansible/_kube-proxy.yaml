@@ -8,5 +8,14 @@
     vars_files:
       - group_vars/all.yaml
 
+    pre_tasks:
+      - name: stop kube-proxy service
+        service:
+          name: kube-proxy.service
+          state: stopped
+          enabled: no
+        ignore_errors: yes
+        when: upgrading is defined and upgrading|bool == true
+
     roles:
       - kube-proxy

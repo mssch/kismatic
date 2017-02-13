@@ -8,5 +8,14 @@
     vars_files:
       - group_vars/all.yaml
 
+    pre_tasks:
+      - name: stop kube-controller-manager service
+        service:
+          name: kube-controller-manager.service
+          state: stopped
+          enabled: no
+        ignore_errors: yes
+        when: upgrading is defined and upgrading|bool == true
+
     roles:
       - kube-controller-manager

@@ -8,6 +8,15 @@
     vars_files:
       - group_vars/all.yaml
 
+    pre_tasks:  # stop all systemd services for older installs
+      - name: stop kube-apiserver service
+        service:
+          name: kube-apiserver.service
+          state: stopped
+          enabled: no
+        ignore_errors: yes  # this is not ideal but there is no good OS independent way to know if it failed or doesn't exist
+        when: upgrading is defined and upgrading|bool == true
+
     roles:
       - authorization-policy
       - kube-apiserver
