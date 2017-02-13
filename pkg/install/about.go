@@ -28,7 +28,7 @@ type ClusterVersion struct {
 }
 
 type ListableNode struct {
-	IP      string
+	Node    Node
 	Roles   []string
 	Version Version
 }
@@ -82,15 +82,15 @@ func parseVersion(versionString string) Version {
 }
 
 func ListVersions(plan *Plan) (ClusterVersion, error) {
-	ips := plan.GetUniqueNodeIPs()
+	nodes := plan.GetUniqueNodes()
 
 	cv := ClusterVersion{
 		Nodes: []ListableNode{},
 	}
 
-	for i, ip := range ips {
+	for i, node := range nodes {
 		sshDeets := plan.Cluster.SSH
-		client, err := ssh.NewClient(ip, sshDeets.Port, sshDeets.User, sshDeets.Key)
+		client, err := ssh.NewClient(node.IP, sshDeets.Port, sshDeets.User, sshDeets.Key)
 		if err != nil {
 			return cv, fmt.Errorf("error creating SSH client: %v", err)
 		}
@@ -115,7 +115,7 @@ func ListVersions(plan *Plan) (ClusterVersion, error) {
 			}
 		}
 
-		cv.Nodes = append(cv.Nodes, ListableNode{ip, plan.GetRolesForIP(ip), thisVersion})
+		cv.Nodes = append(cv.Nodes, ListableNode{node, plan.GetRolesForIP(node.IP), thisVersion})
 	}
 
 	cv.IsTransitioning = cv.EarliestVersion != cv.LatestVersion

@@ -112,22 +112,19 @@ type SSHConnection struct {
 	Node      *Node
 }
 
-func (p *Plan) GetUniqueNodeIPs() []string {
-	ipMap := make(map[string]bool)
-	nodes := p.getAllNodes()
-	for _, node := range nodes {
-		ipMap[node.IP] = true
+// GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.
+// That is, if a node has multiple roles, it will only appear once in the list.
+func (p *Plan) GetUniqueNodes() []Node {
+	seenNodes := map[Node]bool{}
+	nodes := []Node{}
+	for _, node := range p.getAllNodes() {
+		if seenNodes[node] {
+			continue
+		}
+		nodes = append(nodes, node)
+		seenNodes[node] = true
 	}
-
-	ips := make([]string, len(ipMap))
-
-	i := 0
-	for k := range ipMap {
-		ips[i] = k
-		i++
-	}
-
-	return ips
+	return nodes
 }
 
 func (p *Plan) getAllNodes() []Node {
