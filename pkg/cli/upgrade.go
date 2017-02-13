@@ -31,6 +31,7 @@ type upgradeOpts struct {
 	generatedAssetsDir string
 	verbose            bool
 	outputFormat       string
+	skipPreflight      bool
 }
 
 // NewCmdUpgradeOffline returns the command for running offline upgrades
@@ -46,6 +47,7 @@ func NewCmdUpgradeOffline(out io.Writer, planFile *string) *cobra.Command {
 	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
+	cmd.Flags().BoolVar(&opts.skipPreflight, "skip-preflight", false, "skip upgrade pre-flight checks")
 	return &cmd
 }
 
@@ -112,9 +114,11 @@ func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
 		fmt.Fprintln(out, "All nodes are at the target version. Skipping node upgrades.")
 	} else {
 		// Run upgrade preflight on the nodes that are to be UpgradeNodes
-		util.PrintHeader(out, "Validating nodes", '=')
-		if err := executor.RunUpgradePreFlightCheck(plan); err != nil {
-			return fmt.Errorf("Upgrade preflight check failed: %v", err)
+		if !opts.skipPreflight {
+			util.PrintHeader(out, "Validating nodes", '=')
+			if err := executor.RunUpgradePreFlightCheck(plan); err != nil {
+				return fmt.Errorf("Upgrade preflight check failed: %v", err)
+			}
 		}
 		// Run the upgrade on the nodes that need it
 		if err := executor.UpgradeNodes(*plan, toUpgrade); err != nil {
