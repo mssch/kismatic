@@ -5,7 +5,7 @@
   - name: copy kube-scheduler.yaml manifest
     template:
       src: kube-scheduler.yaml
-      dest: /etc/kubernetes/manifests/kube-scheduler.yaml
+      dest: "{{ kubelet_pod_manifests_dir }}/kube-scheduler.yaml"
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"

@@ -11,6 +11,12 @@
       - reload services
       - restart kubelet service
 
+  - name: create static pod manifests directory 
+    file:
+      path: "{{ kubelet_pod_manifests_dir }}"
+      state: directory
+      mode: 0700
+
   # force_kubelet_restart=true to force restart
   - name: force restart kubelet
     command: /bin/true
