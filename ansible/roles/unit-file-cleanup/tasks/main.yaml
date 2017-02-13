@@ -1,5 +1,5 @@
 ---
-  - name: cleanup old unitl files if exist
+  - name: remove unnecessary unit files
     file:
       path: "{{ init_system_dir }}/{{ item }}"
       state: absent

@@ -92,12 +92,7 @@ func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
 	var toSkip []install.ListableNode
 	for _, n := range cv.Nodes {
 		if install.IsOlderVersion(n.Version) {
-			// prepend so masters get upgraded first
-			if util.Subset([]string{"master"}, n.Roles) {
-				toUpgrade = append([]install.ListableNode{n}, toUpgrade...)
-			} else {
-				toUpgrade = append(toUpgrade, n)
-			}
+			toUpgrade = append(toUpgrade, n)
 		} else {
 			toSkip = append(toSkip, n)
 		}

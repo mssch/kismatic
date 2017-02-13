@@ -3,7 +3,7 @@
   - name: remove kismatic kubernetes master yum package
     yum: name=kismatic-kubernetes-master state=absent
     when: "ansible_os_family == 'RedHat' and 'master' in group_names"
-    register: absent
+    register: result
     until: result|success
     retries: 1
     delay: 1
