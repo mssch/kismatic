@@ -82,6 +82,7 @@ kubernetes_install_dir: /etc/kubernetes
 network_plugin_dir: /etc/cni/net.d
 kubernetes_auth_dir: /etc/kubernetes/auth
 kubelet_lib_dir: /var/lib/kubelet
+kubelet_pod_manifests_dir: /etc/kubernetes/manifests
 # paths
 kubernetes_basic_auth_path: "{{kubernetes_auth_dir}}/basicauth.csv"
 kubernetes_authorization_policy_path: "{{kubernetes_auth_dir}}/authorization-policy.json"

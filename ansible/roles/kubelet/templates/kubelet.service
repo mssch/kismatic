@@ -14,7 +14,7 @@ Environment=REGISTER_SCHEDULABLE={{ kubernetes_schedulable }}
 Environment=CERT_FILE={{ kubernetes_certificates_cert_path }}
 Environment=KEY_FILE={{ kubernetes_certificates_key_path }}
 Environment=NETWORK_PLUGIN_DIR={{ network_plugin_dir }}
-ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests/
+Environment=POD_MANIFEST_PATH={{ kubelet_pod_manifests_dir }}
 ExecStart=/usr/bin/kubelet \
   --allow-privileged=true \
   --cloud-provider= \
@@ -27,7 +27,7 @@ ExecStart=/usr/bin/kubelet \
   --kubeconfig=${KUBECONFIG} \
   --node-ip=${INTERNAL_IP} \
   --pod-infra-container-image=${INFRA_IMG} \
-  --pod-manifest-path=/etc/kubernetes/manifests \
+  --pod-manifest-path=${POD_MANIFEST_PATH} \
   --register-schedulable=${REGISTER_SCHEDULABLE} \
   --serialize-image-pulls=false \
   --tls-cert-file=${CERT_FILE} \

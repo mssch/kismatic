@@ -5,7 +5,7 @@
   - name: copy kube-apiserver.yaml manifest
     template:
       src: kube-apiserver.yaml
-      dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+      dest: "{{ kubelet_pod_manifests_dir }}/kube-apiserver.yaml"
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
