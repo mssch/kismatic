@@ -13,9 +13,9 @@
       name: docker
       state: restarted
       enabled: yes
-    when: > 
-      (force_docker_restart is defined and force_docker_restart|bool == true) or 
-      (docker_installation is defined and docker_installation|success)
+    when: >
+      (force_docker_restart is defined and force_docker_restart|bool == true) or
+      (docker_installation is defined and docker_installation.changed == true)
 
   - name: verify docker is running
     command: docker ps
