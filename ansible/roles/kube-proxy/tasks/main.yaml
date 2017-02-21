@@ -9,3 +9,5 @@
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
+
+  - include: ../validate-control-plane-node/tasks/validate-kube-pods.yaml component="kube-proxy"

@@ -1,8 +1,4 @@
 ---
   - include: validate-kube-pods.yaml component="kube-apiserver"
-    when: "'master' in group_names"
   - include: validate-kube-pods.yaml component="kube-scheduler"
-    when: "'master' in group_names"
   - include: validate-kube-pods.yaml component="kube-controller-manager"
-    when: "'master' in group_names"
-  - include: validate-kube-pods.yaml component="kube-proxy"

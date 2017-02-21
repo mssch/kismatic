@@ -2,4 +2,3 @@
   - include: validate-kube-pods.yaml component="kube-apiserver"
   - include: validate-kube-pods.yaml component="kube-scheduler"
   - include: validate-kube-pods.yaml component="kube-controller-manager"
-  - include: validate-kube-pods.yaml component="kube-proxy"
