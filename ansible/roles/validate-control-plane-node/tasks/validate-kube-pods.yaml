@@ -1,0 +1,18 @@
+---
+  - name: wait until {{ component }}-{{ ansible_hostname }} pod has the desired version
+    command: kubectl get pods {{ component }}-{{ ansible_hostname }} --namespace kube-system -o jsonpath='{.metadata.labels.kismaticVersion}' --kubeconfig {{ kubernetes_kubeconfig_path }}
+    register: podVersion
+    until: podVersion.stdout == kismatic_short_version
+    retries: 10
+    delay: 6
+  - name: wait until {{ component }}-{{ ansible_hostname }} pod is running
+    command: kubectl get pods {{ component }}-{{ ansible_hostname }} --namespace kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
+    register: phase
+    until: phase|success and "Running" in phase.stdout
+    retries: 10
+    delay: 6
+    failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
+  - name: fail if {{ component }}-{{ ansible_hostname }} pod is not running
+    fail:
+      msg: "Timed out waiting for {{ component }}-{{ ansible_hostname }} pod to be running."
+    when: phase|failure or "Running" not in phase.stdout

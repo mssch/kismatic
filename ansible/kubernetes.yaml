@@ -21,8 +21,8 @@
   - include: _kube-scheduler.yaml
   - include: _kube-controller-manager.yaml
   - include: _kube-proxy.yaml
-  - include: _calico.yaml
   - include: _validate-control-plane.yaml
+  - include: _calico.yaml
   - include: _kube-dns.yaml
   - include: _kube-ingress.yaml
     when: configure_ingress|bool == true

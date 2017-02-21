@@ -124,11 +124,6 @@ func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
 		if err := executor.UpgradeNodes(*plan, toUpgrade); err != nil {
 			return fmt.Errorf("Failed to upgrade nodes: %v", err)
 		}
-		// validate on the master
-		util.PrintHeader(out, "Validate Kubernetes Control Plane", '=')
-		if err := executor.ValidateControlPlane(*plan); err != nil {
-			return fmt.Errorf("Failed to validate kuberntes control plane: %v", err)
-		}
 	}
 
 	if plan.ConfigureDockerRegistry() && plan.Cluster.DisconnectedInstallation {

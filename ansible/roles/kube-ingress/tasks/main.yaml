@@ -29,7 +29,7 @@
     retries: 15
     delay: 10
     failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
-  - name: verify all ingress pods are ready
+  - name: fail if any ingress pods are not ready
     fail:
       msg: "Timed out waiting for all ingress controllers pods to be in the ready state."
     when: desiredPods.stdout|int != readyPods.stdout|int
