@@ -10,5 +10,7 @@
       - group_vars/etcd-k8s.yaml
 
     roles:
+      - role: packages-etcd
+        when: allow_package_installation|bool == true
       - etcd-cert
       - etcd

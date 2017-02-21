@@ -9,4 +9,6 @@
       - group_vars/all.yaml
 
     roles:
+      - role: packages-docker
+        when: allow_package_installation|bool == true
       - docker

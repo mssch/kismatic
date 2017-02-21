@@ -9,7 +9,7 @@
       mode: "{{ etcd_service_mode }}"
     notify:
       - reload services
-      - start etcd service
+      - restart etcd service
 
   # force_etcd_restart=true to force restart
   - name: force restart etcd

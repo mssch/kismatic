@@ -7,7 +7,9 @@
       enabled: yes
     when: force_docker_restart is not defined or force_docker_restart|bool == false # only run if not going to restart right after
 
-  # set force_docker_restart=true to force restart
+  # force_kubelet_restart=true to force restart
+  # on install, service will be started with the task before this
+  # on upgrade, this will be restarted only of the package was upgraded
   - name: restart docker service
     service:
       name: docker
@@ -15,7 +17,7 @@
       enabled: yes
     when: >
       (force_docker_restart is defined and force_docker_restart|bool == true) or
-      (docker_installation is defined and docker_installation.changed == true)
+      (docker_installation is defined and docker_installation.changed == true and upgrading is defined and upgrading|bool == true)
 
   - name: verify docker is running
     command: docker ps
