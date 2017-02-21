@@ -6,8 +6,6 @@
 
 Join our mailing list for updates on new releases: https://groups.google.com/forum/#!forum/kismatic-users
 
-Join Slack to chat in real-time with the maintainers and community users of KET: https://kismatic.slack.com/signup
-
 ![KET](logo.png?raw=true "KET Logo")
 
 ## Introduction
