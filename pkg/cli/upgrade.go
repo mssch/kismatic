@@ -29,6 +29,7 @@ func NewCmdUpgrade(out io.Writer) *cobra.Command {
 
 type upgradeOpts struct {
 	generatedAssetsDir string
+	restartServices    bool
 	verbose            bool
 	outputFormat       string
 	skipPreflight      bool
@@ -45,6 +46,7 @@ func NewCmdUpgradeOffline(out io.Writer, planFile *string) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
+	cmd.Flags().BoolVar(&opts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
 	cmd.Flags().BoolVar(&opts.skipPreflight, "skip-preflight", false, "skip upgrade pre-flight checks")
@@ -55,7 +57,7 @@ func doUpgradeOffline(out io.Writer, planFile string, opts upgradeOpts) error {
 	planner := install.FilePlanner{File: planFile}
 	executorOpts := install.ExecutorOptions{
 		GeneratedAssetsDirectory: opts.generatedAssetsDir,
-		RestartServices:          true,
+		RestartServices:          opts.restartServices,
 		OutputFormat:             opts.outputFormat,
 		Verbose:                  opts.verbose,
 	}
