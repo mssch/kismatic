@@ -10,7 +10,8 @@ import (
 
 var _ = Describe("install step commands", func() {
 	BeforeEach(func() {
-		os.Chdir(kisPath)
+		dir := setupTestWorkingDir()
+		os.Chdir(dir)
 	})
 
 	Describe("Running the api server play against an existing cluster", func() {
