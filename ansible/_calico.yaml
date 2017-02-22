@@ -9,13 +9,19 @@
       - group_vars/all.yaml
 
     pre_tasks:  # stop all systemd services for older installs
+      - name: check if calico-node is active
+        command: systemctl is-active calico-node.service
+        register: status
+        failed_when: status.rc !=0 and status.rc != 3 # 0=running, 3=stopped or doesnt exist
+        when: upgrading is defined and upgrading|bool == true
+
+      # always stop and disable if service exists
       - name: stop calico-node service
         service:
           name: calico-node.service
           state: stopped
           enabled: no
-        ignore_errors: yes  # this is not ideal but there is no good OS independent way to know if it failed or doesn't exist
-        when: upgrading is defined and upgrading|bool == true
+        when: upgrading is defined and upgrading|bool == true and status is defined and (status.stdout == "active" or status.stdout == "inactive")
 
     roles:
       - calico

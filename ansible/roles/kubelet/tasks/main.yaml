@@ -11,19 +11,23 @@
       - reload services
       - restart kubelet service
 
-  - name: create static pod manifests directory 
+  - name: create static pod manifests directory
     file:
       path: "{{ kubelet_pod_manifests_dir }}"
       state: directory
       mode: 0700
 
   # force_kubelet_restart=true to force restart
+  # on install, service will be started with the task before this
+  # on upgrade, this will be restarted only of the package was upgraded
   - name: force restart kubelet
     command: /bin/true
     notify:
       - reload services
       - restart kubelet service
-    when: force_kubelet_restart is defined and force_kubelet_restart|bool == true
+    when: >
+      (force_kubelet_restart is defined and force_kubelet_restart|bool == true) or
+      (kubelet_installation is defined and kubelet_installation.changed == true and upgrading is defined and upgrading|bool == true)
 
   - meta: flush_handlers  #Run handlers
 
