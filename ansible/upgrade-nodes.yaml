@@ -1,13 +1,13 @@
 ---
   - include: _packages.yaml
     when: allow_package_installation|bool == true
-  
+
   # docker
   - include: _docker.yaml play_name="Upgrade Docker" serial="1"
 
-  # etcd
-  #- include: _etcd-k8s.yaml play_name="Upgrade Kubernetes Etcd Cluster" serial="1"
-  #- include: _etcd-networking.yaml play_name="Upgrade Network Etcd Cluster" serial="1"
+  #etcd
+  # - include: _etcd-k8s.yaml play_name="Upgrade Kubernetes Etcd Cluster" serial="1"
+  # - include: _etcd-networking.yaml play_name="Upgrade Network Etcd Cluster" serial="1"
 
   # kubernetes
   - include: _kubelet.yaml play_name="Upgrade Kubernetes Kubelet" serial="1"
