@@ -1,6 +1,6 @@
 ---
   - hosts: master
-    any_errors_fatal: false # TODO is this what we want, continue on other nodes
+    any_errors_fatal: true
     name: "Validate Kubernetes Control Plane is Running"
     remote_user: root
     become_method: sudo

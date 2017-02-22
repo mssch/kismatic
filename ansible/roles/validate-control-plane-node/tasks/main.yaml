@@ -1,4 +1,4 @@
 ---
-  - include: validate-kube-pods.yaml component="kube-apiserver"
-  - include: validate-kube-pods.yaml component="kube-scheduler"
-  - include: validate-kube-pods.yaml component="kube-controller-manager"
+  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-apiserver-{{ ansible_hostname }}"
+  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-scheduler-{{ ansible_hostname }}"
+  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-controller-manager-{{ ansible_hostname }}"
