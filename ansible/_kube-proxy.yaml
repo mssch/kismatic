@@ -12,7 +12,7 @@
       - name: check if kube-proxy service is active
         command: systemctl is-active -q kube-proxy.service
         register: status
-        failed_when: status.rc !=0 and status.rc != 3
+        failed_when: status.rc != 0 and status.rc != 3 # 0 = running, 3 = stopped/doesn't exist
         when: upgrading is defined and upgrading|bool == true
 
       - name: stop kube-proxy service
@@ -20,7 +20,7 @@
           name: kube-proxy.service
           state: stopped
           enabled: no
-        when: upgrading is defined and upgrading|bool == true and status is defined and (status.stdout == "active" or status.stdout == "inactive")
+        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0 
 
     roles:
       - kube-proxy
