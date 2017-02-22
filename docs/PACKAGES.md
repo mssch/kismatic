@@ -29,10 +29,11 @@ By default, Kismatic will install its own repos onto machines and use them to do
 
    2. Add the Kismatic repo
 
-`cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
+```
+cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 deb https://kismatic-packages-deb.s3-accelerate.amazonaws.com kismatic-xenial main
 EOF
-`
+```
 
 2. Refresh the machine's repo cache
 

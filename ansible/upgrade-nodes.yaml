@@ -1,4 +1,6 @@
 ---
+  - include: _packages-cleanup.yaml
+    when: allow_package_installation|bool == true
   - include: _packages.yaml
     when: allow_package_installation|bool == true
 
@@ -17,5 +19,4 @@
   - include: _kube-proxy.yaml play_name="Upgrade Kubernetes Proxy" serial="1" upgrading=true
   - include: _calico.yaml play_name="Upgrade Cluster Network" serial="1" upgrading=true
 
-  - include: _upgrade-cleanup.yaml
   - include: _update-version.yaml

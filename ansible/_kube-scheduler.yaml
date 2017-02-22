@@ -21,6 +21,11 @@
           state: stopped
           enabled: no
         when: upgrading is defined and upgrading|bool == true and status is defined and (status.stdout == "active" or status.stdout == "inactive")
+      - name: remove unnecessary kube-scheduler unit file
+        file:
+          path: "{{ init_system_dir }}/kube-scheduler.service"
+          state: absent
+        when: upgrading is defined and upgrading|bool == true and status is defined and (status.stdout == "active" or status.stdout == "inactive")
 
     roles:
       - kube-scheduler
