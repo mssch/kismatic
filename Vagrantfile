@@ -52,6 +52,7 @@ Vagrant.configure(2) do |config|
       end
 
       config.vm.network :private_network, ip: opts[:eth1]
+      config.vm.provision "shell", inline: "nmcli connection reload; systemctl restart network.service"
     end
   end
 end
