@@ -39,7 +39,7 @@ var _ = Describe("kismatic upgrade tests", func() {
 				})
 			})
 
-			PContext("Using CentOS 7", func() {
+			Context("Using CentOS 7", func() {
 				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
 					WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {
 						// Install previous version cluster
@@ -53,7 +53,7 @@ var _ = Describe("kismatic upgrade tests", func() {
 						Expect(err).ToNot(HaveOccurred())
 
 						// Perform upgrade
-						cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml", "--skip-preflight")
+						cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml")
 						cmd.Stderr = os.Stderr
 						cmd.Stdout = os.Stdout
 						err = cmd.Run()
