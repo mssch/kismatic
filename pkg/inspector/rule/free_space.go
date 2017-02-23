@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-// FileContentMatches is a rule that verifies that the contents of a file
-// match the regular expression provided
+// The FreeSpace rule declares that the given path must have enough free space
 type FreeSpace struct {
 	Meta
 	MinimumBytes string
@@ -17,7 +16,7 @@ type FreeSpace struct {
 
 // Name is the name of the rule
 func (f FreeSpace) Name() string {
-	return fmt.Sprintf("Contents of %q match: %s", f.Path, f.MinimumBytes)
+	return fmt.Sprintf("Path %s has at least %s bytes", f.Path, f.MinimumBytes)
 }
 
 // IsRemoteRule returns true if the rule is to be run from outside of the node
@@ -35,7 +34,7 @@ func (f FreeSpace) Validate() []error {
 	if f.MinimumBytes == "" {
 		errs = append(errs, errors.New("MinimumBytes cannot be empty"))
 	} else {
-		if _, err := f.MinimumBytesAsUint64(); err != nil {
+		if _, err := f.minimumBytesAsUint64(); err != nil {
 			errs = append(errs, fmt.Errorf("MinimumBytes contains an invalid unsigned integer: %v", err))
 		}
 	}
@@ -45,6 +44,6 @@ func (f FreeSpace) Validate() []error {
 	return nil
 }
 
-func (f FreeSpace) MinimumBytesAsUint64() (uint64, error) {
+func (f FreeSpace) minimumBytesAsUint64() (uint64, error) {
 	return strconv.ParseUint(f.MinimumBytes, 10, 0)
 }
