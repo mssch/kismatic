@@ -8,6 +8,7 @@ ifeq ($(origin BUILD_DATE), undefined)
 endif
 
 # Setup some useful vars
+PKG = github.com/apprenda/kismatic
 HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 
@@ -15,6 +16,7 @@ HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.1.4.0
 PROVISIONER_VERSION = v1.1
+GO_VERSION = 1.8.0
 
 ifeq ($(origin GLIDE_GOOS), undefined)
 	GLIDE_GOOS := $(HOST_GOOS)
@@ -23,10 +25,40 @@ ifeq ($(origin GOOS), undefined)
 	GOOS := $(HOST_GOOS)
 endif
 
-build: vendor
-	go build -o bin/kismatic -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'" ./cmd/kismatic
-	GOOS=linux go build -o bin/inspector/linux/$(HOST_GOARCH)/kismatic-inspector ./cmd/kismatic-inspector
-	GOOS=darwin go build -o bin/inspector/darwin/$(HOST_GOARCH)/kismatic-inspector ./cmd/kismatic-inspector
+build: bin/$(GOOS)/kismatic
+
+build-inspector:
+	@$(MAKE) GOOS=linux bin/inspector/linux/amd64/kismatic-inspector
+	@$(MAKE) GOOS=darwin bin/inspector/darwin/amd64/kismatic-inspector
+
+.PHONY: bin/$(GOOS)/kismatic
+bin/$(GOOS)/kismatic: vendor
+	@echo "building $@"
+	@docker run                                                                     \
+	    --rm                                                                        \
+	    -e GOOS=$(GOOS)                                                             \
+	    -u $$(id -u):$$(id -g)                                                      \
+	    -v "$(shell pwd)":/go/src/$(PKG)                                            \
+	    -w /go/src/$(PKG)                                                           \
+	    golang:$(GO_VERSION)                                                        \
+	    go build -o $@                                                              \
+	        -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'" \
+	        ./cmd/kismatic
+
+.PHONY: bin/inspector/$(GOOS)/kismatic-inspector
+bin/inspector/$(GOOS)/amd64/kismatic-inspector: vendor
+	@echo "building $@"
+	@docker run                                                                      \
+	    --rm                                                                         \
+	    -e GOOS=$(GOOS)                                                              \
+	    -u $$(id -u):$$(id -g)                                                       \
+	    -v "$(shell pwd)":/go/src/$(PKG)                                             \
+	    -w /go/src/$(PKG)                                                            \
+	    golang:$(GO_VERSION)                                                         \
+	    go build -o $@                                                               \
+	        -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'"  \
+	        ./cmd/kismatic-inspector
+
 
 clean:
 	rm -rf bin
@@ -37,7 +69,13 @@ clean:
 	rm -rf integration/vendor
 
 test: vendor
-	go test ./cmd/... ./pkg/... $(TEST_OPTS)
+	@docker run                                                   \
+	    --rm                                                      \
+	    -u $$(id -u):$$(id -g)                                    \
+	    -v "$(shell pwd)":/go/src/$(PKG)                          \
+	    -w /go/src/$(PKG)                                         \
+	    golang:$(GO_VERSION)                                      \
+	    go test ./cmd/... ./pkg/... $(TEST_OPTS)
 
 integration-test: dist just-integration-test
 
@@ -51,8 +89,13 @@ tools/glide:
 	rm -r tools/$(GLIDE_GOOS)-$(HOST_GOARCH)
 
 vendor-ansible/out:
-	docker build -t apprenda/vendor-ansible vendor-ansible
-	docker run --rm -v $(shell pwd)/vendor-ansible/out:/ansible apprenda/vendor-ansible pip install --install-option="--prefix=/ansible" ansible==$(ANSIBLE_VERSION)
+	@echo "Vendoring ansible"
+	@docker build -t apprenda/vendor-ansible vendor-ansible
+	@docker run \
+	    --rm \
+	    -v $(shell pwd)/vendor-ansible/out:/ansible \
+	    apprenda/vendor-ansible \
+	    pip install --install-option="--prefix=/ansible" ansible==$(ANSIBLE_VERSION)
 
 vendor-provision/out:
 	mkdir -p vendor-provision/out/
@@ -60,9 +103,9 @@ vendor-provision/out:
 	curl -L https://github.com/apprenda/kismatic-provision/releases/download/$(PROVISIONER_VERSION)/provision-linux-amd64 -o vendor-provision/out/provision-linux-amd64
 	chmod +x vendor-provision/out/*
 
-dist: vendor-ansible/out vendor-provision/out build
+dist: vendor-ansible/out vendor-provision/out build build-inspector
 	mkdir -p out
-	cp bin/kismatic out
+	cp bin/$(GOOS)/kismatic out
 	mkdir -p out/ansible
 	cp -r vendor-ansible/out/* out/ansible
 	rm -rf out/ansible/playbooks

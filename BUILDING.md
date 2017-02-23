@@ -2,12 +2,13 @@
 [![Build Status](https://snap-ci.com/ulSrRsof30gMr7eaXZ_eufLs7XQtmS6Lw4eYwkmATn4/build_image)](https://snap-ci.com/apprenda/kismatic/branch/master)
 
 ### Pre-requisites
-- Darwin (OSX) or Linux x86-64
-- Go installed
-- Docker (required for building)
+- make
+- Docker
 
 ### Build using make
 We use `make` to clean, build, and produce our distribution package. Take a look at the Makefile for more details.
+
+Build and test phases happen inside docker containers.
 
 In order to build the Go binaries (e.g. Kismatic CLI):
 ```
