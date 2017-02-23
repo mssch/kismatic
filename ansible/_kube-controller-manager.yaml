@@ -12,7 +12,7 @@
       - name: check if kube-controller-manager service is active
         command: systemctl is-active -q kube-controller-manager.service
         register: status
-        failed_when: status.rc !=0 and status.rc != 3
+        failed_when: status.rc !=0 and status.rc != 3 # 0 = running, 3 = stopped/doesn't exist
         when: upgrading is defined and upgrading|bool == true
 
       - name: stop kube-controller-manager service
@@ -20,12 +20,12 @@
           name: kube-controller-manager.service
           state: stopped
           enabled: no
-        when: upgrading is defined and upgrading|bool == true and status is defined and (status.stdout == "active" or status.stdout == "inactive")
+        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0
       - name: remove unnecessary kube-controller-manager unit file
         file:
           path: "{{ init_system_dir }}/kube-controller-manager.service"
           state: absent
-        when: upgrading is defined and upgrading|bool == true and status is defined and (status.stdout == "active" or status.stdout == "inactive")
+        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0
 
     roles:
       - kube-controller-manager

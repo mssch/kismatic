@@ -45,7 +45,7 @@ var ubuntu1604Prep = nodePrep{
 	CommandsToInstallEtcd:      []string{installEtcdApt},
 	CommandsToInstallDocker:    []string{installDockerApt},
 	CommandsToInstallK8sMaster: []string{installDockerApt, installKubeletApt, installKubectlApt},
-	CommandsToInstallK8s:       []string{installDockerApt, installKubeletApt},
+	CommandsToInstallK8s:       []string{installDockerApt, installKubeletApt, installKubectlApt},
 	CommandsToInstallOffline:   []string{installKismaticOfflineApt},
 }
 
@@ -54,7 +54,7 @@ var rhel7FamilyPrep = nodePrep{
 	CommandsToInstallEtcd:      []string{installEtcdYum},
 	CommandsToInstallDocker:    []string{installDockerYum},
 	CommandsToInstallK8sMaster: []string{installDockerYum, installKubeletYum, installKubectlYum},
-	CommandsToInstallK8s:       []string{installDockerYum, installKubeletYum},
+	CommandsToInstallK8s:       []string{installDockerYum, installKubeletYum, installKubectlYum},
 	CommandsToInstallOffline:   []string{installKismaticOfflineYum},
 }
 

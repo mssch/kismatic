@@ -46,7 +46,7 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
 	case Python2Version:
 		c = &check.Python2Check{SupportedVersions: r.SupportedVersions}
 	case FreeSpace:
-		bytes, _ := r.MinimumBytesAsUint64()
+		bytes, _ := r.minimumBytesAsUint64() // ignore this err, as we have already validated the rule
 		c = &check.FreeSpaceCheck{Path: r.Path, MinimumBytes: bytes}
 	case PackageAvailableUpgrade:
 		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion}

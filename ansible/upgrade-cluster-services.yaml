@@ -1,4 +1,5 @@
 ---
+  - include: _calico.yaml play_name="Upgrade Cluster Network" serial="1" upgrading=true
   - include: _kube-dns.yaml play_name="Upgrade Kubernetes DNS"
   - include: _kube-ingress.yaml play_name="Upgrade Kubernetes Ingress"
     when: configure_ingress|bool == true

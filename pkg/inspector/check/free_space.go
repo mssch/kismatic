@@ -11,17 +11,13 @@ type FreeSpaceCheck struct {
 	Path         string
 }
 
-// Check returns true if file contents match the regular expression. Otherwise,
-// returns false. If an error occurrs, returns false and the error.
+// Check returns true if the path has enough free space. Otherwise return false.
 func (c FreeSpaceCheck) Check() (bool, error) {
 	var stat syscall.Statfs_t
-
-	syscall.Statfs(c.Path, &stat)
-
+	if err := syscall.Statfs(c.Path, &stat); err != nil {
+		return false, fmt.Errorf("failed to check free space at path %s: %v", c.Path, err)
+	}
 	// Available blocks * size per block = available space in bytes
 	availableBytes := stat.Bavail * uint64(stat.Bsize)
-
-	fmt.Printf("%v>=%v", availableBytes, c.MinimumBytes)
-
 	return availableBytes >= c.MinimumBytes, nil
 }
