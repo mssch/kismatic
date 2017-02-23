@@ -128,6 +128,14 @@ const defaultRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
 - kind: PackageAvailable
+  when: ["ingress","ubuntu"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-0~xenial
+- kind: PackageAvailable
+  when: ["storage","ubuntu"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-0~xenial
+- kind: PackageAvailable
   when: ["worker","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
@@ -165,6 +173,14 @@ const defaultRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
 - kind: PackageAvailable
+  when: ["ingress","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailable
+  when: ["storage","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailable
   when: ["worker","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
@@ -199,6 +215,14 @@ const defaultRuleSet = `---
   packageVersion: 1.5.2_4-1
 - kind: PackageAvailable
   when: ["worker","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailable
+  when: ["ingress","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailable
+  when: ["storage","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
 - kind: PackageAvailable
@@ -305,6 +329,14 @@ const upgradeRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
 - kind: PackageAvailableUpgrade
+  when: ["ingress","ubuntu"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-0~xenial
+- kind: PackageAvailableUpgrade
+  when: ["storage","ubuntu"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-0~xenial
+- kind: PackageAvailableUpgrade
   when: ["worker","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
@@ -315,6 +347,18 @@ const upgradeRuleSet = `---
 - kind: PackageAvailableUpgrade
   when: ["storage","ubuntu"]
   packageName: kubelet
+  packageVersion: 1.5.2-4
+- kind: PackageAvailableUpgrade
+  when: ["worker","ubuntu"]
+  packageName: kubectl
+  packageVersion: 1.5.2-4
+- kind: PackageAvailableUpgrade
+  when: ["ingress","ubuntu"]
+  packageName: kubectl
+  packageVersion: 1.5.2-4
+- kind: PackageAvailableUpgrade
+  when: ["storage","ubuntu"]
+  packageName: kubectl
   packageVersion: 1.5.2-4
 
 - kind: PackageAvailableUpgrade
@@ -342,6 +386,14 @@ const upgradeRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
 - kind: PackageAvailableUpgrade
+  when: ["ingress","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailableUpgrade
+  when: ["storage","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailableUpgrade
   when: ["worker","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
@@ -352,6 +404,18 @@ const upgradeRuleSet = `---
 - kind: PackageAvailableUpgrade
   when: ["storage","centos"]
   packageName: kubelet
+  packageVersion: 1.5.2_4-1
+- kind: PackageAvailableUpgrade
+  when: ["worker","centos"]
+  packageName: kubectl
+  packageVersion: 1.5.2_4-1
+- kind: PackageAvailableUpgrade
+  when: ["ingress","centos"]
+  packageName: kubectl
+  packageVersion: 1.5.2_4-1
+- kind: PackageAvailableUpgrade
+  when: ["storage","centos"]
+  packageName: kubectl
   packageVersion: 1.5.2_4-1
 
 - kind: PackageAvailableUpgrade
@@ -379,8 +443,16 @@ const upgradeRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
 - kind: PackageAvailableUpgrade
+  when: ["ingress","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailableUpgrade
+  when: ["storage","centos"]
+  packageName: docker-engine
+  packageVersion: 1.11.2-1.el7.centos
+- kind: PackageAvailableUpgrade
   when: ["worker","rhel"]
-  packageName: PackageAvailableUpgrade
+  packageName: kubelet
   packageVersion: 1.5.2_4-1
 - kind: PackageAvailable
   when: ["ingress","rhel"]
@@ -389,6 +461,18 @@ const upgradeRuleSet = `---
 - kind: PackageAvailableUpgrade
   when: ["storage","rhel"]
   packageName: kubelet
+  packageVersion: 1.5.2_4-1
+- kind: PackageAvailableUpgrade
+  when: ["worker","rhel"]
+  packageName: kubectl
+  packageVersion: 1.5.2_4-1
+- kind: PackageAvailable
+  when: ["ingress","rhel"]
+  packageName: kubectl
+  packageVersion: 1.5.2_4-1
+- kind: PackageAvailableUpgrade
+  when: ["storage","rhel"]
+  packageName: kubectl
   packageVersion: 1.5.2_4-1
 
 # Gluster packages

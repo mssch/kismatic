@@ -1,10 +1,10 @@
 ---
-  - hosts: master
+  - hosts: worker
     any_errors_fatal: true
     name: "Smoke Test New Worker"
     remote_user: root
     become_method: sudo
     run_once: true
-    
+
     roles:
       - worker-smoke-test
