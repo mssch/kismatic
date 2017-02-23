@@ -21,6 +21,11 @@
           state: stopped
           enabled: no
         when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0 # only stop if it's running
+      - name: remove unnecessary kube-apiserver unit file
+        file:
+          path: "{{ init_system_dir }}/kube-apiserver.service"
+          state: absent
+        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0
 
     roles:
       - authorization-policy

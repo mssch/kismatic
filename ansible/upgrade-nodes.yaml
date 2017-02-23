@@ -1,4 +1,6 @@
 ---
+  - include: _packages-cleanup.yaml
+    when: allow_package_installation|bool == true
   - include: _packages.yaml
     when: allow_package_installation|bool == true
 
@@ -16,5 +18,5 @@
   - include: _kube-controller-manager.yaml play_name="Upgrade Kubernetes Controller Manager" serial="1" upgrading=true
   - include: _validate-control-plane-node.yaml
   - include: _kube-proxy.yaml play_name="Upgrade Kubernetes Proxy" serial="1" upgrading=true
-  - include: _upgrade-cleanup.yaml
+
   - include: _update-version.yaml
