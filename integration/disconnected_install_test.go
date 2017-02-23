@@ -33,7 +33,7 @@ var _ = Describe("disconnected install feature", func() {
 					FailIfError(err, "Failed to curl google")
 
 					By("Blocking all outbound connections")
-					allowPorts := "8888,2379,6666,2380,6660,6443,8443,80,443" // ports needed/checked by inspector
+					allowPorts := "8888,2379,6666,2380,6660,6443,8443,80,443,4194,10249,10250,10251,10252,10254" // ports needed/checked by inspector
 					cmd := []string{
 						"sudo iptables -A OUTPUT -o lo -j ACCEPT",                                                         // allow loopback
 						"sudo iptables -A OUTPUT -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT",                // allow SSH
