@@ -10,4 +10,4 @@
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
 
-  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-proxy-{{ ansible_hostname }}"
+  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-proxy-{{ inventory_hostname }}"
