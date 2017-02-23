@@ -86,15 +86,8 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 	switch kind {
 	default:
 		return nil, fmt.Errorf("rule with kind %q is not supported", catchAll.Kind)
-	case "packageavailable":
-		r := PackageAvailable{
-			PackageName:    catchAll.PackageName,
-			PackageVersion: catchAll.PackageVersion,
-		}
-		r.Meta = meta
-		return r, nil
-	case "packageavailableupgrade":
-		r := PackageAvailableUpgrade{
+	case "packagedependency":
+		r := PackageDependency{
 			PackageName:    catchAll.PackageName,
 			PackageVersion: catchAll.PackageVersion,
 		}

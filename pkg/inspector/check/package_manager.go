@@ -13,46 +13,10 @@ import (
 type PackageManager interface {
 	IsAvailable(PackageQuery) (bool, error)
 	IsInstalled(PackageQuery) (bool, error)
-	Enforced() bool
-}
-
-func IsPackageReadyToContinue(m PackageManager, q PackageQuery) (bool, error) {
-	if m.Enforced() {
-		installed, _ := m.IsInstalled(q)
-
-		if installed {
-			return true, nil
-		}
-
-		available, _ := m.IsAvailable(q)
-
-		if available {
-			return false, fmt.Errorf("%v is not installed but is available in a package repository", q)
-		}
-
-		return false, fmt.Errorf("%v is not installed and isn't available in known package repositories", q)
-	}
-	return true, nil
-}
-
-func IsPackageAvailable(m PackageManager, q PackageQuery) (bool, error) {
-	installed, _ := m.IsInstalled(q)
-
-	if installed {
-		return true, nil
-	}
-
-	available, _ := m.IsAvailable(q)
-
-	if available {
-		return true, nil
-	}
-
-	return false, fmt.Errorf("%v is not installed and isn't available in known package repositories", q)
 }
 
 // NewPackageManager returns a package manager for the given distribution
-func NewPackageManager(distro Distro, enforcePackages bool) (PackageManager, error) {
+func NewPackageManager(distro Distro) (PackageManager, error) {
 	run := func(name string, arg ...string) ([]byte, error) {
 		r, err := exec.Command(name, arg...).CombinedOutput()
 		return r, err
@@ -60,13 +24,11 @@ func NewPackageManager(distro Distro, enforcePackages bool) (PackageManager, err
 	switch distro {
 	case RHEL, CentOS:
 		return &rpmManager{
-			run:             run,
-			enforcePackages: enforcePackages,
+			run: run,
 		}, nil
 	case Ubuntu:
 		return &debManager{
-			run:             run,
-			enforcePackages: enforcePackages,
+			run: run,
 		}, nil
 	case Darwin:
 		return noopManager{}, nil
@@ -89,12 +51,7 @@ func (noopManager) Enforced() bool {
 
 // package manager for EL-based distributions
 type rpmManager struct {
-	run             func(string, ...string) ([]byte, error)
-	enforcePackages bool
-}
-
-func (m rpmManager) Enforced() bool {
-	return m.enforcePackages
+	run func(string, ...string) ([]byte, error)
 }
 
 func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
@@ -140,12 +97,7 @@ func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 
 // package manager for debian-based distributions
 type debManager struct {
-	run             func(string, ...string) ([]byte, error)
-	enforcePackages bool
-}
-
-func (m debManager) Enforced() bool {
-	return m.enforcePackages
+	run func(string, ...string) ([]byte, error)
 }
 
 func (m debManager) IsInstalled(p PackageQuery) (bool, error) {

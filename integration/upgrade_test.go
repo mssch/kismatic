@@ -30,7 +30,7 @@ var _ = Describe("kismatic upgrade tests", func() {
 						Expect(err).ToNot(HaveOccurred())
 
 						// Perform upgrade
-						cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml", "--skip-preflight")
+						cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml")
 						cmd.Stderr = os.Stderr
 						cmd.Stdout = os.Stdout
 						err = cmd.Run()

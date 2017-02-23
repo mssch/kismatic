@@ -103,151 +103,151 @@ const defaultRuleSet = `---
   port: 443
   timeout: 5s
 
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["etcd", "ubuntu"]
   packageName: etcd
   packageVersion: 3.1.0
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","ubuntu"]
   packageName: kubectl
   packageVersion: 1.5.2-4
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","ubuntu", "disconnected"]
   packageName: kismatic-offline
   packageVersion: 1.5.2-4
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
 
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["etcd", "centos"]
   packageName: etcd
   packageVersion: 3.1.0-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","centos"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","centos", "disconnected"]
   packageName: kismatic-offline
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["worker","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
 
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["etcd", "rhel"]
   packageName: etcd
   packageVersion: 3.1.0-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","rhel"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","rhel"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["master","rhel", "disconnected"]
   packageName: kismatic-offline
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["worker","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
 
 # Gluster packages
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage", "centos"]
   packageName: glusterfs-server
   packageVersion: 3.8.7-1.el7
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage", "rhel"]
   packageName: glusterfs-server
   packageVersion: 3.8.7-1.el7
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["storage", "ubuntu"]
   packageName: glusterfs-server
   packageVersion: 3.8.7-ubuntu1~xenial1
@@ -304,187 +304,187 @@ const upgradeRuleSet = `---
   path: /
   minimumBytes: 1000000000
 
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["etcd", "ubuntu"]
   packageName: etcd
   packageVersion: 3.1.0
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","ubuntu"]
   packageName: kubectl
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","ubuntu", "disconnected"]
   packageName: kismatic-offline
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.11.2-0~xenial
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: kubelet
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: kubectl
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: kubectl
   packageVersion: 1.5.2-4
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: kubectl
   packageVersion: 1.5.2-4
 
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["etcd", "centos"]
   packageName: etcd
   packageVersion: 3.1.0-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","centos"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","centos", "disconnected"]
   packageName: kismatic-offline
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","centos"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
 
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["etcd", "rhel"]
   packageName: etcd
   packageVersion: 3.1.0-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","rhel"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","rhel"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["master","rhel", "disconnected"]
   packageName: kismatic-offline
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","rhel"]
   packageName: kubelet
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["worker","rhel"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailable
+- kind: PackageDependency
   when: ["ingress","rhel"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage","rhel"]
   packageName: kubectl
   packageVersion: 1.5.2_4-1
 
 # Gluster packages
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage", "centos"]
   packageName: glusterfs-server
   packageVersion: 3.8.7-1.el7
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage", "rhel"]
   packageName: glusterfs-server
   packageVersion: 3.8.7-1.el7
-- kind: PackageAvailableUpgrade
+- kind: PackageDependency
   when: ["storage", "ubuntu"]
   packageName: glusterfs-server
   packageVersion: 3.8.7-ubuntu1~xenial1

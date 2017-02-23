@@ -87,7 +87,7 @@
   - name: start kismatic-inspector service
     service:
       name: kismatic-inspector.service
-      state: started
+      state: restarted # always restart to ensure that any existing inspectors are replaced by this one
 
   # Run the pre-flights checks, and always stop the checker regardless of result
   - block:
