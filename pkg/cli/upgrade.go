@@ -199,7 +199,7 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, toUpgrade 
 	}
 
 	// Run the upgrade on the nodes that need it
-	if err := executor.UpgradeNodes(plan, toUpgrade); err != nil {
+	if err := executor.UpgradeNodes(plan, toUpgrade, opts.online); err != nil {
 		return fmt.Errorf("Failed to upgrade nodes: %v", err)
 	}
 	return nil
