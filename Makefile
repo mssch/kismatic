@@ -45,7 +45,7 @@ bin/$(GOOS)/kismatic: vendor
 	        -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'" \
 	        ./cmd/kismatic
 
-.PHONY: bin/inspector/$(GOOS)/kismatic-inspector
+.PHONY: bin/inspector/$(GOOS)/amd64/kismatic-inspector
 bin/inspector/$(GOOS)/amd64/kismatic-inspector: vendor
 	@echo "building $@"
 	@docker run                                                                      \
