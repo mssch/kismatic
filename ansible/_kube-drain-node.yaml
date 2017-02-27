@@ -1,0 +1,7 @@
+---
+  - name: "Drain Node"
+    hosts: master:worker:ingress:storage
+    serial: 1
+    tasks:
+      - name: "Run kubectl drain"
+        command: "kubectl drain --ignore-daemonsets {{ inventory_hostname }}"

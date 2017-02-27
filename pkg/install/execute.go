@@ -33,7 +33,7 @@ type Executor interface {
 	AddWorker(*Plan, Node) (*Plan, error)
 	RunPlay(string, *Plan) error
 	AddVolume(*Plan, StorageVolume) error
-	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode) error
+	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool) error
 	ValidateControlPlane(plan Plan) error
 	UpgradeDockerRegistry(plan Plan) error
 	UpgradeClusterServices(plan Plan) error
@@ -358,7 +358,7 @@ func (ae *ansibleExecutor) AddVolume(plan *Plan, volume StorageVolume) error {
 // which phase of the upgrade we are in. For example, when upgrading a node that is both an etcd and master,
 // the etcd components and the master components will be upgraded when we are in the upgrade etcd nodes
 // phase.
-func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode) error {
+func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool) error {
 	// Nodes can have multiple roles. For this reason, we need to keep track of which nodes
 	// have been upgraded to avoid re-upgrading them.
 	upgradedNodes := map[string]bool{}
@@ -367,7 +367,7 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 		for _, role := range nodeToUpgrade.Roles {
 			if role == "etcd" {
 				node := nodeToUpgrade.Node
-				if err := ae.upgradeNode(plan, node); err != nil {
+				if err := ae.upgradeNode(plan, node, onlineUpgrade); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
 				}
 				upgradedNodes[node.IP] = true
@@ -384,7 +384,7 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 		for _, role := range nodeToUpgrade.Roles {
 			if role == "master" {
 				node := nodeToUpgrade.Node
-				if err := ae.upgradeNode(plan, node); err != nil {
+				if err := ae.upgradeNode(plan, node, onlineUpgrade); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
 				}
 				upgradedNodes[node.IP] = true
@@ -401,7 +401,7 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 		for _, role := range nodeToUpgrade.Roles {
 			if role != "etcd" && role != "master" {
 				node := nodeToUpgrade.Node
-				if err := ae.upgradeNode(plan, node); err != nil {
+				if err := ae.upgradeNode(plan, node, onlineUpgrade); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
 				}
 				upgradedNodes[node.IP] = true
@@ -412,12 +412,13 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 	return nil
 }
 
-func (ae *ansibleExecutor) upgradeNode(plan Plan, node Node) error {
+func (ae *ansibleExecutor) upgradeNode(plan Plan, node Node, onlineUpgrade bool) error {
 	inventory := buildInventoryFromPlan(&plan)
 	cc, err := ae.buildClusterCatalog(&plan)
 	if err != nil {
 		return err
 	}
+	cc.OnlineUpgrade = onlineUpgrade
 	t := task{
 		name:           "upgrade-nodes",
 		playbook:       "upgrade-nodes.yaml",

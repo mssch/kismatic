@@ -58,6 +58,8 @@ type ClusterCatalog struct {
 	VolumeAllowedIPs        string `yaml:"volume_allow_ips"`
 
 	TargetVersion string `yaml:"kismatic_short_version"`
+
+	OnlineUpgrade bool `yaml:"online_upgrade"`
 }
 
 type NFSVolume struct {
