@@ -1,7 +1,4 @@
 ---
-  - name: download kube-controller-manager image
-    command: docker pull {{ kube_controller_manager_img }}
-
   - name: copy kube-controller-manager.yaml manifest
     template:
       src: kube-controller-manager.yaml

@@ -9,6 +9,9 @@
       - group_vars/all.yaml
 
     pre_tasks:
+      - name: download kube-controller-manager image
+        command: docker pull {{ kube_controller_manager_img }}
+
       - name: check if kube-controller-manager service is active
         command: systemctl is-active -q kube-controller-manager.service
         register: status

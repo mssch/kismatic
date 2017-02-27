@@ -1,7 +1,4 @@
 ---
-  - name: download kube-scheduler image
-    command: docker pull {{ kube_scheduler_img }}
-
   - name: copy kube-scheduler.yaml manifest
     template:
       src: kube-scheduler.yaml

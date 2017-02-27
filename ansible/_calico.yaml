@@ -9,6 +9,13 @@
       - group_vars/all.yaml
 
     pre_tasks:
+      - name: download networking images
+        command: docker pull {{ item }}
+        with_items:
+          - "{{ calico_node_img }}"
+          - "{{ calico_cni_img }}"
+          - "{{ calico_ctl_img }}"
+
       - name: check if calico-node is active
         command: systemctl is-active -q calico-node.service
         register: status

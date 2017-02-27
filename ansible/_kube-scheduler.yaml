@@ -9,6 +9,9 @@
       - group_vars/all.yaml
 
     pre_tasks:
+      - name: download kube-scheduler image
+        command: docker pull {{ kube_scheduler_img }}
+        
       - name: check if kube-scheduler service is active
         command: systemctl is-active -q kube-scheduler.service
         register: status

@@ -9,6 +9,9 @@
       - group_vars/all.yaml
 
     pre_tasks:
+      - name: download kube-proxy image
+        command: docker pull {{ kube_proxy_img }}
+
       - name: check if kube-proxy service is active
         command: systemctl is-active -q kube-proxy.service
         register: status
