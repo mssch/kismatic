@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/apprenda/kismatic/pkg/install/explain"
 	"github.com/apprenda/kismatic/pkg/util"
 )
 
@@ -53,7 +52,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	// Run the playbook for adding the node
 	util.PrintHeader(ae.stdout, "Adding Worker Node to Cluster", '=')
 	playbook := "kubernetes-worker.yaml"
-	eventExplainer := &explain.DefaultEventExplainer{}
+	eventExplainer := ae.defaultExplainer()
 	runner, explainer, err := ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
 	if err != nil {
 		return nil, err
@@ -71,7 +70,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 		// We need to run ansible against all hosts to update the hosts files
 		util.PrintHeader(ae.stdout, "Updating Hosts Files On All Nodes", '=')
 		playbook := "_hosts.yaml"
-		eventExplainer := &explain.DefaultEventExplainer{}
+		eventExplainer = ae.defaultExplainer()
 		runner, explainer, err := ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
 		if err != nil {
 			return nil, err
@@ -91,7 +90,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 
 	cc.WorkerNode = newWorker.Host
 
-	eventExplainer = &explain.DefaultEventExplainer{}
+	eventExplainer = ae.defaultExplainer()
 	runner, explainer, err = ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
 	if err != nil {
 		return nil, err
@@ -109,7 +108,7 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	if len(originalPlan.Storage.Nodes) > 0 {
 		util.PrintHeader(ae.stdout, "Updating Allowed IPs On Storage Volumes", '=')
 		playbook = "_volume-update-allowed.yaml"
-		eventExplainer = &explain.DefaultEventExplainer{}
+		eventExplainer = ae.defaultExplainer()
 		runner, explainer, err = ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
 		if err != nil {
 			return nil, err

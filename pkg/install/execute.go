@@ -211,7 +211,7 @@ func (ae *ansibleExecutor) Install(p *Plan) error {
 		plan:           *p,
 		inventory:      buildInventoryFromPlan(p),
 		clusterCatalog: *cc,
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 	}
 	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
 	return ae.execute(t)
@@ -225,7 +225,7 @@ func (ae *ansibleExecutor) RunSmokeTest(p *Plan) error {
 	t := task{
 		name:           "smoketest",
 		playbook:       "smoketest.yaml",
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 		plan:           *p,
 		inventory:      buildInventoryFromPlan(p),
 		clusterCatalog: *cc,
@@ -253,10 +253,8 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 		playbook:       "preflight.yaml",
 		inventory:      buildInventoryFromPlan(p),
 		clusterCatalog: *cc,
-		explainer: &explain.PreflightEventExplainer{
-			DefaultExplainer: &explain.DefaultEventExplainer{},
-		},
-		plan: *p,
+		explainer:      ae.preflightExplainer(),
+		plan:           *p,
 	}
 	return ae.execute(t)
 }
@@ -275,11 +273,9 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan) error {
 	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
 	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
 	t := task{
-		name:     "upgrade-preflight",
-		playbook: "upgrade-preflight.yaml",
-		explainer: &explain.PreflightEventExplainer{
-			DefaultExplainer: &explain.DefaultEventExplainer{},
-		},
+		name:           "upgrade-preflight",
+		playbook:       "upgrade-preflight.yaml",
+		explainer:      ae.preflightExplainer(),
 		plan:           *p,
 		inventory:      inventory,
 		clusterCatalog: *cc,
@@ -297,7 +293,7 @@ func (ae *ansibleExecutor) RunPlay(playName string, p *Plan) error {
 		playbook:       playName,
 		inventory:      buildInventoryFromPlan(p),
 		clusterCatalog: *cc,
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 		plan:           *p,
 	}
 	util.PrintHeader(ae.stdout, "Running Task", '=')
@@ -347,7 +343,7 @@ func (ae *ansibleExecutor) AddVolume(plan *Plan, volume StorageVolume) error {
 		plan:           *plan,
 		inventory:      buildInventoryFromPlan(plan),
 		clusterCatalog: *cc,
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 	}
 	util.PrintHeader(ae.stdout, "Add Persistent Storage Volume", '=')
 	return ae.execute(t)
@@ -428,7 +424,7 @@ func (ae *ansibleExecutor) upgradeNode(plan Plan, node Node) error {
 		inventory:      inventory,
 		clusterCatalog: *cc,
 		plan:           plan,
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 		limit:          []string{node.Host},
 	}
 	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade Node %q", node.Host), '=')
@@ -447,7 +443,7 @@ func (ae *ansibleExecutor) ValidateControlPlane(plan Plan) error {
 		inventory:      inventory,
 		clusterCatalog: *cc,
 		plan:           plan,
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 	}
 	return ae.execute(t)
 }
@@ -464,7 +460,7 @@ func (ae *ansibleExecutor) UpgradeDockerRegistry(plan Plan) error {
 		inventory:      inventory,
 		clusterCatalog: *cc,
 		plan:           plan,
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 	}
 	return ae.execute(t)
 }
@@ -481,7 +477,7 @@ func (ae *ansibleExecutor) UpgradeClusterServices(plan Plan) error {
 		inventory:      inventory,
 		clusterCatalog: *cc,
 		plan:           plan,
-		explainer:      &explain.DefaultEventExplainer{},
+		explainer:      ae.defaultExplainer(),
 	}
 	return ae.execute(t)
 }
@@ -594,14 +590,12 @@ func (ae *ansibleExecutor) ansibleRunnerWithExplainer(explainer explain.AnsibleE
 		return ae.runnerExplainerFactory(explainer, ansibleLog)
 	}
 
-	// Setup sinks for explainer and ansible stdout
-	var explainerOut, ansibleOut io.Writer
+	// Setup sink for ansible stdout
+	var ansibleOut io.Writer
 	switch ae.consoleOutputFormat {
 	case ansible.JSONLinesFormat:
-		explainerOut = ae.stdout
 		ansibleOut = timestampWriter(ansibleLog)
 	case ansible.RawFormat:
-		explainerOut = ioutil.Discard
 		ansibleOut = io.MultiWriter(ae.stdout, timestampWriter(ansibleLog))
 	}
 
@@ -612,12 +606,32 @@ func (ae *ansibleExecutor) ansibleRunnerWithExplainer(explainer explain.AnsibleE
 	}
 
 	streamExplainer := &explain.AnsibleEventStreamExplainer{
-		Out:            explainerOut,
-		Verbose:        ae.options.Verbose,
 		EventExplainer: explainer,
 	}
 
 	return runner, streamExplainer, nil
+}
+
+func (ae *ansibleExecutor) defaultExplainer() explain.AnsibleEventExplainer {
+	var out io.Writer
+	switch ae.consoleOutputFormat {
+	case ansible.JSONLinesFormat:
+		out = ae.stdout
+	case ansible.RawFormat:
+		out = ioutil.Discard
+	}
+	return explain.DefaultExplainer(ae.options.Verbose, out)
+}
+
+func (ae *ansibleExecutor) preflightExplainer() explain.AnsibleEventExplainer {
+	var out io.Writer
+	switch ae.consoleOutputFormat {
+	case ansible.JSONLinesFormat:
+		out = ae.stdout
+	case ansible.RawFormat:
+		out = ioutil.Discard
+	}
+	return explain.PreflightExplainer(ae.options.Verbose, out)
 }
 
 func buildInventoryFromPlan(p *Plan) ansible.Inventory {
