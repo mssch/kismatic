@@ -18,3 +18,5 @@ import:
 - package: github.com/gosuri/uilive
 - package: github.com/mattn/go-isatty
   version: ~0.0.1
+- package: github.com/blang/semver
+  version: ~3.5.0
