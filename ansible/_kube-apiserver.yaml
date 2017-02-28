@@ -9,6 +9,9 @@
       - group_vars/all.yaml
 
     pre_tasks:
+      - name: download kube-apiserver image
+        command: docker pull {{ kube_apiserver_img }}
+
       - name: check if kube-apiserver service is active
         command: systemctl is-active -q kube-apiserver.service
         register: status

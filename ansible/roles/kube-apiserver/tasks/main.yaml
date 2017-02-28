@@ -1,7 +1,4 @@
 ---
-  - name: download kube-apiserver image
-    command: docker pull {{ kube_apiserver_img }}
-
   - name: copy kube-apiserver.yaml manifest
     template:
       src: kube-apiserver.yaml
