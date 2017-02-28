@@ -130,19 +130,19 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 		fmt.Fprintln(out)
 	}
 
+	if plan.ConfigureDockerRegistry() && plan.Cluster.DisconnectedInstallation {
+		util.PrintHeader(out, "Upgrade Docker Registry", '=')
+		if err := executor.UpgradeDockerRegistry(*plan); err != nil {
+			return fmt.Errorf("Failed to upgrade docker registry: %v", err)
+		}
+	}
+
 	// Print message if there's no work to do
 	if len(toUpgrade) == 0 {
 		fmt.Fprintln(out, "All nodes are at the target version. Skipping node upgrades.")
 	} else {
 		if err = upgradeNodes(out, *plan, *opts, toUpgrade, executor); err != nil {
 			return err
-		}
-	}
-
-	if plan.ConfigureDockerRegistry() && plan.Cluster.DisconnectedInstallation {
-		util.PrintHeader(out, "Upgrade Docker Registry", '=')
-		if err := executor.UpgradeDockerRegistry(*plan); err != nil {
-			return fmt.Errorf("Failed to upgrade docker registry: %v", err)
 		}
 	}
 
