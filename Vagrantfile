@@ -26,7 +26,7 @@ Vagrant.configure(2) do |config|
 
   # Add the ssh public key to the node
   config.vm.provision "shell" do |s|
-    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/kismaticuser.key.pub").first.strip
     s.inline = <<-SHELL
       mkdir -p /root/.ssh
       echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
@@ -52,6 +52,7 @@ Vagrant.configure(2) do |config|
       end
 
       config.vm.network :private_network, ip: opts[:eth1]
+      config.vm.provision "shell", inline: "nmcli connection reload; systemctl restart network.service"
     end
   end
 end

@@ -1,11 +1,10 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](LICENSE)
 [![Build Status](https://snap-ci.com/ulSrRsof30gMr7eaXZ_eufLs7XQtmS6Lw4eYwkmATn4/build_image)](https://snap-ci.com/apprenda/kismatic/branch/master)
+[![Slackin](http://54.242.94.98/badge.svg)](http://54.242.94.98/)
 
 # Kismatic Enterprise Toolkit (KET): Design, Deployment and Operations System for Production Kubernetes Clusters
 
 Join our mailing list for updates on new releases: https://groups.google.com/forum/#!forum/kismatic-users
-
-Join Slack to chat in real-time with the maintainers and community users of KET: https://kismatic.slack.com/signup
 
 ![KET](logo.png?raw=true "KET Logo")
 
@@ -36,9 +35,9 @@ KET operational tools include:
 | Etcd (for Kubernetes) | 3.0.15 |
 | Etcd (for Calico) | 2.37 |
 
-[Download latest install tarball (Mac)](https://github.com/apprenda/kismatic/releases/download/v1.2.1/kismatic-v1.2.1-darwin-amd64.tar.gz)
+[Download latest install tarball (Mac)](https://github.com/apprenda/kismatic/releases/download/v1.2.2/kismatic-v1.2.2-darwin-amd64.tar.gz)
 
-[Download latest install tarball (Linux)](https://github.com/apprenda/kismatic/releases/download/v1.2.1/kismatic-v1.2.1-linux-amd64.tar.gz)
+[Download latest install tarball (Linux)](https://github.com/apprenda/kismatic/releases/download/v1.2.2/kismatic-v1.2.2-linux-amd64.tar.gz)
 
 # Usage Documentation
 
