@@ -28,7 +28,19 @@ func NewCmdUpgrade(out io.Writer) *cobra.Command {
 	var opts upgradeOpts
 	cmd := &cobra.Command{
 		Use:   "upgrade",
-		Short: "upgrade your Kubernetes cluster",
+		Short: "Upgrade your Kubernetes cluster",
+		Long: `Upgrade your Kubernetes cluster.
+
+The upgrade process is applied to each node, one node at a time. If a private docker registry
+is being used, the new container images will be pushed by Kismatic before starting to upgrade
+nodes.
+
+Nodes in the cluster are upgraded in the following order:
+
+1. Etcd nodes
+2. Master nodes
+3. Worker nodes (regardless of specialization)
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -52,7 +64,17 @@ func NewCmdUpgrade(out io.Writer) *cobra.Command {
 func NewCmdUpgradeOffline(out io.Writer, opts *upgradeOpts) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "offline",
-		Short: "perform an offline upgrade of your Kubernetes cluster",
+		Short: "Perform an offline upgrade of your Kubernetes cluster",
+		Long: `Perform an offline upgrade of your Kubernetes cluster.
+
+The offline upgrade is available for those clusters in which safety and availabilty are not a concern.
+In this mode, the safety and availability checks will not be performed, nor will the nodes in the cluster
+be drained of workloads.
+
+Performing an offline upgrade could result in loss of critical data and reduced service
+availability. For this reason, this method should not be used for clusters that are housing
+production workloads.
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return doUpgrade(out, opts)
 		},
@@ -64,7 +86,16 @@ func NewCmdUpgradeOffline(out io.Writer, opts *upgradeOpts) *cobra.Command {
 func NewCmdUpgradeOnline(out io.Writer, opts *upgradeOpts) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "online",
-		Short: "perform an online upgrade of your Kubernetes cluster",
+		Short: "Perform an online upgrade of your Kubernetes cluster",
+		Long: `Perform an online upgrade of your Kubernetes cluster.
+
+During an online upgrade, Kismatic will run safety and availability checks (see table below) against the
+existing cluster before performing the upgrade. If any unsafe condition is detected, a report will
+be printed, and the upgrade will not proceed.
+
+If the node under upgrade is a Kubernetes node, it is cordoned and drained of workloads
+before any changes are applied.
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.online = true
 			return doUpgrade(out, opts)
