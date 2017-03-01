@@ -132,12 +132,10 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 		fmt.Fprintln(out)
 	}
 
-	// Print message if there's no work to do
-	if len(toUpgrade) == 0 {
-		fmt.Fprintln(out, "All nodes are at the target version. Skipping node upgrades.")
-	} else {
-		if err = upgradeNodes(out, *plan, *opts, toUpgrade, executor); err != nil {
-			return err
+	if plan.ConfigureDockerRegistry() && plan.Cluster.DisconnectedInstallation {
+		util.PrintHeader(out, "Upgrade Docker Registry", '=')
+		if err := executor.UpgradeDockerRegistry(*plan); err != nil {
+			return fmt.Errorf("Failed to upgrade docker registry: %v", err)
 		}
 	}
 
@@ -148,12 +146,21 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 		}
 	}
 
+	// Print message if there's no work to do
+	if len(toUpgrade) == 0 {
+		fmt.Fprintln(out, "All nodes are at the target version. Skipping node upgrades.")
+	} else {
+		if err = upgradeNodes(out, *plan, *opts, toUpgrade, executor); err != nil {
+			return err
+		}
+	}
+
 	if opts.partialAllowed {
 		util.PrintColor(out, util.Green, `
 
 Partial upgrade complete.
 
-Cluster level services are still left to upgrade. These can only be upgraded 
+Cluster level services are still left to upgrade. These can only be upgraded
 when performing a full upgrade. When you are ready, you may use "kismatic upgrade"
 without the "--partial-ok" flag to perform a full upgrade.
 

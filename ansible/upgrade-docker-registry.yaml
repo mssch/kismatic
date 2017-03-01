@@ -1,5 +1,10 @@
 ---
+  - include: _packages.yaml
+    when: allow_package_installation|bool == true
   # - include: _docker-registry-container.yaml play_name="Upgrade Internal Docker Registry"
   #   when: setup_internal_docker_registry|bool == true
-  - include: _docker-registry-images.yaml
-    when: use_private_docker_registry|bool == true and disconnected_installation|bool == true # only load images if offline
+  - include: _docker-registry-images.yaml  # only load images if offline and package upgraded
+    when: >
+      (use_private_docker_registry|bool == true and disconnected_installation|bool == true) and
+      ((kismatic_offline_installation_rpm is defined and kismatic_offline_installation_rpm.changed == true) or
+      (kismatic_offline_installation_deb is defined and kismatic_offline_installation_deb.changed == true))
