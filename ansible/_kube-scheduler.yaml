@@ -11,14 +11,14 @@
     pre_tasks:
       - name: download kube-scheduler image
         command: docker pull {{ kube_scheduler_img }}
-        
+
       - name: check if kube-scheduler service is active
         command: systemctl is-active -q kube-scheduler.service
         register: status
         failed_when: status.rc != 0 and status.rc != 3 # 0 = running, 3 = stopped/doesn't exist
         when: upgrading is defined and upgrading|bool == true
 
-      - name: stop kube-scheduler service
+      - name: stop kube-scheduler service if running
         service:
           name: kube-scheduler.service
           state: stopped
@@ -28,7 +28,7 @@
         file:
           path: "{{ init_system_dir }}/kube-scheduler.service"
           state: absent
-        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0
+        when: upgrading is defined and upgrading|bool == true
 
     roles:
       - kube-scheduler

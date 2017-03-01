@@ -23,12 +23,18 @@
         when: upgrading is defined and upgrading|bool == true
 
       # always stop and disable if service exists
-      - name: stop calico-node service
+      - name: stop calico-node service if running
         service:
           name: calico-node.service
           state: stopped
           enabled: no
-        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0 
+        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0
+
+      - name: remove unnecessary calico-node unit file
+        file:
+          path: "{{ init_system_dir }}/calico-node.service"
+          state: absent
+        when: upgrading is defined and upgrading|bool == true
 
     roles:
       - calico
