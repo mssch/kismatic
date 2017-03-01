@@ -18,7 +18,7 @@
         failed_when: status.rc !=0 and status.rc != 3 # 0 = running. 3 = stopped/doesn't exist
         when: upgrading is defined and upgrading|bool == true
 
-      - name: stop kube-apiserver service
+      - name: stop kube-apiserver service if running
         service:
           name: kube-apiserver.service
           state: stopped
@@ -28,7 +28,7 @@
         file:
           path: "{{ init_system_dir }}/kube-apiserver.service"
           state: absent
-        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0
+        when: upgrading is defined and upgrading|bool == true
 
     roles:
       - authorization-policy

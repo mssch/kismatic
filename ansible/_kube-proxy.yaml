@@ -18,17 +18,17 @@
         failed_when: status.rc != 0 and status.rc != 3 # 0 = running, 3 = stopped/doesn't exist
         when: upgrading is defined and upgrading|bool == true
 
-      - name: stop kube-proxy service
+      - name: stop kube-proxy service if running
         service:
           name: kube-proxy.service
           state: stopped
           enabled: no
-        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0 
+        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0
       - name: remove unnecessary kube-proxy unit file
         file:
           path: "{{ init_system_dir }}/kube-proxy.service"
           state: absent
-        when: upgrading is defined and upgrading|bool == true and status is defined and status.rc == 0 
+        when: upgrading is defined and upgrading|bool == true
 
     roles:
       - kube-proxy
