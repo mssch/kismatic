@@ -1,7 +1,7 @@
 ---
   # YUM
-  - name: install etcd yum package
-    yum: name=etcd-{{ etcd_yum_version }} state=present
+  - name: install transition-etcd yum package
+    yum: name=transition-etcd-{{ transition_etcd_yum_version }} state=present
     register: etcd_installation_rpm
     until: etcd_installation_rpm|success
     retries: 3
@@ -9,9 +9,9 @@
     when: ansible_os_family == 'RedHat'
 
   # DEB
-  - name: install etcd deb package
+  - name: install transition-etcd deb package
     apt:
-      name: etcd={{etcd_apt_version}}
+      name: transition-etcd={{transition_etcd_apt_version}}
       state: present
       default_release: kismatic-xenial
     register: etcd_installation_deb

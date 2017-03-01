@@ -128,21 +128,21 @@ If you are building a large cluster or one that won't have access to these repos
     <td>yes</td>
   </tr>
   <tr>
-    <td>Kismatic package of Etcd 3.1.0</td>
+    <td>Kismatic package of Etcd 3.1.1</td>
     <td>inter-pod networking</td>
     <td>yes</td>
     <td></td>
     <td></td>
   </tr>
   <tr>
-    <td>Kismatic package of Kubernetes kubelet 1.5.2-4</td>
+    <td>Kismatic package of Kubernetes kubelet 1.5.3-1</td>
     <td>Kubernetes</td>
     <td></td>
     <td>yes</td>
     <td>yes</td>
   </tr>
   <tr>
-    <td>Kismatic package of Kubernetes kubectl 1.5.2-4</td>
+    <td>Kismatic package of Kubernetes kubectl 1.5.3-1</td>
     <td>Kubernetes</td>
     <td></td>
     <td>yes</td>

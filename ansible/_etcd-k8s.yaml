@@ -12,5 +12,6 @@
     roles:
       - role: packages-etcd
         when: allow_package_installation|bool == true
-      - etcd-cert
+      - role: etcd-backup
+        when: upgrading is defined and upgrading|bool == true
       - etcd

@@ -3,7 +3,7 @@
   - include: _hosts.yaml
     when: modify_hosts_file|bool == true
   - include: _certs.yaml
-  - include: _packages.yaml
+  - include: _packages-repo.yaml
     when: allow_package_installation|bool == true
   - include: _docker.yaml
   - include: _kubelet.yaml

@@ -33,6 +33,7 @@ type Executor interface {
 	AddWorker(*Plan, Node) (*Plan, error)
 	RunPlay(string, *Plan) error
 	AddVolume(*Plan, StorageVolume) error
+	UpgradeEtcd2Nodes(plan Plan, nodesToUpgrade []ListableNode) error
 	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool) error
 	ValidateControlPlane(plan Plan) error
 	UpgradeDockerRegistry(plan Plan) error
@@ -350,6 +351,17 @@ func (ae *ansibleExecutor) AddVolume(plan *Plan, volume StorageVolume) error {
 	return ae.execute(t)
 }
 
+func (ae *ansibleExecutor) UpgradeEtcd2Nodes(plan Plan, nodesToUpgrade []ListableNode) error {
+	for _, nodeToUpgrade := range nodesToUpgrade {
+		node := nodeToUpgrade.Node
+		if err := ae.upgradeEtcd2Node(plan, node); err != nil {
+			return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
+		}
+	}
+
+	return nil
+}
+
 // UpgradeNodes upgrades the nodes of the cluster in the following phases:
 //   1. Etcd nodes
 //   2. Master nodes
@@ -430,6 +442,25 @@ func (ae *ansibleExecutor) upgradeNode(plan Plan, node ListableNode, onlineUpgra
 		limit:          []string{node.Node.Host},
 	}
 	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade: %s %s", node.Node.Host, node.Roles), '=')
+	return ae.execute(t)
+}
+
+func (ae *ansibleExecutor) upgradeEtcd2Node(plan Plan, node Node) error {
+	inventory := buildInventoryFromPlan(&plan)
+	cc, err := ae.buildClusterCatalog(&plan)
+	if err != nil {
+		return err
+	}
+	t := task{
+		name:           "upgrade-etcd2-node",
+		playbook:       "upgrade-etcd2-node.yaml",
+		inventory:      inventory,
+		clusterCatalog: *cc,
+		plan:           plan,
+		explainer:      ae.defaultExplainer(),
+		limit:          []string{node.Host},
+	}
+	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade Node To Temporary Etcd %q", node.Host), '=')
 	return ae.execute(t)
 }
 

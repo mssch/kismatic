@@ -18,7 +18,7 @@
       gpgcheck: yes
     when: ansible_os_family == 'RedHat' and kismatic_result.status is defined and kismatic_result.status == 200
   - name: clean kismatic yum cache
-    command: 'yum --enablerepo=kismatic clean metadata'
+    command: 'yum --disablerepo="*" --enablerepo=kismatic makecache'
     when: ansible_os_family == 'RedHat' and kismatic_result.status is defined and kismatic_result.status == 200
 
   # DEB

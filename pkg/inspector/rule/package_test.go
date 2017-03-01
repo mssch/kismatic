@@ -12,6 +12,10 @@ func TestPackageDependencyRuleValidation(t *testing.T) {
 	if errs := p.Validate(); len(errs) != 1 {
 		t.Errorf("expected 1 error, but got %d", len(errs))
 	}
+	p.AnyVersion = true
+	if errs := p.Validate(); len(errs) != 0 {
+		t.Errorf("expected to be vakid, but got %v", errs)
+	}
 	p.PackageVersion = "1.0"
 	if errs := p.Validate(); len(errs) != 0 {
 		t.Errorf("expected 0 error, but got %d", len(errs))

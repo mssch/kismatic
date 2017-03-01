@@ -1,6 +1,7 @@
 ---
-  - include: _packages.yaml
+  - include: _packages-repo.yaml
     when: allow_package_installation|bool == true
+    
   # - include: _docker-registry-container.yaml play_name="Upgrade Internal Docker Registry"
   #   when: setup_internal_docker_registry|bool == true
   - include: _docker-registry-images.yaml  # only load images if offline and package upgraded

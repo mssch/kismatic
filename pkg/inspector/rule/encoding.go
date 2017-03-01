@@ -37,6 +37,7 @@ type catchAllRule struct {
 	Meta              `yaml:",inline"`
 	PackageName       string   `yaml:"packageName"`
 	PackageVersion    string   `yaml:"packageVersion"`
+	AnyVersion        bool     `yaml:"anyVersion"`
 	Executable        string   `yaml:"executable"`
 	Port              int      `yaml:"port"`
 	File              string   `yaml:"file"`
@@ -90,6 +91,7 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 		r := PackageDependency{
 			PackageName:    catchAll.PackageName,
 			PackageVersion: catchAll.PackageVersion,
+			AnyVersion:     catchAll.AnyVersion,
 		}
 		r.Meta = meta
 		return r, nil

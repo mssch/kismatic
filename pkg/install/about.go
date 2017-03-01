@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/apprenda/kismatic/pkg/ssh"
+	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/blang/semver"
 )
 
@@ -101,4 +102,17 @@ func ListVersions(plan *Plan) (ClusterVersion, error) {
 	cv.IsTransitioning = cv.EarliestVersion.NE(cv.LatestVersion)
 
 	return cv, nil
+}
+
+// NodesWithRoles returns a filtered list of ListableNode slice based on the node's roles
+func NodesWithRoles(nodes []ListableNode, roles ...string) []ListableNode {
+	var subset []ListableNode
+	for _, need := range roles {
+		for _, n := range nodes {
+			if util.Subset([]string{need}, n.Roles) {
+				subset = append(subset, n)
+			}
+		}
+	}
+	return subset
 }

@@ -11,6 +11,7 @@ type PackageDependency struct {
 	Meta
 	PackageName    string
 	PackageVersion string
+	AnyVersion     bool
 }
 
 // Name returns the name of the rule
@@ -27,7 +28,7 @@ func (p PackageDependency) Validate() []error {
 	if p.PackageName == "" {
 		err = append(err, errors.New("PackageName cannot be empty"))
 	}
-	if p.PackageVersion == "" {
+	if !p.AnyVersion && p.PackageVersion == "" {
 		err = append(err, errors.New("PackageVersion cannot be empty"))
 	}
 	if len(err) > 0 {

@@ -1,10 +1,13 @@
 #===============================================================================
 # VERSIONS
-kubernetes_version: v1.5.2
-kismatic_yum_version: 1.5.2_4-1
-kismatic_apt_version: 1.5.2-4
-etcd_yum_version: 3.1.0-1
-etcd_apt_version: 3.1.0
+kubernetes_version: v1.5.3
+kismatic_yum_version: 1.5.3_1-1
+kismatic_apt_version: 1.5.3-1
+etcd_version: 3.1.1
+etcd_yum_version: 3.1.1-1
+etcd_apt_version: 3.1.1
+transition_etcd_yum_version: 3.0.17-1
+transition_etcd_apt_version: 3.0.17
 docker_engine_yum_version: 1.11.2-1.el7.centos
 docker_engine_apt_version: 1.11.2-0~xenial
 
@@ -41,6 +44,12 @@ kubernetes_master_insecure_port: 8080
 #===============================================================================
 # common variables for etcd
 # etcd-certificates
+etcd_certificates_ca_file: "{{ etcd_install_dir }}/{{ etcd_certificates_ca_file_name }}"
+etcd_certificates_cert_file: "{{ etcd_install_dir }}/{{ etcd_certificates_cert_file_name }}"
+etcd_certificates_key_file: "{{ etcd_install_dir }}/{{ etcd_certificates_key_file_name }}"
+etcd_certificates_ca_file_name: ca.pem
+etcd_certificates_cert_file_name: etcd.pem
+etcd_certificates_key_file_name: etcd-key.pem
 etcd_certificates_owner: root
 etcd_certificates_group: root
 etcd_certificates_mode: 0660

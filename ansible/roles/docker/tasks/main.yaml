@@ -17,7 +17,9 @@
       enabled: yes
     when: >
       (force_docker_restart is defined and force_docker_restart|bool == true) or
-      (docker_installation is defined and docker_installation.changed == true and upgrading is defined and upgrading|bool == true)
+      ((upgrading is defined and upgrading|bool == true) and
+      ((docker_installation_rpm is defined and docker_installation_rpm.changed == true) or
+      (docker_installation_deb is defined and docker_installation_deb.changed == true)))
 
   - name: verify docker is running
     command: docker ps

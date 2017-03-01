@@ -2,8 +2,8 @@
   # YUM
   - name: install kubelet yum package
     yum: name=kubelet-{{ kismatic_yum_version }} state=present
-    register: kubelet_installation
-    until: kubelet_installation|success
+    register: kubelet_installation_rpm
+    until: kubelet_installation_rpm|success
     retries: 3
     delay: 3
     when: ansible_os_family == 'RedHat'
@@ -23,9 +23,8 @@
       name: kubelet={{ kismatic_apt_version }}
       state: present
       default_release: kismatic-xenial
-      dpkg_options: force-confdef,force-confold,force-overwrite
-    register: result
-    until: result|success
+    register: kubelet_installation_deb
+    until: kubelet_installation_deb|success
     retries: 3
     delay: 3
     when: ansible_os_family == 'Debian'
@@ -35,7 +34,6 @@
       name: kubectl={{ kismatic_apt_version }}
       state: present
       default_release: kismatic-xenial
-      dpkg_options: force-confdef,force-confold,force-overwrite
     register: result
     until: result|success
     retries: 3

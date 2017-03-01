@@ -16,8 +16,8 @@ By default, Kismatic will install its own repos onto machines and use them to do
 
 | Product | Install Command |
 | --- | --- | --- |
-| Etcd | `sudo yum -y install etcd-3.1.0-1` |
-| Kubernetes Node | `sudo yum -y install docker-engine-1.11.2-1.el7.centos kubelet-1.5.2_4-1 kubectl-1.5.2_4-1` |
+| Etcd | `sudo yum -y install etcd-3.1.1-1` |
+| Kubernetes Node | `sudo yum -y install docker-engine-1.11.2-1.el7.centos kubelet-1.5.3_1-1 kubectl-1.5.3_1-1` |
 
 ## Installing via DEB (Ubuntu Xenial)
 
@@ -42,8 +42,8 @@ EOF
 
 | Product | Install Command |
 | --- | --- | --- |
-| Etcd | `sudo apt-get -y -t=kismatic-xenial  install etcd=3.1.0` |
-| Kubernetes Node | `sudo apt-get -y -t=kismatic-xenial install docker=1.11.2-0~xenial kubelet=1.5.2-4 kubectl=1.5.2-4` |
+| Etcd | `sudo apt-get -y -t=kismatic-xenial  install etcd=3.1.1` |
+| Kubernetes Node | `sudo apt-get -y -t=kismatic-xenial install docker-engine=1.11.2-0~xenial kubelet=1.5.3-1 kubectl=1.5.3-1` |
 
 # <a name="synclocal"></a>Synchronizing a local repo
 

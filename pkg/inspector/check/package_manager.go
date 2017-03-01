@@ -60,7 +60,7 @@ func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is available: %v", p.Name, p.Version, err)
+		return false, fmt.Errorf("unable to determine if %s is available: %v", packageName(p, " "), err)
 	}
 	return m.isPackageListed(p, out), nil
 }
@@ -71,7 +71,7 @@ func (m rpmManager) IsInstalled(p PackageQuery) (bool, error) {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.Name, p.Version, err)
+		return false, fmt.Errorf("unable to determine if %s is installed: %v", packageName(p, " "), err)
 	}
 	return m.isPackageListed(p, out), nil
 }
@@ -88,7 +88,7 @@ func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 		}
 		maybeName := strings.Split(f[0], ".")[0]
 		maybeVersion := f[1]
-		if p.Name == maybeName && p.Version == maybeVersion {
+		if p.Name == maybeName && (p.AnyVersion || p.Version == maybeVersion) {
 			return true
 		}
 	}
@@ -113,7 +113,7 @@ func (m debManager) IsAvailable(p PackageQuery) (bool, error) {
 	// If it's not installed, ensure that it is available via the
 	// package manager. We attempt to install using --dry-run. If exit status is zero, we
 	// know the package is available for download
-	out, err := m.run("apt-get", "install", "-q", "--dry-run", fmt.Sprintf("%s=%s", p.Name, p.Version))
+	out, err := m.run("apt-get", "install", "-q", "--dry-run", packageName(p, "="))
 	if err != nil && strings.Contains(string(out), "Unable to locate package") {
 		return false, nil
 	}
@@ -129,7 +129,7 @@ func (m debManager) isPackageListed(p PackageQuery) (bool, error) {
 		return false, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to determine if %s %s is installed: %v", p.Name, p.Version, err)
+		return false, fmt.Errorf("unable to determine if %s is installed: %v", packageName(p, " "), err)
 	}
 	s := bufio.NewScanner(bytes.NewReader(out))
 	for s.Scan() {
@@ -141,9 +141,17 @@ func (m debManager) isPackageListed(p PackageQuery) (bool, error) {
 		}
 		maybeName := strings.Split(f[1], ".")[0]
 		maybeVersion := f[2]
-		if p.Name == maybeName && p.Version == maybeVersion {
+		if p.Name == maybeName && (p.AnyVersion || p.Version == maybeVersion) {
 			return true, nil
 		}
 	}
 	return false, nil
+}
+
+func packageName(p PackageQuery, delimeter string) string {
+	if p.AnyVersion {
+		return p.Name
+	}
+
+	return fmt.Sprintf("%s%s%s", p.Name, delimeter, p.Version)
 }

@@ -7,8 +7,9 @@ import (
 
 // PackageQuery is a query for finding a package
 type PackageQuery struct {
-	Name    string
-	Version string
+	Name       string
+	Version    string
+	AnyVersion bool
 }
 
 func (p PackageQuery) String() string {

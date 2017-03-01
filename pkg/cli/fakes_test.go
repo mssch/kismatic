@@ -58,6 +58,10 @@ func (fe *fakeExecutor) UpgradeNodes(install.Plan, []install.ListableNode, bool)
 	return nil
 }
 
+func (fe *fakeExecutor) UpgradeEtcd2Nodes(install.Plan, []install.ListableNode) error {
+	return nil
+}
+
 func (fe *fakeExecutor) ValidateControlPlane(install.Plan) error {
 	return nil
 }

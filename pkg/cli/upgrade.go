@@ -158,7 +158,7 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 	if len(toSkip) > 0 {
 		util.PrintHeader(out, "Skipping nodes", '=')
 		for _, n := range toSkip {
-			util.PrettyPrintOk(out, "- %q is at the target version %q", n.Node.IP, n.Version)
+			util.PrettyPrintOk(out, "- %q is at the target version %q", n.Node.Host, n.Version)
 		}
 		fmt.Fprintln(out)
 	}
@@ -302,6 +302,17 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 		}
 		if upgrade {
 			toUpgrade = append(toUpgrade, n)
+		}
+	}
+
+	// get all etcd nodes
+	etcdToUpgrade := install.NodesWithRoles(toUpgrade, "etcd")
+	// it's safe to upgrade one node etcd cluster from 2.3 to 3.1
+	// it will always be required for this version because all prior ket versions had a etcd2
+	if len(etcdToUpgrade) > 1 {
+		// Run the upgrade on the nodes to Etcd v3.0.x
+		if err := executor.UpgradeEtcd2Nodes(plan, etcdToUpgrade); err != nil {
+			return fmt.Errorf("Failed to upgrade etcd2 nodes: %v", err)
 		}
 	}
 

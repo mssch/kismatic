@@ -15,20 +15,22 @@ import (
 
 const (
 	copyKismaticYumRepo       = `sudo curl https://kismatic-packages-rpm.s3-accelerate.amazonaws.com/kismatic.repo -o /etc/yum.repos.d/kismatic.repo`
-	installEtcdYum            = `sudo yum -y install etcd-3.1.0-1`
+	installCurlYum            = `sudo yum -y install curl`
+	installEtcdYum            = `sudo yum -y install etcd-3.1.1-1`
 	installDockerYum          = `sudo yum -y install docker-engine-1.11.2-1.el7.centos`
-	installKubeletYum         = `sudo yum -y install kubelet-1.5.2_4-1`
-	installKubectlYum         = `sudo yum -y install kubectl-1.5.2_4-1`
-	installKismaticOfflineYum = `sudo yum -y install kismatic-offline-1.5.2_4-1`
+	installKubeletYum         = `sudo yum -y install kubelet-1.5.3_1-1`
+	installKubectlYum         = `sudo yum -y install kubectl-1.5.3_1-1`
+	installKismaticOfflineYum = `sudo yum -y install kismatic-offline-1.5.3_1-1`
 
 	copyKismaticKeyDeb        = `wget -qO - https://kismatic-packages-deb.s3-accelerate.amazonaws.com/public.key | sudo apt-key add - `
 	copyKismaticRepoDeb       = `sudo add-apt-repository "deb https://kismatic-packages-deb.s3-accelerate.amazonaws.com kismatic-xenial main"`
 	updateAptGet              = `sudo apt-get update`
-	installEtcdApt            = `sudo apt-get -y install etcd=3.1.0`
+	installCurlApt            = `sudo apt-get -y install curl`
+	installEtcdApt            = `sudo apt-get -y install etcd=3.1.1`
 	installDockerApt          = `sudo apt-get -y install docker-engine=1.11.2-0~xenial`
-	installKubeletApt         = `sudo apt-get -y install kubelet=1.5.2-4`
-	installKubectlApt         = `sudo apt-get -y install kubectl=1.5.2-4`
-	installKismaticOfflineApt = `sudo apt-get -y install kismatic-offline=1.5.2-4`
+	installKubeletApt         = `sudo apt-get -y install kubelet=1.5.3-1`
+	installKubectlApt         = `sudo apt-get -y install kubectl=1.5.3-1`
+	installKismaticOfflineApt = `sudo apt-get -y install kismatic-offline=1.5.3-1`
 )
 
 type nodePrep struct {
@@ -42,7 +44,7 @@ type nodePrep struct {
 
 var ubuntu1604Prep = nodePrep{
 	CommandsToPrepRepo:         []string{copyKismaticKeyDeb, copyKismaticRepoDeb, updateAptGet},
-	CommandsToInstallEtcd:      []string{installEtcdApt},
+	CommandsToInstallEtcd:      []string{installCurlApt, installEtcdApt},
 	CommandsToInstallDocker:    []string{installDockerApt},
 	CommandsToInstallK8sMaster: []string{installDockerApt, installKubeletApt, installKubectlApt},
 	CommandsToInstallK8s:       []string{installDockerApt, installKubeletApt, installKubectlApt},
@@ -51,7 +53,7 @@ var ubuntu1604Prep = nodePrep{
 
 var rhel7FamilyPrep = nodePrep{
 	CommandsToPrepRepo:         []string{copyKismaticYumRepo},
-	CommandsToInstallEtcd:      []string{installEtcdYum},
+	CommandsToInstallEtcd:      []string{installCurlYum, installEtcdYum},
 	CommandsToInstallDocker:    []string{installDockerYum},
 	CommandsToInstallK8sMaster: []string{installDockerYum, installKubeletYum, installKubectlYum},
 	CommandsToInstallK8s:       []string{installDockerYum, installKubeletYum, installKubectlYum},

@@ -27,7 +27,9 @@
       - restart kubelet service
     when: >
       (force_kubelet_restart is defined and force_kubelet_restart|bool == true) or
-      (kubelet_installation is defined and kubelet_installation.changed == true and upgrading is defined and upgrading|bool == true)
+      ((upgrading is defined and upgrading|bool == true) and
+      ((kubelet_installation_rpm is defined and kubelet_installation_rpm.changed == true) or
+      (kubelet_installation_deb is defined and kubelet_installation_deb.changed == true)))
 
   - meta: flush_handlers  #Run handlers
 
