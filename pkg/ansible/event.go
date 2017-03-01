@@ -22,6 +22,10 @@ type runnerResult struct {
 	// Item that corresponds to this result. Avaliable only when event is related
 	// to an item
 	Item string
+	// Number of attempts a task has been retried
+	Attempts int
+	// Maximum number of retries for a given task
+	MaxRetries int `json:"retries"`
 }
 
 type runnerResultEvent struct {

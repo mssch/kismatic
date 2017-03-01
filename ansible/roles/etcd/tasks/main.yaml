@@ -1,26 +1,44 @@
 ---
   # install and start etcd service
-  - name: copy {{ etcd_service_file }} to remote
+  - name: copy etcd.service to remote
     template:
-      src: "{{ etcd_service_template_name }}"
-      dest: "{{ etcd_service_path }}"
+      src: "etcd.service"
+      dest: "{{ init_system_dir }}/{{ etcd_service_name }}"
       owner: "{{ etcd_service_owner }}"
       group: "{{ etcd_service_group }}"
       mode: "{{ etcd_service_mode }}"
     notify:
       - reload services
-      - enable etcd
       - restart etcd service
 
   # force_etcd_restart=true to force restart
-  - name: force restart etcd
+  - name: force restart {{etcd_install_bin_name }} service
     command: /bin/true
     notify:
-      - enable etcd
       - restart etcd service
-    when: force_etcd_restart is defined and force_etcd_restart|bool == true
+    when: >
+      (force_etcd_restart is defined and force_etcd_restart|bool == true) or
+      ((upgrading is defined and upgrading|bool == true) and
+      ((etcd_installation_rpm is defined and etcd_installation_rpm.changed == true) or
+      (etcd_installation_deb is defined and etcd_installation_deb.changed == true)))
 
   - meta: flush_handlers  #Run handlers
+
+    #TODO don't use a timeout
+  - name: wait for {{ etcd_install_bin_name }} node to be ready after upgrade
+    pause: seconds=60
+    when: >
+      (force_etcd_restart is defined and force_etcd_restart|bool == true) or
+      ((upgrading is defined and upgrading|bool == true) and
+      ((etcd_installation_rpm is defined and etcd_installation_rpm.changed == true) or
+      (etcd_installation_deb is defined and etcd_installation_deb.changed == true)))
+
+  - name: verify {{ etcd_install_bin_name }} is running
+    command: systemctl status {{ etcd_service_name }}
+    register: running
+    until: running|success
+    retries: 3
+    delay: 5
 
   # test etcd
   - name: verify {{ etcd_install_bin_name }} cluster health
@@ -29,4 +47,3 @@
     until: result|success
     retries: 3
     delay: 5
-  - debug: msg="{{ bin_dir }}/{{ etcdctl_install_bin_name }} --endpoint='https://127.0.0.1:{{ etcd_service_client_port }}/' --cert-file={{ etcd_certificates_cert_file }} --key-file={{ etcd_certificates_key_file }} --ca-file={{ etcd_certificates_ca_file }} cluster-health"

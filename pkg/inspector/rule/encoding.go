@@ -37,12 +37,15 @@ type catchAllRule struct {
 	Meta              `yaml:",inline"`
 	PackageName       string   `yaml:"packageName"`
 	PackageVersion    string   `yaml:"packageVersion"`
+	AnyVersion        bool     `yaml:"anyVersion"`
 	Executable        string   `yaml:"executable"`
 	Port              int      `yaml:"port"`
 	File              string   `yaml:"file"`
 	ContentRegex      string   `yaml:"contentRegex"`
 	Timeout           string   `yaml:"timeout"`
 	SupportedVersions []string `yaml:"supportedVersions"`
+	Path              string   `yaml:"path"`
+	MinimumBytes      string   `yaml:"minimumBytes"`
 }
 
 // UnmarshalRulesYAML unmarshals the data into a list of rules
@@ -84,10 +87,11 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 	switch kind {
 	default:
 		return nil, fmt.Errorf("rule with kind %q is not supported", catchAll.Kind)
-	case "packageavailable":
-		r := PackageAvailable{
+	case "packagedependency":
+		r := PackageDependency{
 			PackageName:    catchAll.PackageName,
 			PackageVersion: catchAll.PackageVersion,
+			AnyVersion:     catchAll.AnyVersion,
 		}
 		r.Meta = meta
 		return r, nil
@@ -123,5 +127,13 @@ func buildRule(catchAll catchAllRule) (Rule, error) {
 		}
 		r.Meta = meta
 		return r, nil
+	case "freespace":
+		r := FreeSpace{
+			Path:         catchAll.Path,
+			MinimumBytes: catchAll.MinimumBytes,
+		}
+		r.Meta = meta
+		return r, nil
+
 	}
 }

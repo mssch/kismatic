@@ -19,6 +19,8 @@ type DefaultCheckMapper struct {
 	PackageManager check.PackageManager
 	// IP of the remote node that is being inspected when in client mode
 	TargetNodeIP string
+	// PackageInstallationDisabled determines whether Kismatic is allowed to install packages on the node
+	PackageInstallationDisabled bool
 }
 
 // GetCheckForRule returns the check for the given rule. If the rule
@@ -28,9 +30,9 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
 	switch r := rule.(type) {
 	default:
 		return nil, fmt.Errorf("Rule of type %T is not supported", r)
-	case PackageAvailable:
-		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion}
-		c = &check.PackageAvailableCheck{PackageQuery: pkgQuery, PackageManager: m.PackageManager}
+	case PackageDependency:
+		pkgQuery := check.PackageQuery{Name: r.PackageName, Version: r.PackageVersion, AnyVersion: r.AnyVersion}
+		c = &check.PackageCheck{PackageQuery: pkgQuery, PackageManager: m.PackageManager, InstallationDisabled: m.PackageInstallationDisabled}
 	case ExecutableInPath:
 		c = &check.ExecutableInPathCheck{Name: r.Executable}
 	case FileContentMatches:
@@ -45,6 +47,9 @@ func (m DefaultCheckMapper) GetCheckForRule(rule Rule) (check.Check, error) {
 		c = &check.TCPPortClientCheck{PortNumber: r.Port, IPAddress: m.TargetNodeIP, Timeout: timeout}
 	case Python2Version:
 		c = &check.Python2Check{SupportedVersions: r.SupportedVersions}
+	case FreeSpace:
+		bytes, _ := r.minimumBytesAsUint64() // ignore this err, as we have already validated the rule
+		c = &check.FreeSpaceCheck{Path: r.Path, MinimumBytes: bytes}
 	}
 	return c, nil
 }

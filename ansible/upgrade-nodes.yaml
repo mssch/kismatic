@@ -1,0 +1,29 @@
+---
+  # Drain the node before we touch it
+  - include: _kube-drain-node.yaml
+    when: online_upgrade is defined and online_upgrade|bool == true
+    
+  - include: _packages-cleanup.yaml
+    when: allow_package_installation|bool == true
+  - include: _packages-repo.yaml
+    when: allow_package_installation|bool == true
+
+  # docker
+  - include: _docker.yaml play_name="Upgrade Docker" serial="1" upgrading=true
+
+  #etcd
+  - include: _etcd-k8s.yaml play_name="Upgrade Kubernetes Etcd Cluster" serial="1" upgrading=true
+  - include: _etcd-networking.yaml play_name="Upgrade Network Etcd Cluster" serial="1" upgrading=true
+
+  # kubernetes
+  - include: _kubelet.yaml play_name="Upgrade Kubernetes Kubelet" serial="1" upgrading=true
+  - include: _kube-apiserver.yaml play_name="Upgrade Kubernetes API Server" serial="1" upgrading=true
+  - include: _kube-scheduler.yaml play_name="Upgrade Kubernetes Scheduler" serial="1" upgrading=true
+  - include: _kube-controller-manager.yaml play_name="Upgrade Kubernetes Controller Manager" serial="1" upgrading=true
+  - include: _validate-control-plane-node.yaml serial_count="1"
+  - include: _kube-proxy.yaml play_name="Upgrade Kubernetes Proxy" serial="1" upgrading=true
+
+  - include: _kube-uncordon-node.yaml
+    when: online_upgrade is defined and online_upgrade|bool == true
+  
+  - include: _update-version.yaml

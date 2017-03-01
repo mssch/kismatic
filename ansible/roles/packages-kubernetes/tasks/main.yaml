@@ -1,0 +1,41 @@
+---
+  # YUM
+  - name: install kubelet yum package
+    yum: name=kubelet-{{ kismatic_yum_version }} state=present
+    register: kubelet_installation_rpm
+    until: kubelet_installation_rpm|success
+    retries: 3
+    delay: 3
+    when: ansible_os_family == 'RedHat'
+
+  - name: install kubectl yum package
+    yum: name=kubectl-{{ kismatic_yum_version }} state=present
+    when: "'master' in group_names"
+    register: result
+    until: result|success
+    retries: 3
+    delay: 3
+    when: ansible_os_family == 'RedHat'
+
+  # DEB
+  - name: install kubelet deb package
+    apt:
+      name: kubelet={{ kismatic_apt_version }}
+      state: present
+      default_release: kismatic-xenial
+    register: kubelet_installation_deb
+    until: kubelet_installation_deb|success
+    retries: 3
+    delay: 3
+    when: ansible_os_family == 'Debian'
+
+  - name: install kubectl deb package
+    apt:
+      name: kubectl={{ kismatic_apt_version }}
+      state: present
+      default_release: kismatic-xenial
+    register: result
+    until: result|success
+    retries: 3
+    delay: 3
+    when: ansible_os_family == 'Debian'

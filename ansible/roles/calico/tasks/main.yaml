@@ -1,12 +1,9 @@
 ---
-  ## Configure a calico pool for the nodes. We need to configure calico
-  ## before starting calico-node on the nodes due to
-  ## https://github.com/projectcalico/calico-containers/issues/716
-
   - name: create /etc/calico directory
     file:
       path: "{{ calico_dir }}"
       state: directory
+
   - name: copy calicoctl.cfg to remote
     template:
       src: calicoctl.cfg.j2
@@ -14,45 +11,38 @@
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ network_environment_mode }}"
-  - name: copy ip-pool.yaml to remote
-    template:
-      src: ip-pool.yaml.j2
-      dest: "{{ calico_ippool_path }}"
-      owner: "{{ kubernetes_owner }}"
-      group: "{{ kubernetes_group }}"
-      mode: "{{ network_environment_mode }}"
-  - name: add pods CIDR - {{ kubernetes_pods_cidr }}
-    command: calicoctl apply -f {{ calico_ippool_path }}
-    run_once: true
 
-  ## Start calico-node serivce on the nodes after configuring the calico pool.
-  - name: create {{ network_plugin_dir }} directory
-    file:
-      path: "{{ network_plugin_dir }}"
-      state: directory
-  - name: copy 10-calico.conf to remote
+  - name: copy calico.yaml to remote
     template:
-      src: 10-calico.conf.j2
-      dest: "{{ network_plugin_dir }}/10-calico.conf"
-  - name: copy calico-node.service to remote
-    template:
-      src: calico-node.service.j2
-      dest: "{{ kubernetes_service_dir }}/calico-node.service"
+      src: calico.yaml
+      dest: /etc/calico/calico.yaml
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
-    notify:
-      - reload services
-      - enable calico-node
-      - restart calico-node service
-      - verify calico-node is running
-  # force_calico_node_restart=true to force restart
-  - name: force restart calico-node
-    command: /bin/true
-    notify:
-      - enable calico-node
-      - restart calico-node service
-      - verify calico-node is running
-    when: force_calico_node_restart is defined and force_calico_node_restart|bool == true
+    when: "inventory_hostname == groups['master'][0]"
 
-  - meta: flush_handlers  #Run handlers
+  - name: start calico containers
+    command: kubectl apply -f /etc/calico/calico.yaml --kubeconfig {{ kubernetes_kubeconfig_path }}
+    run_once: true
+    when: "inventory_hostname == groups['master'][0]"
+
+  - name: get desired number of calico pods
+    command: kubectl get ds calico-node -o=jsonpath='{.status.desiredNumberScheduled}' --namespace=kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
+    register: desiredPods
+    until: desiredPods|success
+    retries: 10
+    delay: 6
+    run_once: true
+  - name: wait until all calico pods are ready
+    command: kubectl get ds calico-node -o=jsonpath='{.status.numberReady}' --namespace=kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
+    register: readyPods
+    until: desiredPods.stdout|int == readyPods.stdout|int
+    retries: 10
+    delay: 6
+    failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
+    run_once: true
+  - name: fail if any calico pods are not ready
+    fail:
+      msg: "Timed out waiting for all calico pods to be ready."
+    run_once: true
+    when: desiredPods.stdout|int != readyPods.stdout|int

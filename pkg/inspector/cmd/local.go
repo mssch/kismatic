@@ -11,10 +11,11 @@ import (
 )
 
 type localOpts struct {
-	outputType      string
-	nodeRoles       string
-	rulesFile       string
-	enforcePackages bool
+	outputType                  string
+	nodeRoles                   string
+	rulesFile                   string
+	packageInstallationDisabled bool
+	useUpgradeDefaults          bool
 }
 
 var localExample = `# Run with a custom rules file
@@ -35,7 +36,8 @@ func NewCmdLocal(out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.outputType, "output", "o", "table", "set the result output type. Options are 'json', 'table'")
 	cmd.Flags().StringVar(&opts.nodeRoles, "node-roles", "", "comma-separated list of the node's roles. Valid roles are 'etcd', 'master', 'worker'")
 	cmd.Flags().StringVarP(&opts.rulesFile, "file", "f", "", "the path to an inspector rules file. If blank, the inspector uses the default rules")
-	cmd.Flags().BoolVarP(&opts.enforcePackages, "enforcePackages", "e", false, "when provided the installer will test that all Kismatic packages have been installed")
+	cmd.Flags().BoolVar(&opts.packageInstallationDisabled, "pkg-installation-disabled", false, "when true, the inspector will ensure that the necessary packages are installed on the node")
+	cmd.Flags().BoolVarP(&opts.useUpgradeDefaults, "upgrade", "u", false, "use defaults for upgrade, rather than install")
 	return cmd
 }
 
@@ -51,7 +53,7 @@ func runLocal(out io.Writer, opts localOpts) error {
 		return err
 	}
 	// Gather rules
-	rules, err := getRulesFromFileOrDefault(out, opts.rulesFile)
+	rules, err := getRulesFromFileOrDefault(out, opts.rulesFile, opts.useUpgradeDefaults)
 	if err != nil {
 		return err
 	}
@@ -60,7 +62,7 @@ func runLocal(out io.Writer, opts localOpts) error {
 	if err != nil {
 		return fmt.Errorf("error running checks locally: %v", err)
 	}
-	pkgMgr, err := check.NewPackageManager(distro, opts.enforcePackages)
+	pkgMgr, err := check.NewPackageManager(distro)
 	if err != nil {
 		return err
 	}
@@ -68,7 +70,8 @@ func runLocal(out io.Writer, opts localOpts) error {
 	// Create rule engine
 	e := rule.Engine{
 		RuleCheckMapper: rule.DefaultCheckMapper{
-			PackageManager: pkgMgr,
+			PackageManager:              pkgMgr,
+			PackageInstallationDisabled: opts.packageInstallationDisabled,
 		},
 	}
 	labels := append(roles, string(distro))

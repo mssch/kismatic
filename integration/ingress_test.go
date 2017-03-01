@@ -9,12 +9,13 @@ import (
 
 var _ = Describe("ingress feature", func() {
 	BeforeEach(func() {
-		os.Chdir(kisPath)
+		dir := setupTestWorkingDir()
+		os.Chdir(dir)
 	})
 
 	Describe("accessing the ingress point of a cluster", func() {
 		Context("when the cluster has an ingress node", func() {
-			ItOnAWS("should return a successful response", func(aws infrastructureProvisioner) {
+			ItOnAWS("should return a successful response [slow]", func(aws infrastructureProvisioner) {
 				WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {
 					By("Installing a cluster with ingress")
 					err := installKismaticMini(node, sshKey)

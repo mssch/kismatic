@@ -11,22 +11,23 @@ import (
 
 var _ = Describe("Storage feature", func() {
 	BeforeEach(func() {
-		os.Chdir(kisPath)
+		dir := setupTestWorkingDir()
+		os.Chdir(dir)
 	})
 
 	Describe("Specifying multiple storage nodes in the plan file", func() {
 		Context("when targetting CentOS", func() {
-			ItOnAWS("should result in a working storage cluster", func(aws infrastructureProvisioner) {
+			ItOnAWS("should result in a working storage cluster [slow]", func(aws infrastructureProvisioner) {
 				testAddVolumeVerifyGluster(aws, CentOS7)
 			})
 		})
 		Context("when targetting Ubuntu", func() {
-			ItOnAWS("should result in a working storage cluster", func(aws infrastructureProvisioner) {
+			ItOnAWS("should result in a working storage cluster [slow]", func(aws infrastructureProvisioner) {
 				testAddVolumeVerifyGluster(aws, Ubuntu1604LTS)
 			})
 		})
 		Context("when targetting RHEL", func() {
-			ItOnAWS("should result in a working storage cluster", func(aws infrastructureProvisioner) {
+			ItOnAWS("should result in a working storage cluster [slow]", func(aws infrastructureProvisioner) {
 				testAddVolumeVerifyGluster(aws, RedHat7)
 			})
 		})

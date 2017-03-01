@@ -50,11 +50,35 @@ func (fe *fakeExecutor) RunPreFlightCheck(p *install.Plan) error {
 	return nil
 }
 
+func (fe *fakeExecutor) RunUpgradePreFlightCheck(*install.Plan, install.ListableNode) error {
+	return nil
+}
+
+func (fe *fakeExecutor) UpgradeNodes(install.Plan, []install.ListableNode, bool) error {
+	return nil
+}
+
+func (fe *fakeExecutor) UpgradeEtcd2Nodes(install.Plan, []install.ListableNode) error {
+	return nil
+}
+
+func (fe *fakeExecutor) ValidateControlPlane(install.Plan) error {
+	return nil
+}
+
+func (fe *fakeExecutor) UpgradeDockerRegistry(install.Plan) error {
+	return nil
+}
+
+func (fe *fakeExecutor) UpgradeClusterServices(install.Plan) error {
+	return nil
+}
+
 func (fe *fakeExecutor) RunSmokeTest(p *install.Plan) error {
 	return nil
 }
 
-func (fe *fakeExecutor) RunTask(string, *install.Plan) error {
+func (fe *fakeExecutor) RunPlay(string, *install.Plan) error {
 	return nil
 }
 

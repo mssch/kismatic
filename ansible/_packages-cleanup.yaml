@@ -1,0 +1,11 @@
+---
+  - hosts: all
+    any_errors_fatal: true
+    name: Remove Old Kismatic Packages
+    remote_user: root
+    become_method: sudo
+    vars_files:
+      - group_vars/all.yaml
+      
+    roles:
+      - role: packages-cleanup
