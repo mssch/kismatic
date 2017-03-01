@@ -17,7 +17,7 @@ var _ = Describe("disconnected install feature", func() {
 
 	Describe("Installing on machines with no internet access", func() {
 		Context("with kismatic packages installed", func() {
-			ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 				WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {
 					By("Installing the RPMs on the node")
 					theNode := []NodeDeets{node}
