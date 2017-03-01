@@ -1,21 +1,22 @@
-## kismatic dashboard
+## kismatic info
 
-Opens/displays the kubernetes dashboard URL of the cluster
+Display info about nodes in the cluster
 
 ### Synopsis
 
 
-Opens/displays the kubernetes dashboard URL of the cluster
+will list the external IP addresses of nodes that make up the cluster, along with their current versions & roles.
+
+This will retreived by connecting to each node via ssh
 
 ```
-kismatic dashboard
+kismatic info
 ```
 
 ### Options
 
 ```
   -f, --plan-file string   path to the installation plan file (default "kismatic-cluster.yaml")
-      --url                Display the kubernetes dashboard URL in the CLI instead of opening it in the default browser
 ```
 
 ### SEE ALSO
