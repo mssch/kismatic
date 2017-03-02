@@ -169,6 +169,20 @@ func completesInTime(dothis func(), howLong time.Duration) bool {
 	}
 }
 
+func canAccessDashboard() error {
+	// Access the dashboard a few times to hit all replicas
+	for i := 0; i < 3; i++ {
+		cmd := exec.Command("./kismatic", "dashboard", "--url", "-f", "kismatic-testing.yaml")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func FailIfError(err error, message ...interface{}) {
 	Expect(err).ToNot(HaveOccurred(), message...)
 }
