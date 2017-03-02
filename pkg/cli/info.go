@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -11,12 +12,12 @@ import (
 
 type infoOpts struct {
 	planFilename string
+	outputFormat string
 }
 
-// NewCmdSSH returns an ssh shell
+// NewCmdInfo returns the info command
 func NewCmdInfo(out io.Writer) *cobra.Command {
 	opts := &infoOpts{}
-
 	cmd := &cobra.Command{
 		Use:   "info",
 		Short: "Display info about nodes in the cluster",
@@ -24,21 +25,17 @@ func NewCmdInfo(out io.Writer) *cobra.Command {
 
 This will retreived by connecting to each node via ssh`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			planner := &install.FilePlanner{File: opts.planFilename}
-
-			return list(planner, out)
+			return list(out, opts)
 		},
 	}
-
-	// PersistentFlags
-	cmd.PersistentFlags().StringVarP(&opts.planFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
-
+	cmd.Flags().StringVarP(&opts.planFilename, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", `output format (options "simple"|"json")`)
 	return cmd
 }
 
-func list(planner *install.FilePlanner, out io.Writer) error {
+func list(out io.Writer, opts *infoOpts) error {
 	// Check if plan file exists
+	planner := &install.FilePlanner{File: opts.planFilename}
 	if !planner.PlanExists() {
 		return fmt.Errorf("plan does not exist")
 	}
@@ -56,6 +53,15 @@ func list(planner *install.FilePlanner, out io.Writer) error {
 	lv, err := install.ListVersions(plan)
 	if err != nil {
 		return fmt.Errorf("error getting version: %v", err)
+	}
+
+	if opts.outputFormat == "json" {
+		b, err := json.MarshalIndent(lv, "", "  ")
+		if err != nil {
+			return fmt.Errorf("error marshalling struct: %v", err)
+		}
+		fmt.Fprintf(out, string(b))
+		return nil
 	}
 
 	fmt.Fprintf(out, "Cluster: ")
