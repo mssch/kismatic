@@ -95,7 +95,7 @@ func verifyGlusterVolume(storageNode NodeDeets, sshKey string, name string, repl
 	FailIfError(err, "Gluster volume verification failed")
 }
 
-func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, allowAddress string) {
+func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, allowAddress string) error {
 	cmd := exec.Command("./kismatic", "volume", "add",
 		"-f", planFile.Name(),
 		"--replica-count", strconv.Itoa(replicationCount),
@@ -107,8 +107,7 @@ func createVolume(planFile *os.File, name string, replicationCount int, distribu
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	FailIfError(err, "Error running volume add command")
+	return cmd.Run()
 }
 
 func standupGlusterCluster(planFile *os.File, nodes []NodeDeets, sshKey string, distro linuxDistro) {

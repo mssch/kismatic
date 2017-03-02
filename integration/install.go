@@ -3,7 +3,6 @@ package integration
 import (
 	"bufio"
 	"html/template"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,6 +10,7 @@ import (
 
 	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 func leaveIt() bool {
@@ -169,11 +169,8 @@ func completesInTime(dothis func(), howLong time.Duration) bool {
 	}
 }
 
-func FailIfError(err error, message ...string) {
-	if err != nil {
-		log.Printf(message[0]+": %v\n%v", err, message[1:])
-		Fail(message[0])
-	}
+func FailIfError(err error, message ...interface{}) {
+	Expect(err).ToNot(HaveOccurred(), message...)
 }
 
 func FailIfSuccess(err error) {
