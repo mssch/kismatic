@@ -3,19 +3,23 @@
   - name: label ingress nodeSelector
     command: kubectl label nodes {% for host in groups['ingress'] %}{{ host }} {% endfor %} kismatic/ingress=true --overwrite
 
+  - name: create /etc/kubernetes/specs directory
+    file:
+      path: "{{ kubernetes_spec_dir }}"
+      state: directory
   - name: copy default-backend.yaml to remote
     template:
       src: default-backend.yaml
-      dest: /tmp/default-backend.yaml
+      dest: "{{ kubernetes_spec_dir }}/default-backend.yaml"
   - name: start default-backend serivce
-    command: kubectl apply -f /tmp/default-backend.yaml
+    command: kubectl apply -f {{ kubernetes_spec_dir }}/default-backend.yaml
 
   - name: copy nginx-ingress-controller.yaml to remote
     template:
       src: nginx-ingress-controller.yaml
-      dest: /tmp/nginx-ingress-controller.yaml
+      dest: "{{ kubernetes_spec_dir }}/nginx-ingress-controller.yaml"
   - name: start nginx-ingress-controller serivce
-    command: kubectl apply -f /tmp/nginx-ingress-controller.yaml
+    command: kubectl apply -f {{ kubernetes_spec_dir }}/nginx-ingress-controller.yaml
     register: out
 
   - name: get desired number of ingress pods

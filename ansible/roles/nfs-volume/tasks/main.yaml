@@ -1,4 +1,9 @@
 ---
+  - name: create /etc/kubernetes/specs directory
+    file:
+      path: "{{ kubernetes_spec_dir }}"
+      state: directory
+
   - name: Install all NFS shares as PersistentVolumes
     include: "new-share.yaml"
     with_indexed_items: nfs_volumes

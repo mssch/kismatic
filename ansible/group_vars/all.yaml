@@ -88,6 +88,7 @@ kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_
 # kubernetes
 # directories
 kubernetes_install_dir: /etc/kubernetes
+kubernetes_spec_dir: /etc/kubernetes/specs
 network_plugin_dir: /etc/cni/net.d
 kubernetes_auth_dir: /etc/kubernetes/auth
 kubelet_lib_dir: /var/lib/kubelet
