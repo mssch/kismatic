@@ -7,14 +7,14 @@
     command: kubectl apply -f /tmp/kubernetes-dns.yaml
     register: out
   - name: wait until DNS pods are ready
-    command: kubectl get rc kube-dns --namespace kube-system -o jsonpath='{.status.readyReplicas}'
+    command: kubectl get deployment kube-dns -n kube-system -o jsonpath='{.status.availableReplicas}'
     register: readyReplicas
-    until: readyReplicas.stdout|int > 0
+    until: readyReplicas.stdout|int == kube_dns_replicas|int
     retries: 24
     delay: 10
     failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
   - name: fail if any DNS pods are not ready
     fail:
       msg: "Timed out waiting for DNS pods to be in the ready state."
-    when: readyReplicas.stdout|int < 1
+    when: readyReplicas.stdout|int != kube_dns_replicas|int
   - debug: var=out.stdout_lines

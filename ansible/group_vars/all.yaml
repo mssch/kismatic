@@ -113,6 +113,7 @@ docker_certificates_group: root
 kubernetes_master_apiserver_count: "{{ groups['master'] | length }}"
 kubernetes_master_ip: https://{{ kubernetes_load_balanced_fqdn }}:{{ kubernetes_master_secure_port }}
 kubernetes_schedulable: "{% if 'worker' in group_names %}true{% else %}false{% endif %}"
+kube_dns_replicas: "{{ [2, groups['worker'] | length] | min }}"
 # kubernetes certificate config
 kubernetes_certificates_ca_file_name: ca.pem
 kubernetes_certificates_cert_file_name: kubenode.pem
