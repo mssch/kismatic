@@ -1,15 +1,19 @@
 ---
+  - name: create /etc/kubernetes/specs directory
+    file:
+      path: "{{ kubernetes_spec_dir }}"
+      state: directory
   - name: Copy service definition to remote node
     template:
       src: gluster-service.yaml
-      dest: /tmp/gluster-service.yaml
+      dest: "{{ kubernetes_spec_dir }}/gluster-service.yaml"
   - name: Copy daemonset definition to remote node
     template:
       src: gluster-healthz-daemonset.yaml
-      dest: /tmp/gluster-healthz-daemonset.yaml
+      dest: "{{ kubernetes_spec_dir }}/gluster-healthz-daemonset.yaml"
   - name: Label gluster nodes
     command: kubectl label nodes {% for host in groups['storage'] %}{{ host }} {% endfor %} kismatic/storage=true --overwrite
   - name: Create gluster-healthz DaemonSet
-    command: kubectl apply -f /tmp/gluster-healthz-daemonset.yaml
+    command: kubectl apply -f {{ kubernetes_spec_dir }}/gluster-healthz-daemonset.yaml
   - name: Create NFS service on the cluster
-    command: kubectl apply -f /tmp/gluster-service.yaml
+    command: kubectl apply -f {{ kubernetes_spec_dir }}/gluster-service.yaml

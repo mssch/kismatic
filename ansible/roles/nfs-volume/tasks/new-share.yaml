@@ -38,7 +38,7 @@
 - name: copy PV.yaml to remote
   template:
     src: add-persistent-volume.yaml
-    dest: /tmp/add-persistent-volume-{{nfs_index}}.yaml
+    dest: "{{ kubernetes_spec_dir }}/add-persistent-volume-{{nfs_index}}.yaml"
 
 - name: create pv pv{{ nfs_index }}
-  command: kubectl apply -f /tmp/add-persistent-volume-{{nfs_index}}.yaml
+  command: kubectl apply -f {{ kubernetes_spec_dir }}/add-persistent-volume-{{nfs_index}}.yaml
