@@ -105,7 +105,7 @@ var _ = Describe("Upgrade", func() {
 					})
 
 					sub.It("should be able to deploy a workload with ingress", func() error {
-						return nil
+						return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 					})
 
 					sub.It("should not have kube-apiserver systemd service", func() error {
