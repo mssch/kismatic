@@ -40,7 +40,7 @@ var _ = Describe("hosts file modification feature", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				By("Adding a worker with a bogus hostname that is added to hosts files")
-				err = addWorkerToKismaticMini(nodes.worker[1])
+				err = addWorkerToCluster(nodes.worker[1])
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})

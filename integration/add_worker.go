@@ -7,10 +7,10 @@ import (
 	g "github.com/onsi/ginkgo"
 )
 
-func addWorkerToKismaticMini(newWorker NodeDeets) error {
+func addWorkerToCluster(newWorker NodeDeets) error {
 	g.By("Adding new worker")
-	app := exec.Command("./kismatic", "install", "add-worker", "-f", "kismatic-testing.yaml", newWorker.Hostname, newWorker.PublicIP, newWorker.PrivateIP)
-	app.Stdout = os.Stdout
-	app.Stderr = os.Stderr
-	return app.Run()
+	cmd := exec.Command("./kismatic", "install", "add-worker", "-f", "kismatic-testing.yaml", newWorker.Hostname, newWorker.PublicIP, newWorker.PrivateIP)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

@@ -21,7 +21,7 @@ var _ = Describe("kismatic install add-worker tests", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				newWorker := nodes.worker[1]
-				err = addWorkerToKismaticMini(newWorker)
+				err = addWorkerToCluster(newWorker)
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
