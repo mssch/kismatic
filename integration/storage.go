@@ -47,14 +47,16 @@ func testAddVolumeVerifyGluster(aws infrastructureProvisioner, distro linuxDistr
 		for _, test := range tests {
 			By(fmt.Sprintf("Setting up a volume with Replica = %d, Distributed = %d", test.replicaCount, test.distributionCount))
 			volumeName := fmt.Sprintf("gv-r%d-d%d", test.replicaCount, test.distributionCount)
-			createVolume(planFile, volumeName, test.replicaCount, test.distributionCount, "")
+			err = createVolume(planFile, volumeName, test.replicaCount, test.distributionCount, "")
+			FailIfError(err, "Failed to create volume")
 
 			By("Verifying gluster volume properties")
 			verifyGlusterVolume(storageNode, sshKey, volumeName, test.replicaCount, test.distributionCount, "")
 		}
 
 		By("Creating a volume which allows access to nodes in the cluster")
-		createVolume(planFile, "foo", 1, 1, "")
+		err = createVolume(planFile, "foo", 1, 1, "")
+		FailIfError(err, "Failed to create volume")
 
 		By("Installing NFS library on out-of-cluster node")
 		unauthNode := nodes.worker[4:5]

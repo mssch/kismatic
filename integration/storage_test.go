@@ -56,7 +56,8 @@ var _ = Describe("Storage feature", func() {
 					By("Creating a storage volume")
 					plan, err := os.Open("kismatic-testing.yaml")
 					FailIfError(err, "Failed to open plan file")
-					createVolume(plan, "kis-int-test", 2, 1, "")
+					err = createVolume(plan, "kis-int-test", 2, 1, "")
+					FailIfError(err, "Failed to create volume")
 
 					By("Claiming the storage volume on the cluster")
 					err = kubeCreate("pvc.yaml")
