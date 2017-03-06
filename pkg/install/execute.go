@@ -353,9 +353,8 @@ func (ae *ansibleExecutor) AddVolume(plan *Plan, volume StorageVolume) error {
 
 func (ae *ansibleExecutor) UpgradeEtcd2Nodes(plan Plan, nodesToUpgrade []ListableNode) error {
 	for _, nodeToUpgrade := range nodesToUpgrade {
-		node := nodeToUpgrade.Node
-		if err := ae.upgradeEtcd2Node(plan, node); err != nil {
-			return fmt.Errorf("error upgrading node %q: %v", node.Host, err)
+		if err := ae.upgradeEtcd2Node(plan, nodeToUpgrade); err != nil {
+			return fmt.Errorf("error upgrading node %q: %v", nodeToUpgrade.Node.Host, err)
 		}
 	}
 
@@ -445,7 +444,7 @@ func (ae *ansibleExecutor) upgradeNode(plan Plan, node ListableNode, onlineUpgra
 	return ae.execute(t)
 }
 
-func (ae *ansibleExecutor) upgradeEtcd2Node(plan Plan, node Node) error {
+func (ae *ansibleExecutor) upgradeEtcd2Node(plan Plan, node ListableNode) error {
 	inventory := buildInventoryFromPlan(&plan)
 	cc, err := ae.buildClusterCatalog(&plan)
 	if err != nil {
@@ -458,9 +457,9 @@ func (ae *ansibleExecutor) upgradeEtcd2Node(plan Plan, node Node) error {
 		clusterCatalog: *cc,
 		plan:           plan,
 		explainer:      ae.defaultExplainer(),
-		limit:          []string{node.Host},
+		limit:          []string{node.Node.Host},
 	}
-	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade Node To Temporary Etcd %q", node.Host), '=')
+	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade To Temporary Etcd 3 %s", node.Node.Host), '=')
 	return ae.execute(t)
 }
 
