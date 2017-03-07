@@ -3,6 +3,7 @@ package integration
 import (
 	"os"
 	"os/exec"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -58,6 +59,37 @@ var _ = Describe("Upgrade", func() {
 						err = cmd.Run()
 						Expect(err).ToNot(HaveOccurred())
 					})
+				})
+			})
+		})
+
+		Context("Using a 1/2/1 cluster", func() {
+			ItOnAWS("should still be a highly available cluster after upgrade", func(aws infrastructureProvisioner) {
+				WithInfrastructureAndDNS(NodeCount{1, 2, 1, 0, 0}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
+					opts := installOptions{allowPackageInstallation: true}
+					err := installKismatic(nodes, opts, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+
+					// Extract new version of kismatic
+					pwd, err := os.Getwd()
+					Expect(err).ToNot(HaveOccurred())
+					err = extractCurrentKismatic(pwd)
+					Expect(err).ToNot(HaveOccurred())
+
+					// Perform upgrade
+					cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml")
+					cmd.Stderr = os.Stderr
+					cmd.Stdout = os.Stdout
+					err = cmd.Run()
+					Expect(err).ToNot(HaveOccurred())
+
+					By("Removing a Kubernetes master node")
+					err = aws.TerminateNode(nodes.master[0])
+					Expect(err).ToNot(HaveOccurred(), "could not remove node")
+
+					By("Re-running Kuberang")
+					err = runViaSSH([]string{"sudo kuberang"}, []NodeDeets{nodes.master[1]}, sshKey, 5*time.Minute)
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 		})
