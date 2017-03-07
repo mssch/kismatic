@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -100,6 +101,16 @@ func InstallKismaticPackages(nodes provisionedNodes, distro linuxDistro, sshKey 
 		}, 3)
 		FailIfError(err, "failed to install the worker over SSH")
 	}
+}
+
+// RemoveKismaticPackages by running the _packages-cleanup.yaml play
+func RemoveKismaticPackages() {
+	// Reuse existing play to remove packages
+	cmd := exec.Command("./kismatic", "install", "step", "-f", "kismatic-testing.yaml", "_packages-cleanup.yaml")
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	FailIfError(err)
 }
 
 func getPrepForDistro(distro linuxDistro) nodePrep {
