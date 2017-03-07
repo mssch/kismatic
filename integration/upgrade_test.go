@@ -120,5 +120,37 @@ var _ = Describe("Upgrade", func() {
 				})
 			})
 		})
+
+		Context("Using a cluster that has no internet access", func() {
+			ItOnAWS("should result in an upgraded cluster", func(aws infrastructureProvisioner) {
+				distro := CentOS7
+				WithInfrastructure(NodeCount{Etcd: 1, Master: 1, Worker: 1}, distro, aws, func(nodes provisionedNodes, sshKey string) {
+					// Standup cluster with previous version
+					opts := installOptions{allowPackageInstallation: true}
+					err := installKismatic(nodes, opts, sshKey)
+					FailIfError(err)
+
+					pwd, err := os.Getwd()
+					FailIfError(err)
+					err = extractCurrentKismatic(pwd)
+					FailIfError(err)
+					assertClusterVersionIsCurrent()
+
+					// Manually install the new packages
+					InstallKismaticPackages(nodes, distro, sshKey, true)
+
+					// Lock down internet access
+					err = disableInternetAccess(nodes.allNodes(), sshKey)
+					FailIfError(err)
+
+					// Perform upgrade
+					cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml")
+					cmd.Stderr = os.Stderr
+					cmd.Stdout = os.Stdout
+					err = cmd.Run()
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+		})
 	})
 })
