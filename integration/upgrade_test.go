@@ -107,7 +107,7 @@ var _ = Describe("Upgrade", func() {
 					})
 
 					sub.It("should have an accessible dashboard", func() error {
-						return nil
+						return canAccessDashboard()
 					})
 
 					sub.It("should be able to deploy a workload with ingress", func() error {
