@@ -18,6 +18,7 @@ const (
 	copyKismaticYumRepo       = `sudo curl https://kismatic-packages-rpm.s3-accelerate.amazonaws.com/kismatic.repo -o /etc/yum.repos.d/kismatic.repo`
 	installCurlYum            = `sudo yum -y install curl`
 	installEtcdYum            = `sudo yum -y install etcd-3.1.1-1`
+	installTransitionEtcdYum  = `sudo yum -y install transition-etcd`
 	installDockerYum          = `sudo yum -y install docker-engine-1.11.2-1.el7.centos`
 	installKubeletYum         = `sudo yum -y install kubelet-1.5.3_1-1`
 	installKubectlYum         = `sudo yum -y install kubectl-1.5.3_1-1`
@@ -28,6 +29,7 @@ const (
 	updateAptGet              = `sudo apt-get update`
 	installCurlApt            = `sudo apt-get -y install curl`
 	installEtcdApt            = `sudo apt-get -y install etcd=3.1.1`
+	installTransitionEtcdApt  = `sudo apt-get -y install transition-etcd`
 	installDockerApt          = `sudo apt-get -y install docker-engine=1.11.2-0~xenial`
 	installKubeletApt         = `sudo apt-get -y install kubelet=1.5.3-1`
 	installKubectlApt         = `sudo apt-get -y install kubectl=1.5.3-1`
@@ -45,7 +47,7 @@ type nodePrep struct {
 
 var ubuntu1604Prep = nodePrep{
 	CommandsToPrepRepo:         []string{copyKismaticKeyDeb, copyKismaticRepoDeb, updateAptGet},
-	CommandsToInstallEtcd:      []string{installCurlApt, installEtcdApt},
+	CommandsToInstallEtcd:      []string{installCurlApt, installEtcdApt, installTransitionEtcdApt},
 	CommandsToInstallDocker:    []string{installDockerApt},
 	CommandsToInstallK8sMaster: []string{installDockerApt, installKubeletApt, installKubectlApt},
 	CommandsToInstallK8s:       []string{installDockerApt, installKubeletApt, installKubectlApt},
@@ -54,7 +56,7 @@ var ubuntu1604Prep = nodePrep{
 
 var rhel7FamilyPrep = nodePrep{
 	CommandsToPrepRepo:         []string{copyKismaticYumRepo},
-	CommandsToInstallEtcd:      []string{installCurlYum, installEtcdYum},
+	CommandsToInstallEtcd:      []string{installCurlYum, installEtcdYum, installTransitionEtcdYum},
 	CommandsToInstallDocker:    []string{installDockerYum},
 	CommandsToInstallK8sMaster: []string{installDockerYum, installKubeletYum, installKubectlYum},
 	CommandsToInstallK8s:       []string{installDockerYum, installKubeletYum, installKubectlYum},

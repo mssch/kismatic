@@ -103,10 +103,10 @@ var _ = Describe("Upgrade", func() {
 				})
 			})
 
-			Context("Using a cluster that has no internet access", func() {
+			Context("Using a cluster that has no internet access [slow] [upgrade]", func() {
 				ItOnAWS("should result in an upgraded cluster", func(aws infrastructureProvisioner) {
 					distro := CentOS7
-					WithInfrastructure(NodeCount{Etcd: 1, Master: 1, Worker: 1}, distro, aws, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructure(NodeCount{Etcd: 3, Master: 1, Worker: 1}, distro, aws, func(nodes provisionedNodes, sshKey string) {
 						// Standup cluster with previous version
 						// Need to allowPackageInstallation=true to install old versions of packages
 						opts := installOptions{
@@ -143,6 +143,11 @@ var _ = Describe("Upgrade", func() {
 						// Lock down internet access
 						err = disableInternetAccess(nodes.allNodes(), sshKey)
 						FailIfError(err)
+
+						// Confirm there is not internet
+						if err := verifyNoInternetAccess(nodes.allNodes(), sshKey); err == nil {
+							Fail("was able to ping google with outgoing connections blocked")
+						}
 
 						// Perform upgrade
 						upgradeCluster()

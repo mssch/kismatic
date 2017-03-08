@@ -18,8 +18,9 @@
     when: >
       (force_docker_restart is defined and force_docker_restart|bool == true) or
       ((upgrading is defined and upgrading|bool == true) and
+      (allow_package_installation|bool == false or
       ((docker_installation_rpm is defined and docker_installation_rpm.changed == true) or
-      (docker_installation_deb is defined and docker_installation_deb.changed == true)))
+      (docker_installation_deb is defined and docker_installation_deb.changed == true))))
 
   - name: verify docker is running
     command: docker ps
