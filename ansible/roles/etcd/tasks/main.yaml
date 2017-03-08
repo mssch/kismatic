@@ -25,7 +25,7 @@
   - meta: flush_handlers  #Run handlers
 
     #TODO don't use a timeout
-  - name: wait for {{ etcd_install_bin_name }} node to be ready after upgrade
+  - name: wait for {{ etcd_install_bin_name }} node to be ready
     pause: seconds=60
     when: >
       (force_etcd_restart is defined and force_etcd_restart|bool == true) or

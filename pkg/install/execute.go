@@ -459,7 +459,7 @@ func (ae *ansibleExecutor) upgradeEtcd2Node(plan Plan, node ListableNode) error 
 		explainer:      ae.defaultExplainer(),
 		limit:          []string{node.Node.Host},
 	}
-	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade To Temporary Etcd 3 %s", node.Node.Host), '=')
+	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade: %s to Temporary Etcd3", node.Node.Host), '=')
 	return ae.execute(t)
 }
 
