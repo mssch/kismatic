@@ -38,3 +38,8 @@
 
     roles:
       - calico
+
+    post_tasks:
+      - name: remove calico config job
+        command: kubectl delete job configure-calico -n kube-system
+        run_once: true
