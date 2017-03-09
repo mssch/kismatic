@@ -21,6 +21,7 @@ type upgradeOpts struct {
 	planFile           string
 	restartServices    bool
 	partialAllowed     bool
+	maxParallelWorkers int
 }
 
 // NewCmdUpgrade returns the upgrade command
@@ -52,6 +53,7 @@ Nodes in the cluster are upgraded in the following order:
 	cmd.PersistentFlags().BoolVar(&opts.skipPreflight, "skip-preflight", false, "skip upgrade pre-flight checks")
 	cmd.PersistentFlags().BoolVar(&opts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
 	cmd.PersistentFlags().BoolVar(&opts.partialAllowed, "partial-ok", false, "allow the upgrade of ready nodes, and skip nodes that have been deemed unready for upgrade")
+	cmd.PersistentFlags().IntVar(&opts.maxParallelWorkers, "max-parallel-workers", 1, "the maximum number of worker nodes to be upgraded in parallel")
 	addPlanFileFlag(cmd.PersistentFlags(), &opts.planFile)
 
 	// Subcommands
@@ -105,6 +107,10 @@ before any changes are applied.
 }
 
 func doUpgrade(out io.Writer, opts *upgradeOpts) error {
+	if opts.maxParallelWorkers < 1 {
+		return fmt.Errorf("maxParallelWorkers-workers must be greater or equal to 1, got: %d", opts.maxParallelWorkers)
+	}
+
 	planFile := opts.planFile
 	planner := install.FilePlanner{File: planFile}
 	executorOpts := install.ExecutorOptions{
@@ -310,7 +316,7 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 	}
 
 	// Run the upgrade on the nodes that need it
-	if err := executor.UpgradeNodes(plan, toUpgrade, opts.online); err != nil {
+	if err := executor.UpgradeNodes(plan, toUpgrade, opts.online, opts.maxParallelWorkers); err != nil {
 		return fmt.Errorf("Failed to upgrade nodes: %v", err)
 	}
 	return nil
