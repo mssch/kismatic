@@ -36,9 +36,7 @@ var _ = Describe("disconnected install feature", func() {
 					err = disableInternetAccess(theNode, sshKey)
 					FailIfError(err, "Failed to create iptable rule")
 
-					By("Verifying that connections are blocked")
-					err = runViaSSH([]string{"curl --max-time 5 www.google.com"}, theNode, sshKey, 1*time.Minute)
-					if err == nil {
+					if err := verifyNoInternetAccess(theNode, sshKey); err == nil {
 						Fail("was able to ping google with outgoing connections blocked")
 					}
 
@@ -59,14 +57,23 @@ var _ = Describe("disconnected install feature", func() {
 
 func disableInternetAccess(nodes []NodeDeets, sshKey string) error {
 	By("Blocking all outbound connections")
-	allowPorts := "8888,2379,6666,2380,6660,6443,8443,80,443,4194,10249,10250,10251,10252,10254" // ports needed/checked by inspector
+	allowSourcePorts := "8888,2379,6666,2380,6660,6443,8443,80,443,4194,10249,10250,10251,10252,10254" // ports needed/checked by inspector
+	allowDestPorts := "8888,2379,6666,2380,6660,6443,8443,10250"
 	cmd := []string{
-		"sudo iptables -A OUTPUT -o lo -j ACCEPT",                                                         // allow loopback
-		"sudo iptables -A OUTPUT -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT",                // allow SSH
-		fmt.Sprintf("sudo iptables -A OUTPUT -p tcp --match multiport --sports %s -j ACCEPT", allowPorts), // allow inspector
+		"sudo iptables -A OUTPUT -o lo -j ACCEPT",                                                               // allow loopback
+		"sudo iptables -A OUTPUT -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT",                      // allow SSH
+		fmt.Sprintf("sudo iptables -A OUTPUT -p tcp --match multiport --sports %s -j ACCEPT", allowSourcePorts), // allow inspector
+		fmt.Sprintf("sudo iptables -A OUTPUT -p tcp --match multiport --dports %s -j ACCEPT", allowDestPorts),   // allow internal traffic for: inspector, etcd, docker registry
 		"sudo iptables -A OUTPUT -s 172.16.0.0/16 -j ACCEPT",
 		"sudo iptables -A OUTPUT -d 172.16.0.0/16 -j ACCEPT", // Allow pod network
+		"sudo iptables -A OUTPUT -s 172.17.0.0/16 -j ACCEPT",
+		"sudo iptables -A OUTPUT -d 172.17.0.0/16 -j ACCEPT", // Allow pod service network
 		"sudo iptables -P OUTPUT DROP",                       // drop everything else
 	}
 	return runViaSSH(cmd, nodes, sshKey, 1*time.Minute)
+}
+
+func verifyNoInternetAccess(nodes []NodeDeets, sshKey string) error {
+	By("Verifying that connections are blocked")
+	return runViaSSH([]string{"curl --head www.google.com"}, nodes, sshKey, 1*time.Minute)
 }
