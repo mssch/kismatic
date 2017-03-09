@@ -71,20 +71,12 @@ var _ = Describe("Upgrade", func() {
 							return addWorkerToCluster(newWorker)
 						})
 
-						sub.It("should have an accessible dashboard", func() error {
-							return nil
-						})
-
 						sub.It("should be able to deploy a workload with ingress", func() error {
 							return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						})
 
 						sub.It("should have an accessible dashboard", func() error {
 							return canAccessDashboard()
-						})
-
-						sub.It("should not have kube-apiserver systemd service", func() error {
-							return nil
 						})
 
 						// This test should always be last
