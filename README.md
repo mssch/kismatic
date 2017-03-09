@@ -6,7 +6,7 @@
 
 Join our mailing list for updates on new releases: https://groups.google.com/forum/#!forum/kismatic-users
 
-![KET](logo.png?raw=true "KET Logo")
+<img src="https://raw.githubusercontent.com/apprenda/kismatic/master/logo.png" width="500" />
 
 ## Introduction
 
