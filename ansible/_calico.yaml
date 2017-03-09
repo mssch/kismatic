@@ -36,5 +36,21 @@
           state: absent
         when: upgrading is defined and upgrading|bool == true
 
+      - name: remove kismatic-kubernetes-networking package
+        package: name=kismatic-kubernetes-networking state=absent
+        when: upgrading is defined and upgrading|bool == true
+        register: result
+        until: result|success
+        retries: 1
+        delay: 1
+
     roles:
       - calico
+      - role: calico-config
+        when: upgrading is not defined or upgrading|bool == false
+
+    post_tasks:
+      - name: remove calico config job
+        command: kubectl delete job configure-calico -n kube-system
+        run_once: true
+        when: upgrading is not defined or upgrading|bool == false

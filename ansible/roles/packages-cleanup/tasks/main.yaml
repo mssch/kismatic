@@ -1,97 +1,40 @@
 ---
     # remove YUM packages
-  - name: remove kismatic-kubernetes-master yum package
-    yum: name=kismatic-kubernetes-master state=absent
-    when: "ansible_os_family == 'RedHat' and 'master' in group_names"
+  - name: remove kismatic-kubernetes-master package
+    package: name=kismatic-kubernetes-master state=absent
+    when: "'master' in group_names"
     register: result
     until: result|success
     retries: 1
     delay: 1
 
-  - name: remove kismatic-kubernetes-node yum package
-    yum: name=kismatic-kubernetes-node state=absent
-    when: "ansible_os_family == 'RedHat' and ('master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names)"
+  - name: remove kismatic-kubernetes-node package
+    package: name=kismatic-kubernetes-node state=absent
+    when: "'master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names"
     register: result
     until: result|success
     retries: 1
     delay: 1
 
-  - name: remove kismatic-kubernetes-networking yum package
-    yum: name=kismatic-kubernetes-networking state=absent
-    when: "ansible_os_family == 'RedHat' and ('master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names)"
+  - name: remove kismatic-docker-engine package
+    package: name=kismatic-docker-engine state=absent
+    when: "'master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names"
     register: result
     until: result|success
     retries: 1
     delay: 1
 
-  - name: remove kismatic-docker-engine yum package
-    yum: name=kismatic-docker-engine state=absent
-    when: "ansible_os_family == 'RedHat' and ('master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names)"
+  - name: remove kismatic-etcd package
+    package: name=kismatic-etcd state=absent
+    when: "'etcd' in group_names"
     register: result
     until: result|success
     retries: 1
     delay: 1
 
-  - name: remove kismatic-etcd yum package
-    yum: name=kismatic-etcd state=absent
-    when: "ansible_os_family == 'RedHat' and 'etcd' in group_names"
-    register: result
-    until: result|success
-    retries: 1
-    delay: 1
-
-  - name: remove transition-etcd yum package
-    yum: name=transition-etcd-{{ transition_etcd_yum_version }} state=absent
-    when: "ansible_os_family == 'RedHat'"
-    register: result
-    until: result|success
-    retries: 1
-    delay: 1
-
-    # remove DEB packages
-  - name: remove kismatic-kubernetes-master deb package
-    apt: name=kismatic-kubernetes-master state=absent
-    when: "ansible_os_family == 'Debian' and 'master' in group_names"
-    register: result
-    until: result|success
-    retries: 1
-    delay: 1
-
-  - name: remove kismatic-kubernetes-node deb package
-    apt: name=kismatic-kubernetes-node state=absent
-    when: "ansible_os_family == 'Debian' and ('master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names)"
-    register: result
-    until: result|success
-    retries: 1
-    delay: 1
-
-  - name: remove kismatic-kubernetes-networking deb package
-    apt: name=kismatic-kubernetes-networking state=absent
-    when: "ansible_os_family == 'Debian' and ('master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names)"
-    register: result
-    until: result|success
-    retries: 1
-    delay: 1
-
-  - name: remove kismatic-docker-engine deb package
-    apt: name=kismatic-docker-engine state=absent
-    when: "ansible_os_family == 'Debian' and ('master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names)"
-    register: result
-    until: result|success
-    retries: 1
-    delay: 1
-
-  - name: remove kismatic-etcd etcd deb package
-    apt: name=kismatic-etcd state=absent
-    when: "ansible_os_family == 'Debian' and 'etcd' in group_names"
-    register: result
-    until: result|success
-    retries: 1
-    delay: 1
-
-  - name: remove transition-etcd deb package
-    apt: name=transition-etcd={{transition_etcd_apt_version}} state=absent
-    when: "ansible_os_family == 'Debian'"
+  - name: remove transition-etcd package
+    package: name=transition-etcd state=absent
+    when: "'etcd' in group_names"
     register: result
     until: result|success
     retries: 1

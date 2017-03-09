@@ -1,0 +1,15 @@
+---
+  - hosts: master[0]
+    any_errors_fatal: true
+    name: "{{ play_name | default('Configure Calico After Upgrade') }}"
+    remote_user: root
+    become_method: sudo
+    run_once: true
+
+    roles:
+      - calico-config
+
+    post_tasks:
+      - name: remove calico config job
+        command: kubectl delete job configure-calico -n kube-system
+        run_once: true

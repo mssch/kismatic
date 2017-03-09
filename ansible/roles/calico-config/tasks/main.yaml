@@ -1,0 +1,15 @@
+---
+  - name: copy calico-job.yaml to remote
+    template:
+      src: calico-job.yaml
+      dest: /etc/calico/calico-job.yaml
+      owner: "{{ kubernetes_owner }}"
+      group: "{{ kubernetes_group }}"
+      mode: "{{ kubernetes_service_mode }}"
+    run_once: true
+    when: "inventory_hostname == groups['master'][0]"
+
+  - name: run calico config job
+    command: kubectl apply -f /etc/calico/calico.yaml --kubeconfig {{ kubernetes_kubeconfig_path }}
+    run_once: true
+    when: "inventory_hostname == groups['master'][0]"
