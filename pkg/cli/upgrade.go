@@ -164,7 +164,7 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 	}
 
 	if plan.ConfigureDockerRegistry() && plan.Cluster.DisconnectedInstallation {
-		util.PrintHeader(out, "Upgrade Docker Registry", '=')
+		util.PrintHeader(out, "Upgrade: Docker Registry", '=')
 		if err := executor.UpgradeDockerRegistry(*plan); err != nil {
 			return fmt.Errorf("Failed to upgrade docker registry: %v", err)
 		}
@@ -193,7 +193,7 @@ without the "--partial-ok" flag to perform a full upgrade.
 	}
 
 	// Upgrade the cluster services
-	util.PrintHeader(out, "Upgrade Cluster Services", '=')
+	util.PrintHeader(out, "Upgrade: Cluster Services", '=')
 	if err := executor.UpgradeClusterServices(*plan); err != nil {
 		return fmt.Errorf("Failed to upgrade cluster services: %v", err)
 	}
