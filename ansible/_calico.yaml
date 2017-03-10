@@ -51,6 +51,6 @@
 
     post_tasks:
       - name: remove calico config job
-        command: kubectl delete job configure-calico -n kube-system
+        command: kubectl delete job configure-calico -n kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
         run_once: true
         when: upgrading is not defined or upgrading|bool == false
