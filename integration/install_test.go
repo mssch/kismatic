@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -128,11 +129,12 @@ var _ = Describe("kismatic", func() {
 					err := installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())
 
-					sub := SubDescribe("Trying to access the Dashboard")
+					sub := SubDescribe("Using a running cluster")
 					defer sub.Check()
 
-					sub.It("should succeed", func() error {
-						return canAccessDashboard()
+					// Use master[0] public IP
+					sub.It("should have an accessible dashboard", func() error {
+						return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
 					})
 				})
 			})
