@@ -93,10 +93,11 @@ network_plugin_dir: /etc/cni/net.d
 kubernetes_auth_dir: /etc/kubernetes/auth
 kubelet_lib_dir: /var/lib/kubelet
 kubelet_pod_manifests_dir: /etc/kubernetes/manifests
+kubernetes_kubectl_config_dir: /root/.kube
 # paths
 kubernetes_basic_auth_path: "{{kubernetes_auth_dir}}/basicauth.csv"
 kubernetes_authorization_policy_path: "{{kubernetes_auth_dir}}/authorization-policy.json"
-kubernetes_kubeconfig_path: "{{kubelet_lib_dir}}/kubeconfig"
+kubernetes_kubeconfig_path: "{{kubernetes_kubectl_config_dir}}/config"
 # file modes
 kubernetes_executable_mode: 0775
 kubernetes_service_mode: 0664
