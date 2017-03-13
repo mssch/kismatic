@@ -1,7 +1,7 @@
 ---
     # kubeconfig is required becuase this task can be triggered from any k8s node
   - name: wait until {{ item }} pod has the desired version
-    command: kubectl get pods {{ item }} --namespace kube-system -o jsonpath='{.metadata.labels.kismaticVersion}' --kubeconfig {{ kubernetes_kubeconfig_path }}
+    command: kubectl get pods {{ item }} --namespace kube-system -o jsonpath='{.metadata.annotations.kismatic/version}' --kubeconfig {{ kubernetes_kubeconfig_path }}
     register: podVersion
     until: podVersion.stdout == kismatic_short_version
     retries: 20

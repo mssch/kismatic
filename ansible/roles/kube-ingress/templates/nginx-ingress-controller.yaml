@@ -8,7 +8,8 @@ spec:
     metadata:
       labels:
         name: ingress
-        kismaticVersion: "{{ kismatic_short_version }}"
+      annotations:
+        kismatic/version: "{{ kismatic_short_version }}"
     spec:
       terminationGracePeriodSeconds: 60
       hostNetwork: true # required in a CNI networkd

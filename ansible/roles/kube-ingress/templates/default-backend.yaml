@@ -9,7 +9,8 @@ spec:
     metadata:
       labels:
         app: default-http-backend
-        kismaticVersion: "{{ kismatic_short_version }}"
+      annotations:
+        kismatic/version: "{{ kismatic_short_version }}"
     spec:
       nodeSelector:
         kismatic/ingress: "true"

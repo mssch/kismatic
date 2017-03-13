@@ -21,8 +21,9 @@ apiVersion: extensions/v1beta1
 metadata:
   labels:
     app: kubernetes-dashboard
+  annotations:
     version: "{{ kubernetes_dashboard_version }}"
-    kismaticVersion: "{{ kismatic_short_version }}"
+    kismatic/version: "{{ kismatic_short_version }}"
   name: kubernetes-dashboard
   namespace: kube-system
 spec:

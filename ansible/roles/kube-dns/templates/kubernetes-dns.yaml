@@ -7,7 +7,6 @@ metadata:
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
     kubernetes.io/name: "KubeDNS"
-    kismaticVersion: "{{ kismatic_short_version }}"
 spec:
   selector:
     k8s-app: kube-dns
@@ -29,8 +28,10 @@ metadata:
   labels:
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
+  annotations:
     version: "{{kubedns_version}}"
-    kismaticVersion: "{{ kismatic_short_version }}"
+  annotations:
+    kismatic/version: "{{ kismatic_short_version }}"
 spec:
   replicas: {{ kube_dns_replicas|int }}  # create 2 replicas or the number of worker nodes
   strategy:
