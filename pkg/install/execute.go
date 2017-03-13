@@ -22,6 +22,7 @@ import (
 // environment defined in the plan file
 type PreFlightExecutor interface {
 	RunPreFlightCheck(*Plan) error
+	RunNewWorkerPreFlightCheck(Plan, Node) error
 	RunUpgradePreFlightCheck(*Plan, ListableNode) error
 }
 
@@ -237,18 +238,14 @@ func (ae *ansibleExecutor) RunSmokeTest(p *Plan) error {
 
 // RunPreflightCheck against the nodes defined in the plan
 func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
 	}
-	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
-	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
-	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
-
+	cc, err = setPreflightOptions(*p, *cc)
+	if err != nil {
+		return err
+	}
 	t := task{
 		name:           "preflight",
 		playbook:       "preflight.yaml",
@@ -260,19 +257,40 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	return ae.execute(t)
 }
 
-func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) error {
-	inventory := buildInventoryFromPlan(p)
-	pwd, err := os.Getwd()
+// RunNewWorkerPreFlightCheck runs the preflight checks against a new worker node
+func (ae *ansibleExecutor) RunNewWorkerPreFlightCheck(p Plan, node Node) error {
+	cc, err := ae.buildClusterCatalog(&p)
 	if err != nil {
 		return err
 	}
+	cc, err = setPreflightOptions(p, *cc)
+	if err != nil {
+		return err
+	}
+	p.Worker.ExpectedCount++
+	p.Worker.Nodes = append(p.Worker.Nodes, node)
+	t := task{
+		name:           "add-worker-preflight",
+		playbook:       "preflight.yaml",
+		inventory:      buildInventoryFromPlan(&p),
+		clusterCatalog: *cc,
+		explainer:      ae.preflightExplainer(),
+		plan:           p,
+		limit:          []string{node.Host},
+	}
+	return ae.execute(t)
+}
+
+func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) error {
+	inventory := buildInventoryFromPlan(p)
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
 	}
-	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
-	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
-	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
+	cc, err = setPreflightOptions(*p, *cc)
+	if err != nil {
+		return err
+	}
 	t := task{
 		name:           "upgrade-preflight",
 		playbook:       "upgrade-preflight.yaml",
@@ -283,6 +301,17 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 		limit:          []string{node.Node.Host},
 	}
 	return ae.execute(t)
+}
+
+func setPreflightOptions(p Plan, cc ansible.ClusterCatalog) (*ansible.ClusterCatalog, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
+	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
+	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
+	return &cc, nil
 }
 
 func (ae *ansibleExecutor) RunPlay(playName string, p *Plan) error {

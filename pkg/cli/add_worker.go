@@ -83,12 +83,12 @@ func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, newWorker 
 		util.PrintValidationErrors(out, errs)
 		return errors.New("could not establish SSH connection to the new node")
 	}
-	if err := ensureNodeIsNew(*plan, newWorker); err != nil {
+	if err = ensureNodeIsNew(*plan, newWorker); err != nil {
 		return err
 	}
 	if !opts.SkipPreFlight {
 		util.PrintHeader(out, "Running Pre-Flight Checks On New Worker", '=')
-		if err := runPreFlightOnWorker(executor, *plan, newWorker); err != nil {
+		if err = executor.RunNewWorkerPreFlightCheck(*plan, newWorker); err != nil {
 			return err
 		}
 	}
@@ -117,20 +117,4 @@ func ensureNodeIsNew(plan install.Plan, newWorker install.Node) error {
 		}
 	}
 	return nil
-}
-
-func runPreFlightOnWorker(executor install.Executor, plan install.Plan, workerNode install.Node) error {
-	// use the original plan, but only run against the new worker
-	preFlightPlan := plan
-	preFlightPlan.Master.Nodes = []install.Node{}
-	preFlightPlan.Master.ExpectedCount = 0
-	preFlightPlan.Etcd.Nodes = []install.Node{}
-	preFlightPlan.Etcd.ExpectedCount = 0
-	preFlightPlan.Worker.Nodes = []install.Node{workerNode}
-	preFlightPlan.Worker.ExpectedCount = 1
-	preFlightPlan.Ingress.Nodes = []install.Node{}
-	preFlightPlan.Ingress.ExpectedCount = 0
-	preFlightPlan.Storage.Nodes = []install.Node{}
-	preFlightPlan.Storage.ExpectedCount = 0
-	return executor.RunPreFlightCheck(&preFlightPlan)
 }
