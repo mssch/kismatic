@@ -4,14 +4,6 @@
       path: "{{ calico_dir }}"
       state: directory
 
-  - name: copy calicoctl.cfg to remote
-    template:
-      src: calicoctl.cfg.j2
-      dest: "{{ calicoctl_conf_path }}"
-      owner: "{{ kubernetes_owner }}"
-      group: "{{ kubernetes_group }}"
-      mode: "{{ network_environment_mode }}"
-
   - name: copy calico.yaml to remote
     template:
       src: calico.yaml

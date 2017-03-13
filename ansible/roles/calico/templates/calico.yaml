@@ -34,20 +34,6 @@ data:
         }
     }
 
-  # The default IP Pool to be created for the cluster.
-  # Pod IP addresses will be assigned from this pool.
-  ippool.yaml: |
-      apiVersion: v1
-      kind: ipPool
-      metadata:
-        cidr: {{ kubernetes_pods_cidr }}
-      spec:
-        ipip:
-          enabled: {% if calico_network_type == 'overlay' %}true{% else %}false{% endif %}
-
-        nat-outgoing: true
-        disabled: false
-
   # If you're using TLS enabled etcd uncomment the following.
   # You must also populate the Secret below with these files.
   etcd_ca: "{{ kubernetes_certificates_ca_path }}"

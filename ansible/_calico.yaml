@@ -1,7 +1,7 @@
 ---
   - hosts: master:worker:ingress:storage
     any_errors_fatal: true
-    name: "{{ play_name | default('Configure Cluster Network') }}"
+    name: "{{ play_name | default('Start Network Components') }}"
     serial: "{{ serial_count | default('100%') }}"
     remote_user: root
     become_method: sudo
@@ -46,11 +46,3 @@
 
     roles:
       - calico
-      - role: calico-config
-        when: upgrading is not defined or upgrading|bool == false
-
-    post_tasks:
-      - name: remove calico config job
-        command: kubectl delete job configure-calico -n kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
-        run_once: true
-        when: upgrading is not defined or upgrading|bool == false
