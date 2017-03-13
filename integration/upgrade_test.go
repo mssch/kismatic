@@ -75,8 +75,9 @@ var _ = Describe("Upgrade", func() {
 							return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						})
 
+						// Use master[0] public IP
 						sub.It("should have an accessible dashboard", func() error {
-							return canAccessDashboard()
+							return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
 						})
 
 						// This test should always be last
