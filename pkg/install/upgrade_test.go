@@ -582,10 +582,14 @@ func TestDetectNodeUpgradeSafetyUnreplicatedController(t *testing.T) {
 		},
 	}
 	errs := DetectNodeUpgradeSafety(plan, node, k8sClient)
-	if len(errs) != 1 {
-		t.Errorf("Expected %d errors, but got %v", 1, errs)
-	} else if _, ok := errs[0].(unsafeReplicaCountErr); !ok {
+	if len(errs) != 2 {
+		t.Fatalf("Expected %d errors, but got %v", 2, errs)
+	}
+	if _, ok := errs[0].(unsafeReplicaCountErr); !ok {
 		t.Errorf("expected unsafeReplicaCountErr, but got %T", errs[0])
+	}
+	if _, ok := errs[1].(replicasOnSingleNodeErr); !ok {
+		t.Errorf("expected replicasOnSingleNodeErr, but got %T", errs[0])
 	}
 }
 
@@ -624,10 +628,14 @@ func TestDetectNodeUpgradeSafetyUnreplicatedReplicaSet(t *testing.T) {
 		},
 	}
 	errs := DetectNodeUpgradeSafety(plan, node, k8sClient)
-	if len(errs) != 1 {
-		t.Errorf("Expected %d errors, but got %v", 1, errs)
-	} else if _, ok := errs[0].(unsafeReplicaCountErr); !ok {
+	if len(errs) != 2 {
+		t.Fatalf("Expected %d errors, but got %v", 2, errs)
+	}
+	if _, ok := errs[0].(unsafeReplicaCountErr); !ok {
 		t.Errorf("expected unsafeReplicaCountErr, but got %T", errs[0])
+	}
+	if _, ok := errs[1].(replicasOnSingleNodeErr); !ok {
+		t.Errorf("expected replicasOnSingleNodeErr, but got %T", errs[0])
 	}
 }
 
@@ -705,5 +713,91 @@ func TestDetectNodeUpgradeSafetyJobRunningOnNode(t *testing.T) {
 		t.Errorf("Expected %d errors, but got %v", 1, errs)
 	} else if _, ok := errs[0].(podRunningJobErr); !ok {
 		t.Errorf("expected podRunningJobErr, but got %T", errs[0])
+	}
+}
+
+func TestDetectNodeUpgradeSafetyAllReplicaSetPodsSameNode(t *testing.T) {
+	plan := Plan{
+		Worker: NodeGroup{
+			ExpectedCount: 2,
+			Nodes: []Node{
+				{
+					Host: "foo",
+					IP:   "10.0.0.1",
+				},
+				{
+					Host: "foo",
+					IP:   "10.0.0.1",
+				},
+			},
+		},
+	}
+	node := plan.Worker.Nodes[0]
+
+	// Setup a pod that is managed by a replication controller with replicas = 1
+	pod1 := getSafePodWithCreatedByRef(t, node.Host, "ReplicaSet")
+	pod2 := getSafePodWithCreatedByRef(t, node.Host, "ReplicaSet")
+	k8sClient := fakeUpgradeKubeClient{
+		listPods: func() (*data.PodList, error) {
+			return &data.PodList{
+				Items: []data.Pod{pod1, pod2},
+			}, nil
+		},
+		getReplicaSet: func() (*data.ReplicaSet, error) {
+			return &data.ReplicaSet{
+				Status: data.ReplicaSetStatus{
+					Replicas: 2,
+				},
+			}, nil
+		},
+	}
+	errs := DetectNodeUpgradeSafety(plan, node, k8sClient)
+	if len(errs) != 1 {
+		t.Errorf("Expected %d errors, but got %v", 1, errs)
+	} else if _, ok := errs[0].(replicasOnSingleNodeErr); !ok {
+		t.Errorf("expected replicasOnSingleNodeErr, but got %T", errs[0])
+	}
+}
+
+func TestDetectNodeUpgradeSafetyAllReplicaControllerPodsSameNode(t *testing.T) {
+	plan := Plan{
+		Worker: NodeGroup{
+			ExpectedCount: 2,
+			Nodes: []Node{
+				{
+					Host: "foo",
+					IP:   "10.0.0.1",
+				},
+				{
+					Host: "foo",
+					IP:   "10.0.0.1",
+				},
+			},
+		},
+	}
+	node := plan.Worker.Nodes[0]
+
+	// Setup a pod that is managed by a replication controller with replicas = 1
+	pod1 := getSafePodWithCreatedByRef(t, node.Host, "ReplicationController")
+	pod2 := getSafePodWithCreatedByRef(t, node.Host, "ReplicationController")
+	k8sClient := fakeUpgradeKubeClient{
+		listPods: func() (*data.PodList, error) {
+			return &data.PodList{
+				Items: []data.Pod{pod1, pod2},
+			}, nil
+		},
+		getReplicationController: func() (*data.ReplicationController, error) {
+			return &data.ReplicationController{
+				Status: data.ReplicationControllerStatus{
+					Replicas: 2,
+				},
+			}, nil
+		},
+	}
+	errs := DetectNodeUpgradeSafety(plan, node, k8sClient)
+	if len(errs) != 1 {
+		t.Errorf("Expected %d errors, but got %v", 1, errs)
+	} else if _, ok := errs[0].(replicasOnSingleNodeErr); !ok {
+		t.Errorf("expected replicasOnSingleNodeErr, but got %T", errs[0])
 	}
 }
