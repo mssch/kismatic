@@ -16,6 +16,7 @@
   - include: _etcd-networking.yaml play_name="Upgrade Network Etcd Cluster" serial="1" upgrading=true
 
   # kubernetes
+  - include: _kube-config.yaml
   - include: _kubelet.yaml play_name="Upgrade Kubernetes Kubelet" serial="1" upgrading=true
   - include: _kube-apiserver.yaml play_name="Upgrade Kubernetes API Server" serial="1" upgrading=true
   - include: _kube-scheduler.yaml play_name="Upgrade Kubernetes Scheduler" serial="1" upgrading=true
