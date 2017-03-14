@@ -4,8 +4,9 @@ metadata:
   labels:
     tier: control-plane
     component: kube-proxy
+  annotations:
     version: "{{ kubernetes_version }}"
-    kismaticVersion: "{{ kismatic_short_version }}"
+    kismatic/version: "{{ kismatic_short_version }}"
   name: kube-proxy
   namespace: kube-system
 spec:
