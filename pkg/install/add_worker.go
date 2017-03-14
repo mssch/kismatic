@@ -3,8 +3,6 @@ package install
 import (
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/apprenda/kismatic/pkg/util"
 )
@@ -18,107 +16,81 @@ func (ae *ansibleExecutor) AddWorker(originalPlan *Plan, newWorker Node) (*Plan,
 	if err := checkAddWorkerPrereqs(ae.pki, newWorker); err != nil {
 		return nil, err
 	}
-	runDirectory, err := ae.createRunDirectory("add-worker")
-	if err != nil {
-		return nil, fmt.Errorf("error creating working directory for add-worker: %v", err)
-	}
 	updatedPlan := addWorkerToPlan(*originalPlan, newWorker)
-	fp := FilePlanner{
-		File: filepath.Join(runDirectory, "kismatic-cluster.yaml"),
-	}
-	if err = fp.Write(&updatedPlan); err != nil {
-		return nil, fmt.Errorf("error recording plan file to %s: %v", fp.File, err)
-	}
+
 	// Generate node certificates
 	util.PrintHeader(ae.stdout, "Generating Certificate For Worker Node", '=')
 	ca, err := ae.pki.GetClusterCA()
 	if err != nil {
 		return nil, err
 	}
-	if err := ae.pki.GenerateNodeCertificate(originalPlan, newWorker, ca); err != nil {
+	if err = ae.pki.GenerateNodeCertificate(originalPlan, newWorker, ca); err != nil {
 		return nil, fmt.Errorf("error generating certificate for new worker: %v", err)
 	}
-	// Build the ansible inventory
+
+	// Run the playbook to add the worker
 	inventory := buildInventoryFromPlan(&updatedPlan)
 	cc, err := ae.buildClusterCatalog(&updatedPlan)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate ansible vars: %v", err)
 	}
-	ansibleLogFilename := filepath.Join(runDirectory, "ansible.log")
-	ansibleLogFile, err := os.Create(ansibleLogFilename)
-	if err != nil {
-		return nil, fmt.Errorf("error creating ansible log file %q: %v", ansibleLogFilename, err)
-	}
-	// Run the playbook for adding the node
 	util.PrintHeader(ae.stdout, "Adding Worker Node to Cluster", '=')
-	playbook := "kubernetes-worker.yaml"
-	eventExplainer := ae.defaultExplainer()
-	runner, explainer, err := ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
-	if err != nil {
-		return nil, err
+	t := task{
+		name:           "add-worker",
+		playbook:       "kubernetes-worker.yaml",
+		plan:           updatedPlan,
+		inventory:      inventory,
+		clusterCatalog: *cc,
+		explainer:      ae.defaultExplainer(),
+		limit:          []string{newWorker.Host},
 	}
-	eventStream, err := runner.StartPlaybookOnNode(playbook, inventory, *cc, newWorker.Host)
-	if err != nil {
-		return nil, fmt.Errorf("error running ansible playbook: %v", err)
-	}
-	go explainer.Explain(eventStream)
-	// Wait until ansible exits
-	if err = runner.WaitPlaybook(); err != nil {
+	if err = ae.execute(t); err != nil {
 		return nil, fmt.Errorf("error running playbook: %v", err)
 	}
+
+	// We need to run ansible against all hosts to update the hosts files
 	if updatedPlan.Cluster.Networking.UpdateHostsFiles {
-		// We need to run ansible against all hosts to update the hosts files
 		util.PrintHeader(ae.stdout, "Updating Hosts Files On All Nodes", '=')
-		playbook := "_hosts.yaml"
-		eventExplainer = ae.defaultExplainer()
-		runner, explainer, err := ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
-		if err != nil {
-			return nil, err
+		t = task{
+			name:           "add-worker-update-hosts",
+			playbook:       "_hosts.yaml",
+			plan:           updatedPlan,
+			inventory:      inventory,
+			clusterCatalog: *cc,
+			explainer:      ae.defaultExplainer(),
 		}
-		eventStream, err := runner.StartPlaybook(playbook, inventory, *cc)
-		if err != nil {
-			return nil, fmt.Errorf("error running playbook to update hosts files on all nodes: %v", err)
-		}
-		go explainer.Explain(eventStream)
-		if err = runner.WaitPlaybook(); err != nil {
+		if err = ae.execute(t); err != nil {
 			return nil, fmt.Errorf("error updating hosts files on all nodes: %v", err)
 		}
 	}
+
 	// Verify that the node registered with API server
 	util.PrintHeader(ae.stdout, "Running New Worker Smoke Test", '=')
-	playbook = "_worker-smoke-test.yaml"
-
 	cc.WorkerNode = newWorker.Host
+	t = task{
+		name:           "add-worker-smoke-test",
+		playbook:       "_worker-smoke-test.yaml",
+		plan:           updatedPlan,
+		inventory:      inventory,
+		clusterCatalog: *cc,
+		explainer:      ae.defaultExplainer(),
+	}
+	if err = ae.execute(t); err != nil {
+		return nil, fmt.Errorf("error running worker smoke test: %v", err)
+	}
 
-	eventExplainer = ae.defaultExplainer()
-	runner, explainer, err = ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
-	if err != nil {
-		return nil, err
-	}
-	eventStream, err = runner.StartPlaybook(playbook, inventory, *cc)
-	if err != nil {
-		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
-	}
-	go explainer.Explain(eventStream)
-	// Wait until ansible exits
-	if err = runner.WaitPlaybook(); err != nil {
-		return nil, fmt.Errorf("error running new worker smoke test: %v", err)
-	}
 	// Allow access to new worker to any storage volumes defined
 	if len(originalPlan.Storage.Nodes) > 0 {
 		util.PrintHeader(ae.stdout, "Updating Allowed IPs On Storage Volumes", '=')
-		playbook = "_volume-update-allowed.yaml"
-		eventExplainer = ae.defaultExplainer()
-		runner, explainer, err = ae.ansibleRunnerWithExplainer(eventExplainer, ansibleLogFile, runDirectory)
-		if err != nil {
-			return nil, err
+		t = task{
+			name:           "add-worker-update-volumes",
+			playbook:       "_volume-update-allowed.yaml",
+			plan:           updatedPlan,
+			inventory:      inventory,
+			clusterCatalog: *cc,
+			explainer:      ae.defaultExplainer(),
 		}
-		eventStream, err = runner.StartPlaybook(playbook, inventory, *cc)
-		if err != nil {
-			return nil, fmt.Errorf("error adding new worker to volume allow list: %v", err)
-		}
-		go explainer.Explain(eventStream)
-		if err = runner.WaitPlaybook(); err != nil {
+		if err = ae.execute(t); err != nil {
 			return nil, fmt.Errorf("error adding new worker to volume allow list: %v", err)
 		}
 	}
