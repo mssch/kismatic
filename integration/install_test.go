@@ -92,7 +92,7 @@ var _ = Describe("kismatic", func() {
 			})
 		})
 
-		Context("when deploying a mini-kube style cluster", func() {
+		Context("when targetting CentOS", func() {
 			ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
 				WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {
 					err := installKismaticMini(node, sshKey)
