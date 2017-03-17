@@ -58,12 +58,8 @@ var _ = Describe("Upgrade", func() {
 						sub := SubDescribe("Using an upgraded cluster")
 						defer sub.Check()
 
-						sub.It("should allow adding a new storage volume", func() error {
-							planFile, err := os.Open("kismatic-testing.yaml")
-							if err != nil {
-								return err
-							}
-							return createVolume(planFile, "test-vol", 1, 1, "")
+						sub.It("should have working storage volumes", func() error {
+							return testStatefulWorkload(nodes, sshKey)
 						})
 
 						sub.It("should allow adding a worker node", func() error {
