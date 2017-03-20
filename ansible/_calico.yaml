@@ -1,7 +1,7 @@
 ---
   - hosts: master:worker:ingress:storage
     any_errors_fatal: true
-    name: "{{ play_name | default('Configure Cluster Network') }}"
+    name: "{{ play_name | default('Start Network Components') }}"
     serial: "{{ serial_count | default('100%') }}"
     remote_user: root
     become_method: sudo
@@ -35,6 +35,14 @@
           path: "{{ init_system_dir }}/calico-node.service"
           state: absent
         when: upgrading is defined and upgrading|bool == true
+
+      - name: remove kismatic-kubernetes-networking package
+        package: name=kismatic-kubernetes-networking state=absent
+        when: upgrading is defined and upgrading|bool == true
+        register: result
+        until: result|success
+        retries: 1
+        delay: 1
 
     roles:
       - calico

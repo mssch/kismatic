@@ -16,6 +16,7 @@ HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.1.4.0
 PROVISIONER_VERSION = v1.1.1
+KUBERANG_VERSION = v1.0.0
 GO_VERSION = 1.8.0
 
 ifeq ($(origin GLIDE_GOOS), undefined)
@@ -67,6 +68,7 @@ clean:
 	rm -rf vendor-ansible/out
 	rm -rf vendor-provision/out
 	rm -rf integration/vendor
+	rm -rf vendor-kuberang
 
 test: vendor
 	@docker run                                                   \
@@ -103,7 +105,11 @@ vendor-provision/out:
 	curl -L https://github.com/apprenda/kismatic-provision/releases/download/$(PROVISIONER_VERSION)/provision-linux-amd64 -o vendor-provision/out/provision-linux-amd64
 	chmod +x vendor-provision/out/*
 
-dist: vendor-ansible/out vendor-provision/out build build-inspector
+vendor-kuberang/$(KUBERANG_VERSION):
+	mkdir -p vendor-kuberang/$(KUBERANG_VERSION)
+	curl https://kismatic-installer.s3-accelerate.amazonaws.com/kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64 -o vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64
+
+dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) build build-inspector
 	mkdir -p out
 	cp bin/$(GOOS)/kismatic out
 	mkdir -p out/ansible
@@ -113,7 +119,7 @@ dist: vendor-ansible/out vendor-provision/out build build-inspector
 	mkdir -p out/ansible/playbooks/inspector
 	cp -r bin/inspector/* out/ansible/playbooks/inspector
 	mkdir -p out/ansible/playbooks/kuberang/linux/amd64/
-	curl https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kuberang -o out/ansible/playbooks/kuberang/linux/amd64/kuberang
+	cp vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64 out/ansible/playbooks/kuberang/linux/amd64/kuberang
 	cp vendor-provision/out/provision-$(GOOS)-amd64 out/provision
 	rm -f out/kismatic.tar.gz
 	tar -czf kismatic.tar.gz -C out .

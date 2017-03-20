@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -91,7 +92,7 @@ var _ = Describe("kismatic", func() {
 			})
 		})
 
-		Context("when deploying a mini-kube style cluster", func() {
+		Context("when targetting CentOS", func() {
 			ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
 				WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {
 					err := installKismaticMini(node, sshKey)
@@ -118,12 +119,50 @@ var _ = Describe("kismatic", func() {
 			})
 		})
 
+		// This spec will be used for testing non-destructive kismatic features on
+		// a new cluster.
+		// This spec is open to modification when new assertions have to be made
 		Context("when deploying a skunkworks cluster", func() {
 			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
-				WithInfrastructure(NodeCount{3, 2, 3, 2, 2}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
+				WithInfrastructureAndDNS(NodeCount{3, 2, 3, 2, 2}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
+					// reserve one of the workers for the add-worker test
+					allWorkers := nodes.worker
+					nodes.worker = allWorkers[0 : len(nodes.worker)-1]
+
+					// install cluster
 					installOpts := installOptions{allowPackageInstallation: true}
 					err := installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())
+
+					sub := SubDescribe("Using a running cluster")
+					defer sub.Check()
+
+					sub.It("should allow adding a worker node", func() error {
+						newWorker := allWorkers[len(allWorkers)-1]
+						return addWorkerToCluster(newWorker)
+					})
+
+					sub.It("should be able to deploy a workload with ingress", func() error {
+						return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
+					})
+
+					// Use master[0] public IP
+					sub.It("should have an accessible dashboard", func() error {
+						return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
+					})
+
+					// This test should always be last
+					sub.It("should still be a highly available cluster after upgrade", func() error {
+						By("Removing a Kubernetes master node")
+						if err = aws.TerminateNode(nodes.master[0]); err != nil {
+							return fmt.Errorf("could not remove node: %v", err)
+						}
+						By("Re-running Kuberang")
+						if err = runViaSSH([]string{"sudo kuberang"}, []NodeDeets{nodes.master[1]}, sshKey, 5*time.Minute); err != nil {
+							return err
+						}
+						return nil
+					})
 				})
 			})
 		})

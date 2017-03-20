@@ -40,6 +40,7 @@ type Node struct {
 	PublicIP       string
 	SSHUser        string
 	State          string
+	ImageID        string
 }
 
 // DNSRecord in Router53 on AWS
@@ -211,6 +212,10 @@ func (c Client) GetNode(id string) (*Node, error) {
 	}
 	instance := resp.Reservations[0].Instances[0]
 
+	var imageID string
+	if instance.ImageId != nil {
+		imageID = *instance.ImageId
+	}
 	var privateDNSName string
 	if instance.PrivateDnsName != nil {
 		privateDNSName = *instance.PrivateDnsName
@@ -225,6 +230,7 @@ func (c Client) GetNode(id string) (*Node, error) {
 	}
 
 	return &Node{
+		ImageID:        imageID,
 		PrivateDNSName: privateDNSName,
 		PrivateIP:      privateIP,
 		PublicIP:       publicIP,

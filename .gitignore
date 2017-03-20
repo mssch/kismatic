@@ -51,3 +51,4 @@ package/source
 package/out
 integration/vendor
 vendor-provision/*
+vendor-kuberang/*

@@ -2,8 +2,10 @@ package integration
 
 import (
 	"bufio"
+	"crypto/tls"
+	"fmt"
 	"html/template"
-	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,6 +13,7 @@ import (
 
 	homedir "github.com/mitchellh/go-homedir"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 func leaveIt() bool {
@@ -43,8 +46,8 @@ func installKismaticMini(node NodeDeets, sshKey string) error {
 		Worker:                   []NodeDeets{node},
 		Ingress:                  []NodeDeets{node},
 		Storage:                  []NodeDeets{node},
-		MasterNodeFQDN:           node.Hostname,
-		MasterNodeShortName:      node.Hostname,
+		MasterNodeFQDN:           node.PublicIP,
+		MasterNodeShortName:      node.PublicIP,
 		SSHKeyFile:               sshKey,
 		SSHUser:                  sshUser,
 		AllowPackageInstallation: true,
@@ -53,8 +56,12 @@ func installKismaticMini(node NodeDeets, sshKey string) error {
 }
 
 func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey string) error {
+	return installKismaticWithPlan(buildPlan(nodes, installOpts, sshKey), sshKey)
+}
+
+func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string) PlanAWS {
 	sshUser := nodes.master[0].SSHUser
-	masterDNS := nodes.master[0].Hostname
+	masterDNS := nodes.master[0].PublicIP
 	if nodes.dnsRecord != nil && nodes.dnsRecord.Name != "" {
 		masterDNS = nodes.dnsRecord.Name
 	}
@@ -76,10 +83,21 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 		DockerRegistryPort:           installOpts.dockerRegistryPort,
 		ModifyHostsFiles:             installOpts.modifyHostsFiles,
 	}
-	return installKismaticWithPlan(plan, sshKey)
+	return plan
 }
 
 func installKismaticWithPlan(plan PlanAWS, sshKey string) error {
+	writePlanFile(plan)
+
+	By("Punch it Chewie!")
+	cmd := exec.Command("./kismatic", "install", "apply", "-f", "kismatic-testing.yaml")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func writePlanFile(plan PlanAWS) {
 	By("Building a template")
 	template, err := template.New("planAWSOverlay").Parse(planAWSOverlay)
 	FailIfError(err, "Couldn't parse template")
@@ -91,13 +109,6 @@ func installKismaticWithPlan(plan PlanAWS, sshKey string) error {
 	err = template.Execute(w, &plan)
 	FailIfError(err, "Error filling in plan template")
 	w.Flush()
-
-	By("Punch it Chewie!")
-	cmd := exec.Command("./kismatic", "install", "apply", "-f", f.Name())
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	return cmd.Run()
 }
 
 func installKismaticWithABadNode() {
@@ -169,11 +180,34 @@ func completesInTime(dothis func(), howLong time.Duration) bool {
 	}
 }
 
-func FailIfError(err error, message ...string) {
-	if err != nil {
-		log.Printf(message[0]+": %v\n%v", err, message[1:])
-		Fail(message[0])
+func canAccessDashboard(url string) error {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
+	client := http.Client{
+		Timeout:   1000 * time.Millisecond,
+		Transport: tr,
+	}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return fmt.Errorf("Could not create request for ingress via %s, %v", url, err)
+	}
+	// Access the dashboard a few times to hit all replicas
+	for i := 0; i < 3; i++ {
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("Could not reach ingress via %s, %v", url, err)
+		}
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("Ingress status code is not 200, got %d vi %s", resp.StatusCode, url)
+		}
+	}
+
+	return nil
+}
+
+func FailIfError(err error, message ...interface{}) {
+	Expect(err).ToNot(HaveOccurred(), message...)
 }
 
 func FailIfSuccess(err error) {

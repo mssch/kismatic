@@ -115,3 +115,60 @@ func WithMiniInfrastructure(distro linuxDistro, provisioner infrastructureProvis
 
 	f(nodes.worker[0], sshKey)
 }
+
+// SubDescribe allows you to define specifications inside another spec.
+// We have found the need for this because Gingko does not support
+// serializing a subset of tests when running in parallel. This means
+// that we must define multiple specs inside a parent It() block.
+// Use this when it is truly needed.
+//
+// Example:
+// Describe("the foo service", func() {
+//	It("should be deployed successfully", func() {
+//		// some assertions here...
+//		sub := SubDescribe("should return 200", func() error {
+//			// call service and return error if not 200
+//		})
+//	})
+// })
+func SubDescribe(name string) *subTest {
+	return &subTest{name: name}
+}
+
+type subTest struct {
+	name   string
+	specs  []string
+	errors []error
+}
+
+func (sub *subTest) It(name string, f func() error) {
+	By(fmt.Sprintf("Running spec: %s - %s", sub.name, name))
+	sub.specs = append(sub.specs, name)
+	sub.errors = append(sub.errors, f())
+}
+
+func (sub *subTest) Check() {
+	var failed bool
+	for _, e := range sub.errors {
+		if e != nil {
+			failed = true
+			break
+		}
+	}
+	if failed {
+		// Print report and fail test
+		sub.printReport()
+		Fail("Failed: " + sub.name)
+	}
+}
+
+func (sub *subTest) printReport() {
+	fmt.Println(sub.name)
+	for i, spec := range sub.specs {
+		if sub.errors[i] != nil {
+			fmt.Printf("%s: FAILED: %v\n", spec, sub.errors[i])
+		} else {
+			fmt.Printf("%s: PASSED\n", spec)
+		}
+	}
+}

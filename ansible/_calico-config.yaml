@@ -1,10 +1,10 @@
 ---
   - hosts: master[0]
     any_errors_fatal: true
-    name: "Validate Kubernetes Control Plane is Running"
+    name: "{{ play_name | default('Configure Cluster Network') }}"
     remote_user: root
     become_method: sudo
     run_once: true
 
     roles:
-      - validate-control-plane
+      - calico-config

@@ -47,14 +47,16 @@ func testAddVolumeVerifyGluster(aws infrastructureProvisioner, distro linuxDistr
 		for _, test := range tests {
 			By(fmt.Sprintf("Setting up a volume with Replica = %d, Distributed = %d", test.replicaCount, test.distributionCount))
 			volumeName := fmt.Sprintf("gv-r%d-d%d", test.replicaCount, test.distributionCount)
-			createVolume(planFile, volumeName, test.replicaCount, test.distributionCount, "")
+			err = createVolume(planFile, volumeName, test.replicaCount, test.distributionCount, "")
+			FailIfError(err, "Failed to create volume")
 
 			By("Verifying gluster volume properties")
 			verifyGlusterVolume(storageNode, sshKey, volumeName, test.replicaCount, test.distributionCount, "")
 		}
 
 		By("Creating a volume which allows access to nodes in the cluster")
-		createVolume(planFile, "foo", 1, 1, "")
+		err = createVolume(planFile, "foo", 1, 1, "")
+		FailIfError(err, "Failed to create volume")
 
 		By("Installing NFS library on out-of-cluster node")
 		unauthNode := nodes.worker[4:5]
@@ -95,7 +97,7 @@ func verifyGlusterVolume(storageNode NodeDeets, sshKey string, name string, repl
 	FailIfError(err, "Gluster volume verification failed")
 }
 
-func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, allowAddress string) {
+func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, allowAddress string) error {
 	cmd := exec.Command("./kismatic", "volume", "add",
 		"-f", planFile.Name(),
 		"--replica-count", strconv.Itoa(replicationCount),
@@ -107,8 +109,7 @@ func createVolume(planFile *os.File, name string, replicationCount int, distribu
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	FailIfError(err, "Error running volume add command")
+	return cmd.Run()
 }
 
 func standupGlusterCluster(planFile *os.File, nodes []NodeDeets, sshKey string, distro linuxDistro) {
@@ -171,4 +172,56 @@ func testVolumeAdd(masterNode NodeDeets, sshKey string) {
 	By("Verifying Kuberntes PV was created")
 	err = runViaSSH([]string{"sudo kubectl get pv " + volName}, []NodeDeets{masterNode}, sshKey, 1*time.Minute)
 	FailIfError(err, "Error verifying if PV gv0 was created")
+}
+
+func testStatefulWorkload(nodes provisionedNodes, sshKey string) error {
+	// Helper for deploying on K8s
+	kubeCreate := func(resource string) error {
+		err := copyFileToRemote("test-resources/storage/"+resource, "/tmp/"+resource, nodes.master[0], sshKey, 30*time.Second)
+		if err != nil {
+			return err
+		}
+		return runViaSSH([]string{"sudo kubectl create -f /tmp/" + resource}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	}
+
+	By("Creating a storage volume")
+	plan, err := os.Open("kismatic-testing.yaml")
+	if err != nil {
+		return fmt.Errorf("Failed to open plan file: %v", err)
+	}
+	err = createVolume(plan, "kis-int-test", 2, 1, "")
+	if err != nil {
+		return fmt.Errorf("Failed to create volume: %v", err)
+	}
+	By("Claiming the storage volume on the cluster")
+	if err = kubeCreate("pvc.yaml"); err != nil {
+		return fmt.Errorf("Failed to create pvc: %v", err)
+	}
+
+	By("Deploying a writer workload")
+	if err = kubeCreate("writer.yaml"); err != nil {
+		return fmt.Errorf("Failed to create writer workload: %v", err)
+	}
+
+	By("Verifying the completion of the write workload")
+	time.Sleep(1 * time.Minute)
+	jobStatusCmd := "sudo kubectl get jobs kismatic-writer -o jsonpath={.status.conditions[0].status}"
+	err = runViaSSH([]string{jobStatusCmd, fmt.Sprintf("if [ \"`%s`\" = \"True\" ]; then exit 0; else exit 1; fi", jobStatusCmd)}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("Writer workload failed: %v", err)
+	}
+
+	By("Deploying a reader workload")
+	if err = kubeCreate("reader.yaml"); err != nil {
+		return fmt.Errorf("Failed to create reader workload: %v", err)
+	}
+
+	By("Verifying the completion of the reader workload")
+	time.Sleep(1 * time.Minute)
+	jobStatusCmd = "sudo kubectl get jobs kismatic-reader -o jsonpath={.status.conditions[0].status}"
+	err = runViaSSH([]string{jobStatusCmd, fmt.Sprintf("if [ \"`%s`\" = \"True\" ]; then exit 0; else exit 1; fi", jobStatusCmd)}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("Reader workload failed: %v", err)
+	}
+	return nil
 }

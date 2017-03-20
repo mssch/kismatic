@@ -19,19 +19,21 @@
     when: >
       (force_etcd_restart is defined and force_etcd_restart|bool == true) or
       ((upgrading is defined and upgrading|bool == true) and
+      (allow_package_installation|bool == false or
       ((etcd_installation_rpm is defined and etcd_installation_rpm.changed == true) or
-      (etcd_installation_deb is defined and etcd_installation_deb.changed == true)))
+      (etcd_installation_deb is defined and etcd_installation_deb.changed == true))))
 
   - meta: flush_handlers  #Run handlers
 
     #TODO don't use a timeout
-  - name: wait for {{ etcd_install_bin_name }} node to be ready after upgrade
+  - name: wait for {{ etcd_install_bin_name }} node to be ready
     pause: seconds=60
     when: >
       (force_etcd_restart is defined and force_etcd_restart|bool == true) or
       ((upgrading is defined and upgrading|bool == true) and
+      (allow_package_installation|bool == false or
       ((etcd_installation_rpm is defined and etcd_installation_rpm.changed == true) or
-      (etcd_installation_deb is defined and etcd_installation_deb.changed == true)))
+      (etcd_installation_deb is defined and etcd_installation_deb.changed == true))))
 
   - name: verify {{ etcd_install_bin_name }} is running
     command: systemctl status {{ etcd_service_name }}
