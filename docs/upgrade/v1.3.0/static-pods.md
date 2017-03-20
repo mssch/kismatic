@@ -44,7 +44,7 @@ For example, if you are interested in diagnosing why the API server is down, you
 
 ```
 # This gets the container ID of the API server container.
-CONTAINER_ID=$(docker ps | grep kube-apiserver-amd64 | cut -f 1 -d " ")
+CONTAINER_ID=$(docker ps -a | grep kube-apiserver-amd64 | cut -f 1 -d " ")
 docker logs $CONTAINER_ID
 ```
 ## Upgrading to Static Pods
