@@ -246,8 +246,11 @@ func upgradeCluster() {
 	cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml")
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	FailIfError(err)
+	if err := cmd.Run(); err != nil {
+		// run diagnostics on error
+		exec.Command("./kismatic", "diagnose", "-f", "kismatic-testing.yaml")
+		FailIfError(err)
+	}
 
 	assertClusterVersionIsCurrent()
 }

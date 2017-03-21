@@ -28,6 +28,7 @@ more documentation is availble at https://github.com/apprenda/kismatic`,
 	cmd.AddCommand(NewCmdSSH(out))
 	cmd.AddCommand(NewCmdInfo(out))
 	cmd.AddCommand(NewCmdUpgrade(out))
+	cmd.AddCommand(NewCmdDiagnostic(out))
 
 	return cmd, nil
 }

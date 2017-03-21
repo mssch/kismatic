@@ -1,0 +1,49 @@
+---
+  - name: "create /tmp/diagnostics-{{ diagnostics_date_time }}/{{ inventory_hostname }} directory"
+    file:
+      path: "/tmp/diagnostics-{{ diagnostics_date_time }}/{{ inventory_hostname }}"
+      state: directory
+
+  - name: diagnose etcd nodes
+    shell: "{{ item.command }} > /tmp/diagnostics-{{ diagnostics_date_time }}/{{ inventory_hostname }}/{{ item.file }} 2>&1"
+    with_items:
+      - "{{ diagnostics.host_diagnostics }}"
+      - "{{ diagnostics.etcd_diagnostics }}"
+    failed_when: false # dont fail, best effort here, some commands might not work correctly
+    when: "'etcd' in group_names"
+    become: true
+
+  - name: diagnose master nodes
+    shell: "{{ item.command }} > /tmp/diagnostics-{{ diagnostics_date_time }}/{{ inventory_hostname }}/{{ item.file }} 2>&1"
+    with_items:
+      - "{{ diagnostics.host_diagnostics }}"
+      - "{{ diagnostics.docker_diagnostics }}"
+      - "{{ diagnostics.k8s_diagnostics }}"
+      - "{{ diagnostics.k8s_master_diagnostics }}"
+      - "{{ diagnostics.calico_diagnostics }}"
+    failed_when: false # dont fail, best effort here, some commands might not work correctly
+    when: "'master' in group_names"
+    become: true
+
+  - name: diagnose worker nodes
+    shell: "{{ item.command }} > /tmp/diagnostics-{{ diagnostics_date_time }}/{{ inventory_hostname }}/{{ item.file }} 2>&1"
+    with_items:
+      - "{{ diagnostics.host_diagnostics }}"
+      - "{{ diagnostics.docker_diagnostics }}"
+      - "{{ diagnostics.k8s_diagnostics }}"
+      - "{{ diagnostics.k8s_worker_diagnostics }}"
+      - "{{ diagnostics.calico_diagnostics }}"
+    failed_when: false # dont fail, best effort here, some commands might not work correctly
+    when: "'worker' in group_names or 'ingress' in group_names or 'storage' in group_names"
+    become: true
+
+  - name: archive diagnostics directory
+    shell: "tar -zcvf /tmp/diagnostics-{{ inventory_hostname }}.tar.gz -C /tmp/diagnostics-{{ diagnostics_date_time }} . && chmod 666 /tmp/diagnostics-{{ inventory_hostname }}.tar.gz"
+    become: true
+
+  - name: "copy diagnostics to local directory in {{ diagnostics_dir }}"
+    fetch:
+      src: "/tmp/diagnostics-{{ inventory_hostname }}.tar.gz"
+      dest: "{{ diagnostics_dir }}/"
+      fail_on_missing: yes
+      flat: yes
