@@ -220,7 +220,7 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 		}
 		kubeClient := data.RemoteKubectl{SSHClient: client}
 		for _, node := range nodesNeedUpgrade {
-			util.PrettyPrint(out, "Node %q", node.Node.Host)
+			util.PrettyPrint(out, "%s %v", node.Node.Host, node.Roles)
 			errs := install.DetectNodeUpgradeSafety(plan, node.Node, kubeClient)
 			if len(errs) != 0 {
 				util.PrintError(out)
