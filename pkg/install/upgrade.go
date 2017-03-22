@@ -20,6 +20,13 @@ type upgradeKubeInfoClient interface {
 	data.StatefulSetGetter
 }
 
+type etcdNodeCountErr struct{}
+
+func (e etcdNodeCountErr) Error() string {
+	return "This node is part of an etcd cluster that has less than 3 members. " +
+		"Upgrading it will make the cluster unavailable."
+}
+
 type masterNodeCountErr struct{}
 
 func (e masterNodeCountErr) Error() string {
@@ -134,6 +141,10 @@ func DetectNodeUpgradeSafety(plan Plan, node Node, kubeClient upgradeKubeInfoCli
 	roles := plan.GetRolesForIP(node.IP)
 	for _, role := range roles {
 		switch role {
+		case "etcd":
+			if plan.Etcd.ExpectedCount < 3 {
+				errs = append(errs, etcdNodeCountErr{})
+			}
 		case "master":
 			if plan.Master.ExpectedCount < 2 {
 				errs = append(errs, masterNodeCountErr{})
