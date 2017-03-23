@@ -39,6 +39,11 @@ KET operational tools include:
 
 [Download latest install tarball (Linux)](https://github.com/apprenda/kismatic/releases/download/v1.2.2/kismatic-v1.2.2-linux-amd64.tar.gz)
 
+## Supported Operating Systems
+- RHEL 7
+- CentOS 7
+- Ubuntu 16.04
+
 # Usage Documentation
 
 [Installation Overview](docs/INTENT.md) -- Useful examples for various ways you can use Kismatic in your organization.
