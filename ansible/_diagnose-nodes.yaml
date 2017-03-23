@@ -1,0 +1,10 @@
+---
+  - hosts: all
+    name: "Diagnose Nodes"
+    #become: yes
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/diagnostics.yaml
+
+    roles:
+      - diagnose-nodes

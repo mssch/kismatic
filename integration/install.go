@@ -94,7 +94,12 @@ func installKismaticWithPlan(plan PlanAWS, sshKey string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		// run diagnostics on error
+		exec.Command("./kismatic", "diagnose", "-f", "kismatic-testing.yaml")
+		return err
+	}
+	return nil
 }
 
 func writePlanFile(plan PlanAWS) {

@@ -41,6 +41,11 @@ type Executor interface {
 	UpgradeClusterServices(plan Plan) error
 }
 
+// DiagnosticsExecutor will run diagnostics on the nodes after an install
+type DiagnosticsExecutor interface {
+	DiagnoseNodes(plan Plan) error
+}
+
 // ExecutorOptions are used to configure the executor
 type ExecutorOptions struct {
 	// SkipCAGeneration determines whether the Certificate Authority should
@@ -58,6 +63,8 @@ type ExecutorOptions struct {
 	Verbose bool
 	// RunsDirectory is where information about installation runs is kept
 	RunsDirectory string
+	// DiagnosticsDirecty is where the doDiagnostics information about the cluster will be dumped
+	DiagnosticsDirecty string
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
@@ -104,6 +111,39 @@ func NewPreFlightExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOp
 	if options.RunsDirectory == "" {
 		options.RunsDirectory = "./runs"
 	}
+	// Setup the console output format
+	var outFormat ansible.OutputFormat
+	switch options.OutputFormat {
+	case "raw":
+		outFormat = ansible.RawFormat
+	case "simple":
+		outFormat = ansible.JSONLinesFormat
+	default:
+		return nil, fmt.Errorf("Output format %q is not supported", options.OutputFormat)
+	}
+
+	return &ansibleExecutor{
+		options:             options,
+		stdout:              stdout,
+		consoleOutputFormat: outFormat,
+		ansibleDir:          ansibleDir,
+	}, nil
+}
+
+// NewDiagnosticsExecutor returns an executor for running preflight
+func NewDiagnosticsExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (DiagnosticsExecutor, error) {
+	ansibleDir := "ansible"
+	if options.RunsDirectory == "" {
+		options.RunsDirectory = "./runs"
+	}
+	if options.DiagnosticsDirecty == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("Could not get working directory: %v", err)
+		}
+		options.DiagnosticsDirecty = filepath.Join(wd, "diagnostics")
+	}
+
 	// Setup the console output format
 	var outFormat ansible.OutputFormat
 	switch options.OutputFormat {
@@ -535,6 +575,27 @@ func (ae *ansibleExecutor) UpgradeClusterServices(plan Plan) error {
 	t := task{
 		name:           "upgrade-cluster-services",
 		playbook:       "upgrade-cluster-services.yaml",
+		inventory:      inventory,
+		clusterCatalog: *cc,
+		plan:           plan,
+		explainer:      ae.defaultExplainer(),
+	}
+	return ae.execute(t)
+}
+
+func (ae *ansibleExecutor) DiagnoseNodes(plan Plan) error {
+	inventory := buildInventoryFromPlan(&plan)
+	cc, err := ae.buildClusterCatalog(&plan)
+	if err != nil {
+		return err
+	}
+	// dateTime will be appended to the diagnostics directory
+	now := time.Now().Format("2006-01-02-15-04-05")
+	cc.DiagnosticsDirectory = filepath.Join(ae.options.DiagnosticsDirecty, now)
+	cc.DiagnosticsDateTime = now
+	t := task{
+		name:           "diagnose",
+		playbook:       "diagnose-nodes.yaml",
 		inventory:      inventory,
 		clusterCatalog: *cc,
 		plan:           plan,

@@ -139,8 +139,8 @@ serial-integration-test: integration/vendor
 focus-integration-test: integration/vendor
 	ginkgo --focus $(FOCUS) -v integration
 
-docs/kismatic-cli:
-	mkdir docs/kismatic-cli
+docs/generate-kismatic-cli:
+	mkdir -p docs/kismatic-cli
 	go run cmd/kismatic-docs/main.go
 	cp docs/kismatic-cli/kismatic.md docs/kismatic-cli/README.md
 
