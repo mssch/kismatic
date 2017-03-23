@@ -65,6 +65,8 @@ type ExecutorOptions struct {
 	RunsDirectory string
 	// DiagnosticsDirecty is where the doDiagnostics information about the cluster will be dumped
 	DiagnosticsDirecty string
+	// DryRun determines if the executor should actually run the task
+	DryRun bool
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
@@ -194,6 +196,9 @@ type task struct {
 
 // execute will run the given task, and setup all what's needed for us to run ansible.
 func (ae *ansibleExecutor) execute(t task) error {
+	if ae.options.DryRun {
+		return nil
+	}
 	runDirectory, err := ae.createRunDirectory(t.name)
 	if err != nil {
 		return fmt.Errorf("error creating working directory for %q: %v", t.name, err)
