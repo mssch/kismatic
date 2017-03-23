@@ -131,7 +131,9 @@ integration/vendor: tools/glide
 
 just-integration-test: integration/vendor
 	ginkgo --skip "\[slow\]" -p -v integration
-	#ginkgo --focus "\[slow\]" -p -v integration
+
+slow-integration-test: integration/vendor
+	ginkgo --focus "\[slow\]" -p -v integration
 
 serial-integration-test: integration/vendor
 	ginkgo -v integration
