@@ -74,8 +74,9 @@ why the upgrade is blocked if the condition is detected.
 | Pod using EmptyDir volume                  | Potentially unsafe: pod will loose the data in this volume                |
 | Pod using HostPath volume                  | Potentially unsafe: pod will loose the data in this volume                |
 | Pod using HostPath persistent volume       | Potentially unsafe: pod will loose the data in this volume                |
-| Master node in a cluster with < 2 masters  | Unavailable: upgrading the master will bring the control plane down       |
-| Worker node in a cluster with < 2 workers  | Unavailable: upgrading the worker will bring all workloads down           |
+| Etcd node in a cluster with < 3 etcds      | Unavailable: upgrading the etcd node will bring the cluster down          |
+| Master node in a cluster with < 2 masters  | Unavailable: upgrading the master node will bring the control plane down  |
+| Worker node in a cluster with < 2 workers  | Unavailable: upgrading the worker node will bring all workloads down      |
 | Ingress node                               | Unavailable: we can't ensure that ingress nodes are load balanced         |
 | Storage node                               | Potentially unavailable: brick on node will become unavailable            |
 
