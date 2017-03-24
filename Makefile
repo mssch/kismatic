@@ -152,4 +152,12 @@ version: FORCE
 	@echo ANSIBLE_VERSION=$(ANSIBLE_VERSION)
 	@echo PROVISIONER_VERSION=$(PROVISIONER_VERSION)
 
+trigger-ci-slow-tests:
+	@echo Triggering build on snap with slow tests
+	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/branch/master/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
+
+trigger-pr-slow-tests:
+	@echo Trigger build for PR $(SNAP_PR_NUMBER)
+	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/pull/$(SNAP_PR_NUMBER)/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
+
 FORCE:
