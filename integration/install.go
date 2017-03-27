@@ -2,7 +2,10 @@ package integration
 
 import (
 	"bufio"
+	"crypto/tls"
+	"fmt"
 	"html/template"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -91,7 +94,12 @@ func installKismaticWithPlan(plan PlanAWS, sshKey string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		// run diagnostics on error
+		exec.Command("./kismatic", "diagnose", "-f", "kismatic-testing.yaml")
+		return err
+	}
+	return nil
 }
 
 func writePlanFile(plan PlanAWS) {
@@ -177,14 +185,26 @@ func completesInTime(dothis func(), howLong time.Duration) bool {
 	}
 }
 
-func canAccessDashboard() error {
+func canAccessDashboard(url string) error {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := http.Client{
+		Timeout:   1000 * time.Millisecond,
+		Transport: tr,
+	}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return fmt.Errorf("Could not create request for ingress via %s, %v", url, err)
+	}
 	// Access the dashboard a few times to hit all replicas
 	for i := 0; i < 3; i++ {
-		cmd := exec.Command("./kismatic", "dashboard", "--url", "-f", "kismatic-testing.yaml")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			return err
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("Could not reach ingress via %s, %v", url, err)
+		}
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("Ingress status code is not 200, got %d vi %s", resp.StatusCode, url)
 		}
 	}
 

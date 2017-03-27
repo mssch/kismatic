@@ -60,6 +60,9 @@ type ClusterCatalog struct {
 	TargetVersion string `yaml:"kismatic_short_version"`
 
 	OnlineUpgrade bool `yaml:"online_upgrade"`
+
+	DiagnosticsDirectory string `yaml:"diagnostics_dir"`
+	DiagnosticsDateTime  string `yaml:"diagnostics_date_time"`
 }
 
 type NFSVolume struct {

@@ -6,7 +6,7 @@
 
 Join our mailing list for updates on new releases: https://groups.google.com/forum/#!forum/kismatic-users
 
-![KET](logo.png?raw=true "KET Logo")
+<img src="https://github.com/apprenda/kismatic/raw/master/docs/logo/KET_logo.png" width="500" />
 
 ## Introduction
 
@@ -29,15 +29,20 @@ KET operational tools include:
 ## Dependencies
 | Dependency | Current version |
 | --- | --- |
-| Kubernetes | 1.5.2 |
+| Kubernetes | 1.5.3 |
 | Docker | 1.11.2 |
-| Calico | 2.0.0 |
-| Etcd (for Kubernetes) | 3.0.15 |
-| Etcd (for Calico) | 2.37 |
+| Calico | 2.0.2 |
+| Etcd (for Kubernetes) | 3.1.1 |
+| Etcd (for Calico) | 3.1.1 |
 
 [Download latest install tarball (Mac)](https://github.com/apprenda/kismatic/releases/download/v1.2.2/kismatic-v1.2.2-darwin-amd64.tar.gz)
 
 [Download latest install tarball (Linux)](https://github.com/apprenda/kismatic/releases/download/v1.2.2/kismatic-v1.2.2-linux-amd64.tar.gz)
+
+## Supported Operating Systems
+- RHEL 7
+- CentOS 7
+- Ubuntu 16.04
 
 # Usage Documentation
 

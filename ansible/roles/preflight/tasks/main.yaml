@@ -1,4 +1,9 @@
 ---
+  - name: verify hostname
+    fail: msg="provided hostname does not match reported hostname of {{ ansible_nodename }}"
+    when: "inventory_hostname != ansible_nodename"
+    changed_when: false
+
   - name: verify systemd
     fail: msg="systemd is required"
     when: ansible_service_mgr != "systemd"

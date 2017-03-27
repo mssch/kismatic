@@ -22,6 +22,7 @@ import (
 // environment defined in the plan file
 type PreFlightExecutor interface {
 	RunPreFlightCheck(*Plan) error
+	RunNewWorkerPreFlightCheck(Plan, Node) error
 	RunUpgradePreFlightCheck(*Plan, ListableNode) error
 }
 
@@ -38,6 +39,11 @@ type Executor interface {
 	ValidateControlPlane(plan Plan) error
 	UpgradeDockerRegistry(plan Plan) error
 	UpgradeClusterServices(plan Plan) error
+}
+
+// DiagnosticsExecutor will run diagnostics on the nodes after an install
+type DiagnosticsExecutor interface {
+	DiagnoseNodes(plan Plan) error
 }
 
 // ExecutorOptions are used to configure the executor
@@ -57,6 +63,10 @@ type ExecutorOptions struct {
 	Verbose bool
 	// RunsDirectory is where information about installation runs is kept
 	RunsDirectory string
+	// DiagnosticsDirecty is where the doDiagnostics information about the cluster will be dumped
+	DiagnosticsDirecty string
+	// DryRun determines if the executor should actually run the task
+	DryRun bool
 }
 
 // NewExecutor returns an executor for performing installations according to the installation plan.
@@ -122,6 +132,39 @@ func NewPreFlightExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOp
 	}, nil
 }
 
+// NewDiagnosticsExecutor returns an executor for running preflight
+func NewDiagnosticsExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (DiagnosticsExecutor, error) {
+	ansibleDir := "ansible"
+	if options.RunsDirectory == "" {
+		options.RunsDirectory = "./runs"
+	}
+	if options.DiagnosticsDirecty == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("Could not get working directory: %v", err)
+		}
+		options.DiagnosticsDirecty = filepath.Join(wd, "diagnostics")
+	}
+
+	// Setup the console output format
+	var outFormat ansible.OutputFormat
+	switch options.OutputFormat {
+	case "raw":
+		outFormat = ansible.RawFormat
+	case "simple":
+		outFormat = ansible.JSONLinesFormat
+	default:
+		return nil, fmt.Errorf("Output format %q is not supported", options.OutputFormat)
+	}
+
+	return &ansibleExecutor{
+		options:             options,
+		stdout:              stdout,
+		consoleOutputFormat: outFormat,
+		ansibleDir:          ansibleDir,
+	}, nil
+}
+
 type ansibleExecutor struct {
 	options             ExecutorOptions
 	stdout              io.Writer
@@ -153,6 +196,9 @@ type task struct {
 
 // execute will run the given task, and setup all what's needed for us to run ansible.
 func (ae *ansibleExecutor) execute(t task) error {
+	if ae.options.DryRun {
+		return nil
+	}
 	runDirectory, err := ae.createRunDirectory(t.name)
 	if err != nil {
 		return fmt.Errorf("error creating working directory for %q: %v", t.name, err)
@@ -237,18 +283,14 @@ func (ae *ansibleExecutor) RunSmokeTest(p *Plan) error {
 
 // RunPreflightCheck against the nodes defined in the plan
 func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
 	}
-	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
-	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
-	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
-
+	cc, err = setPreflightOptions(*p, *cc)
+	if err != nil {
+		return err
+	}
 	t := task{
 		name:           "preflight",
 		playbook:       "preflight.yaml",
@@ -260,19 +302,40 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	return ae.execute(t)
 }
 
-func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) error {
-	inventory := buildInventoryFromPlan(p)
-	pwd, err := os.Getwd()
+// RunNewWorkerPreFlightCheck runs the preflight checks against a new worker node
+func (ae *ansibleExecutor) RunNewWorkerPreFlightCheck(p Plan, node Node) error {
+	cc, err := ae.buildClusterCatalog(&p)
 	if err != nil {
 		return err
 	}
+	cc, err = setPreflightOptions(p, *cc)
+	if err != nil {
+		return err
+	}
+	p.Worker.ExpectedCount++
+	p.Worker.Nodes = append(p.Worker.Nodes, node)
+	t := task{
+		name:           "add-worker-preflight",
+		playbook:       "preflight.yaml",
+		inventory:      buildInventoryFromPlan(&p),
+		clusterCatalog: *cc,
+		explainer:      ae.preflightExplainer(),
+		plan:           p,
+		limit:          []string{node.Host},
+	}
+	return ae.execute(t)
+}
+
+func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) error {
+	inventory := buildInventoryFromPlan(p)
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
 	}
-	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
-	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
-	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
+	cc, err = setPreflightOptions(*p, *cc)
+	if err != nil {
+		return err
+	}
 	t := task{
 		name:           "upgrade-preflight",
 		playbook:       "upgrade-preflight.yaml",
@@ -283,6 +346,17 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 		limit:          []string{node.Node.Host},
 	}
 	return ae.execute(t)
+}
+
+func setPreflightOptions(p Plan, cc ansible.ClusterCatalog) (*ansible.ClusterCatalog, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
+	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
+	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
+	return &cc, nil
 }
 
 func (ae *ansibleExecutor) RunPlay(playName string, p *Plan) error {
@@ -524,6 +598,27 @@ func (ae *ansibleExecutor) UpgradeClusterServices(plan Plan) error {
 	t := task{
 		name:           "upgrade-cluster-services",
 		playbook:       "upgrade-cluster-services.yaml",
+		inventory:      inventory,
+		clusterCatalog: *cc,
+		plan:           plan,
+		explainer:      ae.defaultExplainer(),
+	}
+	return ae.execute(t)
+}
+
+func (ae *ansibleExecutor) DiagnoseNodes(plan Plan) error {
+	inventory := buildInventoryFromPlan(&plan)
+	cc, err := ae.buildClusterCatalog(&plan)
+	if err != nil {
+		return err
+	}
+	// dateTime will be appended to the diagnostics directory
+	now := time.Now().Format("2006-01-02-15-04-05")
+	cc.DiagnosticsDirectory = filepath.Join(ae.options.DiagnosticsDirecty, now)
+	cc.DiagnosticsDateTime = now
+	t := task{
+		name:           "diagnose",
+		playbook:       "diagnose-nodes.yaml",
 		inventory:      inventory,
 		clusterCatalog: *cc,
 		plan:           plan,

@@ -58,12 +58,8 @@ var _ = Describe("Upgrade", func() {
 						sub := SubDescribe("Using an upgraded cluster")
 						defer sub.Check()
 
-						sub.It("should allow adding a new storage volume", func() error {
-							planFile, err := os.Open("kismatic-testing.yaml")
-							if err != nil {
-								return err
-							}
-							return createVolume(planFile, "test-vol", 1, 1, "")
+						sub.It("should have working storage volumes", func() error {
+							return testStatefulWorkload(nodes, sshKey)
 						})
 
 						sub.It("should allow adding a worker node", func() error {
@@ -71,20 +67,13 @@ var _ = Describe("Upgrade", func() {
 							return addWorkerToCluster(newWorker)
 						})
 
-						sub.It("should have an accessible dashboard", func() error {
-							return nil
-						})
-
 						sub.It("should be able to deploy a workload with ingress", func() error {
 							return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
 						})
 
+						// Use master[0] public IP
 						sub.It("should have an accessible dashboard", func() error {
-							return canAccessDashboard()
-						})
-
-						sub.It("should not have kube-apiserver systemd service", func() error {
-							return nil
+							return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
 						})
 
 						// This test should always be last
@@ -161,6 +150,7 @@ var _ = Describe("Upgrade", func() {
 				dir := setupTestWorkingDirWithVersion("v1.1.1")
 				os.Chdir(dir)
 			})
+
 			Context("Using a minikube layout", func() {
 				Context("Using CentOS 7", func() {
 					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
@@ -177,12 +167,12 @@ var _ = Describe("Upgrade", func() {
 						})
 					})
 				})
+			})
 
-				Context("Using a larger cluster layout with Ubuntu 16.04", func() {
-					ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
-						WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 3, Ingress: 0, Storage: 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
-							installAndUpgrade(nodes, sshKey)
-						})
+			Context("Using a larger cluster layout with Ubuntu 16.04", func() {
+				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
+					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 3, Ingress: 0, Storage: 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+						installAndUpgrade(nodes, sshKey)
 					})
 				})
 			})
@@ -193,6 +183,7 @@ var _ = Describe("Upgrade", func() {
 				dir := setupTestWorkingDirWithVersion("v1.0.3")
 				os.Chdir(dir)
 			})
+
 			Context("Using a minikube layout", func() {
 				Context("Using CentOS 7", func() {
 					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
@@ -209,11 +200,12 @@ var _ = Describe("Upgrade", func() {
 						})
 					})
 				})
-				Context("Using a larger cluster layout with RedHat 7", func() {
-					ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
-						WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 3, Ingress: 0, Storage: 0}, RedHat7, aws, func(nodes provisionedNodes, sshKey string) {
-							installAndUpgrade(nodes, sshKey)
-						})
+			})
+
+			Context("Using a larger cluster layout with RedHat 7", func() {
+				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
+					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 3, Ingress: 0, Storage: 0}, RedHat7, aws, func(nodes provisionedNodes, sshKey string) {
+						installAndUpgrade(nodes, sshKey)
 					})
 				})
 			})
@@ -254,8 +246,11 @@ func upgradeCluster() {
 	cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml")
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	FailIfError(err)
+	if err := cmd.Run(); err != nil {
+		// run diagnostics on error
+		exec.Command("./kismatic", "diagnose", "-f", "kismatic-testing.yaml")
+		FailIfError(err)
+	}
 
 	assertClusterVersionIsCurrent()
 }

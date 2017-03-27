@@ -19,13 +19,11 @@ const (
 	CentOS7       = linuxDistro("centos7")
 	RedHat7       = linuxDistro("rhel7")
 
-	AWSTargetRegion     = "us-east-1"
-	AWSSubnetID         = "subnet-25e13d08"
-	AWSKeyName          = "kismatic-integration-testing"
-	AWSSecurityGroupID  = "sg-d1dc4dab"
-	AMIUbuntu1604USEAST = "ami-29f96d3e"
-	AMICentos7UsEast    = "ami-6d1c2007"
-	AWSHostedZoneID     = "Z1LNBHSE28OF08"
+	AWSTargetRegion    = "us-east-1"
+	AWSSubnetID        = "subnet-25e13d08"
+	AWSKeyName         = "kismatic-integration-testing"
+	AWSSecurityGroupID = "sg-d1dc4dab"
+	AWSHostedZoneID    = "Z1LNBHSE28OF08"
 )
 
 type infrastructureProvisioner interface {
@@ -246,6 +244,10 @@ func (p awsProvisioner) updateNodeWithDeets(nodeID string, node *NodeDeets) erro
 		// Get the hostname from the DNS name
 		re := regexp.MustCompile("[^.]*")
 		hostname := re.FindString(awsNode.PrivateDNSName)
+		// RedHat uses FQDN as the hostname
+		if awsNode.ImageID == string(aws.RedHat7East) {
+			hostname = awsNode.PrivateDNSName
+		}
 		node.Hostname = hostname
 		if node.PublicIP != "" && node.Hostname != "" && node.PrivateIP != "" {
 			return nil
@@ -468,7 +470,7 @@ func (p packetProvisioner) waitForPublicIP(nodeID string) (*packet.Node, error) 
 func waitForSSH(provisionedNodes provisionedNodes, sshKey string) error {
 	nodes := provisionedNodes.allNodes()
 	for _, n := range nodes {
-		if open := WaitUntilSSHOpen(n.PublicIP, n.SSHUser, sshKey, 5 * time.Minute); !open {
+		if open := WaitUntilSSHOpen(n.PublicIP, n.SSHUser, sshKey, 5*time.Minute); !open {
 			return fmt.Errorf("Timed out waiting for SSH at %q", n.PublicIP)
 		}
 	}

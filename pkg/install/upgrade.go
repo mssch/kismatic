@@ -20,6 +20,13 @@ type upgradeKubeInfoClient interface {
 	data.StatefulSetGetter
 }
 
+type etcdNodeCountErr struct{}
+
+func (e etcdNodeCountErr) Error() string {
+	return "This node is part of an etcd cluster that has less than 3 members. " +
+		"Upgrading it will make the cluster unavailable."
+}
+
 type masterNodeCountErr struct{}
 
 func (e masterNodeCountErr) Error() string {
@@ -107,6 +114,16 @@ func (e unsafeReplicaCountErr) Error() string {
 		"and the %s does not have a replica count greater than 1.", e.kind, e.namespace, e.name, e.kind)
 }
 
+type replicasOnSingleNodeErr struct {
+	kind      string
+	namespace string
+	name      string
+}
+
+func (e replicasOnSingleNodeErr) Error() string {
+	return fmt.Sprintf(`All the replicas that belong to the %s "%s/%s" are running on this node.`, e.kind, e.namespace, e.name)
+}
+
 type podRunningJobErr struct {
 	namespace string
 	name      string
@@ -124,6 +141,10 @@ func DetectNodeUpgradeSafety(plan Plan, node Node, kubeClient upgradeKubeInfoCli
 	roles := plan.GetRolesForIP(node.IP)
 	for _, role := range roles {
 		switch role {
+		case "etcd":
+			if plan.Etcd.ExpectedCount < 3 {
+				errs = append(errs, etcdNodeCountErr{})
+			}
 		case "master":
 			if plan.Master.ExpectedCount < 2 {
 				errs = append(errs, masterNodeCountErr{})
@@ -195,12 +216,18 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 		}
 	}
 
-	// 1. are there any pods running on this node that are not managed by a controller?
-	// 2. are there any pods running on this node that are managed by a controller,
+	// Keep track of how many pods managed by replication controllers and replicasets
+	// are running on this node. If all replicas are running on the node, we need to
+	// return an error, as it would take the workload down.
+	rcPods := map[string]int32{}
+	rsPods := map[string]int32{}
+
+	// 1. Are there any pods running on this node that are not managed by a controller?
+	// 2. Are there any pods running on this node that are managed by a controller,
 	//    and have replicas less than 2?
-	// 3. are there any daemonset managed pods running on this node? If so,
+	// 3. Are there any daemonset managed pods running on this node? If so,
 	//    verify that it is not the only one
-	// 4. are there any pods that belong to a job running on this node?
+	// 4. Are there any pods that belong to a job running on this node?
 	for _, p := range nodePods {
 		creator, ok := p.Annotations[kubeCreatedBy]
 		if !ok {
@@ -236,6 +263,10 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 			if rc.Status.Replicas < 2 {
 				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
 			}
+			rcPods[r.Reference.Namespace+r.Reference.Name]++
+			if rcPods[r.Reference.Namespace+r.Reference.Name] == rc.Status.Replicas {
+				errs = append(errs, replicasOnSingleNodeErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
+			}
 		case "replicaset":
 			rs, err := kubeClient.GetReplicaSet(r.Reference.Namespace, r.Reference.Name)
 			if err != nil {
@@ -243,6 +274,10 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 			}
 			if rs.Status.Replicas < 2 {
 				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
+			}
+			rsPods[r.Reference.Namespace+r.Reference.Name]++
+			if rsPods[r.Reference.Namespace+r.Reference.Name] == rs.Status.Replicas {
+				errs = append(errs, replicasOnSingleNodeErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
 			}
 		case "statefulset":
 			sts, err := kubeClient.GetStatefulSet(r.Reference.Namespace, r.Reference.Name)

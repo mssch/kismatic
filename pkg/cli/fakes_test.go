@@ -50,6 +50,10 @@ func (fe *fakeExecutor) RunPreFlightCheck(p *install.Plan) error {
 	return nil
 }
 
+func (fe *fakeExecutor) RunNewWorkerPreFlightCheck(install.Plan, install.Node) error {
+	return nil
+}
+
 func (fe *fakeExecutor) RunUpgradePreFlightCheck(*install.Plan, install.ListableNode) error {
 	return nil
 }

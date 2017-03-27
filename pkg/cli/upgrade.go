@@ -22,6 +22,7 @@ type upgradeOpts struct {
 	restartServices    bool
 	partialAllowed     bool
 	maxParallelWorkers int
+	dryRun             bool
 }
 
 // NewCmdUpgrade returns the upgrade command
@@ -54,6 +55,7 @@ Nodes in the cluster are upgraded in the following order:
 	cmd.PersistentFlags().BoolVar(&opts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
 	cmd.PersistentFlags().BoolVar(&opts.partialAllowed, "partial-ok", false, "allow the upgrade of ready nodes, and skip nodes that have been deemed unready for upgrade")
 	cmd.PersistentFlags().IntVar(&opts.maxParallelWorkers, "max-parallel-workers", 1, "the maximum number of worker nodes to be upgraded in parallel")
+	cmd.PersistentFlags().BoolVar(&opts.dryRun, "dry-run", false, "simulate the upgrade, but don't actually upgrade the cluster")
 	addPlanFileFlag(cmd.PersistentFlags(), &opts.planFile)
 
 	// Subcommands
@@ -118,8 +120,15 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 		RestartServices:          opts.restartServices,
 		OutputFormat:             opts.outputFormat,
 		Verbose:                  opts.verbose,
+		DryRun:                   opts.dryRun,
 	}
 	executor, err := install.NewExecutor(out, os.Stderr, executorOpts)
+	if err != nil {
+		return err
+	}
+	preflightExecOpts := executorOpts
+	preflightExecOpts.DryRun = false // We always want to run preflight, even if doing a dry-run
+	preflightExec, err := install.NewPreFlightExecutor(out, os.Stderr, preflightExecOpts)
 	if err != nil {
 		return err
 	}
@@ -171,7 +180,7 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 
 	if plan.ConfigureDockerRegistry() && plan.Cluster.DisconnectedInstallation {
 		util.PrintHeader(out, "Upgrade: Docker Registry", '=')
-		if err := executor.UpgradeDockerRegistry(*plan); err != nil {
+		if err = executor.UpgradeDockerRegistry(*plan); err != nil {
 			return fmt.Errorf("Failed to upgrade docker registry: %v", err)
 		}
 	}
@@ -180,7 +189,7 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 	if len(toUpgrade) == 0 {
 		fmt.Fprintln(out, "All nodes are at the target version. Skipping node upgrades.")
 	} else {
-		if err = upgradeNodes(out, *plan, *opts, toUpgrade, executor); err != nil {
+		if err = upgradeNodes(out, *plan, *opts, toUpgrade, executor, preflightExec); err != nil {
 			return err
 		}
 	}
@@ -208,13 +217,15 @@ without the "--partial-ok" flag to perform a full upgrade.
 		return fmt.Errorf("Smoke test failed: %v", err)
 	}
 
-	fmt.Fprintln(out)
-	util.PrintColor(out, util.Green, "Upgrade complete\n")
-	fmt.Fprintln(out)
+	if !opts.dryRun {
+		fmt.Fprintln(out)
+		util.PrintColor(out, util.Green, "Upgrade complete\n")
+		fmt.Fprintln(out)
+	}
 	return nil
 }
 
-func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedUpgrade []install.ListableNode, executor install.Executor) error {
+func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedUpgrade []install.ListableNode, executor install.Executor, preflightExec install.PreFlightExecutor) error {
 	// Run safety checks if doing an online upgrade
 	unsafeNodes := []install.ListableNode{}
 	if opts.online {
@@ -226,7 +237,7 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 		}
 		kubeClient := data.RemoteKubectl{SSHClient: client}
 		for _, node := range nodesNeedUpgrade {
-			util.PrettyPrint(out, "Node %q", node.Node.Host)
+			util.PrettyPrint(out, "%s %v", node.Node.Host, node.Roles)
 			errs := install.DetectNodeUpgradeSafety(plan, node.Node, kubeClient)
 			if len(errs) != 0 {
 				util.PrintError(out)
@@ -261,7 +272,7 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 	if !opts.skipPreflight {
 		for _, node := range nodesNeedUpgrade {
 			util.PrintHeader(out, fmt.Sprintf("Preflight Checks: %s %s", node.Node.Host, node.Roles), '=')
-			if err := executor.RunUpgradePreFlightCheck(&plan, node); err != nil {
+			if err := preflightExec.RunUpgradePreFlightCheck(&plan, node); err != nil {
 				// return fmt.Errorf("Upgrade preflight check failed: %v", err)
 				unreadyNodes = append(unreadyNodes, node)
 			}

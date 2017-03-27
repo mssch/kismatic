@@ -146,7 +146,7 @@ func (e *updatingExplainer) ExplainEvent(ansibleEvent ansible.Event) {
 	case *ansible.RunnerItemRetryEvent:
 		buf := &bytes.Buffer{}
 		fmt.Fprintln(buf, e.currentPlayName)
-		fmt.Fprintf(buf, "- [%s] Retrying: %s (%d/%d attempts)\n", event.Host, e.currentTask, event.Result.Attempts, event.Result.MaxRetries)
+		fmt.Fprintf(buf, "- [%s] Retrying: %s (%d/%d attempts)\n", event.Host, e.currentTask, event.Result.Attempts, event.Result.MaxRetries-1)
 		e.out.Write(buf.Bytes())
 
 	default:

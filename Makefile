@@ -15,7 +15,8 @@ HOST_GOARCH = $(shell go env GOARCH)
 # Versions of external dependencies
 GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.1.4.0
-PROVISIONER_VERSION = v1.1
+PROVISIONER_VERSION = v1.1.1
+KUBERANG_VERSION = v1.0.0
 GO_VERSION = 1.8.0
 
 ifeq ($(origin GLIDE_GOOS), undefined)
@@ -67,6 +68,7 @@ clean:
 	rm -rf vendor-ansible/out
 	rm -rf vendor-provision/out
 	rm -rf integration/vendor
+	rm -rf vendor-kuberang
 
 test: vendor
 	@docker run                                                   \
@@ -103,7 +105,11 @@ vendor-provision/out:
 	curl -L https://github.com/apprenda/kismatic-provision/releases/download/$(PROVISIONER_VERSION)/provision-linux-amd64 -o vendor-provision/out/provision-linux-amd64
 	chmod +x vendor-provision/out/*
 
-dist: vendor-ansible/out vendor-provision/out build build-inspector
+vendor-kuberang/$(KUBERANG_VERSION):
+	mkdir -p vendor-kuberang/$(KUBERANG_VERSION)
+	curl https://kismatic-installer.s3-accelerate.amazonaws.com/kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64 -o vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64
+
+dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) build build-inspector
 	mkdir -p out
 	cp bin/$(GOOS)/kismatic out
 	mkdir -p out/ansible
@@ -113,7 +119,7 @@ dist: vendor-ansible/out vendor-provision/out build build-inspector
 	mkdir -p out/ansible/playbooks/inspector
 	cp -r bin/inspector/* out/ansible/playbooks/inspector
 	mkdir -p out/ansible/playbooks/kuberang/linux/amd64/
-	curl https://kismatic-installer.s3-accelerate.amazonaws.com/latest/kuberang -o out/ansible/playbooks/kuberang/linux/amd64/kuberang
+	cp vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64 out/ansible/playbooks/kuberang/linux/amd64/kuberang
 	cp vendor-provision/out/provision-$(GOOS)-amd64 out/provision
 	rm -f out/kismatic.tar.gz
 	tar -czf kismatic.tar.gz -C out .
@@ -125,6 +131,8 @@ integration/vendor: tools/glide
 
 just-integration-test: integration/vendor
 	ginkgo --skip "\[slow\]" -p -v integration
+
+slow-integration-test: integration/vendor
 	ginkgo --focus "\[slow\]" -p -v integration
 
 serial-integration-test: integration/vendor
@@ -133,8 +141,8 @@ serial-integration-test: integration/vendor
 focus-integration-test: integration/vendor
 	ginkgo --focus $(FOCUS) -v integration
 
-docs/kismatic-cli:
-	mkdir docs/kismatic-cli
+docs/generate-kismatic-cli:
+	mkdir -p docs/kismatic-cli
 	go run cmd/kismatic-docs/main.go
 	cp docs/kismatic-cli/kismatic.md docs/kismatic-cli/README.md
 
@@ -143,5 +151,13 @@ version: FORCE
 	@echo GLIDE_VERSION=$(GLIDE_VERSION)
 	@echo ANSIBLE_VERSION=$(ANSIBLE_VERSION)
 	@echo PROVISIONER_VERSION=$(PROVISIONER_VERSION)
+
+trigger-ci-slow-tests:
+	@echo Triggering build on snap with slow tests
+	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/branch/master/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
+
+trigger-pr-slow-tests:
+	@echo Trigger build for PR $(SNAP_PR_NUMBER)
+	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/pull/$(SNAP_PR_NUMBER)/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
 
 FORCE:
