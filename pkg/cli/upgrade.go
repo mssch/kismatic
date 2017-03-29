@@ -326,6 +326,14 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 		}
 	}
 
+	// Migate Kubernetes etcd to v3
+	// TODO in future KET releases need to check for a minimum version
+	// All KET releases with v1.6+ do not need this to run
+	util.PrintHeader(out, "Migrate: Kubernetes Etcd Cluster", '=')
+	if err := executor.MigrateEtcdCluster(plan); err != nil {
+		return fmt.Errorf("Failed to migrate kubernetes etcd cluster: %v", err)
+	}
+
 	// Run the upgrade on the nodes that need it
 	if err := executor.UpgradeNodes(plan, toUpgrade, opts.online, opts.maxParallelWorkers); err != nil {
 		return fmt.Errorf("Failed to upgrade nodes: %v", err)

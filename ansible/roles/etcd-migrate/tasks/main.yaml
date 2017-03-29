@@ -1,0 +1,32 @@
+---
+  - name: stop etcd service
+    service:
+      name: "{{ etcd_service_name }}"
+      state: stopped
+      enabled: yes
+
+  - name: migrate etcd data
+    command: "{{ bin_dir }}/{{ etcdctl_install_bin_name }} migrate --data-dir {{ etcd_service_data_dir }}"
+    environment:
+      ETCDCTL_API: 3
+
+  - name: start etcd service
+    service:
+      name: "{{ etcd_service_name }}"
+      state: started
+      enabled: yes
+
+  - name: verify {{ etcd_install_bin_name }} is running
+    command: systemctl status {{ etcd_service_name }}
+    register: running
+    until: running|success
+    retries: 3
+    delay: 5
+
+  # test etcd
+  - name: verify {{ etcd_install_bin_name }} cluster health
+    command: "{{ bin_dir }}/{{ etcdctl_install_bin_name }} --endpoint='https://127.0.0.1:{{ etcd_service_client_port }}/' --cert-file={{ etcd_certificates_cert_file }} --key-file={{ etcd_certificates_key_file }} --ca-file={{ etcd_certificates_ca_file }} cluster-health"
+    register: result
+    until: result|success
+    retries: 3
+    delay: 5

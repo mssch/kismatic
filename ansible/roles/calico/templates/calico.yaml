@@ -11,29 +11,6 @@ data:
   # Configure the Calico backend to use.
   calico_backend: "bird"
 
-  # The CNI network configuration to install on each node.
-  cni_network_config: |-
-    {
-        "name": "k8s-pod-network",
-        "type": "calico",
-        "etcd_endpoints": "{{ etcd_networking_cluster_ip_list }}",
-        "etcd_cert_file": "{{ kubernetes_certificates_cert_path }}",
-        "etcd_key_file": "{{ kubernetes_certificates_key_path }}",
-        "etcd_ca_cert_file": "{{ kubernetes_certificates_ca_path }}",
-        "log_level": "info",
-        "ipam": {
-            "type": "calico-ipam"
-        },
-{% if enable_calico_policy is defined and enable_calico_policy|bool == true %}
-        "policy": {
-          "type": "k8s"
-        },
-{% endif %}
-        "kubernetes": {
-            "kubeconfig": "{{ kubernetes_kubeconfig_path }}"
-        }
-    }
-
   # If you're using TLS enabled etcd uncomment the following.
   # You must also populate the Secret below with these files.
   etcd_ca: "{{ kubernetes_certificates_ca_path }}"
@@ -96,12 +73,16 @@ spec:
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
-            # Don't configure a default pool.  This is done by the Job
-            # below.
-            - name: NO_DEFAULT_POOLS
-              value: "true"
+            # Set Felix endpoint to host default action to ACCEPT.
+            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
+              value: ACCEPT
             - name: FELIX_LOGSEVERITYSCREEN
               value: "info"
+            # Configure the IP Pool from which Pod IPs will be chosen.
+            - name: CALICO_IPV4POOL_CIDR
+              value: "{{ kubernetes_pods_cidr }}"
+            - name: CALICO_IPV4POOL_IPIP
+              value: "always"
             # Location of the CA certificate for etcd.
             - name: ETCD_CA_CERT_FILE
               valueFrom:
@@ -125,6 +106,9 @@ spec:
               value: ""
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 250m
           volumeMounts:
             - mountPath: /lib/modules
               name: lib-modules
@@ -147,12 +131,6 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
-            # The CNI network config to install on each node.
-            - name: CNI_NETWORK_CONFIG
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: cni_network_config
           securityContext:
             privileged: true
           volumeMounts:
@@ -176,7 +154,7 @@ spec:
             path: /opt/cni/bin
         - name: cni-net-dir
           hostPath:
-            path: /etc/cni/net.d
+            path: {{ network_plugin_dir }}
         # Mount in the etcd TLS secrets.
         - name: etcd-certs
           hostPath:

@@ -3,7 +3,6 @@
     file:
       path: "{{ calico_dir }}"
       state: directory
-
   - name: copy calico.yaml to remote
     template:
       src: calico.yaml
@@ -11,6 +10,18 @@
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
+
+  - name: create {{ calico_dir }} directory
+    file:
+      path: "{{ calico_dir }}"
+      state: directory
+  - name: copy calicoctl.cfg to remote
+    template:
+      src: calicoctl.cfg
+      dest: "{{ calicoctl_conf_path }}"
+      owner: "{{ kubernetes_owner }}"
+      group: "{{ kubernetes_group }}"
+      mode: "{{ network_environment_mode }}"
 
     # label nodes that will have have calico isntalled
   - name: label nodes for calico

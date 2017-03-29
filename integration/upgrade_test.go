@@ -247,8 +247,14 @@ func upgradeCluster() {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
+		fmt.Println("Running diagnostics command")
 		// run diagnostics on error
-		exec.Command("./kismatic", "diagnose", "-f", "kismatic-testing.yaml")
+		diagsCmd := exec.Command("./kismatic", "diagnose", "-f", "kismatic-testing.yaml")
+		diagsCmd.Stdout = os.Stdout
+		diagsCmd.Stderr = os.Stderr
+		if errDiags := diagsCmd.Run(); errDiags != nil {
+			fmt.Printf("ERROR: error running diagnose command: %v", errDiags)
+		}
 		FailIfError(err)
 	}
 
