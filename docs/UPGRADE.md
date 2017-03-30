@@ -28,12 +28,41 @@ Cluster services include the pod network provider (e.g. Calico), Dashboard, clus
 - SSH access to cluster nodes
 - Cluster in a healthy state
 
+## Quick Start
+Here are some example commands to get you started with upgrading your Kubernetes cluster. We encourage you to read this doc and understand the upgrade process before performing an upgrade.
+```
+# Run an offline upgrade
+./kismatic upgrade offline
+
+# Run the checks performed during an online upgrade, but don't actually upgrade my cluster
+./kismatic upgrade online --dry-run
+
+# Run an online upgrade
+./kismatic upgrade online
+```
+
 ## Readiness
 Before performing an upgrade, Kismatic ensures that the nodes are ready to be upgraded.
 The following checks are performed on each node to determine readiness:
 
 1. Disk space: Ensure that there is enough disk space on the root drive of the node.
 2. Packages: When package installation is disabled, ensure that the new packages are installed.
+
+## Etcd upgrade
+The etcd clusters should be backed up before performing an upgrade. Even though Kismatic will 
+backup the clusters during an upgrade, it is recommended that you perform and maintain your own backups.
+If you don't have an automated backup solution in place, it is recommended that you perform a manual backup of 
+both the Kubernetes and networking etcd clusters before upgrading your cluster, and store 
+the backup on persistent storage off cluster.
+
+Kismatic will backup the etcd data before performing an upgrade. If necessary, you may find the
+backups in the following locations:
+
+* Kubernetes etcd cluster: `/etc/etcd_k8s/backup/$timestamp`
+* Networking etcd cluster: `/etc/etcd_networking/backup/$timestamp`
+
+For safety reasons, Kismatic does not remove the backups after the cluster has been
+successfully upgraded.
 
 ## Online Upgrade
 With the goal of preventing workload data or availability loss, you might opt for doing
@@ -103,22 +132,6 @@ For example, one could decide to upgrade most of the nodes under an online upgra
 a downtime window for upgrading the rest of the nodes under an offline upgrade.
 
 This mode can be enabled in both the online and offline upgrades by using the `--partial-ok` flag.
-
-## Etcd upgrade
-The etcd clusters should be backed up before performing an upgrade. Even though Kismatic will 
-backup the clusters during an upgrade, it is recommended that you perform and maintain your own backups.
-If you don't have an automated backup solution in place, it is recommended that you perform a manual backup of 
-both the Kubernetes and networking etcd clusters before upgrading your cluster, and store 
-the backup on persistent storage off cluster.
-
-Kismatic will backup the etcd data before performing an upgrade. If necessary, you may find the
-backups in the following locations:
-
-* Kubernetes etcd cluster: `/etc/etcd_k8s/backup/$timestamp`
-* Networking etcd cluster: `/etc/etcd_networking/backup/$timestamp`
-
-For safety reasons, Kismatic does not remove the backups after the cluster has been
-successfully upgraded.
 
 ## Version-specific notes
 The following list contains links to upgrade notes that are specific to a given
