@@ -61,7 +61,8 @@ spec:
         path: /healthz
         port: 8080
       initialDelaySeconds: 15
-      timeoutSeconds: 5
+      timeoutSeconds: 15
+      failureThreshold: 8
   volumes:
   - hostPath:
       path: /etc/kubernetes

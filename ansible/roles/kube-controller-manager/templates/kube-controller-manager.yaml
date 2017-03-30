@@ -22,7 +22,6 @@ spec:
       - --cluster-name={{ kubernetes_cluster_name }}
       - --kubeconfig={{ kubernetes_kubeconfig_path }}
       - --leader-elect=true
-      - --master={{ kubernetes_master_ip }}
       - --root-ca-file={{ kubernetes_certificates_ca_path }}
       - --service-account-private-key-file={{ kubernetes_certificates_service_account_key_path }}
       - --service-cluster-ip-range={{ kubernetes_services_cidr }}
@@ -33,7 +32,8 @@ spec:
         path: /healthz
         port: 10252
       initialDelaySeconds: 15
-      timeoutSeconds: 5
+      timeoutSeconds: 15
+      failureThreshold: 8
     volumeMounts:
     - mountPath: "{{ kubernetes_kubeconfig_path }}"
       name: "kubeconfig"

@@ -1,4 +1,9 @@
 ---
+  - name: verify hostname
+    fail: msg="provided hostname does not match reported hostname of {{ ansible_nodename }}"
+    when: "inventory_hostname != ansible_nodename"
+    changed_when: false
+
   - name: copy Kismatic Inspector to node
     copy:
       src: "{{ kismatic_preflight_checker }}"
