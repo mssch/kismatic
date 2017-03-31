@@ -65,11 +65,10 @@ func TestIsOlderVersion(t *testing.T) {
 	}
 }
 
-// Bump patch version for git describe
 func TestGitDescribeVersion(t *testing.T) {
 	ver := mustParseVersion("v1.2.2-69-g51dfe53-dirty")
-	if ver.Major != 1 || ver.Minor != 2 || ver.Patch != 3 {
-		t.Errorf("didn't parse to version 1.2.3, instead got %v", ver)
+	if ver.Major != 1 || ver.Minor != 2 || ver.Patch != 2 {
+		t.Errorf("didn't parse to version 1.2.2, instead got %v", ver)
 	}
 	if ver.Pre[0].VersionStr != "69-g51dfe53-dirty" {
 		t.Errorf("didn't parse pre-release to 69-g51dfe53-dirty, instead got %s", ver.Pre[0])

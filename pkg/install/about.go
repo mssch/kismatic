@@ -2,8 +2,6 @@ package install
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/apprenda/kismatic/pkg/ssh"
 	"github.com/apprenda/kismatic/pkg/util"
@@ -70,24 +68,13 @@ func IsLessThanVersion(this semver.Version, that string) bool {
 
 func parseVersion(versionString string) (semver.Version, error) {
 	// Support a 'v' prefix
-	v, err := semver.ParseTolerant(versionString)
+	verString := versionString
+	if versionString[0] == 'v' {
+		verString = versionString[1:len(versionString)]
+	}
+	v, err := semver.Make(verString)
 	if err != nil {
-		return semver.Version{}, fmt.Errorf("Unable to parse version %q: %v", versionString, err)
-	}
-	// convert git tag to semver
-	// v1.3.0-1-abcd1234 is first commit after v1.3.0
-	// but in semver it is NOT greater than v1.3.0
-	// split Pre[0] on "-"
-	// if first part of Pre[0] is numeric bump patch version
-	if len(v.Pre) == 0 {
-		return v, nil
-	}
-	splitPre := strings.Split(v.Pre[0].String(), "-")
-	if len(splitPre) > 0 {
-		// don't care about the commit number, just increment patch
-		if _, err := strconv.Atoi(splitPre[0]); err == nil {
-			v.Patch++
-		}
+		return semver.Version{}, fmt.Errorf("Unable to parse version %q: %v", verString, err)
 	}
 	return v, nil
 }
