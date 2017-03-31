@@ -8,6 +8,8 @@ Prior to Kismatic `v1.3.0`, all cluster deployments were composed of two version
 With Kismatic `v1.3.0`, both versions of etcd will be upgraded to etcd `v.3.1.x`
 which is not backwards compatible with etcd `v2.3.x` or `v3.0.x`.
 
+In addition, `v1.3.0` ships Kubernetes `v1.6.0` which defaults to the etcd v3 API. During the upgrade, Kismatic will migrate the kubernetes data using the etcd tooling. Before performing the migration, the Kubernetes API servers will be shut down to prevent writes to the etcd cluster. This means that your cluster will experience temporary downtime, even in the case where multiple API servers are running.
+
 ## Upgrading Calico etcd `v2.3.x` to `v.3.0.x`
 
 On an etcd cluster that has more than one member, it is not possible to directly 
