@@ -38,7 +38,7 @@
     run_once: true
 
   - name: delete calico pod running on this node
-    command: kubectl delete pod {{ calico_pod_name.stdout }} -n kube-system
+    command: kubectl delete pod {{ calico_pod_name.stdout }} -n kube-system --now
     when: calico_pod_name is defined and calico_pod_name.stdout != ""
 
     # wait for pod to shutdown
