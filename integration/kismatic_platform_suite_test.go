@@ -14,7 +14,6 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -253,17 +252,18 @@ func uploadKismaticLogs(path string) {
 	}
 	s3path = s3path + fileInfo.Name()
 
-	fmt.Println("Uploading logs to S3 at", s3path)
+	s3bucket := "kismatic-integration-tests"
+	downloadPath := fmt.Sprintf("https://console.aws.amazon.com/s3/buckets/%s%s", s3bucket, s3path)
+	fmt.Println("Uploading logs to S3. Get them at", downloadPath)
 	params := &s3.PutObjectInput{
-		Bucket:        aws.String("kismatic-integration-tests"),
+		Bucket:        aws.String(s3bucket),
 		Key:           aws.String(s3path),
 		Body:          fileBytes,
 		ContentLength: aws.Int64(size),
 		ContentType:   aws.String(fileType),
 	}
-	resp, err := svc.PutObject(params)
+	_, err = svc.PutObject(params)
 	if err != nil {
-		fmt.Printf("bad response: %s", err)
+		fmt.Printf("Error uploading logs to S3: %v", err)
 	}
-	fmt.Printf("response %s", awsutil.StringValue(resp))
 }
