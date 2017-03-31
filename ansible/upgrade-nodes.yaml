@@ -24,6 +24,7 @@
   - include: _validate-control-plane-node.yaml serial_count="1" upgrading=true
   - include: _kube-proxy.yaml play_name="Upgrade Kubernetes Proxy" upgrading=true
   - include: _calico.yaml play_name="Upgrade Cluster Network" upgrading=true
+  - include: _calico-validate-node.yaml play_name="Validate Cluster Network" upgrading=true
 
   - include: _kube-uncordon-node.yaml
     when: online_upgrade is defined and online_upgrade|bool == true

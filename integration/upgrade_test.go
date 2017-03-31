@@ -16,9 +16,9 @@ var _ = Describe("Upgrade", func() {
 				dir := setupTestWorkingDirWithVersion("v1.3.0")
 				os.Chdir(dir)
 			})
-			Context("Using a larger cluster layout with CentOS 7", func() {
+			Context("Using a larger cluster layout with Ubuntu 16.04", func() {
 				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
-					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 1, Ingress: 0, Storage: 0}, RedHat7, aws, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 2, Ingress: 0, Storage: 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
 						installAndUpgrade(nodes, sshKey)
 					})
 				})
@@ -30,9 +30,9 @@ var _ = Describe("Upgrade", func() {
 				dir := setupTestWorkingDirWithVersion("v1.3.0-beta.0")
 				os.Chdir(dir)
 			})
-			Context("Using a larger cluster layout with CentOS 7", func() {
+			Context("Using a larger cluster layout with Ubuntu 16.04", func() {
 				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
-					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 1, Ingress: 0, Storage: 0}, RedHat7, aws, func(nodes provisionedNodes, sshKey string) {
+					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 2, Ingress: 0, Storage: 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
 						installAndUpgrade(nodes, sshKey)
 					})
 				})
