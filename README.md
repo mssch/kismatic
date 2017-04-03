@@ -89,7 +89,7 @@ The installation consists of three phases:
    2. If the installation plan is valid, Kismatic will build you a cluster.
    3. After installation, Kismatic performs a basic test of scaling and networking on the cluster
 
-###Using your cluster
+### Using your cluster
 
 KET automatically configures and deploys [Kubernetes Dashboard](http://kubernetes.io/docs/user-guide/ui/) in your new cluster. Open the link provided at the end of the installation in your browser to use it.
 
