@@ -45,7 +45,7 @@ HOST must be one of the following:
 			planner := &install.FilePlanner{File: opts.planFilename}
 			// Check if plan file exists
 			if !planner.PlanExists() {
-				return fmt.Errorf("plan file not found at %q", opts.planFilename)
+				return planFileNotFoundErr{filename: opts.planFilename}
 			}
 
 			err := doSSH(out, planner, opts)

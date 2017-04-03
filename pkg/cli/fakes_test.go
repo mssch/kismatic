@@ -25,12 +25,6 @@ func (fp *fakePlanner) Write(p *install.Plan) error {
 	fp.plan = p
 	return fp.readWriteErr
 }
-func (fp *fakePlanner) GetClusterAddress(p *install.Plan) (string, error) {
-	return fp.clusterAddress, fp.clusterAddressErr
-}
-func (fp *fakePlanner) GetDashboardURL(p *install.Plan) (string, error) {
-	return fp.dashboardURL, fp.dashboardURLErr
-}
 
 type fakeExecutor struct {
 	installCalled bool

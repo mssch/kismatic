@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 type installOpts struct {
@@ -34,8 +33,4 @@ func NewCmdInstall(in io.Reader, out io.Writer) *cobra.Command {
 	addPlanFileFlag(cmd.PersistentFlags(), &opts.planFilename)
 
 	return cmd
-}
-
-func addPlanFileFlag(flagSet *pflag.FlagSet, p *string) {
-	flagSet.StringVarP(p, "plan-file", "f", "kismatic-cluster.yaml", "path to the installation plan file")
 }

@@ -50,7 +50,7 @@ func NewCmdAddWorker(out io.Writer, installOpts *installOpts) *cobra.Command {
 func doAddWorker(out io.Writer, planFile string, opts *addWorkerOpts, newWorker install.Node) error {
 	planner := &install.FilePlanner{File: planFile}
 	if !planner.PlanExists() {
-		return errors.New("add-worker can only be used with an existin plan file")
+		return planFileNotFoundErr{filename: planFile}
 	}
 	execOpts := install.ExecutorOptions{
 		GeneratedAssetsDirectory: opts.GeneratedAssetsDirectory,

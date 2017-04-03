@@ -2,8 +2,9 @@ package cli
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
+
+	"github.com/apprenda/kismatic/pkg/install"
 )
 
 func TestIPCmdMissingPlan(t *testing.T) {
@@ -14,9 +15,7 @@ func TestIPCmdMissingPlan(t *testing.T) {
 	opts := &ipOpts{
 		planFilename: "planFile",
 	}
-
-	_, err := doIP(out, fp, opts)
-	if err == nil {
+	if err := doIP(out, fp, opts); err == nil {
 		t.Errorf("ip did not return an error when the plan does not exist")
 	}
 }
@@ -24,16 +23,13 @@ func TestIPCmdMissingPlan(t *testing.T) {
 func TestIPCmdEmptyAddress(t *testing.T) {
 	out := &bytes.Buffer{}
 	fp := &fakePlanner{
-		exists:            true,
-		clusterAddress:    "",
-		clusterAddressErr: fmt.Errorf("FQDN empty"),
+		plan:   &install.Plan{},
+		exists: true,
 	}
 	opts := &ipOpts{
 		planFilename: "planFile",
 	}
-
-	_, err := doIP(out, fp, opts)
-	if err == nil {
+	if err := doIP(out, fp, opts); err == nil {
 		t.Errorf("ip did not return an error when LoadBalancedFQDN is empty")
 	}
 }
@@ -41,19 +37,21 @@ func TestIPCmdEmptyAddress(t *testing.T) {
 func TestIPCmdValidAddress(t *testing.T) {
 	out := &bytes.Buffer{}
 	fp := &fakePlanner{
-		exists:         true,
-		clusterAddress: "10.0.0.10",
+		plan: &install.Plan{
+			Master: install.MasterNodeGroup{
+				LoadBalancedFQDN: "10.0.0.10",
+			},
+		},
+		exists: true,
 	}
 	opts := &ipOpts{
 		planFilename: "planFile",
 	}
-
-	ip, err := doIP(out, fp, opts)
+	err := doIP(out, fp, opts)
 	if err != nil {
 		t.Errorf("ip returned an error %v", err)
 	}
-
-	if len(ip) <= 0 {
-		t.Errorf("ip value returned is empty")
+	if out.String() != fp.plan.Master.LoadBalancedFQDN+"\n" {
+		t.Errorf("ip returned %s, but expectetd %s", out.String(), fp.plan.Master.LoadBalancedFQDN)
 	}
 }
