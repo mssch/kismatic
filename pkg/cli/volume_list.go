@@ -43,7 +43,7 @@ func doVolumeList(out io.Writer, opts volumeListOptions, planFile string, args [
 	// Setup ansible
 	planner := &install.FilePlanner{File: planFile}
 	if !planner.PlanExists() {
-		return fmt.Errorf("plan file not found at %q", planFile)
+		return planFileNotFoundErr{filename: planFile}
 	}
 
 	plan, err := planner.Read()

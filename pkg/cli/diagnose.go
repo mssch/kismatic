@@ -47,7 +47,7 @@ func doDiagnostics(out io.Writer, opts *diagsOpts) error {
 	// Read plan file
 	if !planner.PlanExists() {
 		util.PrettyPrintErr(out, "Reading plan file")
-		return fmt.Errorf("plan file %q does not exist", planFile)
+		return planFileNotFoundErr{filename: planFile}
 	}
 	util.PrettyPrintOk(out, "Reading plan file")
 	plan, err := planner.Read()

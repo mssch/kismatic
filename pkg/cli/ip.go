@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -24,14 +25,7 @@ func NewCmdIP(out io.Writer) *cobra.Command {
 				return fmt.Errorf("Unexpected args: %v", args)
 			}
 			planner := &install.FilePlanner{File: opts.planFilename}
-
-			ip, err := doIP(out, planner, opts)
-			if err != nil {
-				return fmt.Errorf("Error getting cluster IP: %v", err)
-			}
-
-			fmt.Fprintln(out, ip)
-			return nil
+			return doIP(out, planner, opts)
 		},
 	}
 
@@ -41,15 +35,26 @@ func NewCmdIP(out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func doIP(out io.Writer, planner install.Planner, opts *ipOpts) (string, error) {
+func doIP(out io.Writer, planner install.Planner, opts *ipOpts) error {
 	// Check if plan file exists
 	if !planner.PlanExists() {
-		return "", fmt.Errorf("plan does not exist")
+		return planFileNotFoundErr{filename: opts.planFilename}
 	}
 	plan, err := planner.Read()
 	if err != nil {
-		return "", fmt.Errorf("error reading plan file: %v", err)
+		return fmt.Errorf("error reading plan file: %v", err)
 	}
+	address, err := getClusterAddress(*plan)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(out, address)
+	return nil
+}
 
-	return planner.GetClusterAddress(plan)
+func getClusterAddress(plan install.Plan) (string, error) {
+	if plan.Master.LoadBalancedFQDN == "" {
+		return "", errors.New("Master load balanced FQDN is not set in the plan file")
+	}
+	return plan.Master.LoadBalancedFQDN, nil
 }
