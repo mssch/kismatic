@@ -56,6 +56,16 @@ func IsGreaterOrEqualThanVersion(this semver.Version, that string) bool {
 	return this.GTE(thatVersion)
 }
 
+// IsLessThanVersion parses the version from a string and returns true if this version is less than that version
+func IsLessThanVersion(this semver.Version, that string) bool {
+	thatVersion, err := parseVersion(that)
+	if err != nil {
+		panic("failed to parse version " + that)
+	}
+
+	return this.LT(thatVersion)
+}
+
 func parseVersion(versionString string) (semver.Version, error) {
 	// Support a 'v' prefix
 	verString := versionString

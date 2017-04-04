@@ -19,7 +19,6 @@ spec:
       - kube-scheduler
       - --kubeconfig={{ kubernetes_kubeconfig_path }}
       - --leader-elect=true
-      - --master={{ kubernetes_master_ip }}
       - --v=2
     volumeMounts:
       - mountPath: "{{ kubernetes_kubeconfig_path }}"
@@ -34,7 +33,8 @@ spec:
         path: /healthz
         port: 10251
       initialDelaySeconds: 15
-      timeoutSeconds: 5
+      timeoutSeconds: 15
+      failureThreshold: 8
   volumes:
     - name: "kubeconfig"
       hostPath:

@@ -11,6 +11,34 @@ import (
 
 var _ = Describe("Upgrade", func() {
 	Describe("Upgrading a cluster using offline mode", func() {
+		Describe("From KET version v1.3.0", func() {
+			BeforeEach(func() {
+				dir := setupTestWorkingDirWithVersion("v1.3.0")
+				os.Chdir(dir)
+			})
+			Context("Using a larger cluster layout with Ubuntu 16.04", func() {
+				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
+					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 2, Ingress: 0, Storage: 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+						installAndUpgrade(nodes, sshKey)
+					})
+				})
+			})
+		})
+
+		Describe("From KET version v1.3.0-beta.0", func() {
+			BeforeEach(func() {
+				dir := setupTestWorkingDirWithVersion("v1.3.0-beta.0")
+				os.Chdir(dir)
+			})
+			Context("Using a larger cluster layout with Ubuntu 16.04", func() {
+				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
+					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 2, Ingress: 0, Storage: 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+						installAndUpgrade(nodes, sshKey)
+					})
+				})
+			})
+		})
+
 		Describe("From KET version v1.2.2", func() {
 			BeforeEach(func() {
 				dir := setupTestWorkingDirWithVersion("v1.2.2")
