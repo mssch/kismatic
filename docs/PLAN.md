@@ -258,7 +258,7 @@ Network policies for the local network on which nodes reside will need to be set
     <td><b>Allow Rules</b></td>
   </tr>
   <tr>
-    <td>To allow acces to the kismatic inspector</td>
+    <td>To allow communication with the kismatic inspector</td>
     <td>all</td>
     <td>installer node</td>
     <td>tcp:8888</td>
