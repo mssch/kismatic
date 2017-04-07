@@ -236,6 +236,6 @@ preflight_check_tcp_ports: "{{etcd_k8s_client_port}},{{etcd_networking_client_po
 # Gluster
 volume_mount: /
 volume_base_dir: data/
-volume_mode: 777
+volume_mode: 0777
 volume_replica_count: 2
 volume_distribution_count: 1
