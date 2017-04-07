@@ -79,9 +79,33 @@ type DockerRegistry struct {
 	CAPath        string `yaml:"CA"`
 }
 
+// Docker includes the configuration for the docker installation owned by KET.
+type Docker struct {
+	// Storage includes the storage-specific configuration for docker
+	Storage DockerStorage
+}
+
+// DockerStorage includes the storage-specific configuration for docker.
+type DockerStorage struct {
+	// DirectLVM is the configuration required for setting up device mapper in direct-lvm mode
+	DirectLVM DockerStorageDirectLVM `yaml:"direct_lvm"`
+}
+
+// DockerStorageDirectLVM includes the configuration required for setting up
+// device mapper in direct-lvm mode
+type DockerStorageDirectLVM struct {
+	// Determines whether direct-lvm mode is enabled
+	Enabled bool
+	// BlockDevice is the path to the block device that will be used. E.g. /dev/sdb
+	BlockDevice string `yaml:"block_device"`
+	// EnableDeferredDeletion determines whether deferred deletion should be enabled
+	EnableDeferredDeletion bool `yaml:"enable_deferred_deletion"`
+}
+
 // Plan is the installation plan that the user intends to execute
 type Plan struct {
 	Cluster        Cluster
+	Docker         Docker
 	DockerRegistry DockerRegistry `yaml:"docker_registry"`
 	Etcd           NodeGroup
 	Master         MasterNodeGroup

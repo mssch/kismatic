@@ -116,6 +116,28 @@ func WithMiniInfrastructure(distro linuxDistro, provisioner infrastructureProvis
 	f(nodes.worker[0], sshKey)
 }
 
+// WithMiniInfrastructureAndBlockDevice  runs the spec with the requested infrastructure and an additiona block device
+// The block will be under /dev/xvdb on AWS
+func WithMiniInfrastructureAndBlockDevice(distro linuxDistro, provisioner infrastructureProvisioner, f miniInfraDependentTest) {
+	By("Provisioning minikube node")
+	start := time.Now()
+	nodes, err := provisioner.ProvisionNodes(NodeCount{Worker: 1}, distro, []string{"block_device"}...)
+	if !leaveIt() {
+		defer provisioner.TerminateNodes(nodes)
+	}
+	Expect(err).ToNot(HaveOccurred())
+	fmt.Println("Provisioning node took", time.Since(start))
+
+	By("Waiting until nodes are SSH-accessible")
+	start = time.Now()
+	sshKey := provisioner.SSHKey()
+	err = waitForSSH(nodes, sshKey)
+	Expect(err).ToNot(HaveOccurred())
+	fmt.Println("Waiting for SSH took", time.Since(start))
+
+	f(nodes.worker[0], sshKey)
+}
+
 // SubDescribe allows you to define specifications inside another spec.
 // We have found the need for this because Gingko does not support
 // serializing a subset of tests when running in parallel. This means

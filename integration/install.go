@@ -36,6 +36,7 @@ type installOptions struct {
 	dockerRegistryPort          int
 	dockerRegistryCAPath        string
 	modifyHostsFiles            bool
+	useDirectLVM                bool
 }
 
 func installKismaticMini(node NodeDeets, sshKey string) error {
@@ -82,6 +83,7 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		DockerRegistryIP:             installOpts.dockerRegistryIP,
 		DockerRegistryPort:           installOpts.dockerRegistryPort,
 		ModifyHostsFiles:             installOpts.modifyHostsFiles,
+		UseDirectLVM:                 installOpts.useDirectLVM,
 	}
 	return plan
 }

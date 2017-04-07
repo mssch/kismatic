@@ -119,6 +119,44 @@ var _ = Describe("kismatic", func() {
 			})
 		})
 
+		Context("when using direct-lvm docker storage", func() {
+			installOpts := installOptions{
+				allowPackageInstallation: true,
+				useDirectLVM:             true,
+			}
+			Context("when targetting CentOS", func() {
+				ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+					WithMiniInfrastructureAndBlockDevice(CentOS7, aws, func(node NodeDeets, sshKey string) {
+						theNode := []NodeDeets{node}
+						nodes := provisionedNodes{
+							etcd:    theNode,
+							master:  theNode,
+							worker:  theNode,
+							ingress: theNode,
+						}
+						err := installKismatic(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+			})
+
+			Context("when targetting RHEL", func() {
+				ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
+					WithMiniInfrastructureAndBlockDevice(RedHat7, aws, func(node NodeDeets, sshKey string) {
+						theNode := []NodeDeets{node}
+						nodes := provisionedNodes{
+							etcd:    theNode,
+							master:  theNode,
+							worker:  theNode,
+							ingress: theNode,
+						}
+						err := installKismatic(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+					})
+				})
+			})
+		})
+
 		// This spec will be used for testing non-destructive kismatic features on
 		// a new cluster.
 		// This spec is open to modification when new assertions have to be made

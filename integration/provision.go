@@ -27,7 +27,7 @@ const (
 )
 
 type infrastructureProvisioner interface {
-	ProvisionNodes(NodeCount, linuxDistro) (provisionedNodes, error)
+	ProvisionNodes(NodeCount, linuxDistro, ...string) (provisionedNodes, error)
 	TerminateNodes(provisionedNodes) error
 	TerminateNode(NodeDeets) error
 	SSHKey() string
@@ -147,7 +147,7 @@ func AWSClientFromEnvironment() (infrastructureProvisioner, bool) {
 	return p, true
 }
 
-func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
+func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro, opts ...string) (provisionedNodes, error) {
 	var ami aws.AMI
 	switch distro {
 	case Ubuntu1604LTS:
@@ -159,38 +159,45 @@ func (p awsProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) 
 	default:
 		panic(fmt.Sprintf("Used an unsupported distribution: %s", distro))
 	}
+	var addBlockDevice bool
+	for _, o := range opts {
+		if o == "block_device" {
+			addBlockDevice = true
+		}
+	}
+
 	provisioned := provisionedNodes{}
 	var i uint16
 	for i = 0; i < nodeCount.Etcd; i++ {
-		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium, addBlockDevice)
 		if err != nil {
 			return provisioned, err
 		}
 		provisioned.etcd = append(provisioned.etcd, NodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Master; i++ {
-		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium, addBlockDevice)
 		if err != nil {
 			return provisioned, err
 		}
 		provisioned.master = append(provisioned.master, NodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Worker; i++ {
-		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium, addBlockDevice)
 		if err != nil {
 			return provisioned, err
 		}
 		provisioned.worker = append(provisioned.worker, NodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Ingress; i++ {
-		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium, addBlockDevice)
 		if err != nil {
 			return provisioned, err
 		}
 		provisioned.ingress = append(provisioned.ingress, NodeDeets{id: nodeID})
 	}
 	for i = 0; i < nodeCount.Storage; i++ {
-		nodeID, err := p.client.CreateNode(ami, aws.T2Medium)
+		nodeID, err := p.client.CreateNode(ami, aws.T2Medium, addBlockDevice)
 		if err != nil {
 			return provisioned, err
 		}
@@ -329,7 +336,7 @@ func packetClientFromEnv() (infrastructureProvisioner, bool) {
 	return p, true
 }
 
-func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro) (provisionedNodes, error) {
+func (p packetProvisioner) ProvisionNodes(nodeCount NodeCount, distro linuxDistro, _ ...string) (provisionedNodes, error) {
 	var packetDistro packet.OS
 	switch distro {
 	case Ubuntu1604LTS:

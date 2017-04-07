@@ -127,6 +127,7 @@ func (p *Plan) validate() (bool, []error) {
 
 	v.validate(&p.Cluster)
 	v.validate(&p.DockerRegistry)
+	v.validateWithErrPrefix("Docker", p.Docker)
 	// on a disconnected_installation a registry must be provided
 	v.validate(disconnectedInstallation{cluster: p.Cluster, registryProvided: p.DockerRegistryProvided()})
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
@@ -366,6 +367,31 @@ func (dr *DockerRegistry) validate() (bool, []error) {
 	}
 	if _, err := os.Stat(dr.CAPath); dr.CAPath != "" && os.IsNotExist(err) {
 		v.addError(fmt.Errorf("Docker Registry CA file was not found at %q", dr.CAPath))
+	}
+	return v.valid()
+}
+
+func (d Docker) validate() (bool, []error) {
+	v := newValidator()
+	v.validateWithErrPrefix("Storage", d.Storage)
+	return v.valid()
+}
+
+func (ds DockerStorage) validate() (bool, []error) {
+	v := newValidator()
+	v.validateWithErrPrefix("Direct LVM", ds.DirectLVM)
+	return v.valid()
+}
+
+func (dlvm DockerStorageDirectLVM) validate() (bool, []error) {
+	v := newValidator()
+	if dlvm.Enabled {
+		if dlvm.BlockDevice == "" {
+			v.addError(errors.New("DirectLVM is enabled, but no block device was specified"))
+		}
+		if !filepath.IsAbs(dlvm.BlockDevice) {
+			v.addError(errors.New("Path to the block device must be absolute"))
+		}
 	}
 	return v.valid()
 }

@@ -106,7 +106,7 @@ func (c *Client) prepareSession() error {
 
 // CreateNode is for creating a machine on AWS using the given AMI and InstanceType.
 // Returns the ID of the newly created machine.
-func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
+func (c Client) CreateNode(ami AMI, instanceType InstanceType, addBlockDevice bool) (string, error) {
 	api, err := c.getEC2APIClient()
 	if err != nil {
 		return "", err
@@ -128,6 +128,16 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType) (string, error) {
 		SubnetId:         aws.String(c.Config.SubnetID),
 		KeyName:          aws.String(c.Config.Keyname),
 		SecurityGroupIds: []*string{aws.String(c.Config.SecurityGroupID)},
+	}
+	if addBlockDevice {
+		ebs := ec2.BlockDeviceMapping{
+			DeviceName: aws.String("/dev/sdb"),
+			Ebs: &ec2.EbsBlockDevice{
+				DeleteOnTermination: aws.Bool(true),
+				VolumeSize:          aws.Int64(10),
+			},
+		}
+		req.BlockDeviceMappings = append(req.BlockDeviceMappings, &ebs)
 	}
 	res, err := api.RunInstances(req)
 	if err != nil {

@@ -23,6 +23,7 @@ type PlanAWS struct {
 	DockerRegistryPort           int
 	DockerRegistryCAPath         string
 	ModifyHostsFiles             bool
+	UseDirectLVM                 bool
 }
 
 const planAWSOverlay = `cluster:
@@ -44,7 +45,13 @@ const planAWSOverlay = `cluster:
   ssh:
     user: {{.SSHUser}}
     ssh_key: {{.SSHKeyFile}}
-    ssh_port: 22
+    ssh_port: 22{{if .UseDirectLVM}}
+docker:
+  storage:
+    direct_lvm:
+      enabled: true
+      block_device: "/dev/xvdb"
+      enable_deferred_deletion: false{{end}}
 docker_registry:
   setup_internal: {{.AutoConfiguredDockerRegistry}}
   address: {{.DockerRegistryIP}}

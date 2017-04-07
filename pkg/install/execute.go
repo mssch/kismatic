@@ -697,6 +697,12 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.DockerRegistryPort = "8443"
 	} // Else just use DockerHub
 
+	// Setup docker options
+	cc.DockerDirectLVMEnabled = p.Docker.Storage.DirectLVM.Enabled
+	if cc.DockerDirectLVMEnabled {
+		cc.DockerDirectLVMBlockDevicePath = p.Docker.Storage.DirectLVM.BlockDevice
+		cc.DockerDirectLVMDeferredDeletionEnabled = p.Docker.Storage.DirectLVM.EnableDeferredDeletion
+	}
 	if ae.options.RestartServices {
 		cc.EnableRestart()
 	}

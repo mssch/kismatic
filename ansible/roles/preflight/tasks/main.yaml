@@ -73,6 +73,10 @@
       loop_var: outer_item # Define this (even thought we don't use it) so that ansible doesn't complain.
     when: "'worker' in group_names"
 
+  - name: Validate devicemapper direct-lvm block device
+    include: direct_lvm_preflight.yaml
+    when: "ansible_os_family == 'RedHat' and docker_direct_lvm_enabled|bool == true and ('master' in group_names or 'worker' in group_names or 'ingress' in group_names or 'storage' in group_names)"
+
   # setup Kismatic Inspector
   - name: copy Kismatic Inspector to node
     copy:

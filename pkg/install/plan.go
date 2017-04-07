@@ -218,4 +218,7 @@ var commentMap = map[string]string{
 	"nfs":                      "A set of NFS volumes for use by on-cluster persistent workloads, managed by Kismatic.",
 	"nfs_host":                 "The host name or ip address of an NFS server.",
 	"mount_path":               "The mount path of an NFS share. Must start with /",
+	"direct_lvm":               "Configure devicemapper in direct-lvm mode (RHEL/CentOS only).",
+	"block_device":             "Path to the block device that will be used for direct-lvm mode. This device will be wiped and used exclusively by docker.",
+	"enable_deferred_deletion": "Set to true if you want to enable deferred deletion when using direct-lvm mode.",
 }

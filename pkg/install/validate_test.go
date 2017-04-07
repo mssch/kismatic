@@ -699,3 +699,43 @@ func TestDisconnectedInstallationPrereq(t *testing.T) {
 		fmt.Println(errs)
 	}
 }
+
+func TestValidateDockerStorageDirectLVM(t *testing.T) {
+	tests := []struct {
+		config DockerStorageDirectLVM
+		valid  bool
+	}{
+		{
+			config: DockerStorageDirectLVM{
+				Enabled: false,
+			},
+			valid: true,
+		},
+		{
+			config: DockerStorageDirectLVM{
+				Enabled: true,
+			},
+			valid: false,
+		},
+		{
+			config: DockerStorageDirectLVM{
+				Enabled:     true,
+				BlockDevice: "foo",
+			},
+			valid: false,
+		},
+		{
+			config: DockerStorageDirectLVM{
+				Enabled:     true,
+				BlockDevice: "/dev/sdb",
+			},
+			valid: true,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.config.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect valid, but got invalid", i)
+		}
+	}
+}

@@ -74,6 +74,13 @@ docker_certificates_key_file_name: docker-key.pem
 docker_certificates_cert_path: "{{ docker_install_dir }}/{{ docker_certificates_cert_file_name }}"
 docker_certificates_key_path: "{{ docker_install_dir }}/{{ docker_certificates_key_file_name }}"
 #===============================================================================
+# docker configuration
+# docker_direct_lvm_enabled: no default
+# docker_direct_lvm_block_device_path: no default
+# docker_direct_lvm_deferred_deletion_enabled: no default
+docker_device_mapper_thin_pool_autoextend_threshold: 80
+docker_device_mapper_thin_pool_autoextend_percent: 20
+#===============================================================================
 # calico
 # directories
 calico_dir: /etc/calico
