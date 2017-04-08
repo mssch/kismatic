@@ -1,0 +1,70 @@
+---
+  - name: install lvm2 package
+    package:
+      name: lvm2
+      state: present
+  - name: create docker volume group
+    lvg:
+      pvs: "{{ docker_direct_lvm_block_device_path }}"
+      state: present
+      vg: docker
+  - name: create thinpool logical volume
+    lvol:
+      lv: thinpool
+      vg: docker
+      size: 95%VG # Use 95% of the volume group for this logical volume
+      opts: --wipesignatures y
+  
+  # The following two tasks are used to enable this play to be idempotent. We detect whether
+  # the logical volume (LV) is already a thin LV using `lvs`, which returns a list
+  # of all the LVs. `lvs` also displays the LV attributes in the
+  # lvattr field. According to the `lvs` manpage, the first bit in the attribute list determines
+  # the LV type. A value of "t" in this bit means "thin pool".
+  # See `man lvs` for more details.
+  # Sample output when the "thinpool" LV is of type thin pool:
+  # > lvs -o lvname,lvattr --no-headings
+  # thinpool     twi-aot---
+  - name: list logical volumes
+    command: lvs -o lvname,lvattr --noheadings
+    register: logical_volume_list
+  - name: determine if thin pool conversion is necessary
+    set_fact:
+      requires_thin_pool_conversion: True
+    # Regex: match whitespace, the name of the thin pool, whitespace, and then any character other than 't' or ' '. 
+    # If the item doesn't match, this means that the "thinpool" LV is already a thin pool, 
+    # and no conversion is necessary.
+    when: item | match("\s+thinpool\s+[^t ]+")
+    with_items: "{{ logical_volume_list.stdout_lines }}"
+    # ^ TODO: lvs command can output json. Use json when we bump ansible version to 2.2
+    # when: item.lv_name == "thinpool" and item.lv_attr | match("^t")
+    # with_items: "{{ logical_volume_list.stdout | json_query('report.lv') }}"
+  
+  
+  # When a thin pool LV is created, two standard LVs are combined into a single thin pool LV.
+  # The two standard volumes are a data volume and a metadata volume. The resulting combined thin pool takes the name of the 
+  # data LV (in our case 'thinpool'), and the metadata volume is no longer "listed" as an LV.
+  # For this reason, we only create the "thinpoolmeta" LV if the thin pool LV has not been created yet.
+  # If we don't have this check, this would result in an extra LV called "thinpoolmeta" whenever this play 
+  # is re-run.
+  # More info can be found in `man lvmthin`
+  - name: create thinpoolmeta logical volume
+    lvol:
+      lv: thinpoolmeta
+      vg: docker
+      size: 1%VG # Use 1% of the volume group for this logical volume
+      opts: --wipesignatures y
+    when: requires_thin_pool_conversion is defined and requires_thin_pool_conversion|bool == true
+  
+  # This is where we create the thin pool LV, using the docker/thinpool LV
+  # for storing the data, and the docker/thinpoolmeta LV for the thin pool's metadata
+  - name: convert the pool to a thin pool
+    command: lvconvert -y --zero n -c 512K --thinpool docker/thinpool --poolmetadata docker/thinpoolmeta
+    when: requires_thin_pool_conversion is defined and requires_thin_pool_conversion|bool == true
+  - name: create auto extension profile
+    template:
+      src: docker-thinpool.profile
+      dest: /etc/lvm/profile/docker-thinpool.profile
+  - name: apply lvm profile
+    command: lvchange --metadataprofile docker-thinpool docker/thinpool
+  - name: enable monitoring to ensure autoextend executes
+    command: lvchange --metadataprofile docker-thinpool docker/thinpool
