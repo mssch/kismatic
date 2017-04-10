@@ -12,5 +12,4 @@
       - role: packages-docker
         when: allow_package_installation|bool == true
       - role: docker-storage
-        when: docker_direct_lvm_enabled|bool == true
       - role: docker
