@@ -252,10 +252,16 @@ Network policies for the local network on which nodes reside will need to be set
 
 <table>
   <tr>
-    <td>Purpose for rule</td>
-    <td>Target node types</td>
-    <td>Source IP range</td>
-    <td>Allow Rules</td>
+    <td><b>Purpose for rule</b></td>
+    <td><b>Target node types</b></td>
+    <td><b>Source IP range</b></td>
+    <td><b>Allow Rules</b></td>
+  </tr>
+  <tr>
+    <td>To allow communication with the kismatic inspector</td>
+    <td>all</td>
+    <td>installer node</td>
+    <td>tcp:8888</td>
   </tr>
   <tr>
     <td>To allow acces to the API server</td>
