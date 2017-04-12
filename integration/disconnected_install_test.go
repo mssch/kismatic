@@ -66,8 +66,8 @@ func disableInternetAccess(nodes []NodeDeets, sshKey string) error {
 		fmt.Sprintf("sudo iptables -A OUTPUT -p tcp --match multiport --dports %s -j ACCEPT", allowDestPorts),   // allow internal traffic for: inspector, etcd, docker registry
 		"sudo iptables -A OUTPUT -s 172.16.0.0/16 -j ACCEPT",
 		"sudo iptables -A OUTPUT -d 172.16.0.0/16 -j ACCEPT", // Allow pod network
-		"sudo iptables -A OUTPUT -s 172.17.0.0/16 -j ACCEPT",
-		"sudo iptables -A OUTPUT -d 172.17.0.0/16 -j ACCEPT", // Allow pod service network
+		"sudo iptables -A OUTPUT -s 172.20.0.0/16 -j ACCEPT",
+		"sudo iptables -A OUTPUT -d 172.20.0.0/16 -j ACCEPT", // Allow pod service network
 		"sudo iptables -P OUTPUT DROP",                       // drop everything else
 	}
 	return runViaSSH(cmd, nodes, sshKey, 1*time.Minute)
