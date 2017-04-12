@@ -24,6 +24,7 @@ type PlanAWS struct {
 	DockerRegistryCAPath         string
 	ModifyHostsFiles             bool
 	UseDirectLVM                 bool
+	ServiceCIDR                  string
 }
 
 const planAWSOverlay = `cluster:
@@ -34,7 +35,7 @@ const planAWSOverlay = `cluster:
   networking:
     type: overlay
     pod_cidr_block: 172.16.0.0/16
-    service_cidr_block: 172.20.0.0/16
+    service_cidr_block: {{if .ServiceCIDR}}{{.ServiceCIDR}}{{else}}172.20.0.0/16{{end}}
     policy_enabled: false
     update_hosts_files: {{.ModifyHostsFiles}}
   certificates:
