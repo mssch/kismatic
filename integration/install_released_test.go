@@ -19,6 +19,7 @@ var _ = Describe("Installing with previous version of Kismatic", func() {
 
 	installOpts := installOptions{
 		allowPackageInstallation: true,
+		serviceCIDR:              "172.16.0.0/16",
 	}
 
 	Context("using Ubuntu 16.04 LTS", func() {
