@@ -15,8 +15,8 @@ HOST_GOARCH = $(shell go env GOARCH)
 # Versions of external dependencies
 GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.1.4.0
-PROVISIONER_VERSION = v1.1.1
-KUBERANG_VERSION = v1.1.2
+PROVISIONER_VERSION = v1.2.0
+KUBERANG_VERSION = v1.1.3
 GO_VERSION = 1.8.0
 
 ifeq ($(origin GLIDE_GOOS), undefined)

@@ -12,7 +12,7 @@ var validPlan = Plan{
 		Networking: NetworkConfig{
 			Type:             "overlay",
 			PodCIDRBlock:     "172.16.0.0/16",
-			ServiceCIDRBlock: "172.17.0.0/16",
+			ServiceCIDRBlock: "172.20.0.0/16",
 		},
 		Certificates: CertsConfig{
 			Expiry: "17250h",

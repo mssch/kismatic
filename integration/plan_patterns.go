@@ -34,7 +34,7 @@ const planAWSOverlay = `cluster:
   networking:
     type: overlay
     pod_cidr_block: 172.16.0.0/16
-    service_cidr_block: 172.17.0.0/16
+    service_cidr_block: 172.20.0.0/16
     policy_enabled: false
     update_hosts_files: {{.ModifyHostsFiles}}
   certificates:
