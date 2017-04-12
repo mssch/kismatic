@@ -225,6 +225,20 @@ const defaultRuleSet = `---
   when: ["storage","ubuntu"]
   packageName: kubelet
   packageVersion: 1.6.0-1
+- kind: PackageDependency
+  when: ["worker","ubuntu"]
+  packageName: kubectl
+  packageVersion: 1.6.0-1
+- kind: PackageDependency
+  when: ["ingress","ubuntu"]
+  packageName: kubectl
+  packageVersion: 1.6.0-1
+- kind: PackageDependency
+  when: ["storage","ubuntu"]
+  packageName: kubectl
+  packageVersion: 1.6.0-1
+
+
 
 - kind: PackageDependency
   when: ["etcd", "centos"]
@@ -270,6 +284,19 @@ const defaultRuleSet = `---
   when: ["storage","centos"]
   packageName: kubelet
   packageVersion: 1.6.0_1-1
+- kind: PackageDependency
+  when: ["worker","centos"]
+  packageName: kubectl
+  packageVersion: 1.6.0_1-1
+- kind: PackageDependency
+  when: ["ingress","centos"]
+  packageName: kubectl
+  packageVersion: 1.6.0_1-1
+- kind: PackageDependency
+  when: ["storage","centos"]
+  packageName: kubectl
+  packageVersion: 1.6.0_1-1
+
 
 - kind: PackageDependency
   when: ["etcd", "rhel"]
@@ -292,15 +319,15 @@ const defaultRuleSet = `---
   packageName: kismatic-offline
   packageVersion: 1.6.0_1-1
 - kind: PackageDependency
-  when: ["worker","centos"]
+  when: ["worker","rhel"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
 - kind: PackageDependency
-  when: ["ingress","centos"]
+  when: ["ingress","rhel"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
 - kind: PackageDependency
-  when: ["storage","centos"]
+  when: ["storage","rhel"]
   packageName: docker-engine
   packageVersion: 1.11.2-1.el7.centos
 - kind: PackageDependency
@@ -315,6 +342,19 @@ const defaultRuleSet = `---
   when: ["storage","rhel"]
   packageName: kubelet
   packageVersion: 1.6.0_1-1
+- kind: PackageDependency
+  when: ["worker","rhel"]
+  packageName: kubectl
+  packageVersion: 1.6.0_1-1
+- kind: PackageDependency
+  when: ["ingress","rhel"]
+  packageName: kubectl
+  packageVersion: 1.6.0_1-1
+- kind: PackageDependency
+  when: ["storage","rhel"]
+  packageName: kubectl
+  packageVersion: 1.6.0_1-1
+
 
 # Gluster packages
 - kind: PackageDependency
