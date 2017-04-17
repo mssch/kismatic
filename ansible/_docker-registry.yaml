@@ -5,6 +5,11 @@
     become_method: sudo
     run_once: true
 
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
+      
     roles:
       - role: packages-offline
         when: allow_package_installation|bool == true and disconnected_installation|bool == true and seed_registry|bool == true # install when allowed to install and disconnected

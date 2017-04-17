@@ -8,8 +8,18 @@
     vars_files:
       - group_vars/all.yaml
 
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
+
     roles:
       - role: packages-docker
         when: allow_package_installation|bool == true
       - role: docker-storage
+      - role: docker-proxy
+        when: >
+          (https_proxy is defined and https_proxy != "") or
+          (http_proxy is defined and http_proxy != "") or
+          (no_proxy is defined and no_proxy != "")
       - role: docker

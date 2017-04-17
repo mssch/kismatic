@@ -84,6 +84,10 @@ type ClusterCatalog struct {
 			InfluxDBPVCName  string `yaml:"influxdb_pvc_name"`
 		}
 	}
+
+	HTTPProxy  string `yaml:"http_proxy"`
+	HTTPSProxy string `yaml:"https_proxy"`
+	NoProxy    string `yaml:"no_proxy"`
 }
 
 type NFSVolume struct {

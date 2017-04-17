@@ -9,6 +9,11 @@
       - group_vars/all.yaml
       - group_vars/etcd-k8s.yaml
 
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
+      
     roles:
       - role: packages-etcd
         when: allow_package_installation|bool == true
