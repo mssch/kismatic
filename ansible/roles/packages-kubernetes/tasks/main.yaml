@@ -20,7 +20,7 @@
   # DEB
   - name: install kubelet deb package
     apt:
-      name: kubelet={{ kismatic_apt_version }}
+      name: kubelet={{ kismatic_deb_version }}
       state: present
       default_release: kismatic-xenial
     register: kubelet_installation_deb
@@ -31,7 +31,7 @@
 
   - name: install kubectl deb package
     apt:
-      name: kubectl={{ kismatic_apt_version }}
+      name: kubectl={{ kismatic_deb_version }}
       state: present
       default_release: kismatic-xenial
     register: result
