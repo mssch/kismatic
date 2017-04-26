@@ -2,6 +2,7 @@ package install
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/apprenda/kismatic/pkg/ssh"
 )
@@ -32,6 +33,7 @@ type Cluster struct {
 	Name                     string
 	AdminPassword            string `yaml:"admin_password"`
 	AllowPackageInstallation bool   `yaml:"allow_package_installation"`
+	PackageRepoURLs          string `yaml:"package_repository_urls"`
 	DisconnectedInstallation bool   `yaml:"disconnected_installation"`
 	Networking               NetworkConfig
 	Certificates             CertsConfig
@@ -178,10 +180,19 @@ func (p *Plan) getNodeWithIP(ip string) (*Node, error) {
 func (p *Plan) GetSSHConnection(host string) (*SSHConnection, error) {
 	nodes := p.getAllNodes()
 
+	var isIP bool
+	if ip := net.ParseIP(host); ip != nil {
+		isIP = true
+	}
+
 	// try to find the node with the provided hostname
 	var foundNode *Node
 	for _, node := range nodes {
-		if node.Host == host {
+		nodeAddress := node.Host
+		if isIP {
+			nodeAddress = node.IP
+		}
+		if nodeAddress == host {
 			foundNode = &node
 			break
 		}
@@ -203,7 +214,11 @@ func (p *Plan) GetSSHConnection(host string) (*SSHConnection, error) {
 	}
 
 	if foundNode == nil {
-		return nil, fmt.Errorf("node %q not found in the plan", host)
+		notFoundErr := fmt.Errorf("node %q not found in the plan", host)
+		if isIP {
+			notFoundErr = fmt.Errorf("node with IP %q not found in the plan", host)
+		}
+		return nil, notFoundErr
 	}
 
 	return &SSHConnection{&p.Cluster.SSH, foundNode}, nil
