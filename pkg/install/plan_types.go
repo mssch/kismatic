@@ -3,6 +3,7 @@ package install
 import (
 	"fmt"
 	"net"
+	"strconv"
 
 	"github.com/apprenda/kismatic/pkg/ssh"
 )
@@ -109,6 +110,7 @@ type Plan struct {
 	Cluster        Cluster
 	Docker         Docker
 	DockerRegistry DockerRegistry `yaml:"docker_registry"`
+	Features       Features
 	Etcd           NodeGroup
 	Master         MasterNodeGroup
 	Worker         NodeGroup
@@ -136,6 +138,19 @@ type StorageVolume struct {
 type SSHConnection struct {
 	SSHConfig *SSHConfig
 	Node      *Node
+}
+
+type Features struct {
+	PackageManager PackageManager `yaml:"package_manager"`
+}
+
+type BaseFeature struct {
+	Enabled  bool
+	Provider string
+}
+
+type PackageManager struct {
+	BaseFeature `yaml:",inline"`
 }
 
 // GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.
@@ -238,11 +253,6 @@ func (p *Plan) GetSSHClient(host string) (ssh.Client, error) {
 	return client, nil
 }
 
-// DockerRegistryProvided returns true if a local registry will be available after install
-func (p *Plan) DockerRegistryProvided() bool {
-	return p.DockerRegistry.SetupInternal || p.DockerRegistry.Address != ""
-}
-
 func firstIfItExists(nodes []Node) *Node {
 	if len(nodes) > 0 {
 		return &nodes[0]
@@ -285,7 +295,28 @@ func hasIP(nodes *[]Node, ip string) bool {
 	return false
 }
 
-// ConfigureDockerRegistry returns true when confgiuring an external or on cluster registry is required
-func (p Plan) ConfigureDockerRegistry() bool {
+// ConfigureDockerWithPrivateRegistry returns true when confgiuring an external or on cluster registry is required
+func (p Plan) ConfigureDockerWithPrivateRegistry() bool {
 	return p.DockerRegistry.Address != "" || p.DockerRegistry.SetupInternal
+}
+
+func (p Plan) DockerRegistryAddress() string {
+	address := p.DockerRegistry.Address
+	// If external is not set use master[0]
+	if address == "" {
+		address = p.Master.Nodes[0].IP
+		// Use internal address if available
+		if p.Master.Nodes[0].InternalIP != "" {
+			address = p.Master.Nodes[0].InternalIP
+		}
+	}
+	return address
+}
+
+func (p Plan) DockerRegistryPort() string {
+	port := 8443
+	if p.DockerRegistry.Port != 0 {
+		port = p.DockerRegistry.Port
+	}
+	return strconv.Itoa(port)
 }
