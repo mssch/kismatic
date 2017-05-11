@@ -13,7 +13,6 @@ type NetworkConfig struct {
 	Type             string
 	PodCIDRBlock     string `yaml:"pod_cidr_block"`
 	ServiceCIDRBlock string `yaml:"service_cidr_block"`
-	PolicyEnabled    bool   `yaml:"policy_enabled"`
 	UpdateHostsFiles bool   `yaml:"update_hosts_files"`
 }
 

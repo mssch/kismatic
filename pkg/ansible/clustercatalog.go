@@ -15,7 +15,6 @@ type ClusterCatalog struct {
 	PodCIDR                   string `yaml:"kubernetes_pods_cidr"`
 	DNSServiceIP              string `yaml:"kubernetes_dns_service_ip"`
 	EnableModifyHosts         bool   `yaml:"modify_hosts_file"`
-	EnableCalicoPolicy        bool   `yaml:"enable_calico_policy"`
 	EnablePackageInstallation bool   `yaml:"allow_package_installation"`
 	PackageRepoURLs           string `yaml:"package_repository_urls"`
 	DisconnectedInstallation  bool   `yaml:"disconnected_installation"`
