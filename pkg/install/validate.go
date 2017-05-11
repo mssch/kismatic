@@ -386,9 +386,6 @@ func (dr *DockerRegistry) validate() (bool, []error) {
 	if dr.Address != "" && (dr.Port < 1 || dr.Port > 65535) {
 		v.addError(fmt.Errorf("Docker Registry port %d is invalid. Port must be in the range 1-65535", dr.Port))
 	}
-	if dr.Address != "" && (dr.CAPath == "") {
-		v.addError(fmt.Errorf("Docker Registry CA cannot be empty when registry address is provided"))
-	}
 	if _, err := os.Stat(dr.CAPath); dr.CAPath != "" && os.IsNotExist(err) {
 		v.addError(fmt.Errorf("Docker Registry CA file was not found at %q", dr.CAPath))
 	}
