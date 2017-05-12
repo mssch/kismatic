@@ -11,6 +11,28 @@ data:
   # Configure the Calico backend to use.
   calico_backend: "bird"
 
+  cni_network_config: |-
+    {
+        "name": "k8s-pod-network",
+        "type": "calico",
+        "etcd_endpoints": "__ETCD_ENDPOINTS__",
+        "etcd_key_file": "{{ kubernetes_certificates_key_path }}",
+        "etcd_cert_file": "{{ kubernetes_certificates_cert_path }}",
+        "etcd_ca_cert_file": "{{ kubernetes_certificates_ca_path }}",
+        "log_level": "info",
+        "ipam": {
+            "type": "calico-ipam"
+        },
+        "policy": {
+            "type": "k8s",
+            "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
+            "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
+        },
+        "kubernetes": {
+            "kubeconfig": "__KUBECONFIG_FILEPATH__"
+        }
+    }
+
   # If you're using TLS enabled etcd uncomment the following.
   # You must also populate the Secret below with these files.
   etcd_ca: "{{ kubernetes_certificates_ca_path }}"
@@ -131,11 +153,19 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
+            # The CNI network config to install on each node.
+            - name: CNI_NETWORK_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: calico-config
+                  key: cni_network_config
           securityContext:
             privileged: true
           volumeMounts:
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir
+            - mountPath: /host/etc/cni/net.d
+              name: cni-net-dir
             - mountPath: {{ kubernetes_install_dir }}
               name: etcd-certs
       volumes:
@@ -150,6 +180,9 @@ spec:
         - name: cni-bin-dir
           hostPath:
             path: /opt/cni/bin
+        - name: cni-net-dir
+          hostPath:
+            path: {{ network_plugin_dir }}
         # Mount in the etcd TLS secrets.
         - name: etcd-certs
           hostPath:
