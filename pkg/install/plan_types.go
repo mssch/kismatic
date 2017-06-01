@@ -8,6 +8,14 @@ import (
 	"github.com/apprenda/kismatic/pkg/ssh"
 )
 
+func PackageManagerProviders() []string {
+	return []string{"helm"}
+}
+
+func DefaultPackageManagerProvider() string {
+	return "helm"
+}
+
 // NetworkConfig describes the cluster's networking configuration
 type NetworkConfig struct {
 	Type             string
@@ -109,6 +117,7 @@ type Plan struct {
 	Cluster        Cluster
 	Docker         Docker
 	DockerRegistry DockerRegistry `yaml:"docker_registry"`
+	AddOns         AddOns         `yaml:"add_ons"`
 	Features       Features
 	Etcd           NodeGroup
 	Master         MasterNodeGroup
@@ -139,12 +148,17 @@ type SSHConnection struct {
 	Node      *Node
 }
 
-type Features struct {
+type AddOns struct {
 	PackageManager PackageManager `yaml:"package_manager"`
 }
 
+type Features struct {
+	PackageManager *PackageManager `yaml:"package_manager,omitempty"`
+}
+
 type PackageManager struct {
-	Enabled bool
+	Enabled  bool
+	Provider string
 }
 
 // GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.

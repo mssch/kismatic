@@ -76,7 +76,21 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 	if err = yaml.Unmarshal(d, p); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal plan: %v", err)
 	}
+
+	// read deprecated fields and set it the new version of the cluster file
+	readDeprecatedFields(p)
+
 	return p, nil
+}
+
+func readDeprecatedFields(p *Plan) {
+	// only set if not already being set by the user
+	// package_manager moved from features: to add_ons: after KET v1.3.3
+	if !p.AddOns.PackageManager.Enabled && p.Features.PackageManager != nil {
+		p.AddOns.PackageManager.Enabled = p.Features.PackageManager.Enabled
+		// KET v1.3.3 did not have a provider field
+		p.AddOns.PackageManager.Provider = DefaultPackageManagerProvider()
+	}
 }
 
 var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z]+)[ ]*:`)
@@ -158,9 +172,6 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 
 	// Set Certificate defaults
 	p.Cluster.Certificates.Expiry = "17520h"
-
-	// Features
-	p.Features.PackageManager.Enabled = true
 
 	// Set DockerRegistry defaults
 	p.DockerRegistry.Port = 8443

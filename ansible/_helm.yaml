@@ -1,7 +1,7 @@
 ---
   - hosts: master[0]
     any_errors_fatal: true
-    name: "{{ play_name | default('Create Required RBAC Role for Helm') }}"
+    name: "{{ play_name | default('Initialize Helm and Start Tiller') }}"
     remote_user: root
     become_method: sudo
     run_once: true
