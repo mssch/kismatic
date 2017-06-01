@@ -59,6 +59,9 @@ docker_registry:
   port: {{.DockerRegistryPort}}
   CA: {{.DockerRegistryCAPath}}
 add_ons:
+  heapster:
+    options: 
+      influxdb_pvc_name:
   package_manager:
     enabled: {{.EnableHelm}}
     provider: helm

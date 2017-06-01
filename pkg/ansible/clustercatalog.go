@@ -71,6 +71,8 @@ type ClusterCatalog struct {
 	LocalKubeconfigDirectory string `yaml:"local_kubeconfig_directory"`
 
 	EnableHelm bool `yaml:"enable_helm"`
+
+	AdditionalOptions map[string]string `yaml:",inline"`
 }
 
 type NFSVolume struct {

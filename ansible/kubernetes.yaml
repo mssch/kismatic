@@ -29,6 +29,7 @@
   - include: _calico-validate.yaml
   - include: _calico-network-policy.yaml
   - include: _kube-dns.yaml
+  - include: _heapster.yaml
   - include: _kube-dashboard.yaml
   - include: _helm.yaml
     when: enable_helm|bool == true

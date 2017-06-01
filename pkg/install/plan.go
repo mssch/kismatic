@@ -178,6 +178,10 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	// Set DockerRegistry defaults
 	p.DockerRegistry.Port = 8443
 
+	// Add-Ons
+	p.AddOns.HeapsterMonitoring.Options = make(map[string]string)
+	p.AddOns.HeapsterMonitoring.Options["influxdb_pvc_name"] = ""
+
 	// Generate entries for all node types
 	n := Node{}
 	for i := 0; i < p.Etcd.ExpectedCount; i++ {
@@ -281,4 +285,5 @@ var commentMap = map[string]string{
 	"nfs":                                                "A set of NFS volumes for use by on-cluster persistent workloads, managed by Kismatic.",
 	"nfs.nfs_host":                                       "The host name or ip address of an NFS server.",
 	"nfs.mount_path":                                     "The mount path of an NFS share. Must start with /",
+	"add_ons.heapster.options.influxdb_pvc_name":         "Provide the name of the persistent volume claim that you will create after installation. If not specified, the data will be stored in ephemeral storage.",
 }

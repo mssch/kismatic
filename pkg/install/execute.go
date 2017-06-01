@@ -756,8 +756,20 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 			Host: n.Host,
 		})
 	}
+
 	cc.EnableGluster = p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0
-	// add_ons.package_manager
+
+	// add_ons
+	// heapster
+	if p.AddOns.HeapsterMonitoring.Options != nil {
+		for k, v := range p.AddOns.HeapsterMonitoring.Options {
+			if cc.AdditionalOptions == nil {
+				cc.AdditionalOptions = make(map[string]string)
+			}
+			cc.AdditionalOptions[k] = v
+		}
+	}
+	// package_manager
 	if p.AddOns.PackageManager.Enabled {
 		switch p.AddOns.PackageManager.Provider {
 		case "helm":
