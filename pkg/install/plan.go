@@ -18,6 +18,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+const ket133PackageManagerProvider = "helm"
+
 type stack struct {
 	lock sync.Mutex
 	s    []string
@@ -86,10 +88,10 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 func readDeprecatedFields(p *Plan) {
 	// only set if not already being set by the user
 	// package_manager moved from features: to add_ons: after KET v1.3.3
-	if !p.AddOns.PackageManager.Enabled && p.Features.PackageManager != nil {
+	if !p.AddOns.PackageManager.Enabled && p.Features != nil && p.Features.PackageManager != nil {
 		p.AddOns.PackageManager.Enabled = p.Features.PackageManager.Enabled
 		// KET v1.3.3 did not have a provider field
-		p.AddOns.PackageManager.Provider = DefaultPackageManagerProvider()
+		p.AddOns.PackageManager.Provider = ket133PackageManagerProvider
 	}
 }
 

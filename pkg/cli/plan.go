@@ -78,8 +78,8 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 		return fmt.Errorf("The number of nfs volumes must be greater than or equal to zero")
 	}
 
-	fmt.Fprintln(out, "Cluster Add-Ons:")
-	packageManagerChoice, err := util.PromptForString(in, out, "Enable package manager (set to 'none' if not required)", install.DefaultPackageManagerProvider(), append(install.PackageManagerProviders(), "none"))
+	fmt.Fprintln(out, "\nSelect Add-Ons:")
+	packageManagerChoice, err := util.PromptForString(in, out, "Enable package manager", install.DefaultPackageManagerProvider, append(install.PackageManagerProviders(), "none"))
 	if err != nil {
 		return fmt.Errorf("Error reading cluster package manager choice: %v", err)
 	}
@@ -96,7 +96,7 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	if strings.ToLower(packageManagerChoice) == "none" {
 		packageManagerEnabled = "disabled"
 	}
-	fmt.Fprintf(out, "- %s cluster package manager: %s\n", packageManagerEnabled, packageManagerChoice)
+	fmt.Fprintf(out, "- %s cluster package manager with %q\n", packageManagerEnabled, packageManagerChoice)
 	fmt.Fprintln(out)
 
 	template := planTemplate{

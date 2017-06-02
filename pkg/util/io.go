@@ -32,7 +32,7 @@ func PromptForInt(in io.Reader, out io.Writer, prompt string, defaultValue int) 
 }
 
 func PromptForString(in io.Reader, out io.Writer, prompt string, defaultValue string, choices []string) (string, error) {
-	fmt.Fprintf(out, "=> %s %v: ", prompt, choices)
+	fmt.Fprintf(out, "=> %s (options %s, set to 'none' if not required), default [%v]: ", prompt, choices, defaultValue)
 	s := bufio.NewScanner(in)
 	// Scan the first token
 	s.Scan()
