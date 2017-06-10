@@ -20,6 +20,10 @@ var _ = Describe("kismatic", func() {
 		os.Chdir(dir)
 	})
 
+	AfterEach(func() {
+		assertClusterVersionIsCurrent()
+	})
+
 	Describe("calling kismatic with no verb", func() {
 		It("should output help text", func() {
 			c := exec.Command("./kismatic")
