@@ -11,7 +11,7 @@ import (
 const DefaultPackageManagerProvider = "helm"
 
 func PackageManagerProviders() []string {
-	return []string{"helm"}
+	return []string{"helm", ""}
 }
 
 // NetworkConfig describes the cluster's networking configuration
@@ -154,16 +154,21 @@ type AddOns struct {
 // Features is deprecated, required to support KET v1.3.3
 // When writing out a new plan file, this will be nil and will not appear
 type Features struct {
-	PackageManager *PackageManager `yaml:"package_manager,omitempty"`
+	PackageManager *DeprecatedPackageManager `yaml:"package_manager,omitempty"`
 }
 
 type HeapsterMonitoring struct {
-	Options map[string]string
+	Disabled bool
+	Options  map[string]string
 }
 
 type PackageManager struct {
-	Enabled  bool
+	Disabled bool
 	Provider string
+}
+
+type DeprecatedPackageManager struct {
+	Enabled bool
 }
 
 // GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.

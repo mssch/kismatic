@@ -802,35 +802,35 @@ func TestPackageManagerAddOn(t *testing.T) {
 	}{
 		{
 			p: PackageManager{
-				Enabled:  true,
+				Disabled: false,
 				Provider: "helm",
 			},
 			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  false,
+				Disabled: true,
 				Provider: "",
 			},
 			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  false,
+				Disabled: true,
 				Provider: "foo",
 			},
 			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  true,
+				Disabled: false,
 				Provider: "",
 			},
-			valid: false,
+			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  true,
+				Disabled: false,
 				Provider: "foo",
 			},
 			valid: false,

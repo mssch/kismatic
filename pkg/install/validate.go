@@ -226,7 +226,7 @@ func (f *AddOns) validate() (bool, []error) {
 
 func (p *PackageManager) validate() (bool, []error) {
 	v := newValidator()
-	if p.Enabled {
+	if !p.Disabled {
 		if !util.Contains(p.Provider, PackageManagerProviders()) {
 			v.addError(fmt.Errorf("Package Manager %q is not a valid option %v", p.Provider, PackageManagerProviders()))
 		}

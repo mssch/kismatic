@@ -761,19 +761,22 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 
 	// add_ons
 	// heapster
-	if p.AddOns.HeapsterMonitoring.Options != nil {
-		for k, v := range p.AddOns.HeapsterMonitoring.Options {
-			if cc.AdditionalOptions == nil {
-				cc.AdditionalOptions = make(map[string]string)
+	if !p.AddOns.HeapsterMonitoring.Disabled {
+		cc.Heapster.Enabled = true
+		if p.AddOns.HeapsterMonitoring.Options != nil {
+			cc.Heapster.Options = make(map[string]string)
+			for k, v := range p.AddOns.HeapsterMonitoring.Options {
+				cc.Heapster.Options[k] = v
 			}
-			cc.AdditionalOptions[k] = v
 		}
 	}
 	// package_manager
-	if p.AddOns.PackageManager.Enabled {
+	if !p.AddOns.PackageManager.Disabled {
+		// Currently only helm is supported
 		switch p.AddOns.PackageManager.Provider {
 		case "helm":
-			cc.EnableHelm = true
+		default:
+			cc.Helm.Enabled = true
 		}
 	}
 

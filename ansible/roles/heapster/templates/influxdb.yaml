@@ -36,9 +36,9 @@ spec:
           name: influxdb-storage
       volumes:
       - name: influxdb-storage
-{% if influxdb_pvc_name is defined and influxdb_pvc_name != "" %}
+{% if heapster.influxdb_pvc_name is defined and heapster.influxdb_pvc_name != "" %}
         persistentVolumeClaim:
-          claimName: "{{ influxdb_pvc_name }}"
+          claimName: "{{ heapster.influxdb_pvc_name }}"
 {% else %}
         emptyDir: {}
 {% endif %}
