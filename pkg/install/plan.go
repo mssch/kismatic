@@ -179,9 +179,6 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	p.DockerRegistry.Port = 8443
 
 	// Add-Ons
-	// Heapster
-	p.AddOns.HeapsterMonitoring.Options = make(map[string]string)
-	p.AddOns.HeapsterMonitoring.Options["influxdb_pvc_name"] = ""
 	// Package Manager
 	p.AddOns.PackageManager.Provider = "helm"
 

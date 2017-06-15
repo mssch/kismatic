@@ -159,7 +159,11 @@ type Features struct {
 
 type HeapsterMonitoring struct {
 	Disabled bool
-	Options  map[string]string
+	Options  HeapsterOptions
+}
+
+type HeapsterOptions struct {
+	InfluxDBPVName string `yaml:"influxdb_pvc_name"`
 }
 
 type PackageManager struct {

@@ -76,7 +76,9 @@ type ClusterCatalog struct {
 
 	Heapster struct {
 		Enabled bool
-		Options map[string]string `yaml:",inline"`
+		Options struct {
+			InfluxDBPVName string `yaml:"influxdb_pvc_name"`
+		}
 	}
 }
 
