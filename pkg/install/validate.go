@@ -220,7 +220,18 @@ func (s *SSHConfig) validate() (bool, []error) {
 
 func (f *AddOns) validate() (bool, []error) {
 	v := newValidator()
+	v.validate(&f.HeapsterMonitoring)
 	v.validate(&f.PackageManager)
+	return v.valid()
+}
+
+func (h *HeapsterMonitoring) validate() (bool, []error) {
+	v := newValidator()
+	if !h.Disabled {
+		if h.Options.HeapsterReplicas <= 0 {
+			v.addError(fmt.Errorf("Heapster replicas %d is not valid, must be greater than 0", h.Options.HeapsterReplicas))
+		}
+	}
 	return v.valid()
 }
 

@@ -26,4 +26,4 @@
 
   - name: validate heapster pods  # don't verify if user is going to create their own PVC/PV
     include: validate.yaml
-    when: heapster.influxdb_pvc_name is not defined or heapster.influxdb_pvc_name == ''
+    when: heapster.options.influxdb_pvc_name is not defined or heapster.options.influxdb_pvc_name == ''

@@ -159,11 +159,12 @@ type Features struct {
 
 type HeapsterMonitoring struct {
 	Disabled bool
-	Options  HeapsterOptions
+	Options  HeapsterOptions `yaml:"options"`
 }
 
 type HeapsterOptions struct {
-	InfluxDBPVName string `yaml:"influxdb_pvc_name"`
+	HeapsterReplicas int    `yaml:"heapster_replicas"`
+	InfluxDBPVName   string `yaml:"influxdb_pvc_name"`
 }
 
 type PackageManager struct {

@@ -161,11 +161,6 @@ kubernetes_certificates:
 etcd_networking_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_networking_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 etcd_k8s_cluster_ip_list: "{% for host in groups['etcd'] %}https://{{ host }}:{{ etcd_k8s_client_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 
-# add-ons
-# heapster
-heapster_replicas: 2
-monitoring_influxdb_replicas: 1
-
 #===============================================================================
 docker_registry_full_url: "{{ docker_registry_address }}:{{ docker_registry_port }}"
 load_private_images: "{{ configure_docker_with_private_registry is defined and configure_docker_with_private_registry|bool == true and disconnected_installation is defined and disconnected_installation|bool == true }}"

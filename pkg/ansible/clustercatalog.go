@@ -77,7 +77,8 @@ type ClusterCatalog struct {
 	Heapster struct {
 		Enabled bool
 		Options struct {
-			InfluxDBPVName string `yaml:"influxdb_pvc_name"`
+			HeapsterReplicas int    `yaml:"heapster_replicas"`
+			InfluxDBPVName   string `yaml:"influxdb_pvc_name"`
 		}
 	}
 }

@@ -179,6 +179,8 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	p.DockerRegistry.Port = 8443
 
 	// Add-Ons
+	// Heapster
+	p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
 	// Package Manager
 	p.AddOns.PackageManager.Provider = "helm"
 

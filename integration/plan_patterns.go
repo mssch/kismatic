@@ -61,7 +61,8 @@ docker_registry:
 add_ons:
   heapster:
     disabled: false
-    options: 
+    options:
+      heapster_replicas: 2
       influxdb_pvc_name:
   package_manager:
     disabled: {{.DisableHelm}}

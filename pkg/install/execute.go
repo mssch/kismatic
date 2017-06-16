@@ -763,6 +763,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	// heapster
 	if !p.AddOns.HeapsterMonitoring.Disabled {
 		cc.Heapster.Enabled = true
+		cc.Heapster.Options.HeapsterReplicas = p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas
 		cc.Heapster.Options.InfluxDBPVName = p.AddOns.HeapsterMonitoring.Options.InfluxDBPVName
 	}
 	// package_manager

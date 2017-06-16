@@ -27,7 +27,7 @@ metadata:
   annotations:
     kismatic/version: "{{ kismatic_short_version }}"
 spec:
-  replicas: {{ heapster_replicas }}
+  replicas: {{ heapster.options.heapster_replicas }}
   template:
     metadata:
       labels:

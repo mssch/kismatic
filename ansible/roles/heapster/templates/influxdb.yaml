@@ -21,7 +21,7 @@ metadata:
   annotations:
     kismatic/version: "{{ kismatic_short_version }}"
 spec:
-  replicas: {{ monitoring_influxdb_replicas }}
+  replicas: 1
   template:
     metadata:
       labels:
@@ -36,9 +36,9 @@ spec:
           name: influxdb-storage
       volumes:
       - name: influxdb-storage
-{% if heapster.influxdb_pvc_name is defined and heapster.influxdb_pvc_name != "" %}
+{% if heapster.options.influxdb_pvc_name is defined and heapster.options.influxdb_pvc_name != "" %}
         persistentVolumeClaim:
-          claimName: "{{ heapster.influxdb_pvc_name }}"
+          claimName: "{{ heapster.options.influxdb_pvc_name }}"
 {% else %}
         emptyDir: {}
 {% endif %}
