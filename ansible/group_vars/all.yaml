@@ -242,11 +242,11 @@ helm_priv_img: "{{ docker_registry_full_url }}/{{ helm_orig_img }}"
 helm_img: "{% if load_private_images|bool == true %}{{ helm_priv_img }}{% else %}{{ helm_orig_img }}{% endif %}"
 
 heapster_orig_img: gcr.io/google_containers/heapster-amd64:{{ heapster_version }}
-heapster_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/gcr.io/google_containers/heapster-amd64:{{ heapster_version }}"
+heapster_priv_img: "{{ docker_registry_full_url }}/{{ heapster_orig_img }}"
 heapster_img: "{% if load_private_images|bool == true %}{{ heapster_priv_img }}{% else %}{{ heapster_orig_img }}{% endif %}"
 
 influxdb_orig_img: gcr.io/google_containers/heapster-influxdb-amd64:{{ influxdb_version }}
-influxdb_priv_img: "{{ docker_registry_address }}:{{ docker_registry_port }}/gcr.io/google_containers/heapster-influxdb-amd64:{{ influxdb_version }}"
+influxdb_priv_img: "{{ docker_registry_full_url }}/{{ influxdb_orig_img }}"
 influxdb_img: "{% if load_private_images|bool == true %}{{ influxdb_priv_img }}{% else %}{{ influxdb_orig_img }}{% endif %}"
 
 # kismatic packages

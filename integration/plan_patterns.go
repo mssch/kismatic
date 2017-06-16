@@ -26,6 +26,8 @@ type PlanAWS struct {
 	UseDirectLVM                 bool
 	ServiceCIDR                  string
 	DisableHelm                  bool
+	HeapsterReplicas             int
+	HeapsterInfluxdbPVC          string
 }
 
 const planAWSOverlay = `cluster:
@@ -62,8 +64,8 @@ add_ons:
   heapster:
     disabled: false
     options:
-      heapster_replicas: 2
-      influxdb_pvc_name:
+      heapster_replicas: {{if eq .HeapsterReplicas 0}}2{{else}}{{.HeapsterReplicas}}{{end}}
+      influxdb_pvc_name: {{.HeapsterInfluxdbPVC}}
   package_manager:
     disabled: {{.DisableHelm}}
     provider: helm

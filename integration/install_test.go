@@ -168,7 +168,11 @@ var _ = Describe("kismatic", func() {
 					nodes.worker = allWorkers[0 : len(nodes.worker)-1]
 
 					// install cluster
-					installOpts := installOptions{allowPackageInstallation: true}
+					installOpts := installOptions{
+						allowPackageInstallation: true,
+						heapsterReplicas:         3,
+						heapsterInfluxdbPVC:      "influxdb",
+					}
 					err := installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())
 
@@ -197,6 +201,10 @@ var _ = Describe("kismatic", func() {
 					// 	// Run on worker because master uses unauth API endpoint (i.e. localhost:8080)
 					// 	return verifyRBAC(nodes.worker[0], sshKey)
 					// })
+
+					sub.It("should support heapster with persistent storage", func() error {
+						return verifyHeapster(nodes.master[0], sshKey)
+					})
 
 					// This test should always be last
 					sub.It("should still be a highly available cluster after removing a master node", func() error {

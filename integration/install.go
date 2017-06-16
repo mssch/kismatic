@@ -38,6 +38,8 @@ type installOptions struct {
 	modifyHostsFiles            bool
 	useDirectLVM                bool
 	serviceCIDR                 string
+	heapsterReplicas            int
+	heapsterInfluxdbPVC         string
 }
 
 func installKismaticMini(node NodeDeets, sshKey string) error {
@@ -90,6 +92,8 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		UseDirectLVM:                 installOpts.useDirectLVM,
 		ServiceCIDR:                  installOpts.serviceCIDR,
 		DisableHelm:                  disableHelm,
+		HeapsterReplicas:             installOpts.heapsterReplicas,
+		HeapsterInfluxdbPVC:          installOpts.heapsterInfluxdbPVC,
 	}
 	return plan
 }
