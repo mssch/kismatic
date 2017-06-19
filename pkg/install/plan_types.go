@@ -41,6 +41,7 @@ type Cluster struct {
 	AllowPackageInstallation bool   `yaml:"allow_package_installation"`
 	PackageRepoURLs          string `yaml:"package_repository_urls"`
 	DisconnectedInstallation bool   `yaml:"disconnected_installation"`
+	DisallowRegistrySeeding  bool   `yaml:"disallow_registry_seeding"`
 	Networking               NetworkConfig
 	Certificates             CertsConfig
 	SSH                      SSHConfig
@@ -319,8 +320,8 @@ func hasIP(nodes *[]Node, ip string) bool {
 }
 
 // ConfigureDockerWithPrivateRegistry returns true when confgiuring an external or on cluster registry is required
-func (p Plan) ConfigureDockerWithPrivateRegistry() bool {
-	return p.DockerRegistry.Address != "" || p.DockerRegistry.SetupInternal
+func (r DockerRegistry) ConfigureDockerWithPrivateRegistry() bool {
+	return r.Address != "" || r.SetupInternal
 }
 
 func (p Plan) DockerRegistryAddress() string {

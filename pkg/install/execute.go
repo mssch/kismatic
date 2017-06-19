@@ -705,6 +705,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		PackageRepoURLs:           p.Cluster.PackageRepoURLs,
 		KuberangPath:              filepath.Join("kuberang", "linux", "amd64", "kuberang"),
 		DisconnectedInstallation:  p.Cluster.DisconnectedInstallation,
+		SeedRegistry:              !p.Cluster.DisallowRegistrySeeding,
 		TargetVersion:             KismaticVersion.String(),
 	}
 	cc.LocalKubeconfigDirectory = filepath.Join(ae.options.GeneratedAssetsDirectory, "kubeconfig")
@@ -722,7 +723,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.LoadBalancedFQDN = p.Master.Nodes[0].InternalIP
 	}
 
-	if p.ConfigureDockerWithPrivateRegistry() {
+	if p.DockerRegistry.ConfigureDockerWithPrivateRegistry() {
 		cc.ConfigureDockerWithPrivateRegistry = true
 		cc.DockerRegistryAddress = p.DockerRegistryAddress()
 		cc.DockerRegistryPort = p.DockerRegistryPort()
