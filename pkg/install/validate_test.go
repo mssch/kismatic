@@ -23,6 +23,13 @@ var validPlan = Plan{
 			Port: 22,
 		},
 	},
+	AddOns: AddOns{
+		HeapsterMonitoring: HeapsterMonitoring{
+			Options: HeapsterOptions{
+				HeapsterReplicas: 2,
+			},
+		},
+	},
 	Etcd: NodeGroup{
 		ExpectedCount: 1,
 		Nodes: []Node{
@@ -795,6 +802,44 @@ func TestRepository(t *testing.T) {
 	}
 }
 
+func TestHeapsterAddOn(t *testing.T) {
+	tests := []struct {
+		h     HeapsterMonitoring
+		valid bool
+	}{
+		{
+			h: HeapsterMonitoring{
+				Options: HeapsterOptions{
+					HeapsterReplicas: 0,
+				},
+			},
+			valid: false,
+		},
+		{
+			h: HeapsterMonitoring{
+				Options: HeapsterOptions{
+					HeapsterReplicas: -1,
+				},
+			},
+			valid: false,
+		},
+		{
+			h: HeapsterMonitoring{
+				Options: HeapsterOptions{
+					HeapsterReplicas: 1,
+				},
+			},
+			valid: true,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.h.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}
+
 func TestPackageManagerAddOn(t *testing.T) {
 	tests := []struct {
 		p     PackageManager
@@ -802,35 +847,35 @@ func TestPackageManagerAddOn(t *testing.T) {
 	}{
 		{
 			p: PackageManager{
-				Enabled:  true,
+				Disabled: false,
 				Provider: "helm",
 			},
 			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  false,
+				Disabled: true,
 				Provider: "",
 			},
 			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  false,
+				Disabled: true,
 				Provider: "foo",
 			},
 			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  true,
+				Disabled: false,
 				Provider: "",
 			},
-			valid: false,
+			valid: true,
 		},
 		{
 			p: PackageManager{
-				Enabled:  true,
+				Disabled: false,
 				Provider: "foo",
 			},
 			valid: false,

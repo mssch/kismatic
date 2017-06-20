@@ -88,8 +88,8 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 func readDeprecatedFields(p *Plan) {
 	// only set if not already being set by the user
 	// package_manager moved from features: to add_ons: after KET v1.3.3
-	if !p.AddOns.PackageManager.Enabled && p.Features != nil && p.Features.PackageManager != nil {
-		p.AddOns.PackageManager.Enabled = p.Features.PackageManager.Enabled
+	if p.Features != nil && p.Features.PackageManager != nil {
+		p.AddOns.PackageManager.Disabled = !p.Features.PackageManager.Enabled
 		// KET v1.3.3 did not have a provider field
 		p.AddOns.PackageManager.Provider = ket133PackageManagerProvider
 	}
@@ -177,6 +177,12 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 
 	// Set DockerRegistry defaults
 	p.DockerRegistry.Port = 8443
+
+	// Add-Ons
+	// Heapster
+	p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
+	// Package Manager
+	p.AddOns.PackageManager.Provider = "helm"
 
 	// Generate entries for all node types
 	n := Node{}
@@ -281,4 +287,6 @@ var commentMap = map[string]string{
 	"nfs":                                                "A set of NFS volumes for use by on-cluster persistent workloads, managed by Kismatic.",
 	"nfs.nfs_host":                                       "The host name or ip address of an NFS server.",
 	"nfs.mount_path":                                     "The mount path of an NFS share. Must start with /",
+	"add_ons.heapster.options.influxdb_pvc_name":         "Provide the name of the persistent volume claim that you will create after installation. If not specified, the data will be stored in ephemeral storage.",
+	"add_ons.package_manager.provider":                   "Options: 'helm'",
 }

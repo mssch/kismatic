@@ -38,6 +38,8 @@ type installOptions struct {
 	modifyHostsFiles            bool
 	useDirectLVM                bool
 	serviceCIDR                 string
+	heapsterReplicas            int
+	heapsterInfluxdbPVC         string
 }
 
 func installKismaticMini(node NodeDeets, sshKey string) error {
@@ -53,7 +55,6 @@ func installKismaticMini(node NodeDeets, sshKey string) error {
 		SSHKeyFile:               sshKey,
 		SSHUser:                  sshUser,
 		AllowPackageInstallation: true,
-		EnableHelm:               true,
 	}
 	return installKismaticWithPlan(plan, sshKey)
 }
@@ -65,11 +66,11 @@ func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey 
 func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string) PlanAWS {
 	sshUser := nodes.master[0].SSHUser
 	masterDNS := nodes.master[0].PublicIP
-	enableHelm := true
+	disableHelm := false
 	if nodes.dnsRecord != nil && nodes.dnsRecord.Name != "" {
 		masterDNS = nodes.dnsRecord.Name
 		// disable helm if using Route53
-		enableHelm = false
+		disableHelm = true
 	}
 	plan := PlanAWS{
 		AllowPackageInstallation: installOpts.allowPackageInstallation,
@@ -90,7 +91,9 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		ModifyHostsFiles:             installOpts.modifyHostsFiles,
 		UseDirectLVM:                 installOpts.useDirectLVM,
 		ServiceCIDR:                  installOpts.serviceCIDR,
-		EnableHelm:                   enableHelm,
+		DisableHelm:                  disableHelm,
+		HeapsterReplicas:             installOpts.heapsterReplicas,
+		HeapsterInfluxdbPVC:          installOpts.heapsterInfluxdbPVC,
 	}
 	return plan
 }

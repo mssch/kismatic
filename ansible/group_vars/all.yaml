@@ -27,6 +27,8 @@ nginx_version: "stable-alpine"
 busybox_version: "latest"
 pause_version: "3.0"
 apprenda_tcp_healthz_version: "v1.0.0"
+heapster_version: "v1.3.0"
+influxdb_version: "v1.1.1"
 glusterfs_server_version_rhel: "3.8.7-1.el7"
 glusterfs_server_version_ubuntu: "3.8.7-ubuntu1~xenial1"
 # RHEL needs dash between name-version, Ubuntu needs equals sign between name=version
@@ -238,6 +240,14 @@ apprenda_tcp_healthz_img: "{% if load_private_images|bool == true %}{{ apprenda_
 helm_orig_img: gcr.io/kubernetes-helm/tiller:{{ helm_version }}
 helm_priv_img: "{{ docker_registry_full_url }}/{{ helm_orig_img }}"
 helm_img: "{% if load_private_images|bool == true %}{{ helm_priv_img }}{% else %}{{ helm_orig_img }}{% endif %}"
+
+heapster_orig_img: gcr.io/google_containers/heapster-amd64:{{ heapster_version }}
+heapster_priv_img: "{{ docker_registry_full_url }}/{{ heapster_orig_img }}"
+heapster_img: "{% if load_private_images|bool == true %}{{ heapster_priv_img }}{% else %}{{ heapster_orig_img }}{% endif %}"
+
+influxdb_orig_img: gcr.io/google_containers/heapster-influxdb-amd64:{{ influxdb_version }}
+influxdb_priv_img: "{{ docker_registry_full_url }}/{{ influxdb_orig_img }}"
+influxdb_img: "{% if load_private_images|bool == true %}{{ influxdb_priv_img }}{% else %}{{ influxdb_orig_img }}{% endif %}"
 
 # kismatic packages
 yum_repository_url: https://kismatic-packages-rpm.s3-accelerate.amazonaws.com

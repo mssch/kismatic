@@ -25,7 +25,9 @@ type PlanAWS struct {
 	ModifyHostsFiles             bool
 	UseDirectLVM                 bool
 	ServiceCIDR                  string
-	EnableHelm                   bool
+	DisableHelm                  bool
+	HeapsterReplicas             int
+	HeapsterInfluxdbPVC          string
 }
 
 const planAWSOverlay = `cluster:
@@ -59,8 +61,13 @@ docker_registry:
   port: {{.DockerRegistryPort}}
   CA: {{.DockerRegistryCAPath}}
 add_ons:
+  heapster:
+    disabled: false
+    options:
+      heapster_replicas: {{if eq .HeapsterReplicas 0}}2{{else}}{{.HeapsterReplicas}}{{end}}
+      influxdb_pvc_name: {{.HeapsterInfluxdbPVC}}
   package_manager:
-    enabled: {{.EnableHelm}}
+    disabled: {{.DisableHelm}}
     provider: helm
 etcd:
   expected_count: {{len .Etcd}}

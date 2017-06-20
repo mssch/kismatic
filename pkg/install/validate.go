@@ -220,13 +220,24 @@ func (s *SSHConfig) validate() (bool, []error) {
 
 func (f *AddOns) validate() (bool, []error) {
 	v := newValidator()
+	v.validate(&f.HeapsterMonitoring)
 	v.validate(&f.PackageManager)
+	return v.valid()
+}
+
+func (h *HeapsterMonitoring) validate() (bool, []error) {
+	v := newValidator()
+	if !h.Disabled {
+		if h.Options.HeapsterReplicas <= 0 {
+			v.addError(fmt.Errorf("Heapster replicas %d is not valid, must be greater than 0", h.Options.HeapsterReplicas))
+		}
+	}
 	return v.valid()
 }
 
 func (p *PackageManager) validate() (bool, []error) {
 	v := newValidator()
-	if p.Enabled {
+	if !p.Disabled {
 		if !util.Contains(p.Provider, PackageManagerProviders()) {
 			v.addError(fmt.Errorf("Package Manager %q is not a valid option %v", p.Provider, PackageManagerProviders()))
 		}

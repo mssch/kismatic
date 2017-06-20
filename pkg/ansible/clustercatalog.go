@@ -70,7 +70,17 @@ type ClusterCatalog struct {
 
 	LocalKubeconfigDirectory string `yaml:"local_kubeconfig_directory"`
 
-	EnableHelm bool `yaml:"enable_helm"`
+	Helm struct {
+		Enabled bool
+	}
+
+	Heapster struct {
+		Enabled bool
+		Options struct {
+			HeapsterReplicas int    `yaml:"heapster_replicas"`
+			InfluxDBPVCName  string `yaml:"influxdb_pvc_name"`
+		}
+	}
 }
 
 type NFSVolume struct {

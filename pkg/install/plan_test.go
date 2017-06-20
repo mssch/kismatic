@@ -10,9 +10,8 @@ func TestGenerateAlphaNumericPassword(t *testing.T) {
 }
 
 func TestReadWithDeprecated(t *testing.T) {
-	pm := &PackageManager{
-		Enabled:  true,
-		Provider: "helm",
+	pm := &DeprecatedPackageManager{
+		Enabled: true,
 	}
 	p := &Plan{}
 	p.Features = &Features{
@@ -21,7 +20,7 @@ func TestReadWithDeprecated(t *testing.T) {
 	readDeprecatedFields(p)
 
 	// features.package_manager should be set to add_ons.package_manager
-	if !p.AddOns.PackageManager.Enabled || p.AddOns.PackageManager.Provider != "helm" {
+	if p.AddOns.PackageManager.Disabled || p.AddOns.PackageManager.Provider != "helm" {
 		t.Errorf("Expected add_ons.package_manager to be read from features.package_manager")
 	}
 }

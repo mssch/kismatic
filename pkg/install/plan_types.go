@@ -11,7 +11,7 @@ import (
 const DefaultPackageManagerProvider = "helm"
 
 func PackageManagerProviders() []string {
-	return []string{"helm"}
+	return []string{"helm", ""}
 }
 
 // NetworkConfig describes the cluster's networking configuration
@@ -147,18 +147,33 @@ type SSHConnection struct {
 }
 
 type AddOns struct {
-	PackageManager PackageManager `yaml:"package_manager"`
+	HeapsterMonitoring HeapsterMonitoring `yaml:"heapster"`
+	PackageManager     PackageManager     `yaml:"package_manager"`
 }
 
 // Features is deprecated, required to support KET v1.3.3
 // When writing out a new plan file, this will be nil and will not appear
 type Features struct {
-	PackageManager *PackageManager `yaml:"package_manager,omitempty"`
+	PackageManager *DeprecatedPackageManager `yaml:"package_manager,omitempty"`
+}
+
+type HeapsterMonitoring struct {
+	Disabled bool
+	Options  HeapsterOptions `yaml:"options"`
+}
+
+type HeapsterOptions struct {
+	HeapsterReplicas int    `yaml:"heapster_replicas"`
+	InfluxDBPVCName  string `yaml:"influxdb_pvc_name"`
 }
 
 type PackageManager struct {
-	Enabled  bool
+	Disabled bool
 	Provider string
+}
+
+type DeprecatedPackageManager struct {
+	Enabled bool
 }
 
 // GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.
