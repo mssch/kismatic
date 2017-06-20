@@ -39,6 +39,18 @@ func verifyHeapster(master NodeDeets, sshKey string) error {
 		"heapster":          3,
 		"heapster-influxdb": 1,
 	}
+	return verifyDeployment(deployments, master, sshKey)
+}
+
+func verifyTiller(master NodeDeets, sshKey string) error {
+	// verify pods are up
+	deployments := map[string]int{
+		"tiller-deploy": 1,
+	}
+	return verifyDeployment(deployments, master, sshKey)
+}
+
+func verifyDeployment(deployments map[string]int, master NodeDeets, sshKey string) error {
 	for k, v := range deployments {
 		if err := retry.WithBackoff(func() error {
 			return runViaSSH([]string{fmt.Sprintf("sudo kubectl get deployment %s -n kube-system -o jsonpath='{.status.availableReplicas}' | grep %d", k, v)}, []NodeDeets{master}, sshKey, 1*time.Minute)

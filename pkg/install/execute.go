@@ -771,6 +771,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		// Currently only helm is supported
 		switch p.AddOns.PackageManager.Provider {
 		case "helm":
+			cc.Helm.Enabled = true
 		default:
 			cc.Helm.Enabled = true
 		}
