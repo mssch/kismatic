@@ -18,6 +18,7 @@ type PlanAWS struct {
 	HomeDirectory                string
 	AllowPackageInstallation     bool
 	DisconnectedInstallation     bool
+	DisallowRegistrySeeding      bool
 	AutoConfiguredDockerRegistry bool
 	DockerRegistryIP             string
 	DockerRegistryPort           int
@@ -35,6 +36,7 @@ const planAWSOverlay = `cluster:
   admin_password: abbazabba
   allow_package_installation: {{.AllowPackageInstallation}}
   disconnected_installation: {{.DisconnectedInstallation}}
+  disallow_registry_seeding: {{.DisallowRegistrySeeding}}
   networking:
     type: overlay
     pod_cidr_block: 172.16.0.0/16
