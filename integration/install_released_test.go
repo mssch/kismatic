@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const previousKismaticVersion = "v1.3.2"
+const previousKismaticVersion = "v1.3.3"
 
 // Test a specific released version of Kismatic
 var _ = Describe("Installing with previous version of Kismatic", func() {
