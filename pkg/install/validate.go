@@ -510,11 +510,11 @@ func (l disconnectedInstallation) validate() (bool, []error) {
 	v := newValidator()
 	if l.cluster.DisconnectedInstallation {
 		if !l.registry.ConfigureDockerWithPrivateRegistry() {
-			v.addError(fmt.Errorf("A docker registry is required when disconnected_installation is true"))
+			v.addError(fmt.Errorf("A container image registry is required when disconnected_installation is true"))
 		}
 		// Internal registry must always be seeded, there is no other source of these images that are required for an install
-		if l.cluster.DisallowRegistrySeeding && l.registry.SetupInternal {
-			v.addError(fmt.Errorf("Cannot set disallow_registry_seeding true when docker_registry.setup_internal is true"))
+		if l.cluster.DisableRegistrySeeding && l.registry.SetupInternal {
+			v.addError(fmt.Errorf("Cannot set disable_registry_seeding true when docker_registry.setup_internal is true"))
 		}
 	}
 	return v.valid()

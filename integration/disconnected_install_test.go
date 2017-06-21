@@ -43,7 +43,7 @@ var _ = Describe("disconnected install feature", func() {
 
 					By("Running kismatic install apply")
 					installOpts := installOptions{
-						allowPackageInstallation:    false,
+						disablePackageInstallation:  true,
 						disconnectedInstallation:    true,
 						modifyHostsFiles:            true,
 						autoConfigureDockerRegistry: true,
@@ -79,14 +79,14 @@ var _ = Describe("disconnected install feature", func() {
 				err = disableInternetAccess(nodes.allNodes(), sshKey)
 				FailIfError(err, "Failed to create iptable rule")
 
-				// disallowRegistrySeeding = false, run step to seed
+				// disableRegistrySeeding = false, run step to seed
 				installOpts := installOptions{
-					allowPackageInstallation: false,
-					disconnectedInstallation: true,
-					modifyHostsFiles:         true,
-					dockerRegistryCAPath:     caFile,
-					dockerRegistryIP:         nodes.etcd[0].PrivateIP,
-					dockerRegistryPort:       dockerRegistryPort,
+					disablePackageInstallation: true,
+					disconnectedInstallation:   true,
+					modifyHostsFiles:           true,
+					dockerRegistryCAPath:       caFile,
+					dockerRegistryIP:           nodes.etcd[0].PrivateIP,
+					dockerRegistryPort:         dockerRegistryPort,
 				}
 				By("Seeding images")
 				writePlanFile(buildPlan(nodes, installOpts, sshKey))
@@ -96,7 +96,7 @@ var _ = Describe("disconnected install feature", func() {
 				err = c.Run()
 				Expect(err).ToNot(HaveOccurred())
 
-				installOpts.disallowRegistrySeeding = true
+				installOpts.disableRegistrySeeding = true
 				By("Running kismatic install apply")
 				err = installKismatic(nodes, installOpts, sshKey)
 				Expect(err).ToNot(HaveOccurred())

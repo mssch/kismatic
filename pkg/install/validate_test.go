@@ -696,7 +696,7 @@ func TestDisconnectedInstallationPrereq(t *testing.T) {
 		{
 			cluster: Cluster{
 				DisconnectedInstallation: true,
-				DisallowRegistrySeeding:  true,
+				DisableRegistrySeeding:   true,
 			},
 			registry: DockerRegistry{
 				SetupInternal: true,
@@ -707,7 +707,7 @@ func TestDisconnectedInstallationPrereq(t *testing.T) {
 		{
 			cluster: Cluster{
 				DisconnectedInstallation: true,
-				DisallowRegistrySeeding:  true,
+				DisableRegistrySeeding:   true,
 			},
 			registry: DockerRegistry{
 				SetupInternal: false,
@@ -718,7 +718,7 @@ func TestDisconnectedInstallationPrereq(t *testing.T) {
 		{
 			cluster: Cluster{
 				DisconnectedInstallation: false,
-				DisallowRegistrySeeding:  true,
+				DisableRegistrySeeding:   true,
 			},
 			registry: DockerRegistry{
 				SetupInternal: true,

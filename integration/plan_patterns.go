@@ -16,9 +16,9 @@ type PlanAWS struct {
 	SSHUser                      string
 	SSHKeyFile                   string
 	HomeDirectory                string
-	AllowPackageInstallation     bool
+	DisablePackageInstallation   bool
 	DisconnectedInstallation     bool
-	DisallowRegistrySeeding      bool
+	DisableRegistrySeeding       bool
 	AutoConfiguredDockerRegistry bool
 	DockerRegistryIP             string
 	DockerRegistryPort           int
@@ -34,9 +34,9 @@ type PlanAWS struct {
 const planAWSOverlay = `cluster:
   name: kubernetes
   admin_password: abbazabba
-  allow_package_installation: {{.AllowPackageInstallation}}
+  disable_package_installation: {{.DisablePackageInstallation}}
   disconnected_installation: {{.DisconnectedInstallation}}
-  disallow_registry_seeding: {{.DisallowRegistrySeeding}}
+  disable_registry_seeding: {{.DisableRegistrySeeding}}
   networking:
     type: overlay
     pod_cidr_block: 172.16.0.0/16

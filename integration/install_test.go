@@ -81,9 +81,7 @@ var _ = Describe("kismatic", func() {
 		})
 
 		Context("when deploying a cluster with all node roles", func() {
-			installOpts := installOptions{
-				allowPackageInstallation: true,
-			}
+			installOpts := installOptions{}
 			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 				WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
 					err := installKismatic(nodes, installOpts, sshKey)
@@ -121,8 +119,7 @@ var _ = Describe("kismatic", func() {
 
 		Context("when using direct-lvm docker storage", func() {
 			installOpts := installOptions{
-				allowPackageInstallation: true,
-				useDirectLVM:             true,
+				useDirectLVM: true,
 			}
 			Context("when targetting CentOS", func() {
 				ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
@@ -161,7 +158,7 @@ var _ = Describe("kismatic", func() {
 			ItOnAWS("should still be a highly available cluster after removing a master node [slow]", func(aws infrastructureProvisioner) {
 				WithInfrastructureAndDNS(NodeCount{1, 2, 1, 0, 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
 					// install cluster
-					installOpts := installOptions{allowPackageInstallation: true}
+					installOpts := installOptions{}
 					err := installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())
 
@@ -189,9 +186,8 @@ var _ = Describe("kismatic", func() {
 
 					// install cluster
 					installOpts := installOptions{
-						allowPackageInstallation: true,
-						heapsterReplicas:         3,
-						heapsterInfluxdbPVC:      "influxdb",
+						heapsterReplicas:    3,
+						heapsterInfluxdbPVC: "influxdb",
 					}
 					err := installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())

@@ -36,15 +36,16 @@ type SSHConfig struct {
 
 // Cluster describes a Kubernetes cluster
 type Cluster struct {
-	Name                     string
-	AdminPassword            string `yaml:"admin_password"`
-	AllowPackageInstallation bool   `yaml:"allow_package_installation"`
-	PackageRepoURLs          string `yaml:"package_repository_urls"`
-	DisconnectedInstallation bool   `yaml:"disconnected_installation"`
-	DisallowRegistrySeeding  bool   `yaml:"disallow_registry_seeding"`
-	Networking               NetworkConfig
-	Certificates             CertsConfig
-	SSH                      SSHConfig
+	Name                       string
+	AdminPassword              string `yaml:"admin_password"`
+	DisablePackageInstallation bool   `yaml:"disable_package_installation"`
+	AllowPackageInstallation   *bool  `yaml:"allow_package_installation,omitempty"`
+	PackageRepoURLs            string `yaml:"package_repository_urls"`
+	DisconnectedInstallation   bool   `yaml:"disconnected_installation"`
+	DisableRegistrySeeding     bool   `yaml:"disable_registry_seeding"`
+	Networking                 NetworkConfig
+	Certificates               CertsConfig
+	SSH                        SSHConfig
 }
 
 // A Node is a compute unit, virtual or physical, that is part of the cluster
