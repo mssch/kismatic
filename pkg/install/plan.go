@@ -93,6 +93,10 @@ func readDeprecatedFields(p *Plan) {
 		// KET v1.3.3 did not have a provider field
 		p.AddOns.PackageManager.Provider = ket133PackageManagerProvider
 	}
+	// allow_package_installation renamed to disable_package_installation after KET v1.4.0
+	if p.Cluster.AllowPackageInstallation != nil {
+		p.Cluster.DisablePackageInstallation = !*p.Cluster.AllowPackageInstallation
+	}
 }
 
 var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z]+)[ ]*:`)
@@ -158,7 +162,7 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 		return fmt.Errorf("error generating random password: %v", err)
 	}
 	p.Cluster.AdminPassword = generatedAdminPass
-	p.Cluster.AllowPackageInstallation = true
+	p.Cluster.DisablePackageInstallation = false
 	p.Cluster.DisconnectedInstallation = false
 
 	// Set SSH defaults
@@ -259,9 +263,10 @@ func generateAlphaNumericPassword() (string, error) {
 
 var commentMap = map[string]string{
 	"cluster.admin_password":                             "This password is used to login to the Kubernetes Dashboard and can also be used for administration without a security certificate.",
-	"cluster.allow_package_installation":                 "When false, installation will not occur if any node is missing the correct deb/rpm packages. When true, the installer will attempt to install missing packages for you.",
+	"cluster.disable_package_installation":               "When true, installation will not occur if any node is missing the correct deb/rpm packages. When false, the installer will attempt to install missing packages for you.",
 	"cluster.package_repository_urls":                    "Comma-separated list of URLs of the repositories that should be used during installation. These repositories must contain the kismatic packages and all their transitive dependencies.",
-	"cluster.disconnected_installation":                  "Set to true if you have local package and Docker repositories seeded with Kismatic binaries.",
+	"cluster.disconnected_installation":                  "Set to true if you have already installed the required packages on the nodes or provided a local URL in package_repository_urls containing those packages.",
+	"cluster.disable_registry_seeding":                   "Set to true if you have seeded your registry with the required images for the installation.",
 	"cluster.networking.type":                            "overlay or routed. Routed pods can be addressed from outside the Kubernetes cluster; Overlay pods can only address each other.",
 	"cluster.networking.pod_cidr_block":                  "Kubernetes will assign pods IPs in this range. Do not use a range that is already in use on your local network!",
 	"cluster.networking.service_cidr_block":              "Kubernetes will assign services IPs in this range. Do not use a range that is already in use by your local network or pod network!",

@@ -29,8 +29,9 @@ func GetSSHKeyFile() (string, error) {
 }
 
 type installOptions struct {
-	allowPackageInstallation    bool
+	disablePackageInstallation  bool
 	disconnectedInstallation    bool
+	disableRegistrySeeding      bool
 	autoConfigureDockerRegistry bool
 	dockerRegistryIP            string
 	dockerRegistryPort          int
@@ -45,16 +46,15 @@ type installOptions struct {
 func installKismaticMini(node NodeDeets, sshKey string) error {
 	sshUser := node.SSHUser
 	plan := PlanAWS{
-		Etcd:                     []NodeDeets{node},
-		Master:                   []NodeDeets{node},
-		Worker:                   []NodeDeets{node},
-		Ingress:                  []NodeDeets{node},
-		Storage:                  []NodeDeets{node},
-		MasterNodeFQDN:           node.PublicIP,
-		MasterNodeShortName:      node.PublicIP,
-		SSHKeyFile:               sshKey,
-		SSHUser:                  sshUser,
-		AllowPackageInstallation: true,
+		Etcd:                []NodeDeets{node},
+		Master:              []NodeDeets{node},
+		Worker:              []NodeDeets{node},
+		Ingress:             []NodeDeets{node},
+		Storage:             []NodeDeets{node},
+		MasterNodeFQDN:      node.PublicIP,
+		MasterNodeShortName: node.PublicIP,
+		SSHKeyFile:          sshKey,
+		SSHUser:             sshUser,
 	}
 	return installKismaticWithPlan(plan, sshKey)
 }
@@ -73,8 +73,9 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		disableHelm = true
 	}
 	plan := PlanAWS{
-		AllowPackageInstallation: installOpts.allowPackageInstallation,
-		DisconnectedInstallation: installOpts.disconnectedInstallation,
+		DisablePackageInstallation: installOpts.disablePackageInstallation,
+		DisconnectedInstallation:   installOpts.disconnectedInstallation,
+		DisableRegistrySeeding:     installOpts.disableRegistrySeeding,
 		Etcd:                nodes.etcd,
 		Master:              nodes.master,
 		Worker:              nodes.worker,

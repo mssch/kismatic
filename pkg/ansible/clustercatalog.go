@@ -18,6 +18,7 @@ type ClusterCatalog struct {
 	EnablePackageInstallation bool   `yaml:"allow_package_installation"`
 	PackageRepoURLs           string `yaml:"package_repository_urls"`
 	DisconnectedInstallation  bool   `yaml:"disconnected_installation"`
+	SeedRegistry              bool   `yaml:"seed_registry"`
 	KuberangPath              string `yaml:"kuberang_path"`
 	LoadBalancedFQDN          string `yaml:"kubernetes_load_balanced_fqdn"`
 

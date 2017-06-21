@@ -392,7 +392,7 @@ func setPreflightOptions(p Plan, cc ansible.ClusterCatalog) (*ansible.ClusterCat
 	}
 	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
 	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
-	cc.EnablePackageInstallation = p.Cluster.AllowPackageInstallation
+	cc.EnablePackageInstallation = !p.Cluster.DisablePackageInstallation
 	return &cc, nil
 }
 
@@ -701,10 +701,11 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		PodCIDR:                   p.Cluster.Networking.PodCIDRBlock,
 		DNSServiceIP:              dnsIP,
 		EnableModifyHosts:         p.Cluster.Networking.UpdateHostsFiles,
-		EnablePackageInstallation: p.Cluster.AllowPackageInstallation,
+		EnablePackageInstallation: !p.Cluster.DisablePackageInstallation,
 		PackageRepoURLs:           p.Cluster.PackageRepoURLs,
 		KuberangPath:              filepath.Join("kuberang", "linux", "amd64", "kuberang"),
 		DisconnectedInstallation:  p.Cluster.DisconnectedInstallation,
+		SeedRegistry:              !p.Cluster.DisableRegistrySeeding,
 		TargetVersion:             KismaticVersion.String(),
 	}
 	cc.LocalKubeconfigDirectory = filepath.Join(ae.options.GeneratedAssetsDirectory, "kubeconfig")
@@ -722,7 +723,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.LoadBalancedFQDN = p.Master.Nodes[0].InternalIP
 	}
 
-	if p.ConfigureDockerWithPrivateRegistry() {
+	if p.DockerRegistry.ConfigureDockerWithPrivateRegistry() {
 		cc.ConfigureDockerWithPrivateRegistry = true
 		cc.DockerRegistryAddress = p.DockerRegistryAddress()
 		cc.DockerRegistryPort = p.DockerRegistryPort()
