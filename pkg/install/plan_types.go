@@ -160,8 +160,8 @@ type Features struct {
 }
 
 type HeapsterMonitoring struct {
-	Disabled bool
-	Options  HeapsterOptions `yaml:"options"`
+	Disable bool
+	Options HeapsterOptions `yaml:"options"`
 }
 
 type HeapsterOptions struct {
@@ -170,7 +170,7 @@ type HeapsterOptions struct {
 }
 
 type PackageManager struct {
-	Disabled bool
+	Disable  bool
 	Provider string
 }
 
