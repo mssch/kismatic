@@ -61,14 +61,6 @@ spec:
       - key: "CriticalAddonsOnly"
         operator: "Exists"
       volumes:
-      # Configures DNS to communicate with the master.
-      # Relies on a kubeconfig file on the worker.
-      - name: "worker-kubeconfig"
-        hostPath:
-          path: "{{ kubernetes_services_kubeconfig_path }}"
-      - name: "ssl-certs"
-        hostPath:
-          path: "{{ kubernetes_certificates.ca }}"
       - name: kube-dns-config
         configMap:
           name: kube-dns
@@ -108,7 +100,7 @@ spec:
         - --domain=cluster.local
         - --dns-port=10053
         - --config-dir=/kube-dns-config
-        - --kubecfg-file=/root/.kube/config
+        #- --kube-master-url={{ kubernetes_master_ip }}
         - --v=2
         # env:
         # - name: PROMETHEUS_PORT
@@ -120,14 +112,19 @@ spec:
         - containerPort: 10053
           name: dns-tcp-local
           protocol: TCP
+        # setting these vars to use with serviceaccount
+        # --kube-master-url does not work with error:
+        #  x509: failed to load system roots and no roots provided
+        # CA does not get mounted correctly with that flag
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ kubernetes_load_balanced_fqdn }}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "{{ kubernetes_master_secure_port }}"
         # - containerPort: 10055
         #   name: metrics
         #   protocol: TCP
         volumeMounts:
-        - mountPath: {{ kubernetes_certificates.ca }}
-          name: "ssl-certs"
-        - mountPath: /root/.kube/config
-          name: "worker-kubeconfig"
         - name: kube-dns-config
           mountPath: /kube-dns-config
       - name: dnsmasq
@@ -166,12 +163,8 @@ spec:
             cpu: 150m
             memory: 20Mi
         volumeMounts:
-        - mountPath: {{ kubernetes_certificates.ca }}
-          name: "ssl-certs"
-        - mountPath: /root/.kube/config
-          name: "worker-kubeconfig"
         - name: kube-dns-config
-          mountPath: /kube-dns-config
+          mountPath: /etc/k8s/dns/dnsmasq-nanny
       - name: sidecar
         image: "{{ kubedns_sidecar_img }}"
         livenessProbe:

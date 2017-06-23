@@ -4,7 +4,7 @@
   - include: _hosts.yaml
     when: modify_hosts_file|bool == true
   - include: _certs.yaml
-  - include: _kube-config.yaml
+  - include: _kubeconfig.yaml
   - include: _certs-etcd.yaml
   - include: _packages-repo.yaml
     when: allow_package_installation|bool == true

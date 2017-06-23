@@ -24,7 +24,7 @@
 
   # kubernetes
   - include: _kube-apiserver-stop.yaml 
-  - include: _kube-config.yaml upgrading=true
+  - include: _kubeconfig.yaml upgrading=true
   - include: _kubelet.yaml play_name="Upgrade Kubernetes Kubelet" upgrading=true
   - include: _kube-apiserver.yaml play_name="Upgrade Kubernetes API Server" upgrading=true
   - include: _kube-scheduler.yaml play_name="Upgrade Kubernetes Scheduler" upgrading=true
