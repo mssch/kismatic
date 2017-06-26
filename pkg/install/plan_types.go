@@ -46,6 +46,7 @@ type Cluster struct {
 	Networking                 NetworkConfig
 	Certificates               CertsConfig
 	SSH                        SSHConfig
+	APIServerOptions           APIServerOptions `yaml:"kube_apiserver"`
 }
 
 // A Node is a compute unit, virtual or physical, that is part of the cluster

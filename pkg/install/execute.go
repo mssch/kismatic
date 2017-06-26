@@ -707,6 +707,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		DisconnectedInstallation:  p.Cluster.DisconnectedInstallation,
 		SeedRegistry:              !p.Cluster.DisableRegistrySeeding,
 		TargetVersion:             KismaticVersion.String(),
+		APIServerOptions:          p.Cluster.APIServerOptions.Overrides,
 	}
 	cc.LocalKubeconfigDirectory = filepath.Join(ae.options.GeneratedAssetsDirectory, "kubeconfig")
 	// absolute path required for ansible

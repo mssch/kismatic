@@ -1,0 +1,19 @@
+cluster:
+  name: my_cluster_name
+  admin_password: secret_admin_password
+  disable_package_installation: false
+  disconnected_installation: false
+  networking:
+    type: overlay
+    pod_cidr_block: 172.16.0.0/16
+    service_cidr_block: 172.17.0.0/16
+    update_hosts_files: false
+  certificates:
+    expiry: 17520h
+  ssh:
+    user: kismatic
+    ssh_key: .ssh/id_rsa
+    ssh_port: 22
+  kube_apiserver:
+    option_overrides:
+      "runtime-config": "beta/v2api=true,alpha/v1api=true"
