@@ -10,6 +10,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+const proxyPort = 3128
+
 var _ = Describe("disconnected install feature", func() {
 	BeforeEach(func() {
 		dir := setupTestWorkingDir()
@@ -103,6 +105,62 @@ var _ = Describe("disconnected install feature", func() {
 			})
 		})
 	})
+
+	Describe("installing on machines with no internet access but with a proxy", func() {
+		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
+			WithInfrastructure(NodeCount{2, 1, 1, 1, 1}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
+				// setup cluster nodes, and a proxy node
+				clusterNodes := provisionedNodes{}
+				clusterNodes.etcd = []NodeDeets{nodes.etcd[1]}
+				clusterNodes.master = nodes.master
+				clusterNodes.worker = nodes.worker
+				clusterNodes.ingress = nodes.ingress
+				clusterNodes.storage = nodes.storage
+				proxyNode := nodes.etcd[0]
+
+				By("Installing the proxy")
+				err := runViaSSH([]string{"sudo yum install -y squid"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
+				FailIfError(err, "Failed install proxy")
+				err = runViaSSH([]string{"sudo sed -i -e 's/http_access deny all/http_access allow all/g' /etc/squid/squid.conf"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
+				FailIfError(err, "Failed modify squif.conf")
+				err = runViaSSH([]string{"sudo systemctl restart squid"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
+				FailIfError(err, "Failed install proxy")
+
+				By("Disabling internet access")
+				err = disableInternetAccess(clusterNodes.allNodes(), sshKey)
+				FailIfError(err, "Failed to create iptable rules")
+
+				if err = verifyNoInternetAccess(clusterNodes.allNodes(), sshKey); err == nil {
+					Fail("was able to ping google with outgoing connections blocked")
+				}
+
+				By("Enabling proxy access")
+				err = enableProxyConnection(clusterNodes.allNodes(), sshKey)
+				FailIfError(err, "Failed to create iptable rules")
+
+				By("Verifying connectivity to google.com")
+				err = runViaSSH([]string{fmt.Sprintf("export http_proxy=%s:%d && curl --head www.google.com", proxyNode.PrivateIP, proxyPort)}, clusterNodes.allNodes(), sshKey, 1*time.Minute)
+				FailIfError(err, "Failed to curl google with proxy")
+
+				By("Running kismatic install apply")
+				// don't use the proxy for cluster communication
+				var ips string
+				delimiter := ","
+				for _, n := range clusterNodes.allNodes() {
+					ips = ips + n.Hostname + delimiter + n.PrivateIP + delimiter + n.PublicIP + delimiter
+				}
+
+				installOpts := installOptions{
+					modifyHostsFiles: true,
+					httpProxy:        fmt.Sprintf("%s:%d", proxyNode.PrivateIP, proxyPort),
+					httpsProxy:       fmt.Sprintf("%s:%d", proxyNode.PrivateIP, proxyPort),
+					noProxy:          ips,
+				}
+				err = installKismatic(clusterNodes, installOpts, sshKey)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+	})
 })
 
 func disableInternetAccess(nodes []NodeDeets, sshKey string) error {
@@ -119,6 +177,16 @@ func disableInternetAccess(nodes []NodeDeets, sshKey string) error {
 		"sudo iptables -A OUTPUT -s 172.20.0.0/16 -j ACCEPT",
 		"sudo iptables -A OUTPUT -d 172.20.0.0/16 -j ACCEPT", // Allow pod service network
 		"sudo iptables -P OUTPUT DROP",                       // drop everything else
+	}
+	return runViaSSH(cmd, nodes, sshKey, 1*time.Minute)
+}
+
+func enableProxyConnection(nodes []NodeDeets, sshKey string) error {
+	By("Allowing connection to proxy")
+	// proxy server running on 3128
+	cmd := []string{
+		fmt.Sprintf("sudo iptables -A OUTPUT -p tcp --match multiport --sports %d -j ACCEPT", proxyPort),
+		fmt.Sprintf("sudo iptables -A OUTPUT -p tcp --match multiport --dports %d -j ACCEPT", proxyPort),
 	}
 	return runViaSSH(cmd, nodes, sshKey, 1*time.Minute)
 }

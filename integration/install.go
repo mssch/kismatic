@@ -37,6 +37,9 @@ type installOptions struct {
 	dockerRegistryPort          int
 	dockerRegistryCAPath        string
 	modifyHostsFiles            bool
+	httpProxy                   string
+	httpsProxy                  string
+	noProxy                     string
 	useDirectLVM                bool
 	serviceCIDR                 string
 	heapsterReplicas            int
@@ -90,6 +93,9 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		DockerRegistryIP:             installOpts.dockerRegistryIP,
 		DockerRegistryPort:           installOpts.dockerRegistryPort,
 		ModifyHostsFiles:             installOpts.modifyHostsFiles,
+		HTTPProxy:                    installOpts.httpProxy,
+		HTTPSProxy:                   installOpts.httpsProxy,
+		NoProxy:                      installOpts.noProxy,
 		UseDirectLVM:                 installOpts.useDirectLVM,
 		ServiceCIDR:                  installOpts.serviceCIDR,
 		DisableHelm:                  disableHelm,
