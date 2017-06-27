@@ -142,6 +142,9 @@ type StorageVolume struct {
 	StorageClass string
 	// AllowAddresses is a list of address wildcards that have access to the volume
 	AllowAddresses []string
+	// ReclaimPolicy is the persistent volume's reclaim policy
+	// ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#reclaim-policy
+	ReclaimPolicy string
 }
 
 type SSHConnection struct {

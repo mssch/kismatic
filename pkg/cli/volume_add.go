@@ -19,6 +19,7 @@ type volumeAddOptions struct {
 	verbose            bool
 	outputFormat       string
 	generatedAssetsDir string
+	reclaimPolicy      string
 }
 
 // NewCmdVolumeAdd returns the command for adding storage volumes
@@ -33,9 +34,9 @@ This function requires a target cluster that has storage nodes.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return doVolumeAdd(out, opts, *planFile, args)
 		},
-		Example: `  Create a distributed, replicated volume,
-  named "storage01", a kubernetes StorageClass of "durable", with a 10 GB quota,
-  grant access to any IP address starting with 10.10.
+		Example: `  # Create a 10GB distributed and replicated volume named "storage01"
+  # with StorageClass "durable". Grant access to the volume to any client with an IP
+  # that starts with 10.10.
   kismatic volume add 10 storage01 -r 2 -d 2 -c="durable" -a 10.10.*.*
 		`,
 	}
@@ -46,17 +47,12 @@ This function requires a target cluster that has storage nodes.`,
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging")
 	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", `output format (options "simple"|"raw")`)
 	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
+	cmd.Flags().StringVar(&opts.reclaimPolicy, "reclaim-policy", "Retain", `Persistent volume reclaim policy (options "Retain|Recycle|Delete")`)
 	return cmd
 }
 
 func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []string) error {
-	// Setup ansible
-	planner := &install.FilePlanner{File: planFile}
-	if !planner.PlanExists() {
-		return planFileNotFoundErr{filename: planFile}
-	}
-
-	// verify command
+	// get volume name and size from arguments
 	var volumeName string
 	var volumeSizeStrGB string
 	switch len(args) {
@@ -74,6 +70,12 @@ func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []s
 	volumeSizeGB, err := strconv.Atoi(volumeSizeStrGB)
 	if err != nil {
 		return errors.New("the volume size provided is not valid")
+	}
+
+	// setup ansible for execution
+	planner := &install.FilePlanner{File: planFile}
+	if !planner.PlanExists() {
+		return planFileNotFoundErr{filename: planFile}
 	}
 	execOpts := install.ExecutorOptions{
 		OutputFormat: opts.outputFormat,
@@ -108,6 +110,7 @@ func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []s
 		ReplicateCount:    opts.replicaCount,
 		DistributionCount: opts.distributionCount,
 		StorageClass:      opts.storageClass,
+		ReclaimPolicy:     opts.reclaimPolicy,
 	}
 	if opts.allowAddress != nil {
 		v.AllowAddresses = opts.allowAddress

@@ -480,6 +480,10 @@ func (sv StorageVolume) validate() (bool, []error) {
 			v.addError(fmt.Errorf("Invalid address %q in the list of allowed addresses", a))
 		}
 	}
+	reclaimPolicies := []string{"retain", "recycle", "delete"}
+	if !util.Contains(strings.ToLower(sv.ReclaimPolicy), reclaimPolicies) {
+		v.addError(fmt.Errorf("%q is not a valid reclaim policy. Valid reclaim policies are: %v", sv.ReclaimPolicy, reclaimPolicies))
+	}
 	return v.valid()
 }
 

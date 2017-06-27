@@ -59,6 +59,7 @@ type ClusterCatalog struct {
 	VolumeQuotaBytes        int    `yaml:"volume_quota_bytes"`
 	VolumeMount             string `yaml:"volume_mount"`
 	VolumeAllowedIPs        string `yaml:"volume_allow_ips"`
+	VolumeReclaimPolicy     string `yaml:"volume_reclaim_policy"`
 
 	TargetVersion string `yaml:"kismatic_short_version"`
 

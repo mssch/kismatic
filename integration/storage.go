@@ -97,15 +97,15 @@ func verifyGlusterVolume(storageNode NodeDeets, sshKey string, name string, repl
 	FailIfError(err, "Gluster volume verification failed")
 }
 
-func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, allowAddress string) error {
+func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, reclaimPolicy string) error {
 	cmd := exec.Command("./kismatic", "volume", "add",
 		"-f", planFile.Name(),
 		"--replica-count", strconv.Itoa(replicationCount),
 		"--distribution-count", strconv.Itoa(distributionCount),
 		"-c", "kismatic-test",
 		"1", name)
-	if allowAddress != "" {
-		cmd.Args = append(cmd.Args, "--allow-address", allowAddress)
+	if reclaimPolicy != "" {
+		cmd.Args = append(cmd.Args, "--reclaim-policy", reclaimPolicy)
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -195,10 +195,19 @@ func testStatefulWorkload(nodes provisionedNodes, sshKey string) error {
 	if err != nil {
 		return fmt.Errorf("Failed to open plan file: %v", err)
 	}
-	err = createVolume(plan, "kis-int-test", 2, 1, "")
+	reclaimPolicy := "Recycle"
+	err = createVolume(plan, "kis-int-test", 2, 1, reclaimPolicy)
 	if err != nil {
 		return fmt.Errorf("Failed to create volume: %v", err)
 	}
+
+	By("Verifying the reclaim policy on the Persistent Volume")
+	reclaimPolicyCmd := "sudo kubectl get pv kis-int-test -o jsonpath={.spec.persistentVolumeReclaimPolicy}"
+	err = runViaSSH([]string{reclaimPolicyCmd, fmt.Sprintf("if [ \"`%s`\" = \"%s\" ]; then exit 0; else exit 1; fi", reclaimPolicyCmd, reclaimPolicy)}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("Found an unexpected reclaim policy. Expected %s", reclaimPolicy)
+	}
+
 	By("Claiming the storage volume on the cluster")
 	if err = kubeCreate("pvc.yaml"); err != nil {
 		return fmt.Errorf("Failed to create pvc: %v", err)
