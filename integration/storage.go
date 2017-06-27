@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -47,7 +48,7 @@ func testAddVolumeVerifyGluster(aws infrastructureProvisioner, distro linuxDistr
 		for _, test := range tests {
 			By(fmt.Sprintf("Setting up a volume with Replica = %d, Distributed = %d", test.replicaCount, test.distributionCount))
 			volumeName := fmt.Sprintf("gv-r%d-d%d", test.replicaCount, test.distributionCount)
-			err = createVolume(planFile, volumeName, test.replicaCount, test.distributionCount, "")
+			err = createVolume(planFile, volumeName, test.replicaCount, test.distributionCount, "", nil)
 			FailIfError(err, "Failed to create volume")
 
 			By("Verifying gluster volume properties")
@@ -55,7 +56,7 @@ func testAddVolumeVerifyGluster(aws infrastructureProvisioner, distro linuxDistr
 		}
 
 		By("Creating a volume which allows access to nodes in the cluster")
-		err = createVolume(planFile, "foo", 1, 1, "")
+		err = createVolume(planFile, "foo", 1, 1, "", nil)
 		FailIfError(err, "Failed to create volume")
 
 		By("Installing NFS library on out-of-cluster node")
@@ -97,7 +98,7 @@ func verifyGlusterVolume(storageNode NodeDeets, sshKey string, name string, repl
 	FailIfError(err, "Gluster volume verification failed")
 }
 
-func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, reclaimPolicy string) error {
+func createVolume(planFile *os.File, name string, replicationCount int, distributionCount int, reclaimPolicy string, accessModes []string) error {
 	cmd := exec.Command("./kismatic", "volume", "add",
 		"-f", planFile.Name(),
 		"--replica-count", strconv.Itoa(replicationCount),
@@ -106,6 +107,9 @@ func createVolume(planFile *os.File, name string, replicationCount int, distribu
 		"1", name)
 	if reclaimPolicy != "" {
 		cmd.Args = append(cmd.Args, "--reclaim-policy", reclaimPolicy)
+	}
+	if len(accessModes) >= 1 {
+		cmd.Args = append(cmd.Args, "--access-modes", strings.Join(accessModes, ","))
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -150,6 +154,7 @@ func standupGlusterCluster(planFile *os.File, nodes []NodeDeets, sshKey string, 
 	err = copyFileToRemote(kubectlDummyFile.Name(), "~/kubectl", plan.Master[0], sshKey, 1*time.Minute)
 	FailIfError(err, "Error copying kubectl dummy")
 	err = runViaSSH([]string{"sudo mv ~/kubectl /usr/bin/kubectl", "sudo chmod +x /usr/bin/kubectl"}, nodes[0:1], sshKey, 1*time.Minute)
+	FailIfError(err, "Error setting permissions on kubectl dummy")
 
 	By("Running the packages-repo play with the plan")
 	cmd := exec.Command("./kismatic", "install", "step", "_packages-repo.yaml", "-f", planFile.Name())
@@ -164,20 +169,6 @@ func standupGlusterCluster(planFile *os.File, nodes []NodeDeets, sshKey string, 
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	FailIfError(err, "Error running storage play")
-}
-
-func testVolumeAdd(masterNode NodeDeets, sshKey string) {
-	By("Adding a volume using kismatic")
-	volName := "kismatic-test-volume"
-	cmd := exec.Command("./kismatic", "volume", "add", "-f", "kismatic-testing.yaml", "--replica-count", "1", "1", volName)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	FailIfError(err, "Error creating a new volume")
-
-	By("Verifying Kuberntes PV was created")
-	err = runViaSSH([]string{"sudo kubectl get pv " + volName}, []NodeDeets{masterNode}, sshKey, 1*time.Minute)
-	FailIfError(err, "Error verifying if PV gv0 was created")
 }
 
 func testStatefulWorkload(nodes provisionedNodes, sshKey string) error {
@@ -196,7 +187,8 @@ func testStatefulWorkload(nodes provisionedNodes, sshKey string) error {
 		return fmt.Errorf("Failed to open plan file: %v", err)
 	}
 	reclaimPolicy := "Recycle"
-	err = createVolume(plan, "kis-int-test", 2, 1, reclaimPolicy)
+	accessModes := []string{"ReadWriteMany", "ReadOnlyMany"}
+	err = createVolume(plan, "kis-int-test", 2, 1, reclaimPolicy, accessModes)
 	if err != nil {
 		return fmt.Errorf("Failed to create volume: %v", err)
 	}
@@ -206,6 +198,14 @@ func testStatefulWorkload(nodes provisionedNodes, sshKey string) error {
 	err = runViaSSH([]string{reclaimPolicyCmd, fmt.Sprintf("if [ \"`%s`\" = \"%s\" ]; then exit 0; else exit 1; fi", reclaimPolicyCmd, reclaimPolicy)}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
 	if err != nil {
 		return fmt.Errorf("Found an unexpected reclaim policy. Expected %s", reclaimPolicy)
+	}
+
+	By("Verifying the access modes on the Persistent Volume")
+	accessModesCmd := "sudo kubectl get pv kis-int-test -o jsonpath={.spec.accessModes}"
+	expectedAccessModes := "[" + strings.Join(accessModes, " ") + "]"
+	err = runViaSSH([]string{accessModesCmd, fmt.Sprintf("if [ \"`%s`\" = \"%s\" ]; then exit 0; else exit 1; fi", accessModesCmd, expectedAccessModes)}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("found unexpected access modes. Expected %s", expectedAccessModes)
 	}
 
 	By("Claiming the storage volume on the cluster")

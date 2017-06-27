@@ -432,6 +432,7 @@ func (ae *ansibleExecutor) AddVolume(plan *Plan, volume StorageVolume) error {
 	cc.VolumeQuotaBytes = volume.SizeGB * (1 << (10 * 3))
 	cc.VolumeMount = "/"
 	cc.VolumeReclaimPolicy = volume.ReclaimPolicy
+	cc.VolumeAccessModes = volume.AccessModes
 
 	// Allow nodes and pods to access volumes
 	allowedNodes := plan.Master.Nodes

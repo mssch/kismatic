@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/rand"
 	"strconv"
+	"strings"
 
 	"github.com/apprenda/kismatic/pkg/install"
 	"github.com/spf13/cobra"
@@ -20,6 +21,7 @@ type volumeAddOptions struct {
 	outputFormat       string
 	generatedAssetsDir string
 	reclaimPolicy      string
+	accessModes        string
 }
 
 // NewCmdVolumeAdd returns the command for adding storage volumes
@@ -45,9 +47,10 @@ This function requires a target cluster that has storage nodes.`,
 	cmd.Flags().StringVarP(&opts.storageClass, "storage-class", "c", "kismatic", "The StorageClass to present for claims in Kubernetes. Classes should identify properties of volumes in business terms, such as 'durable' or 'fast-reads'")
 	cmd.Flags().StringSliceVarP(&opts.allowAddress, "allow-address", "a", nil, "Comma delimited list of address wildcards permitted access to the volume in addition to Kubernetes nodes.")
 	cmd.Flags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging")
-	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", `output format (options "simple"|"raw")`)
+	cmd.Flags().StringVarP(&opts.outputFormat, "output", "o", "simple", `output format (options simple|raw)`)
 	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
-	cmd.Flags().StringVar(&opts.reclaimPolicy, "reclaim-policy", "Retain", `Persistent volume reclaim policy (options "Retain|Recycle|Delete")`)
+	cmd.Flags().StringVar(&opts.reclaimPolicy, "reclaim-policy", "Retain", "Persistent volume reclaim policy (options Retain|Recycle|Delete)")
+	cmd.Flags().StringVar(&opts.accessModes, "access-modes", "ReadWriteMany", "Comma-separated list of access modes for the persistent volume (options ReadWriteOnce|ReadOnlyMany|ReadWriteMany)")
 	return cmd
 }
 
@@ -111,6 +114,7 @@ func doVolumeAdd(out io.Writer, opts volumeAddOptions, planFile string, args []s
 		DistributionCount: opts.distributionCount,
 		StorageClass:      opts.storageClass,
 		ReclaimPolicy:     opts.reclaimPolicy,
+		AccessModes:       strings.Split(opts.accessModes, ","),
 	}
 	if opts.allowAddress != nil {
 		v.AllowAddresses = opts.allowAddress

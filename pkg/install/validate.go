@@ -480,9 +480,20 @@ func (sv StorageVolume) validate() (bool, []error) {
 			v.addError(fmt.Errorf("Invalid address %q in the list of allowed addresses", a))
 		}
 	}
-	reclaimPolicies := []string{"retain", "recycle", "delete"}
-	if !util.Contains(strings.ToLower(sv.ReclaimPolicy), reclaimPolicies) {
+	reclaimPolicies := []string{"Retain", "Recycle", "Delete"} // API is case-sensitive
+	if !util.Contains(sv.ReclaimPolicy, reclaimPolicies) {
 		v.addError(fmt.Errorf("%q is not a valid reclaim policy. Valid reclaim policies are: %v", sv.ReclaimPolicy, reclaimPolicies))
+	}
+
+	if len(sv.AccessModes) < 1 {
+		v.addError(errors.New("Access mode was not provided"))
+	}
+
+	accessModes := []string{"ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany"} // API is case-sensitive
+	for _, m := range sv.AccessModes {
+		if !util.Contains(m, accessModes) {
+			v.addError(fmt.Errorf("%q is not a valid access mode. Valid access modes are: %v", m, accessModes))
+		}
 	}
 	return v.valid()
 }
