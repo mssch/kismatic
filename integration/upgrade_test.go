@@ -11,39 +11,9 @@ import (
 
 var _ = Describe("Upgrade", func() {
 	Describe("Upgrading a cluster using offline mode", func() {
-		Describe("From KET version v1.3.2", func() {
+		Describe("From KET version v1.3.3", func() {
 			BeforeEach(func() {
-				dir := setupTestWorkingDirWithVersion("v1.3.2")
-				os.Chdir(dir)
-			})
-			Context("Using a minikube layout", func() {
-				Context("Using Ubuntu 16.04", func() {
-					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
-						WithMiniInfrastructure(Ubuntu1604LTS, aws, func(node NodeDeets, sshKey string) {
-							installAndUpgradeMinikube(node, sshKey)
-						})
-					})
-				})
-			})
-		})
-
-		Describe("From KET version v1.3.0", func() {
-			BeforeEach(func() {
-				dir := setupTestWorkingDirWithVersion("v1.3.0")
-				os.Chdir(dir)
-			})
-			Context("Using a larger cluster layout with Ubuntu 16.04", func() {
-				ItOnAWS("should result in an upgraded cluster [slow] [upgrade]", func(aws infrastructureProvisioner) {
-					WithInfrastructureAndDNS(NodeCount{Etcd: 3, Master: 2, Worker: 2, Ingress: 0, Storage: 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
-						installAndUpgrade(nodes, sshKey)
-					})
-				})
-			})
-		})
-
-		Describe("From KET version v1.2.2", func() {
-			BeforeEach(func() {
-				dir := setupTestWorkingDirWithVersion("v1.2.2")
+				dir := setupTestWorkingDirWithVersion("v1.3.3")
 				os.Chdir(dir)
 			})
 			Context("Using a minikube layout", func() {
@@ -185,23 +155,6 @@ func installAndUpgradeMinikube(node NodeDeets, sshKey string) {
 	err := installKismaticMini(node, sshKey)
 	FailIfError(err)
 	extractCurrentKismaticInstaller()
-	upgradeCluster()
-}
-
-func installAndUpgrade(nodes provisionedNodes, sshKey string) {
-	// Standup cluster with previous version
-	// Using CIDR to pass tests on KET v1.3.x
-	// These versions used a version of kuberang with a bad test
-	opts := installOptions{
-		serviceCIDR: "172.17.0.0/16",
-	}
-	err := installKismatic(nodes, opts, sshKey)
-	FailIfError(err)
-
-	// Extract current version of kismatic
-	extractCurrentKismaticInstaller()
-
-	// Perform upgrade
 	upgradeCluster()
 }
 
