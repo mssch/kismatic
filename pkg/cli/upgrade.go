@@ -160,11 +160,13 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 		return err
 	}
 
-	// Figure out which nodes to upgrade
+	// Get the cluster and node versions
 	cv, err := install.ListVersions(plan)
 	if err != nil {
 		return fmt.Errorf("error listing cluster versions: %v", err)
 	}
+
+	// Figure out which nodes to upgrade
 	var toUpgrade []install.ListableNode
 	var toSkip []install.ListableNode
 	for _, n := range cv.Nodes {
