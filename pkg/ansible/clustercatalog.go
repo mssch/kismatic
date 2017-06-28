@@ -51,14 +51,16 @@ type ClusterCatalog struct {
 	EnableGluster bool `yaml:"configure_storage"`
 
 	// volume add vars
-	VolumeName              string `yaml:"volume_name"`
-	VolumeReplicaCount      int    `yaml:"volume_replica_count"`
-	VolumeDistributionCount int    `yaml:"volume_distribution_count"`
-	VolumeStorageClass      string `yaml:"volume_storage_class"`
-	VolumeQuotaGB           int    `yaml:"volume_quota_gb"`
-	VolumeQuotaBytes        int    `yaml:"volume_quota_bytes"`
-	VolumeMount             string `yaml:"volume_mount"`
-	VolumeAllowedIPs        string `yaml:"volume_allow_ips"`
+	VolumeName              string   `yaml:"volume_name"`
+	VolumeReplicaCount      int      `yaml:"volume_replica_count"`
+	VolumeDistributionCount int      `yaml:"volume_distribution_count"`
+	VolumeStorageClass      string   `yaml:"volume_storage_class"`
+	VolumeQuotaGB           int      `yaml:"volume_quota_gb"`
+	VolumeQuotaBytes        int      `yaml:"volume_quota_bytes"`
+	VolumeMount             string   `yaml:"volume_mount"`
+	VolumeAllowedIPs        string   `yaml:"volume_allow_ips"`
+	VolumeReclaimPolicy     string   `yaml:"volume_reclaim_policy"`
+	VolumeAccessModes       []string `yaml:"volume_access_modes"`
 
 	TargetVersion string `yaml:"kismatic_short_version"`
 

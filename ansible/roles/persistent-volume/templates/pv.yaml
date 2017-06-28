@@ -8,8 +8,10 @@ spec:
   capacity:
     storage: {{ volume_quota_gb }}Gi
   accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
+{% for mode in volume_access_modes %}
+    - {{ mode }}
+{% endfor %}
+  persistentVolumeReclaimPolicy: "{{ volume_reclaim_policy }}"
   nfs:
     path: /{{ volume_name }}
     server: {{ storage_cluster_ip }}
