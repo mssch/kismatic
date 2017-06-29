@@ -7,6 +7,12 @@
     become_method: sudo
     vars_files:
       - group_vars/all.yaml
+
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
+      
     roles:
       - role: packages-kubernetes
         when: allow_package_installation|bool == true

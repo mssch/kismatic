@@ -4,9 +4,17 @@
     name: "Bootstrap Persistent Storage Cluster"
     remote_user: root
     become_method: sudo
+
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
+
     roles:
-      - { role: packages-glusterfs, when: allow_package_installation|bool == true }
+      - role: packages-glusterfs
+        when: allow_package_installation|bool == true
       - glusterfs
+
   - hosts: master
     any_errors_fatal: true
     name: "Create NFS service on the cluster"

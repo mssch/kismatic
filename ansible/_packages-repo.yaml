@@ -6,6 +6,11 @@
     remote_user: root
     become_method: sudo
 
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
+
     roles:
       - role: packages-repo
         when: >
@@ -14,3 +19,4 @@
               (package_repository_urls is defined and package_repository_urls == ""))
       - role: packages-repo-custom
         when: package_repository_urls is defined and package_repository_urls != ""
+

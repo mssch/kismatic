@@ -1,0 +1,9 @@
+---
+  - name: create {{ docker_system_d }} directory
+    file:
+      path: "{{ docker_system_d }}"
+      state: directory
+  - name: write docker http-proxy file
+    template:
+      src: http-proxy.conf
+      dest: "{{ docker_system_d }}/http-proxy.conf"

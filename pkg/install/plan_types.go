@@ -20,6 +20,9 @@ type NetworkConfig struct {
 	PodCIDRBlock     string `yaml:"pod_cidr_block"`
 	ServiceCIDRBlock string `yaml:"service_cidr_block"`
 	UpdateHostsFiles bool   `yaml:"update_hosts_files"`
+	HTTPProxy        string `yaml:"http_proxy"`
+	HTTPSProxy       string `yaml:"https_proxy"`
+	NoProxy          string `yaml:"no_proxy"`
 }
 
 // CertsConfig describes the cluster's trust and certificate configuration

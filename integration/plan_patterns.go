@@ -24,6 +24,9 @@ type PlanAWS struct {
 	DockerRegistryPort           int
 	DockerRegistryCAPath         string
 	ModifyHostsFiles             bool
+	HTTPProxy                    string
+	HTTPSProxy                   string
+	NoProxy                      string
 	UseDirectLVM                 bool
 	ServiceCIDR                  string
 	DisableHelm                  bool
@@ -42,6 +45,9 @@ const planAWSOverlay = `cluster:
     pod_cidr_block: 172.16.0.0/16
     service_cidr_block: {{if .ServiceCIDR}}{{.ServiceCIDR}}{{else}}172.20.0.0/16{{end}}
     update_hosts_files: {{.ModifyHostsFiles}}
+    http_proxy: {{.HTTPProxy}}
+    https_proxy: {{.HTTPSProxy}}
+    no_proxy: {{.NoProxy}}
   certificates:
     expiry: 17520h
     location_city: Troy
