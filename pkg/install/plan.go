@@ -194,7 +194,9 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 
 	// Add-Ons
 	// Heapster
+	p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 	p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
+
 	// Package Manager
 	p.AddOns.PackageManager.Provider = "helm"
 
