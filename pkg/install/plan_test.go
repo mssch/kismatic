@@ -30,3 +30,12 @@ func TestReadWithDeprecated(t *testing.T) {
 		t.Errorf("Expected cluster.allow_package_installation to be read from cluster.disable_package_installation")
 	}
 }
+
+func TestReadWithNil(t *testing.T) {
+	p := &Plan{}
+	setDefaults(p)
+
+	if p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas != 2 {
+		t.Errorf("Expected add_ons.heapster.options.heapster_replicas to equal 2, instead got %d", p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas)
+	}
+}

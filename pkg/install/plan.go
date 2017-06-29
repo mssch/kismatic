@@ -82,6 +82,9 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 	// read deprecated fields and set it the new version of the cluster file
 	readDeprecatedFields(p)
 
+	// set nil values to defaults
+	setDefaults(p)
+
 	return p, nil
 }
 
@@ -96,6 +99,13 @@ func readDeprecatedFields(p *Plan) {
 	// allow_package_installation renamed to disable_package_installation after KET v1.4.0
 	if p.Cluster.AllowPackageInstallation != nil {
 		p.Cluster.DisablePackageInstallation = !*p.Cluster.AllowPackageInstallation
+	}
+}
+
+func setDefaults(p *Plan) {
+	if p.AddOns.HeapsterMonitoring == nil {
+		p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
+		p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
 	}
 }
 

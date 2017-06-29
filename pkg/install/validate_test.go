@@ -24,7 +24,7 @@ var validPlan = Plan{
 		},
 	},
 	AddOns: AddOns{
-		HeapsterMonitoring: HeapsterMonitoring{
+		HeapsterMonitoring: &HeapsterMonitoring{
 			Options: HeapsterOptions{
 				HeapsterReplicas: 2,
 			},

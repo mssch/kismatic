@@ -221,7 +221,7 @@ func (s *SSHConfig) validate() (bool, []error) {
 
 func (f *AddOns) validate() (bool, []error) {
 	v := newValidator()
-	v.validate(&f.HeapsterMonitoring)
+	v.validate(f.HeapsterMonitoring)
 	v.validate(&f.PackageManager)
 	return v.valid()
 }
