@@ -159,8 +159,8 @@ type SSHConnection struct {
 }
 
 type AddOns struct {
-	HeapsterMonitoring HeapsterMonitoring `yaml:"heapster"`
-	PackageManager     PackageManager     `yaml:"package_manager"`
+	HeapsterMonitoring *HeapsterMonitoring `yaml:"heapster"`
+	PackageManager     PackageManager      `yaml:"package_manager"`
 }
 
 // Features is deprecated, required to support KET v1.3.3
