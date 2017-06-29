@@ -228,7 +228,7 @@ func (f *AddOns) validate() (bool, []error) {
 
 func (h *HeapsterMonitoring) validate() (bool, []error) {
 	v := newValidator()
-	if !h.Disable {
+	if h != nil && !h.Disable {
 		if h.Options.HeapsterReplicas <= 0 {
 			v.addError(fmt.Errorf("Heapster replicas %d is not valid, must be greater than 0", h.Options.HeapsterReplicas))
 		}
