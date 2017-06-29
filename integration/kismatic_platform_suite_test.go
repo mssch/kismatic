@@ -205,13 +205,13 @@ func uploadKismaticLogs(path string) {
 
 	// Tar the folder
 	archiveName := "/tmp/kismatic-integration-"
-	snapPullRequest := os.Getenv("SNAP_PULL_REQUEST_NUMBER")
-	if snapPullRequest != "" {
-		archiveName = archiveName + "pr-#" + snapPullRequest + "-"
+	pullRequestNumber := os.Getenv("CIRCLE_PR_NUMBER")
+	if pullRequestNumber != "" {
+		archiveName = archiveName + "pr-#" + pullRequestNumber + "-"
 	}
-	snapPipelineCounter := os.Getenv("SNAP_PIPELINE_COUNTER")
-	if snapPipelineCounter != "" {
-		archiveName = archiveName + "build-#" + snapPipelineCounter + "-"
+	buildNumber := os.Getenv("CIRCLE_BUILD_NUM")
+	if buildNumber != "" {
+		archiveName = archiveName + "build-#" + buildNumber + "-"
 	}
 	timestamp := time.Now().UTC().Format("2006-01-02T15:04:05-0700")
 	archiveName = archiveName + timestamp + ".tar.gz"
@@ -247,11 +247,11 @@ func uploadKismaticLogs(path string) {
 	fileBytes := bytes.NewReader(buffer)
 	fileType := http.DetectContentType(buffer)
 	s3path := "/logs/"
-	if snapPullRequest != "" {
-		s3path = s3path + "pull-requests/" + snapPullRequest + "/"
+	if pullRequestNumber != "" {
+		s3path = s3path + "pull-requests/" + pullRequestNumber + "/"
 	}
-	if snapPipelineCounter != "" {
-		s3path = s3path + snapPipelineCounter + "/"
+	if buildNumber != "" {
+		s3path = s3path + buildNumber + "/"
 	}
 	s3path = s3path + fileInfo.Name()
 

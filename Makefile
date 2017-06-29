@@ -14,7 +14,8 @@ HOST_GOARCH = $(shell go env GOARCH)
 
 # Versions of external dependencies
 GLIDE_VERSION = v0.11.1
-ANSIBLE_VERSION = 2.3.0.0
+#ANSIBLE_VERSION = 2.3.0.0
+ANSIBLE_VERSION = 2.1.4.0
 PROVISIONER_VERSION = v1.2.0
 KUBERANG_VERSION = v1.1.3
 GO_VERSION = 1.8.0
@@ -36,31 +37,15 @@ build-inspector:
 
 .PHONY: bin/$(GOOS)/kismatic
 bin/$(GOOS)/kismatic: vendor
-	@echo "building $@"
-	@docker run                                                                     \
-	    --rm                                                                        \
-	    -e GOOS=$(GOOS)                                                             \
-	    -u $$(id -u):$$(id -g)                                                      \
-	    -v "$(shell pwd)":/go/src/$(PKG)                                            \
-	    -w /go/src/$(PKG)                                                           \
-	    golang:$(GO_VERSION)                                                        \
-	    go build -o $@                                                              \
-	        -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'" \
-	        ./cmd/kismatic
+	go build -o $@                                                              \
+	    -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'" \
+	    ./cmd/kismatic
 
 .PHONY: bin/inspector/$(GOOS)/amd64/kismatic-inspector
 bin/inspector/$(GOOS)/amd64/kismatic-inspector: vendor
-	@echo "building $@"
-	@docker run                                                                      \
-	    --rm                                                                         \
-	    -e GOOS=$(GOOS)                                                              \
-	    -u $$(id -u):$$(id -g)                                                       \
-	    -v "$(shell pwd)":/go/src/$(PKG)                                             \
-	    -w /go/src/$(PKG)                                                            \
-	    golang:$(GO_VERSION)                                                         \
-	    go build -o $@                                                               \
-	        -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'"  \
-	        ./cmd/kismatic-inspector
+	go build -o $@                                                               \
+	    -ldflags "-X main.version=$(VERSION) -X 'main.buildDate=$(BUILD_DATE)'"  \
+	    ./cmd/kismatic-inspector
 
 clean:
 	rm -rf bin
@@ -73,13 +58,7 @@ clean:
 	rm -rf vendor-helm
 
 test: vendor
-	@docker run                                                   \
-	    --rm                                                      \
-	    -u $$(id -u):$$(id -g)                                    \
-	    -v "$(shell pwd)":/go/src/$(PKG)                          \
-	    -w /go/src/$(PKG)                                         \
-	    golang:$(GO_VERSION)                                      \
-	    go test ./cmd/... ./pkg/... $(TEST_OPTS)
+	go test -v ./cmd/... ./pkg/... $(TEST_OPTS)
 
 integration-test: dist just-integration-test
 
@@ -93,13 +72,11 @@ tools/glide:
 	rm -r tools/$(GLIDE_GOOS)-$(HOST_GOARCH)
 
 vendor-ansible/out:
-	@echo "Vendoring ansible"
-	@docker build -t apprenda/vendor-ansible vendor-ansible
-	@docker run \
-	    --rm \
-	    -v $(shell pwd)/vendor-ansible/out:/ansible \
-	    apprenda/vendor-ansible \
-	    pip install --install-option="--prefix=/ansible" ansible==$(ANSIBLE_VERSION)
+	mkdir -p vendor-ansible/out
+	curl -L https://github.com/apprenda/vendor-ansible/releases/download/v$(ANSIBLE_VERSION)/ansible.tar.gz -o vendor-ansible/out/ansible.tar.gz
+	tar -zxf vendor-ansible/out/ansible.tar.gz -C vendor-ansible/out
+	rm vendor-ansible/out/ansible.tar.gz
+
 
 vendor-provision/out:
 	mkdir -p vendor-provision/out/
@@ -127,7 +104,7 @@ dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION
 	mkdir -p out
 	cp bin/$(GOOS)/kismatic out
 	mkdir -p out/ansible
-	cp -r vendor-ansible/out/* out/ansible
+	cp -r vendor-ansible/out/ansible/* out/ansible
 	rm -rf out/ansible/playbooks
 	cp -r ansible out/ansible/playbooks
 	mkdir -p out/ansible/playbooks/inspector
@@ -146,10 +123,10 @@ integration/vendor: tools/glide
 	cd integration && ../tools/glide install
 
 just-integration-test: integration/vendor
-	ginkgo --skip "\[slow\]" -p -v integration
+	ginkgo --skip "\[slow\]" -p $(GINKGO_OPTS) -v integration
 
 slow-integration-test: integration/vendor
-	ginkgo --focus "\[slow\]" -p -v integration
+	ginkgo --focus "\[slow\]" -p $(GINKGO_OPTS) -v integration
 
 serial-integration-test: integration/vendor
 	ginkgo -v integration
@@ -168,11 +145,25 @@ version: FORCE
 	@echo ANSIBLE_VERSION=$(ANSIBLE_VERSION)
 	@echo PROVISIONER_VERSION=$(PROVISIONER_VERSION)
 
+CIRCLE_ENDPOINT=
+ifndef CIRCLE_CI_BRANCH
+	CIRCLE_ENDPOINT=https://circleci.com/api/v1.1/project/github/apprenda/kismatic
+else
+	CIRCLE_ENDPOINT=https://circleci.com/api/v1.1/project/github/apprenda/kismatic/tree/$(CIRCLE_CI_BRANCH)
+endif
+
+
 trigger-ci-slow-tests:
+	@echo Triggering build with slow tests
+	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json" \
+		-d '{"build_parameters": {"RUN_SLOW_TESTS": "true"}}'                      \
+		$(CIRCLE_ENDPOINT)
+
+trigger-snap-ci-slow-tests:
 	@echo Triggering build on snap with slow tests
 	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/branch/master/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
 
-trigger-pr-slow-tests:
+trigger-snap-pr-slow-tests:
 	@echo Trigger build for PR $(SNAP_PR_NUMBER)
 	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/pull/$(SNAP_PR_NUMBER)/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
 

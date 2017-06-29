@@ -1,5 +1,4 @@
 # Integration Testing
-[![Build Status](https://snap-ci.com/ulSrRsof30gMr7eaXZ_eufLs7XQtmS6Lw4eYwkmATn4/build_image)](https://snap-ci.com/apprenda/kismatic/branch/master)
 
 Kismatic is tested using public cloud infrastructure providers. We support running tests
 on the following providers:

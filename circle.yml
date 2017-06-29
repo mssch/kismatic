@@ -1,0 +1,113 @@
+version: 2
+defaults: &defaults
+  working_directory: /go/src/github.com/apprenda/kismatic
+  docker:
+    - image: golang:1.8
+
+workflows:
+  version: 2
+  build-test-upload:
+    jobs:
+      - unit_tests
+      - build_linux:
+          requires:
+            - unit_tests
+      - build_darwin:
+          requires:
+            - unit_tests
+      - e2e_tests:
+          requires:
+            - build_linux
+            - build_darwin
+      - slow_e2e_tests:
+         requires:
+           - build_linux
+           - build_darwin
+      - draft_release:
+          requires:
+            - e2e_tests
+            - slow_e2e_tests
+          filters:
+            branches:
+              only: master
+
+jobs:
+  unit_tests:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make test
+  build_linux:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: GOOS=linux make dist
+      - persist_to_workspace:
+          root: /go/src/github.com/apprenda/kismatic
+          paths:
+            - out
+      - store_artifacts:
+          path: out/kismatic.tar.gz
+          destination: kismatic-linux-amd64.tar.gz
+  build_darwin:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: GLIDE_GOOS=linux GOOS=darwin make dist
+      - run: mv out out-darwin
+      - persist_to_workspace:
+          root: /go/src/github.com/apprenda/kismatic
+          paths:
+            - out-darwin
+      - store_artifacts:
+          path: out-darwin/kismatic.tar.gz
+          destination: kismatic-darwin-amd64.tar.gz
+  e2e_tests:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /go/src/github.com/apprenda/kismatic
+      - run: mkdir -p /run/user/1026
+      - run: chown 1026:1026 /run/user/1026
+      - run: echo "$KISMATIC_INT_TEST_KEY" | base64 -d > ~/.ssh/kismatic-integration-testing.pem
+      - run: chmod 0600 ~/.ssh/kismatic-integration-testing.pem
+      - run: 
+          command: make just-integration-test
+          environment:
+            GINKGO_OPTS: "-nodes=64"
+            ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
+            ANSIBLE_SSH_ARGS: "-o ControlMaster=auto -o ControlPersist=1800s -o ControlPath=/run/user/1026/ssh-%r-%h-%p"
+  slow_e2e_tests:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /go/src/github.com/apprenda/kismatic
+      - run: mkdir -p /run/user/1026
+      - run: chown 1026:1026 /run/user/1026
+      - run: echo "$KISMATIC_INT_TEST_KEY" | base64 -d > ~/.ssh/kismatic-integration-testing.pem
+      - run: chmod 0600 ~/.ssh/kismatic-integration-testing.pem
+      - run: 
+          command: |
+            if [[ -n "$CIRCLE_TAG" || -n "$RUN_SLOW_TESTS" ]]
+            then
+              make slow-integration-test
+            fi
+          environment:
+            GINKGO_OPTS: "-nodes=64"
+            ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
+            ANSIBLE_SSH_ARGS: "-o ControlMaster=auto -o ControlPersist=1800s -o ControlPath=/run/user/1026/ssh-%r-%h-%p"
+  draft_release:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /go/src/github.com/apprenda/kismatic
+      - run: mkdir -p artifact/linux && mv out/kismatic.tar.gz artifact/linux/
+      - run: mkdir -p artifact/darwin && mv out-darwin/kismatic.tar.gz artifact/darwin/
+      - run: | 
+          if [[ -n "$CIRCLE_TAG" ]]
+          then
+            go run release.go -tag $CIRCLE_TAG
+          fi

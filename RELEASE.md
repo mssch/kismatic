@@ -1,5 +1,4 @@
 # Release
-[![Build Status](https://snap-ci.com/On8xdVQV0xY5VXICf0Fx0Vq7fVMDUAfU6JFc8Wtt94A/build_image)](https://snap-ci.com/apprenda/kismatic-platform/branch/master)
 
 This document contains the release details for [Kismatic Enterprise Toolkit](https://github.com/apprenda/kismatic).
 
@@ -16,9 +15,9 @@ git tag v1.1.0
 git push origin v1.1.0
 ```
 
-In our current CI setup on Snap, pushing a tag to GitHub will not trigger the
-build pipeline (not supported by Snap). For this reason, the build must be
-triggered manually on Snap once the tag is pushed.
+In our current CI setup on CircleCI, pushing a tag to GitHub will not trigger the
+build pipeline (not supported by CircleCI 2.0). For this reason, the build must be
+triggered manually on CircleCI once the tag is pushed.
 
 The release stage of the build pipeline is triggered when the commit that is being built
 is equal to the commit of the latest tag. The release stage uses the `release.go` script
