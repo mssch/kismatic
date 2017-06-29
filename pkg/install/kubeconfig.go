@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/apprenda/kismatic/pkg/util"
 )
+
+const kubeconfigFilename = "kubeconfig"
 
 // ConfigOptions sds
 type ConfigOptions struct {
@@ -79,11 +82,48 @@ func GenerateKubeconfig(p *Plan, generatedAssetsDir string) error {
 		return fmt.Errorf("error processing config template: %v", err)
 	}
 	// Write config file
-	kubeconfigFile := filepath.Join(generatedAssetsDir, "kubeconfig")
+	kubeconfigFile := filepath.Join(generatedAssetsDir, kubeconfigFilename)
 	err = ioutil.WriteFile(kubeconfigFile, kubeconfig.Bytes(), 0644)
 	if err != nil {
 		return fmt.Errorf("error writing kubeconfig file: %v", err)
 	}
 
 	return nil
+}
+
+// RegenerateKubeconfig backs up the old kubeconfig file if it exists. Returns
+// true if the new kubeconfig file is different than the previous one.
+// Otherwise returns false.
+func RegenerateKubeconfig(p *Plan, generatedAssetsDir string) (bool, error) {
+	kubeconfigFile := filepath.Join(generatedAssetsDir, kubeconfigFilename)
+	kubeconfigBackup := filepath.Join(generatedAssetsDir, kubeconfigFilename) + ".bak"
+
+	err := os.Rename(kubeconfigFile, kubeconfigBackup)
+	if os.IsNotExist(err) {
+		// Nothing else to do as the old kubeconfig does not exist
+		return false, GenerateKubeconfig(p, generatedAssetsDir)
+	}
+	if err != nil {
+		return false, fmt.Errorf("error backing up existing kubeconfig file: %v", err)
+	}
+
+	if err := GenerateKubeconfig(p, generatedAssetsDir); err != nil {
+		return false, err
+	}
+
+	// Check if the new kubeconfig is different than the previous one
+	old, err := ioutil.ReadFile(kubeconfigBackup)
+	if err != nil {
+		return false, fmt.Errorf("error reading file %q: %v", kubeconfigBackup, err)
+	}
+	new, err := ioutil.ReadFile(kubeconfigFile)
+	if err != nil {
+		return false, fmt.Errorf("error reading file %q: %v", kubeconfigFile, err)
+	}
+	if bytes.Equal(old, new) {
+		os.Remove(kubeconfigBackup)
+		return false, nil
+	}
+
+	return true, nil
 }

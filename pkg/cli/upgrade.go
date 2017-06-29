@@ -160,11 +160,25 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 		return err
 	}
 
-	// Figure out which nodes to upgrade
+	util.PrintHeader(out, "Generating Kubeconfig File", '=')
+	isDiff, err := install.RegenerateKubeconfig(plan, opts.generatedAssetsDir)
+	if err != nil {
+		return fmt.Errorf("error generating kubeconfig file: %v", err)
+	}
+
+	if isDiff {
+		util.PrettyPrintWarn(out, "An updated kubeconfig file has been generated in %q", opts.generatedAssetsDir)
+	} else {
+		util.PrettyPrintOk(out, "Found existing kubeconfig file in %q", opts.generatedAssetsDir)
+	}
+
+	// Get the cluster and node versions
 	cv, err := install.ListVersions(plan)
 	if err != nil {
 		return fmt.Errorf("error listing cluster versions: %v", err)
 	}
+
+	// Figure out which nodes to upgrade
 	var toUpgrade []install.ListableNode
 	var toSkip []install.ListableNode
 	for _, n := range cv.Nodes {

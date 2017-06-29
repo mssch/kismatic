@@ -1,6 +1,7 @@
 package tls
 
 import (
+	"crypto/x509"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -88,6 +89,20 @@ func WriteCert(key, cert []byte, name, dir string) error {
 		return fmt.Errorf("error writing certificate: %v", err)
 	}
 	return nil
+}
+
+// ReadCert reads the certificate with the given name in the provided directory.
+func ReadCert(name, dir string) (*x509.Certificate, error) {
+	certPath := filepath.Join(dir, certName(name))
+	certBytes, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		return nil, err
+	}
+	cert, err := helpers.ParseCertificatePEM(certBytes)
+	if err != nil {
+		return nil, err
+	}
+	return cert, nil
 }
 
 // CertKeyPairExists returns true if a key and matching certificate exist.
