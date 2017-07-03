@@ -12,8 +12,8 @@ func testNFSShare(aws infrastructureProvisioner, distro linuxDistro) {
 			Etcd:                []NodeDeets{node},
 			Master:              []NodeDeets{node},
 			Worker:              []NodeDeets{node},
-			MasterNodeFQDN:      node.Hostname,
-			MasterNodeShortName: node.Hostname,
+			MasterNodeFQDN:      node.PublicIP,
+			MasterNodeShortName: node.PublicIP,
 			SSHKeyFile:          sshKey,
 			SSHUser:             node.SSHUser,
 			NFSVolume: []NFSVolume{
