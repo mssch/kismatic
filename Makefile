@@ -14,8 +14,7 @@ HOST_GOARCH = $(shell go env GOARCH)
 
 # Versions of external dependencies
 GLIDE_VERSION = v0.11.1
-#ANSIBLE_VERSION = 2.3.0.0
-ANSIBLE_VERSION = 2.1.4.0
+ANSIBLE_VERSION = 2.3.0.0
 PROVISIONER_VERSION = v1.2.0
 KUBERANG_VERSION = v1.1.3
 GO_VERSION = 1.8.0
@@ -155,16 +154,8 @@ endif
 
 trigger-ci-slow-tests:
 	@echo Triggering build with slow tests
-	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json" \
+	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"      \
 		-d '{"build_parameters": {"RUN_SLOW_TESTS": "true"}}'                      \
 		$(CIRCLE_ENDPOINT)
-
-trigger-snap-ci-slow-tests:
-	@echo Triggering build on snap with slow tests
-	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/branch/master/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
-
-trigger-snap-pr-slow-tests:
-	@echo Trigger build for PR $(SNAP_PR_NUMBER)
-	@curl -u $(SNAP_USER):$(SNAP_API_KEY) -X POST -H 'Accept: application/vnd.snap-ci.com.v1+json' -H 'Content-type: application/json' https://api.snap-ci.com/project/apprenda/kismatic/pull/$(SNAP_PR_NUMBER)/trigger --data '{"env":{"RUN_SLOW_TESTS": "true" }}'
 
 FORCE:
