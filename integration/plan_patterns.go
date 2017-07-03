@@ -37,6 +37,7 @@ type PlanAWS struct {
 const planAWSOverlay = `cluster:
   name: kubernetes
   admin_password: abbazabba
+  allow_package_installation: {{not .DisablePackageInstallation}} # Required for KET <= v1.3.3
   disable_package_installation: {{.DisablePackageInstallation}}
   disconnected_installation: {{.DisconnectedInstallation}}
   disable_registry_seeding: {{.DisableRegistrySeeding}}
