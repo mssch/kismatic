@@ -42,6 +42,7 @@
     become: true
 
   - name: "copy diagnostics to local directory in {{ diagnostics_dir }}"
+    become: false # If this is not set, the module logs the contents of the file. ref: http://docs.ansible.com/ansible/fetch_module.html
     fetch:
       src: "/tmp/diagnostics-{{ inventory_hostname }}.tar.gz"
       dest: "{{ diagnostics_dir }}/"
