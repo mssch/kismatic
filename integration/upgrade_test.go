@@ -101,9 +101,8 @@ var _ = Describe("Upgrade", func() {
 					distro := CentOS7
 					WithInfrastructure(NodeCount{Etcd: 3, Master: 1, Worker: 1}, distro, aws, func(nodes provisionedNodes, sshKey string) {
 						// Standup cluster with previous version
-						// Need to disablePackageInstallation=false to install old versions of packages
 						opts := installOptions{
-							disconnectedInstallation:    true,
+							disconnectedInstallation:    false, // we want KET to install the packages, so let it use the package repo
 							modifyHostsFiles:            true,
 							autoConfigureDockerRegistry: true,
 						}

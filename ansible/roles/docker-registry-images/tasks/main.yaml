@@ -27,6 +27,8 @@
      - busybox
      - pause
      - tcp-healthz-amd64
+     - heapster
+     - influxdb
      - tiller
 
   - name: tag docker images
@@ -50,6 +52,8 @@
       - "{{ busybox_orig_img }} {{ busybox_priv_img }}"
       - "{{ pause_orig_img }} {{ pause_priv_img }}"
       - "{{ apprenda_tcp_healthz_orig_img }} {{ apprenda_tcp_healthz_priv_img }}"
+      - "{{ heapster_orig_img }} {{ heapster_priv_img }}"
+      - "{{ influxdb_orig_img }} {{ influxdb_priv_img }}"
       - "{{ helm_orig_img }} {{ helm_priv_img }}"
 
   - name: push docker image to private registry
@@ -73,4 +77,6 @@
       - "{{ busybox_priv_img }}"
       - "{{ pause_priv_img }}"
       - "{{ apprenda_tcp_healthz_priv_img }}"
+      - "{{ heapster_img }}"
+      - "{{ influxdb_img }}"
       - "{{ helm_img }}"
