@@ -180,14 +180,14 @@ var _ = Describe("Upgrade", func() {
 				Context("Using RHEL 7", func() {
 					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
 						WithMiniInfrastructure(RedHat7, aws, func(node NodeDeets, sshKey string) {
-							installAndUpgradeMinikube(node, sshKey)
+							installV130AndUpgradeMinikube(node, sshKey)
 						})
 					})
 				})
 				Context("Using Ubuntu 16.04", func() {
 					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
 						WithMiniInfrastructure(Ubuntu1604LTS, aws, func(node NodeDeets, sshKey string) {
-							installAndUpgradeMinikube(node, sshKey)
+							installV130AndUpgradeMinikube(node, sshKey)
 						})
 					})
 				})
@@ -205,6 +205,28 @@ func installAndUpgradeMinikube(node NodeDeets, sshKey string) {
 	upgradeCluster()
 }
 
+func installV130AndUpgradeMinikube(node NodeDeets, sshKey string) {
+	// Install previous version cluster
+	sshUser := node.SSHUser
+	plan := PlanAWS{
+		Etcd:                []NodeDeets{node},
+		Master:              []NodeDeets{node},
+		Worker:              []NodeDeets{node},
+		Ingress:             []NodeDeets{node},
+		Storage:             []NodeDeets{node},
+		MasterNodeFQDN:      node.PublicIP,
+		MasterNodeShortName: node.PublicIP,
+		SSHKeyFile:          sshKey,
+		SSHUser:             sshUser,
+		// Using CIDR to pass tests on KET v1.3.x
+		// These versions used a version of kuberang with a bad test
+		ServiceCIDR: "172.17.0.0/16",
+	}
+	err := installKismaticWithPlan(plan, sshKey)
+	FailIfError(err)
+	extractCurrentKismaticInstaller()
+	upgradeCluster()
+}
 func extractCurrentKismaticInstaller() {
 	// Extract current version of kismatic
 	pwd, err := os.Getwd()
