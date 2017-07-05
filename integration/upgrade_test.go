@@ -146,6 +146,54 @@ var _ = Describe("Upgrade", func() {
 				})
 			})
 		})
+
+		Describe("From KET v1.3.2", func() {
+			BeforeEach(func() {
+				dir := setupTestWorkingDirWithVersion("v1.3.2")
+				os.Chdir(dir)
+			})
+			Context("Using a minikube layout", func() {
+				Context("Using RHEL 7", func() {
+					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
+						WithMiniInfrastructure(RedHat7, aws, func(node NodeDeets, sshKey string) {
+							installAndUpgradeMinikube(node, sshKey)
+						})
+					})
+				})
+				Context("Using Ubuntu 16.04", func() {
+					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
+						WithMiniInfrastructure(Ubuntu1604LTS, aws, func(node NodeDeets, sshKey string) {
+							installAndUpgradeMinikube(node, sshKey)
+						})
+					})
+				})
+
+			})
+		})
+
+		Describe("From KET v1.3.0", func() {
+			BeforeEach(func() {
+				dir := setupTestWorkingDirWithVersion("v1.3.0")
+				os.Chdir(dir)
+			})
+			Context("Using a minikube layout", func() {
+				Context("Using RHEL 7", func() {
+					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
+						WithMiniInfrastructure(RedHat7, aws, func(node NodeDeets, sshKey string) {
+							installAndUpgradeMinikube(node, sshKey)
+						})
+					})
+				})
+				Context("Using Ubuntu 16.04", func() {
+					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
+						WithMiniInfrastructure(Ubuntu1604LTS, aws, func(node NodeDeets, sshKey string) {
+							installAndUpgradeMinikube(node, sshKey)
+						})
+					})
+				})
+
+			})
+		})
 	})
 })
 
