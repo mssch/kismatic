@@ -8,19 +8,21 @@
   - name: copy CA certificate
     copy:
       src: "{{ tls_directory }}/ca.pem"
-      dest: "{{ etcd_certificates_ca_file }}"
-      owner: "{{ etcd_certificates_owner }}"
-      group: "{{ etcd_certificates_group }}"
-      mode: "{{ etcd_certificates_mode }}"
+      dest: "{{ etcd_certificates.ca }}"
+      owner: "{{ etcd_certificates.owner }}"
+      group: "{{ etcd_certificates.group }}"
+      mode: "{{ etcd_certificates.mode }}"
   
   - name: copy etcd server certificate and key
     copy:
       src: "{{ tls_directory }}/{{ item.src }}"
       dest: "{{ item.dest }}"
-      owner: "{{ etcd_certificates_owner }}"
-      group: "{{ etcd_certificates_group }}"
-      mode: "{{ etcd_certificates_mode }}"
+      owner: "{{ etcd_certificates.owner }}"
+      group: "{{ etcd_certificates.group }}"
+      mode: "{{ etcd_certificates.mode }}"
     when: "'etcd' in group_names"
     with_items:
-      - {'src': "{{ inventory_hostname }}-etcd.pem", dest: "{{ etcd_certificates_cert_file }}"}
-      - {'src': "{{ inventory_hostname }}-etcd-key.pem", dest: "{{ etcd_certificates_key_file }}"}
+      - {'src': "{{ inventory_hostname }}-etcd.pem", dest: "{{ etcd_certificates.etcd }}"}
+      - {'src': "{{ inventory_hostname }}-etcd-key.pem", dest: "{{ etcd_certificates.etcd_key }}"}
+      - {'src': "etcd-client.pem", dest: "{{ etcd_certificates.etcd_client }}"}
+      - {'src': "etcd-client-key.pem", dest: "{{ etcd_certificates.etcd_client_key }}"}

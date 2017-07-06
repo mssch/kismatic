@@ -8,10 +8,6 @@
       - group_vars/all.yaml
 
     roles:
-      - role: etcd-cert
-        etcd_install_dir: "/etc/etcd_k8s"
-      - role: etcd-cert
-        etcd_install_dir: "/etc/etcd_networking"
       - kubenode-cert
       - role: docker-registry-container-cert
         when: deploy_internal_docker_registry is defined and deploy_internal_docker_registry|bool == true
