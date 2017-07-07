@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // PromptForInt read command line input
@@ -32,7 +33,7 @@ func PromptForInt(in io.Reader, out io.Writer, prompt string, defaultValue int) 
 }
 
 func PromptForString(in io.Reader, out io.Writer, prompt string, defaultValue string, choices []string) (string, error) {
-	fmt.Fprintf(out, "=> %s (options %s, set to 'none' if not required), default [%v]: ", prompt, choices, defaultValue)
+	fmt.Fprintf(out, "=> %s [%s]: ", prompt, strings.Join(choices, "/"))
 	s := bufio.NewScanner(in)
 	// Scan the first token
 	s.Scan()
