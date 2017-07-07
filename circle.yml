@@ -9,8 +9,8 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: make test
-      - run: GOOS=linux make dist
+      - run: make bare-test
+      - run: GOOS=linux make bare-dist
       - store_artifacts:
           path: out/kismatic.tar.gz
           destination: kismatic-linux-amd64.tar.gz
@@ -22,6 +22,7 @@ jobs:
       - run: chmod 0600 ~/.ssh/kismatic-integration-testing.pem
       - run: 
           command: make just-integration-test
+          no_output_timeout: 30m
           environment:
             GINKGO_OPTS: "-nodes=64"
             ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
@@ -32,12 +33,13 @@ jobs:
             then
               make slow-integration-test
             fi
+          no_output_timeout: 60m
           environment:
             GINKGO_OPTS: "-nodes=64"
             ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
             ANSIBLE_SSH_ARGS: "-o ControlMaster=auto -o ControlPersist=1800s -o ControlPath=/run/user/1026/ssh-%r-%h-%p"
       # Build darwin
-      - run: GLIDE_GOOS=linux GOOS=darwin make dist
+      - run: GLIDE_GOOS=linux GOOS=darwin make bare-dist
       - run: mv out out-darwin
       - store_artifacts:
           path: out-darwin/kismatic.tar.gz
@@ -49,3 +51,9 @@ jobs:
           then
             go run release.go -tag $CIRCLE_TAG
           fi
+
+deployment:
+  fake_deploy_for_cci2:
+    tag: /.*/
+    commands:
+      - echo "make tags run in 2.0"

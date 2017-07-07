@@ -13,7 +13,7 @@ HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 
 # Versions of external dependencies
-GLIDE_VERSION = v0.11.1
+GLIDE_VERSION = v0.12.3
 ANSIBLE_VERSION = 2.3.0.0
 PROVISIONER_VERSION = v1.2.0
 KUBERANG_VERSION = v1.1.3
@@ -28,9 +28,37 @@ ifeq ($(origin GOOS), undefined)
 	GOOS := $(HOST_GOOS)
 endif
 
-build: bin/$(GOOS)/kismatic
+build: vendor # vendor on host because of some permission issues with glide inside container
+	@echo Building kismatic in container
+	@docker run                                \
+	    --rm                                   \
+	    -e GOOS="$(GOOS)"                      \
+	    -e GLIDE_GOOS="linux"                  \
+	    -e VERSION="$(VERSION)"                \
+	    -e BUILD_DATE="$(BUILD_DATE)"          \
+	    -u $$(id -u):$$(id -g)                 \
+	    -v "$(shell pwd)":"/go/src/$(PKG)"      \
+	    -w /go/src/$(PKG)                      \
+	    circleci/golang:$(GO_VERSION)          \
+	    make bare-build
 
-build-inspector:
+bare-build: bin/$(GOOS)/kismatic
+
+build-inspector: vendor
+	@echo Building inspector in container
+	@docker run                                \
+	    --rm                                   \
+	    -e GOOS="$(GOOS)"                      \
+	    -e GLIDE_GOOS="linux"                  \
+	    -e VERSION="$(VERSION)"                \
+	    -e BUILD_DATE="$(BUILD_DATE)"          \
+	    -u $$(id -u):$$(id -g)                 \
+	    -v "$(shell pwd)":"/go/src/$(PKG)"     \
+	    -w /go/src/$(PKG)                      \
+	    circleci/golang:$(GO_VERSION)          \
+	    make bare-build-inspector
+
+bare-build-inspector: vendor
 	@$(MAKE) GOOS=linux bin/inspector/linux/amd64/kismatic-inspector
 	@$(MAKE) GOOS=darwin bin/inspector/darwin/amd64/kismatic-inspector
 
@@ -57,17 +85,29 @@ clean:
 	rm -rf vendor-helm
 
 test: vendor
+	@docker run                             \
+	    --rm                                \
+	    -e GLIDE_GOOS="linux"               \
+	    -u $$(id -u):$$(id -g)              \
+	    -v "$(shell pwd)":/go/src/$(PKG)    \
+	    -v /tmp:/tmp                        \
+	    -w /go/src/$(PKG)                   \
+	    circleci/golang:$(GO_VERSION)       \
+	    make bare-test
+
+bare-test: vendor
 	go test -v ./cmd/... ./pkg/... $(TEST_OPTS)
 
 integration-test: dist just-integration-test
 
-vendor: tools/glide
-	./tools/glide install
+.PHONY: vendor
+vendor: tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH)
+	tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH) install
 
-tools/glide:
+tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH):
 	mkdir -p tools
 	curl -L https://github.com/Masterminds/glide/releases/download/$(GLIDE_VERSION)/glide-$(GLIDE_VERSION)-$(GLIDE_GOOS)-$(HOST_GOARCH).tar.gz | tar -xz -C tools
-	mv tools/$(GLIDE_GOOS)-$(HOST_GOARCH)/glide tools/glide
+	mv tools/$(GLIDE_GOOS)-$(HOST_GOARCH)/glide tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH)
 	rm -r tools/$(GLIDE_GOOS)-$(HOST_GOARCH)
 
 vendor-ansible/out:
@@ -75,7 +115,6 @@ vendor-ansible/out:
 	curl -L https://github.com/apprenda/vendor-ansible/releases/download/v$(ANSIBLE_VERSION)/ansible.tar.gz -o vendor-ansible/out/ansible.tar.gz
 	tar -zxf vendor-ansible/out/ansible.tar.gz -C vendor-ansible/out
 	rm vendor-ansible/out/ansible.tar.gz
-
 
 vendor-provision/out:
 	mkdir -p vendor-provision/out/
@@ -99,7 +138,21 @@ vendor-helm/out:
 	rm -rf vendor-helm/$(GOOS)-amd64
 	chmod +x vendor-helm/out/helm
 
-dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) vendor-kubectl/out vendor-helm/out build build-inspector
+dist: vendor
+	@echo "Running dist inside contianer"
+	@docker run                                \
+	    --rm                                   \
+	    -e GOOS="$(GOOS)"                      \
+	    -e GLIDE_GOOS="linux"                  \
+	    -e VERSION="$(VERSION)"                \
+	    -e BUILD_DATE="$(BUILD_DATE)"          \
+	    -u $$(id -u):$$(id -g)                 \
+	    -v "$(shell pwd)":"/go/src/$(PKG)"     \
+	    -w "/go/src/$(PKG)"                    \
+	    circleci/golang:$(GO_VERSION)          \
+	    make bare-dist
+
+bare-dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) vendor-kubectl/out vendor-helm/out bare-build bare-build-inspector
 	mkdir -p out
 	cp bin/$(GOOS)/kismatic out
 	mkdir -p out/ansible
@@ -117,9 +170,9 @@ dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION
 	tar -czf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
 
-integration/vendor: tools/glide
+integration/vendor: tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH)
 	go get github.com/onsi/ginkgo/ginkgo
-	cd integration && ../tools/glide install
+	cd integration && ../tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH) install
 
 just-integration-test: integration/vendor
 	ginkgo --skip "\[slow\]" -p $(GINKGO_OPTS) -v integration
@@ -151,11 +204,10 @@ else
 	CIRCLE_ENDPOINT=https://circleci.com/api/v1.1/project/github/apprenda/kismatic/tree/$(CIRCLE_CI_BRANCH)
 endif
 
-
 trigger-ci-slow-tests:
 	@echo Triggering build with slow tests
-	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"      \
-		-d '{"build_parameters": {"RUN_SLOW_TESTS": "true"}}'                      \
+	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"     \
+		-d '{"build_parameters": {"RUN_SLOW_TESTS": "true"}}'                         \
 		$(CIRCLE_ENDPOINT)
 
 FORCE:
