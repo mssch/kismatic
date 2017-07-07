@@ -91,9 +91,7 @@ func NewExecutor(stdout io.Writer, errOut io.Writer, options ExecutorOptions) (E
 	}
 	certsDir := filepath.Join(options.GeneratedAssetsDirectory, "keys")
 	pki := &LocalPKI{
-		CACsr:                   filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
-		CAConfigFile:            filepath.Join(ansibleDir, "playbooks", "tls", "ca-config.json"),
-		CASigningProfile:        "kubernetes",
+		CACsr: filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
 		GeneratedCertsDirectory: certsDir,
 		Log: stdout,
 	}

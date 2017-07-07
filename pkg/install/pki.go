@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/apprenda/kismatic/pkg/tls"
 	"github.com/apprenda/kismatic/pkg/util"
@@ -44,8 +45,6 @@ type PKI interface {
 // LocalPKI is a file-based PKI
 type LocalPKI struct {
 	CACsr                   string
-	CAConfigFile            string
-	CASigningProfile        string
 	GeneratedCertsDirectory string
 	Log                     io.Writer
 }
@@ -249,25 +248,18 @@ func (lp *LocalPKI) NodeCertificateExists(node Node) (bool, error) {
 
 // GetClusterCA returns the cluster CA
 func (lp *LocalPKI) GetClusterCA() (*tls.CA, error) {
-	ca := &tls.CA{
-		ConfigFile: lp.CAConfigFile,
-		Profile:    lp.CASigningProfile,
-	}
 	key, cert, err := tls.ReadCACert("ca", lp.GeneratedCertsDirectory)
 	if err != nil {
 		return nil, fmt.Errorf("error reading CA certificate/key: %v", err)
 	}
-	ca.Cert = cert
-	ca.Key = key
-	return ca, nil
+	return &tls.CA{
+		Cert: cert,
+		Key:  key,
+	}, nil
 }
 
 // GenerateClusterCA creates a Certificate Authority for the cluster
 func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
-	ca := &tls.CA{
-		ConfigFile: lp.CAConfigFile,
-		Profile:    lp.CASigningProfile,
-	}
 	exists, err := tls.CertKeyPairExists("ca", lp.GeneratedCertsDirectory)
 	if err != nil {
 		return nil, fmt.Errorf("error verifying CA certificate/key: %v", err)
@@ -278,16 +270,17 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 
 	// CA keypair doesn't exist, generate one
 	util.PrettyPrintOk(lp.Log, "Generating cluster Certificate Authority")
-	key, cert, err := tls.NewCACert(lp.CACsr, p.Cluster.Name)
+	key, cert, err := tls.NewCACert(lp.CACsr, p.Cluster.Name, p.Cluster.Certificates.CAExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create CA Cert: %v", err)
 	}
 	if err = tls.WriteCert(key, cert, "ca", lp.GeneratedCertsDirectory); err != nil {
 		return nil, fmt.Errorf("error writing CA files: %v", err)
 	}
-	ca.Cert = cert
-	ca.Key = key
-	return ca, nil
+	return &tls.CA{
+		Cert: cert,
+		Key:  key,
+	}, nil
 }
 
 // GenerateClusterCertificates creates all certificates required for the cluster
@@ -338,7 +331,7 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA) error {
 		}
 
 		// Cert doesn't exist. Generate it
-		if err := generateCert(ca, lp.GeneratedCertsDirectory, s); err != nil {
+		if err := generateCert(ca, lp.GeneratedCertsDirectory, s, p.Cluster.Certificates.Expiry); err != nil {
 			return err
 		}
 		util.PrettyPrintOk(lp.Log, "Generated certificate for %s", s.description)
@@ -426,7 +419,7 @@ func (lp *LocalPKI) GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) e
 			continue
 		}
 		// Cert doesn't exist. Generate it
-		if err := generateCert(ca, lp.GeneratedCertsDirectory, s); err != nil {
+		if err := generateCert(ca, lp.GeneratedCertsDirectory, s, plan.Cluster.Certificates.Expiry); err != nil {
 			return err
 		}
 		util.PrettyPrintOk(lp.Log, "Generated certificate for %s", s.description)
@@ -434,7 +427,11 @@ func (lp *LocalPKI) GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) e
 	return nil
 }
 
-func generateCert(ca *tls.CA, certDir string, spec certificateSpec) error {
+func generateCert(ca *tls.CA, certDir string, spec certificateSpec, expiryStr string) error {
+	expiry, err := time.ParseDuration(expiryStr)
+	if err != nil {
+		return fmt.Errorf("%q is not a valid duration for certificate expiry", expiryStr)
+	}
 	req := csr.CertificateRequest{
 		CN: spec.commonName,
 		KeyRequest: &csr.BasicKeyRequest{
@@ -452,7 +449,7 @@ func generateCert(ca *tls.CA, certDir string, spec certificateSpec) error {
 		req.Names = append(req.Names, name)
 	}
 
-	key, cert, err := tls.NewCert(ca, req)
+	key, cert, err := tls.NewCert(ca, req, expiry)
 	if err != nil {
 		return fmt.Errorf("error generating certs for %q: %v", spec.description, err)
 	}

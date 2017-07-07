@@ -106,13 +106,10 @@ func newPKI(stdout io.Writer, options *validateOpts) (*install.LocalPKI, error) 
 	}
 	certsDir := filepath.Join(options.generatedAssetsDir, "keys")
 	pki := &install.LocalPKI{
-		CACsr:                   filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
-		CAConfigFile:            filepath.Join(ansibleDir, "playbooks", "tls", "ca-config.json"),
-		CASigningProfile:        "kubernetes",
+		CACsr: filepath.Join(ansibleDir, "playbooks", "tls", "ca-csr.json"),
 		GeneratedCertsDirectory: certsDir,
 		Log: stdout,
 	}
-
 	return pki, nil
 }
 

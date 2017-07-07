@@ -9,7 +9,8 @@ import (
 )
 
 func TestNewCACert(t *testing.T) {
-	_, cert, err := NewCACert("test/ca-csr.json", "someCommonName")
+	duration := 5 * 365 * 24 * time.Hour
+	_, cert, err := NewCACert("test/ca-csr.json", "someCommonName", duration.String())
 	if err != nil {
 		t.Fatalf("error creating CA cert: %v", err)
 	}
@@ -40,11 +41,7 @@ func TestNewCACert(t *testing.T) {
 
 	// Verify expiration
 	now := time.Now().UTC()
-	d, err := time.ParseDuration("8760h")
-	if err != nil {
-		t.Fatalf("error parsing duration: %v", err)
-	}
-	expectedExpiration := now.Add(d)
+	expectedExpiration := now.Add(duration)
 	if expectedExpiration.Year() != parsedCert.NotAfter.Year() || expectedExpiration.YearDay() != parsedCert.NotAfter.YearDay() {
 		t.Errorf("expected expiration date %q, got %q", expectedExpiration, parsedCert.NotAfter)
 	}

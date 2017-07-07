@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/cloudflare/cfssl/cli/genkey"
@@ -25,14 +26,10 @@ type CA struct {
 	Password string
 	// Cert is the CA's public certificate.
 	Cert []byte
-	// ConfigFile contains a cfssl configuration file for the Certificate Authority
-	ConfigFile string
-	// Profile to be used when signing with this Certificate Authority
-	Profile string
 }
 
 // NewCert creates a new certificate/key pair using the CertificateAuthority provided
-func NewCert(ca *CA, req csr.CertificateRequest) (key, cert []byte, err error) {
+func NewCert(ca *CA, req csr.CertificateRequest, expiry time.Duration) (key, cert []byte, err error) {
 	g := &csr.Generator{Validator: genkey.Validator}
 	csrBytes, key, err := g.ProcessRequest(&req)
 	if err != nil {
@@ -49,20 +46,20 @@ func NewCert(ca *CA, req csr.CertificateRequest) (key, cert []byte, err error) {
 		return nil, nil, fmt.Errorf("error parsing CA cert: %v", err)
 	}
 	sigAlgo := signer.DefaultSigAlgo(caPriv)
-	// Get CA config from file
-	caConfig, err := config.LoadFile(ca.ConfigFile)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error loading CA Config: %v", err)
+	// Build CA configuration
+	caConfig := &config.Signing{
+		Default: config.DefaultConfig(),
 	}
+	caConfig.Default.Expiry = expiry
+	caConfig.Default.ExpiryString = expiry.String()
 	// Create signer using CA
-	s, err := local.NewSigner(caPriv, caCert, sigAlgo, caConfig.Signing)
+	s, err := local.NewSigner(caPriv, caCert, sigAlgo, caConfig)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error creating signer: %v", err)
 	}
 	// Generate cert using CA signer
 	signReq := signer.SignRequest{
 		Request: string(csrBytes),
-		Profile: ca.Profile,
 	}
 	cert, err = s.Sign(signReq)
 	if err != nil {

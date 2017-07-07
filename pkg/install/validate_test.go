@@ -147,6 +147,21 @@ func TestValidatePlanInvalidCertExpiry(t *testing.T) {
 	assertInvalidPlan(t, p)
 }
 
+func TestValidatePlanEmptyCACertExpiryIsValid(t *testing.T) {
+	p := validPlan
+	p.Cluster.Certificates.CAExpiry = ""
+	valid, _ := p.validate()
+	if !valid {
+		t.Errorf("plan was found invalid")
+	}
+}
+
+func TestValidatePlanInvalidCACertificatesExpiry(t *testing.T) {
+	p := validPlan
+	p.Cluster.Certificates.CAExpiry = "foo"
+	assertInvalidPlan(t, p)
+}
+
 func TestValidatePlanEmptySSHUser(t *testing.T) {
 	p := validPlan
 	p.Cluster.SSH.User = ""

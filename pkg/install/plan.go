@@ -18,7 +18,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const ket133PackageManagerProvider = "helm"
+const (
+	ket133PackageManagerProvider = "helm"
+	defaultCAExpiry              = "17520h"
+)
 
 type stack struct {
 	lock sync.Mutex
@@ -107,6 +110,9 @@ func setDefaults(p *Plan) {
 		p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 		p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
 	}
+	if p.Cluster.Certificates.CAExpiry == "" {
+		p.Cluster.Certificates.CAExpiry = defaultCAExpiry
+	}
 }
 
 var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z]+)[ ]*:`)
@@ -188,6 +194,7 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 
 	// Set Certificate defaults
 	p.Cluster.Certificates.Expiry = "17520h"
+	p.Cluster.Certificates.CAExpiry = defaultCAExpiry
 
 	// Set DockerRegistry defaults
 	p.DockerRegistry.Port = 8443
@@ -287,6 +294,7 @@ var commentMap = map[string]string{
 	"cluster.networking.https_proxy":                     "Set the proxy server to use for HTTPs connections",
 	"cluster.networking.no_proxy":                        "List of host names and/or IPs that shouldn't go through any proxy. If set to a asterisk '*' only, it matches all hosts.",
 	"cluster.certificates.expiry":                        "Self-signed certificate expiration period in hours; default is 2 years.",
+	"cluster.certificates.ca_expiry":                     "CA certificate expiration period in hours; default is 2 years.",
 	"cluster.ssh.ssh_key":                                "Absolute path to the ssh private key we should use to manage nodes.",
 	"etcd":                                               "Here you will identify all of the nodes that should play the etcd role on your cluster.",
 	"master":                                             "Here you will identify all of the nodes that should play the master role.",

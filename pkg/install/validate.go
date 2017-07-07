@@ -196,6 +196,9 @@ func (c *CertsConfig) validate() (bool, []error) {
 	if _, err := time.ParseDuration(c.Expiry); err != nil {
 		v.addError(fmt.Errorf("Invalid certificate expiry %q provided: %v", c.Expiry, err))
 	}
+	if _, err := time.ParseDuration(c.CAExpiry); c.CAExpiry != "" && err != nil { // don't error when empty for backwards compat
+		v.addError(fmt.Errorf("Invalid CA certificate expiry %q provider: %v", c.CAExpiry, err))
+	}
 	return v.valid()
 }
 
