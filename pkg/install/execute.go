@@ -1,7 +1,6 @@
 package install
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -915,9 +914,17 @@ func installNodeToAnsibleNode(n *Node, s *SSHConfig) ansible.Node {
 func timestampWriter(out io.Writer) io.Writer {
 	pr, pw := io.Pipe()
 	go func(r io.Reader) {
-		s := bufio.NewScanner(r)
-		for s.Scan() {
-			fmt.Fprintf(out, "%s - %s\n", time.Now().UTC().Format("2006-01-02 15:04:05.000-0700"), s.Text())
+		lr := util.NewLineReader(r, 64*1024)
+		var (
+			err  error
+			line []byte
+		)
+		for err == nil {
+			line, err = lr.Read()
+			fmt.Fprintf(out, "%s - %s\n", time.Now().UTC().Format("2006-01-02 15:04:05.000-0700"), string(line))
+		}
+		if err != io.EOF {
+			fmt.Printf("Error timestamping ansible logs: %v", err)
 		}
 	}(pr)
 	return pw
