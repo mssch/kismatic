@@ -1,0 +1,59 @@
+version: 2
+defaults: &defaults
+  working_directory: /go/src/github.com/apprenda/kismatic
+  docker:
+    - image: golang:1.8
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make bare-test
+      - run: GOOS=linux make bare-dist
+      - store_artifacts:
+          path: out/kismatic.tar.gz
+          destination: kismatic-linux-amd64.tar.gz
+      - run: mkdir -p artifact/linux && cp out/kismatic.tar.gz artifact/linux/ # Used for releasing to GH
+      # Run tests
+      - run: mkdir -p /run/user/1026
+      - run: chown 1026:1026 /run/user/1026
+      - run: echo "$KISMATIC_INT_TEST_KEY" | base64 -d > ~/.ssh/kismatic-integration-testing.pem
+      - run: chmod 0600 ~/.ssh/kismatic-integration-testing.pem
+      - run: 
+          command: make just-integration-test
+          no_output_timeout: 30m
+          environment:
+            GINKGO_OPTS: "-nodes=64"
+            ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
+            ANSIBLE_SSH_ARGS: "-o ControlMaster=auto -o ControlPersist=1800s -o ControlPath=/run/user/1026/ssh-%r-%h-%p"    
+      - run: 
+          command: |
+            if [[ -n "$CIRCLE_TAG" || -n "$RUN_SLOW_TESTS" ]]
+            then
+              make slow-integration-test
+            fi
+          no_output_timeout: 60m
+          environment:
+            GINKGO_OPTS: "-nodes=64"
+            ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
+            ANSIBLE_SSH_ARGS: "-o ControlMaster=auto -o ControlPersist=1800s -o ControlPath=/run/user/1026/ssh-%r-%h-%p"
+      # Build darwin
+      - run: GLIDE_GOOS=linux GOOS=darwin make bare-dist
+      - run: mv out out-darwin
+      - store_artifacts:
+          path: out-darwin/kismatic.tar.gz
+          destination: kismatic-darwin-amd64.tar.gz      
+      - run: mkdir -p artifact/darwin && mv out-darwin/kismatic.tar.gz artifact/darwin/ # Used for releasing to GH
+      # Release to GitHub
+      - run: | 
+          if [[ -n "$CIRCLE_TAG" && "$CIRCLE_BRANCH" == "master" ]]
+          then
+            go run release.go -tag $CIRCLE_TAG
+          fi
+
+deployment:
+  fake_deploy_for_cci2:
+    tag: /.*/
+    commands:
+      - echo "make tags run in 2.0"

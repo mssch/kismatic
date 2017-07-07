@@ -1,5 +1,4 @@
 # Kismatic
-[![Build Status](https://snap-ci.com/ulSrRsof30gMr7eaXZ_eufLs7XQtmS6Lw4eYwkmATn4/build_image)](https://snap-ci.com/apprenda/kismatic/branch/master)
 
 ### Pre-requisites
 - make
@@ -30,7 +29,3 @@ You may pass build options as necessary:
 ```
 GOOS=linux make build
 ```
-### Continuous Integration
-Kismatic uses Snap for CI.
-
-https://snap-ci.com/apprenda/kismatic/
