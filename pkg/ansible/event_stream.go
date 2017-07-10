@@ -1,26 +1,35 @@
 package ansible
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
+
+	"github.com/apprenda/kismatic/pkg/util"
 )
 
 // EventStream reads JSON lines from the incoming stream, and convert them
 // into a stream of events.
 func EventStream(in io.Reader) <-chan Event {
-	scanner := bufio.NewScanner(in)
+	lr := util.NewLineReader(in, 64*1024)
 	out := make(chan Event)
 	go func() {
-		for scanner.Scan() {
-			jl := scanner.Bytes()
-			event, err := eventFromJSONLine(jl)
+		var line []byte
+		var err error
+		for {
+			line, err = lr.Read()
+			if err != nil { // we are done with the stream
+				break
+			}
+			event, err := eventFromJSONLine(line)
 			if err != nil {
 				// handle this error? Maybe have an outErr channel
 				continue
 			}
 			out <- event
+		}
+		if err != io.EOF {
+			fmt.Printf("Error reading ansible event stream: %v", err)
 		}
 		// Close the channel, as the stream is done
 		close(out)
