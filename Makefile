@@ -13,7 +13,7 @@ HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 
 # Versions of external dependencies
-GLIDE_VERSION = v0.12.3
+GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.3.0.0
 PROVISIONER_VERSION = v1.3.0
 KUBERANG_VERSION = v1.1.3
