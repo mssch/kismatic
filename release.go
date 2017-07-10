@@ -24,6 +24,8 @@ func main() {
 	if *tag == "" {
 		exit("tag cannot be empty")
 	}
+	// For safety, this script creates a temporary release
+	*tag = *tag + "-CI"
 	fmt.Printf("Creating release for tag %q\n", *tag)
 	authToken := os.Getenv("GITHUB_TOKEN")
 	if authToken == "" {
