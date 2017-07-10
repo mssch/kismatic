@@ -20,9 +20,7 @@ func getPKI(t *testing.T) LocalPKI {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
 	pki := LocalPKI{
-		CACsr:                   "test/ca-csr.json",
-		CAConfigFile:            "test/ca-config.json",
-		CASigningProfile:        "kubernetes",
+		CACsr: "test/ca-csr.json",
 		GeneratedCertsDirectory: tempDir,
 		Log: ioutil.Discard,
 	}
@@ -219,6 +217,31 @@ func TestClusterCAExistsGenerationSkipped(t *testing.T) {
 	}
 	if len(keyContents) != 0 {
 		t.Error("Key file was modified")
+	}
+}
+
+func TestGenerateClusterCAPlanFileExpirationIsRespected(t *testing.T) {
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	p := getPlan()
+	p.DockerRegistry.SetupInternal = true
+
+	validity := 5 * 365 * 24 * time.Hour // 5 years
+	p.Cluster.Certificates.Expiry = validity.String()
+
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	caCert, err := helpers.ParseCertificatePEM(ca.Cert)
+	if err != nil {
+		t.Errorf("failed to parse generated cert: %v", err)
+	}
+
+	expirationDate := time.Now().Add(validity)
+	if caCert.NotAfter.Year() != expirationDate.Year() || caCert.NotAfter.YearDay() != expirationDate.YearDay() {
+		t.Errorf("bad expiration date on generated cert. expected %v, got %v", expirationDate, caCert.NotAfter)
 	}
 }
 
@@ -476,6 +499,33 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 	for _, test := range tests {
 		t.Run(test.name, validateClientCertificateAndKey(pki.GeneratedCertsDirectory,
 			test.certFilename, test.expectedCommonName, test.expectedOrganizations...))
+	}
+}
+
+func TestGenerateClusterCertificatesPlanFileExpirationIsRespected(t *testing.T) {
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	p := getPlan()
+	p.DockerRegistry.SetupInternal = true
+
+	validity := 5 * 365 * 24 * time.Hour // 5 years
+	p.Cluster.Certificates.Expiry = validity.String()
+
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	node := p.Master.Nodes[0]
+	if err := pki.GenerateNodeCertificate(p, node, ca); err != nil {
+		t.Fatalf("failed to generate certificate for node: %v", err)
+	}
+	certFile := filepath.Join(pki.GeneratedCertsDirectory, fmt.Sprintf("%s-apiserver.pem", node.Host))
+	cert := mustReadCertFile(certFile, t)
+
+	expirationDate := time.Now().Add(validity)
+	if cert.NotAfter.Year() != expirationDate.Year() || cert.NotAfter.YearDay() != expirationDate.YearDay() {
+		t.Errorf("bad expiration date on generated cert. expected %v, got %v", expirationDate, cert.NotAfter)
 	}
 }
 

@@ -38,4 +38,8 @@ func TestReadWithNil(t *testing.T) {
 	if p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas != 2 {
 		t.Errorf("Expected add_ons.heapster.options.heapster_replicas to equal 2, instead got %d", p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas)
 	}
+
+	if p.Cluster.Certificates.CAExpiry != defaultCAExpiry {
+		t.Errorf("expected ca cert expiry to be %s, but got %s", defaultCAExpiry, p.Cluster.Certificates.CAExpiry)
+	}
 }

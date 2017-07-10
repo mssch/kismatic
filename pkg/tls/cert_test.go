@@ -16,7 +16,7 @@ import (
 )
 
 func TestGenerateNewCertificate(t *testing.T) {
-	key, caCert, err := NewCACert("test/ca-csr.json", "someCN")
+	key, caCert, err := NewCACert("test/ca-csr.json", "someCN", "12345h")
 	if err != nil {
 		t.Fatalf("error creating CA: %v", err)
 	}
@@ -25,10 +25,8 @@ func TestGenerateNewCertificate(t *testing.T) {
 		t.Fatalf("error parsing CA Certificate: %v", err)
 	}
 	ca := &CA{
-		Key:        key,
-		Cert:       caCert,
-		ConfigFile: "test/ca-config.json",
-		Profile:    "kubernetes",
+		Key:  key,
+		Cert: caCert,
 	}
 	certHosts := []string{"testHostname", "otherName", "127.0.0.1", "10.5.6.217"}
 	req := csr.CertificateRequest{
@@ -53,7 +51,8 @@ func TestGenerateNewCertificate(t *testing.T) {
 		t.Fatalf("error decoding csr: %v", err)
 	}
 
-	_, cert, err := NewCert(ca, req)
+	expiration := 12345 * time.Hour
+	_, cert, err := NewCert(ca, req, expiration)
 	if err != nil {
 		t.Errorf("error creating certificate: %v", err)
 	}
@@ -116,11 +115,7 @@ func TestGenerateNewCertificate(t *testing.T) {
 
 	// Verify expiration
 	now := time.Now().UTC()
-	d, err := time.ParseDuration("8760h")
-	if err != nil {
-		t.Fatalf("error parsing duration: %v", err)
-	}
-	expectedExpiration := now.Add(d)
+	expectedExpiration := now.Add(expiration)
 	if expectedExpiration.Year() != parsedCert.NotAfter.Year() || expectedExpiration.YearDay() != parsedCert.NotAfter.YearDay() {
 		t.Errorf("expected expiration date %q, got %q", expectedExpiration, parsedCert.NotAfter)
 	}
@@ -283,15 +278,13 @@ func TestCertValid(t *testing.T) {
 	}
 	defer cleanup(tempDir, t)
 
-	key, caCert, err := NewCACert("test/ca-csr.json", "someCN")
+	key, caCert, err := NewCACert("test/ca-csr.json", "someCN", "12345h")
 	if err != nil {
 		t.Fatalf("error creating CA: %v", err)
 	}
 	ca := &CA{
-		Key:        key,
-		Cert:       caCert,
-		ConfigFile: "test/ca-config.json",
-		Profile:    "kubernetes",
+		Key:  key,
+		Cert: caCert,
 	}
 
 	// Assert that the method returns an error if the cert does not exist
@@ -301,7 +294,7 @@ func TestCertValid(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		key, cert, err := NewCert(ca, *buildReq(test.certCN, test.certSANs, test.certOrganizations))
+		key, cert, err := NewCert(ca, *buildReq(test.certCN, test.certSANs, test.certOrganizations), 17520*time.Hour)
 		if err != nil {
 			t.Error(err)
 		}

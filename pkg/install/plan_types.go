@@ -27,7 +27,8 @@ type NetworkConfig struct {
 
 // CertsConfig describes the cluster's trust and certificate configuration
 type CertsConfig struct {
-	Expiry string
+	Expiry   string
+	CAExpiry string `yaml:"ca_expiry"`
 }
 
 // SSHConfig describes the cluster's SSH configuration for accessing nodes
