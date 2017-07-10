@@ -47,15 +47,15 @@ kubernetes_master_insecure_port: 8080
 #===============================================================================
 # common variables for etcd
 # etcd-certificates
-etcd_certificates_ca_file: "{{ etcd_install_dir }}/{{ etcd_certificates_ca_file_name }}"
-etcd_certificates_cert_file: "{{ etcd_install_dir }}/{{ etcd_certificates_cert_file_name }}"
-etcd_certificates_key_file: "{{ etcd_install_dir }}/{{ etcd_certificates_key_file_name }}"
-etcd_certificates_ca_file_name: ca.pem
-etcd_certificates_cert_file_name: etcd.pem
-etcd_certificates_key_file_name: etcd-key.pem
-etcd_certificates_owner: root
-etcd_certificates_group: root
-etcd_certificates_mode: 0660
+etcd_certificates:
+  ca: "{{ etcd_install_dir }}/ca.pem"
+  etcd: "{{ etcd_install_dir }}/etcd.pem"
+  etcd_key: "{{ etcd_install_dir }}/etcd-key.pem"
+  etcd_client: "{{ etcd_install_dir }}/etcd-client.pem"
+  etcd_client_key: "{{ etcd_install_dir }}/etcd-client-key.pem"
+  owner: root
+  group: root
+  mode: 0660
 # etcd-install
 etcd_install_executable_owner: 1000
 etcd_install_executable_group: 1000

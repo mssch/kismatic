@@ -3,4 +3,5 @@
     when: allow_package_installation|bool == true
 
   #etcd
+  - include: _certs-etcd.yaml upgrading=true
   - include: _etcd-transition.yaml upgrading=true

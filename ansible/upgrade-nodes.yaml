@@ -14,6 +14,7 @@
     when: allow_package_installation|bool == true
 
   - include: _certs.yaml upgrading=true
+  - include: _certs-etcd.yaml upgrading=true
 
   # docker
   - include: _docker.yaml play_name="Upgrade Docker" upgrading=true
