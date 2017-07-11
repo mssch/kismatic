@@ -1,7 +1,7 @@
 ---
   # add ingress label to nodes
   - name: label ingress nodeSelector
-    command: kubectl label nodes {% for host in groups['ingress'] %}{{ host }} {% endfor %} kismatic/ingress=true --overwrite
+    command: kubectl label nodes {% for host in groups['ingress'] %}{{ host|lower }} {% endfor %} kismatic/ingress=true --overwrite
 
   - name: create /etc/kubernetes/specs directory
     file:

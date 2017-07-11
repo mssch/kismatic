@@ -24,13 +24,13 @@
       mode: "{{ network_environment_mode }}"
 
   - name: get the name of the calico pod running on this node
-    command: kubectl get pods -l=k8s-app=calico-node --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system
+    command: kubectl get pods -l=k8s-app=calico-node --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname|lower }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system
     register: calico_pod_name
     when: upgrading is defined and upgrading|bool == true
 
     # label nodes that will have have calico isntalled
   - name: label nodes for calico
-    command: kubectl label nodes {% for host in play_hosts %}{{ host }} {% endfor %} kismatic/calico=true --overwrite --kubeconfig {{ kubernetes_kubeconfig_path }}
+    command: kubectl label nodes {% for host in play_hosts %}{{ host|lower }} {% endfor %} kismatic/calico=true --overwrite --kubeconfig {{ kubernetes_kubeconfig_path }}
     run_once: true
 
   - name: start calico containers

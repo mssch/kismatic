@@ -1,3 +1,3 @@
 ---
   - name: verify node registered with API server
-    command: kubectl get nodes {{ worker_node }} --kubeconfig {{ kubernetes_kubeconfig_path }}
+    command: kubectl get nodes {{ worker_node|lower }} --kubeconfig {{ kubernetes_kubeconfig_path }}

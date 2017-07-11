@@ -10,7 +10,7 @@
 
     tasks:
       - name: wait until the calico pod on this node is running
-        shell: kubectl get pods `kubectl get pods -l=k8s-app=calico-node --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system` -n kube-system -o=jsonpath='{.status.phase}'
+        shell: kubectl get pods `kubectl get pods -l=k8s-app=calico-node --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname|lower }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system` -n kube-system -o=jsonpath='{.status.phase}'
         register: calico_pod_name
         until: calico_pod_name|success and calico_pod_name.stdout == "Running"
         retries: 10

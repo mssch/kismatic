@@ -1,4 +1,4 @@
 ---
-  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-apiserver-{{ inventory_hostname }}"
-  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-scheduler-{{ inventory_hostname }}"
-  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-controller-manager-{{ inventory_hostname }}"
+  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-apiserver-{{ inventory_hostname|lower }}"
+  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-scheduler-{{ inventory_hostname|lower }}"
+  - include: ../validate-pod/tasks/validate-pod.yaml item="kube-controller-manager-{{ inventory_hostname|lower }}"
