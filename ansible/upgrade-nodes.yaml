@@ -6,7 +6,6 @@
     tasks: []
   # Drain the node before we touch it
   - include: _kube-drain-node.yaml
-    when: online_upgrade is defined and online_upgrade|bool == true
 
   - include: _packages-cleanup.yaml
     when: allow_package_installation|bool == true
@@ -36,6 +35,5 @@
   - include: _calico-validate-node.yaml play_name="Validate Cluster Network" upgrading=true
 
   - include: _kube-uncordon-node.yaml
-    when: online_upgrade is defined and online_upgrade|bool == true
 
   - include: _update-version.yaml

@@ -117,7 +117,8 @@ func (c *applyCmd) run() error {
 		return fmt.Errorf("error running smoke test: %v", err)
 	}
 
-	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully!\n\n")
+	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully!\n")
+	fmt.Fprintln(c.out)
 
 	msg := "- To use the generated kubeconfig file with kubectl:" +
 		"\n    * use \"./kubectl --kubeconfig %s/kubeconfig\"" +
@@ -125,6 +126,7 @@ func (c *applyCmd) run() error {
 	util.PrintColor(c.out, util.Blue, msg, c.generatedAssetsDir)
 	util.PrintColor(c.out, util.Blue, "- To view the Kubernetes dashboard: \"./kismatic dashboard\"\n")
 	util.PrintColor(c.out, util.Blue, "- To SSH into a cluster node: \"./kismatic ssh etcd|master|worker|storage|$node.host\"\n")
+	fmt.Fprintln(c.out)
 
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/apprenda/kismatic/pkg/data"
 	"github.com/apprenda/kismatic/pkg/install"
@@ -17,6 +18,7 @@ type upgradeOpts struct {
 	verbose            bool
 	outputFormat       string
 	skipPreflight      bool
+	ignoreSafetyChecks bool
 	online             bool
 	planFile           string
 	restartServices    bool
@@ -26,7 +28,7 @@ type upgradeOpts struct {
 }
 
 // NewCmdUpgrade returns the upgrade command
-func NewCmdUpgrade(out io.Writer) *cobra.Command {
+func NewCmdUpgrade(in io.Reader, out io.Writer) *cobra.Command {
 	var opts upgradeOpts
 	cmd := &cobra.Command{
 		Use:   "upgrade",
@@ -52,19 +54,20 @@ Nodes in the cluster are upgraded in the following order:
 	cmd.PersistentFlags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.PersistentFlags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
 	cmd.PersistentFlags().BoolVar(&opts.skipPreflight, "skip-preflight", false, "skip upgrade pre-flight checks")
+	cmd.PersistentFlags().BoolVar(&opts.ignoreSafetyChecks, "ignore-safety-checks", false, "ignore upgrade safety checks and continue with the upgrade")
 	cmd.PersistentFlags().BoolVar(&opts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
 	cmd.PersistentFlags().BoolVar(&opts.partialAllowed, "partial-ok", false, "allow the upgrade of ready nodes, and skip nodes that have been deemed unready for upgrade")
 	cmd.PersistentFlags().BoolVar(&opts.dryRun, "dry-run", false, "simulate the upgrade, but don't actually upgrade the cluster")
 	addPlanFileFlag(cmd.PersistentFlags(), &opts.planFile)
 
 	// Subcommands
-	cmd.AddCommand(NewCmdUpgradeOffline(out, &opts))
-	cmd.AddCommand(NewCmdUpgradeOnline(out, &opts))
+	cmd.AddCommand(NewCmdUpgradeOffline(in, out, &opts))
+	cmd.AddCommand(NewCmdUpgradeOnline(in, out, &opts))
 	return cmd
 }
 
 // NewCmdUpgradeOffline returns the command for running offline upgrades
-func NewCmdUpgradeOffline(out io.Writer, opts *upgradeOpts) *cobra.Command {
+func NewCmdUpgradeOffline(in io.Reader, out io.Writer, opts *upgradeOpts) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "offline",
 		Short: "Perform an offline upgrade of your Kubernetes cluster",
@@ -79,7 +82,7 @@ availability. For this reason, this method should not be used for clusters that 
 production workloads.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doUpgrade(out, opts)
+			return doUpgrade(in, out, opts)
 		},
 	}
 	cmd.Flags().IntVar(&opts.maxParallelWorkers, "max-parallel-workers", 1, "the maximum number of worker nodes to be upgraded in parallel")
@@ -87,7 +90,7 @@ production workloads.
 }
 
 // NewCmdUpgradeOnline returns the command for running online upgrades
-func NewCmdUpgradeOnline(out io.Writer, opts *upgradeOpts) *cobra.Command {
+func NewCmdUpgradeOnline(in io.Reader, out io.Writer, opts *upgradeOpts) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "online",
 		Short: "Perform an online upgrade of your Kubernetes cluster",
@@ -102,13 +105,13 @@ before any changes are applied.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.online = true
-			return doUpgrade(out, opts)
+			return doUpgrade(in, out, opts)
 		},
 	}
 	return &cmd
 }
 
-func doUpgrade(out io.Writer, opts *upgradeOpts) error {
+func doUpgrade(in io.Reader, out io.Writer, opts *upgradeOpts) error {
 	if opts.maxParallelWorkers < 1 {
 		return fmt.Errorf("max-parallel-workers must be greater or equal to 1, got: %d", opts.maxParallelWorkers)
 	}
@@ -209,7 +212,7 @@ func doUpgrade(out io.Writer, opts *upgradeOpts) error {
 	if len(toUpgrade) == 0 {
 		fmt.Fprintln(out, "All nodes are at the target version. Skipping node upgrades.")
 	} else {
-		if err = upgradeNodes(out, *plan, *opts, toUpgrade, executor, preflightExec); err != nil {
+		if err = upgradeNodes(in, out, *plan, *opts, toUpgrade, executor, preflightExec); err != nil {
 			return err
 		}
 	}
@@ -239,13 +242,13 @@ without the "--partial-ok" flag to perform a full upgrade.
 
 	if !opts.dryRun {
 		fmt.Fprintln(out)
-		util.PrintColor(out, util.Green, "Upgrade complete\n")
+		util.PrintColor(out, util.Green, "The cluster was upgraded successfully!\n")
 		fmt.Fprintln(out)
 	}
 	return nil
 }
 
-func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedUpgrade []install.ListableNode, executor install.Executor, preflightExec install.PreFlightExecutor) error {
+func upgradeNodes(in io.Reader, out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedUpgrade []install.ListableNode, executor install.Executor, preflightExec install.PreFlightExecutor) error {
 	// Run safety checks if doing an online upgrade
 	unsafeNodes := []install.ListableNode{}
 	if opts.online {
@@ -270,19 +273,43 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 				util.PrintOkln(out)
 			}
 		}
-		// If we found any unsafe nodes, and we are not doing a partial upgrade, exit.
-		if len(unsafeNodes) > 0 && !opts.partialAllowed {
-			return errors.New("Unable to perform an online upgrade due to the unsafe conditions detected.")
-		}
-		// Block the upgrade if partial is allowed but there is an etcd or master node
-		// that cannot be upgraded
-		if opts.partialAllowed {
-			for _, n := range unsafeNodes {
-				for _, r := range n.Roles {
-					if r == "master" || r == "etcd" {
-						return errors.New("Unable to perform an online upgrade due to the unsafe conditions detected.")
+
+		// if --ignore-safety-checks still want to run and print the checks, just ignore them
+		if opts.ignoreSafetyChecks {
+			if len(unsafeNodes) > 0 {
+				util.PrettyPrintWarn(out, "\nIgnoring safety checks and continuing with the upgrade")
+			}
+		} else {
+			var safetyErr error
+			// If we found any unsafe nodes, and we are not doing a partial upgrade, or using --ignore-safety-checks exit.
+			if len(unsafeNodes) > 0 && !opts.partialAllowed {
+				safetyErr = errors.New("Unable to perform an online upgrade due to the unsafe conditions detected.")
+			}
+			// Block the upgrade if partial is allowed but there is an etcd or master node
+			// that cannot be upgraded
+			if opts.partialAllowed {
+				for _, n := range unsafeNodes {
+					for _, r := range n.Roles {
+						if r == "master" || r == "etcd" {
+							safetyErr = errors.New("Unable to perform an online upgrade due to the unsafe conditions detected.")
+							break
+						}
 					}
 				}
+			}
+			// did any safety checks fail
+			if safetyErr != nil {
+				fmt.Fprintln(out)
+				ans, err := util.PromptForString(in, out, "Unsafe conditions detected, continue with the upgrade anyway?", "N", []string{"N", "y"})
+				if err != nil {
+					return fmt.Errorf("error getting user response: %v", err)
+				}
+				// if not "y" fail safety checks, otherwise continue with upgrade
+				if strings.ToLower(ans) != "y" {
+					return safetyErr
+				}
+				opts.ignoreSafetyChecks = true
+				util.PrettyPrintWarn(out, "\nIgnoring safety checks and continuing with the upgrade")
 			}
 		}
 	}
@@ -320,9 +347,12 @@ func upgradeNodes(out io.Writer, plan install.Plan, opts upgradeOpts, nodesNeedU
 	toUpgrade := []install.ListableNode{}
 	for _, n := range nodesNeedUpgrade {
 		upgrade := true
-		for _, unsafe := range unsafeNodes {
-			if unsafe.Node == n.Node {
-				upgrade = false
+		// upgrade unsafe nodes when --ignoreSafetyChecks
+		if !opts.ignoreSafetyChecks {
+			for _, unsafe := range unsafeNodes {
+				if unsafe.Node == n.Node {
+					upgrade = false
+				}
 			}
 		}
 		for _, unready := range unreadyNodes {

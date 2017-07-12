@@ -176,7 +176,7 @@ func DetectNodeUpgradeSafety(plan Plan, node Node, kubeClient upgradeKubeInfoCli
 func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) []error {
 	errs := []error{}
 	podList, err := kubeClient.ListPods()
-	if err != nil {
+	if err != nil || podList == nil {
 		errs = append(errs, fmt.Errorf("unable to determine node upgrade safety: %v", err))
 		return errs
 	}
@@ -199,13 +199,13 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 			if v.VolumeSource.PersistentVolumeClaim != nil {
 				claimRef := v.VolumeSource.PersistentVolumeClaim
 				pvc, err := kubeClient.GetPersistentVolumeClaim(p.Namespace, claimRef.ClaimName)
-				if err != nil {
+				if err != nil || pvc == nil {
 					errs = append(errs, fmt.Errorf(`Failed to get PersistentVolumeClaim "%s/%s."`, p.Namespace, claimRef.ClaimName))
 					continue
 				}
 				pvName := pvc.Spec.VolumeName
 				pv, err := kubeClient.GetPersistentVolume(pvName)
-				if err != nil {
+				if err != nil || pv == nil {
 					errs = append(errs, fmt.Errorf(`Failed to get PersistentVolume %q. This PV is being used by pod "%s/%s" on this node`, pvName, p.Namespace, p.Name))
 					continue
 				}
@@ -245,8 +245,8 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 			errs = append(errs, fmt.Errorf("Unable to determine upgrade safety for a pod managed by a controller of type %q", r.Reference.Kind))
 		case "daemonset":
 			ds, err := kubeClient.GetDaemonSet(r.Reference.Namespace, r.Reference.Name)
-			if err != nil {
-				errs = append(errs, fmt.Errorf("DaemonSet pod is running, but failed to get information about DaemonSet %s/%s", r.Reference.Namespace, r.Reference.Name))
+			if err != nil || ds == nil {
+				errs = append(errs, fmt.Errorf("Failed to get information about DaemonSet %s/%s", r.Reference.Namespace, r.Reference.Name))
 				continue
 			}
 			// Check if other nodes should be running this DS
@@ -257,8 +257,9 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 			errs = append(errs, podRunningJobErr{namespace: r.Reference.Namespace, name: r.Reference.Name})
 		case "replicationcontroller":
 			rc, err := kubeClient.GetReplicationController(r.Reference.Namespace, r.Reference.Name)
-			if err != nil {
-				errs = append(errs, fmt.Errorf(`Failed to get information about replication controller "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+			if err != nil || rc == nil {
+				errs = append(errs, fmt.Errorf(`Failed to get information about ReplicationController "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+				continue
 			}
 			if rc.Status.Replicas < 2 {
 				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
@@ -269,8 +270,9 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 			}
 		case "replicaset":
 			rs, err := kubeClient.GetReplicaSet(r.Reference.Namespace, r.Reference.Name)
-			if err != nil {
-				errs = append(errs, fmt.Errorf(`Failed to get information about replica set "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+			if err != nil || rs == nil {
+				errs = append(errs, fmt.Errorf(`Failed to get information about ReplicaSet "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+				continue
 			}
 			if rs.Status.Replicas < 2 {
 				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
@@ -281,8 +283,9 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 			}
 		case "statefulset":
 			sts, err := kubeClient.GetStatefulSet(r.Reference.Namespace, r.Reference.Name)
-			if err != nil {
-				errs = append(errs, fmt.Errorf(`Failed to get information about stateful set "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+			if err != nil || sts == nil {
+				errs = append(errs, fmt.Errorf(`Failed to get information about StatefulSet "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+				continue
 			}
 			if sts.Status.Replicas < 2 {
 				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
