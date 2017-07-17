@@ -2,6 +2,11 @@
   # Start the gluster service
   - name: reload systemd daemon
     command: systemctl daemon-reload
+  - name: start rpcbind service
+    service:
+      name: rpcbind.service
+      state: started
+      enabled: yes
   - name: start glusterfs-server service
     service:
       name: glusterfs-server.service
