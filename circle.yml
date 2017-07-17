@@ -33,7 +33,7 @@ jobs:
             then
               make slow-integration-test
             fi
-          no_output_timeout: 60m
+          no_output_timeout: 90m
           environment:
             GINKGO_OPTS: "-nodes=64 --flakeAttempts=2"
             ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
