@@ -3,6 +3,14 @@
     hosts: master:worker:ingress:storage
     serial: 1
     tasks:
-      - name: "Run kubectl drain"
-        command: "kubectl drain --ignore-daemonsets --force --delete-local-data {{ inventory_hostname|lower }}"
-        # --force is required for static pods, --delete-local-data is required for pods with emptyDir
+      - name: "run kubectl drain"
+        command: "kubectl drain --ignore-daemonsets --force --delete-local-data {{ inventory_hostname|lower }}" # --force is required for static pods, --delete-local-data is required for pods with emptyDir
+        register: drain_node
+        until: drain_node|success
+        retries: 3
+        delay: 30
+        failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
+      - name: fail if the node was not drained successfully
+        fail:
+          msg: "Timed out waiting for node to be drained."
+        when: drain_node|failed

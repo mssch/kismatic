@@ -3,5 +3,5 @@
     hosts: worker
     serial: 1
     tasks:
-      - name: "Run kubectl uncordon"
+      - name: "run kubectl uncordon"
         command: "kubectl uncordon {{ inventory_hostname|lower }}"
