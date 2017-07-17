@@ -1,8 +1,8 @@
 #===============================================================================
 # VERSIONS
-kubernetes_version: v1.7.0
-kismatic_yum_version: 1.7.0_1-1
-kismatic_deb_version: 1.7.0-1
+kubernetes_version: v1.7.1
+kismatic_yum_version: 1.7.1_1-1
+kismatic_deb_version: 1.7.1-1
 etcd_version: 3.1.9
 etcd_yum_version: 3.1.9-1
 etcd_apt_version: 3.1.9
