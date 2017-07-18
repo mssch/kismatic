@@ -2,7 +2,6 @@
   - hosts: storage
     any_errors_fatal: true
     name: "Bootstrap Persistent Storage Cluster"
-    remote_user: root
     become: yes
 
     environment:
@@ -19,7 +18,6 @@
     any_errors_fatal: true
     name: "Create NFS service on the cluster"
     run_once: true
-    remote_user: root
     become: yes
     roles:
       - glusterfs-k8s

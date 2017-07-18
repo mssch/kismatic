@@ -2,7 +2,6 @@
   - hosts: master
     any_errors_fatal: true
     name: "{{ play_name | default('Stop Kubernetes API Server') }}"
-    remote_user: root
     become: yes
     vars_files:
       - group_vars/all.yaml

@@ -1,7 +1,6 @@
 ---
   - hosts: master[0]
     name: "{{ play_name | default('Configure Internal Docker Registry') }}"
-    remote_user: root
     become: yes
     run_once: true
 

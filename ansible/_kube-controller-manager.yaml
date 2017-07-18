@@ -3,7 +3,6 @@
     any_errors_fatal: true
     name: "{{ play_name | default('Start Kubernetes Controller Manager') }}"
     serial: "{{ serial_count | default('100%') }}"
-    remote_user: root
     become: yes
     vars_files:
       - group_vars/all.yaml

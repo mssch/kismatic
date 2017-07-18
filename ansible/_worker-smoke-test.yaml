@@ -2,7 +2,6 @@
   - hosts: worker
     any_errors_fatal: true
     name: "Smoke Test New Worker"
-    remote_user: root
     become: yes
     run_once: true
 

@@ -2,7 +2,6 @@
   - hosts: master[0]
     any_errors_fatal: true
     name: "{{ play_name | default('Initialize Helm and Start Tiller') }}"
-    remote_user: root
     become: yes
     run_once: true
 

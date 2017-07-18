@@ -3,7 +3,6 @@
   - hosts: all
     any_errors_fatal: true
     name: "Configure Kismatic Package Repos"
-    remote_user: root
     become: yes
 
     environment:
