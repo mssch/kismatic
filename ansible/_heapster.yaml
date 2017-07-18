@@ -3,7 +3,7 @@
     any_errors_fatal: true
     name: "Configure Heapster Cluster Monitoring"
     remote_user: root
-    become_method: sudo
+    become: yes
     run_once: true
     vars_files:
       - group_vars/all.yaml

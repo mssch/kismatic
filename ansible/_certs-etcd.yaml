@@ -3,7 +3,7 @@
     any_errors_fatal: true
     name: "Deploy Etcd Certificates"
     remote_user: root
-    become_method: sudo
+    become: yes
     vars_files:
       - group_vars/all.yaml
 

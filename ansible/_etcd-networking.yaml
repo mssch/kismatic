@@ -4,7 +4,7 @@
     name: "{{ play_name | default('Start Network Etcd Cluster') }}"
     serial: "{{ serial_count | default('100%') }}"
     remote_user: root
-    become_method: sudo
+    become: yes
     vars_files:
       - group_vars/all.yaml
       - group_vars/etcd-networking.yaml

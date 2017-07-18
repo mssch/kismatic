@@ -3,7 +3,7 @@
     any_errors_fatal: true
     name: Smoke Test Master Node
     remote_user: root
-    become_method: sudo
+    become: yes
     serial: 1
     vars_files:
       - group_vars/all.yaml

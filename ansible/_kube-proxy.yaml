@@ -4,7 +4,7 @@
     name: "{{ play_name | default('Start Kubernetes Proxy') }}"
     serial: "{{ serial_count | default('100%') }}"
     remote_user: root
-    become_method: sudo
+    become: yes
     vars_files:
       - group_vars/all.yaml
 

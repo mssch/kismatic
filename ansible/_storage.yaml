@@ -3,7 +3,7 @@
     any_errors_fatal: true
     name: "Bootstrap Persistent Storage Cluster"
     remote_user: root
-    become_method: sudo
+    become: yes
 
     environment:
       https_proxy: "{{ https_proxy }}"
@@ -20,6 +20,6 @@
     name: "Create NFS service on the cluster"
     run_once: true
     remote_user: root
-    become_method: sudo
+    become: yes
     roles:
       - glusterfs-k8s

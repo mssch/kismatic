@@ -4,7 +4,7 @@
     name: "Temporarily Install Transition Etcd 3.x version"
     serial: 1 # need to always do this serially
     remote_user: root
-    become_method: sudo
+    become: yes
     vars_files:
       - group_vars/all.yaml
       - group_vars/etcd-networking.yaml
