@@ -2,8 +2,13 @@ package cli
 
 import (
 	"bytes"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/apprenda/kismatic/pkg/install"
 )
@@ -66,16 +71,29 @@ func TestGetAuthenticatedDashboardURL(t *testing.T) {
 	}
 }
 
+type timeoutHandler struct {
+}
+
+func (h timeoutHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	delay, err := strconv.Atoi(strings.Trim(req.URL.Path, "/"))
+	if err != nil {
+		fmt.Printf("could not parse delay: %s, %v", req.URL.Path, err)
+	}
+	time.Sleep(time.Duration(delay) * time.Second)
+}
+
 func TestVerifyDashboardConnectivity(t *testing.T) {
-	dashboardURL := "http://httpbin.org/delay/1"
-	if err := verifyDashboardConnectivity(dashboardURL); err != nil {
+	server := httptest.NewServer(timeoutHandler{})
+	defer server.Close()
+	if err := verifyDashboardConnectivity(server.URL + "/1"); err != nil {
 		t.Errorf("dashboard returned an error %v", err)
 	}
 }
 
 func TestVerifyDashboardConnectivityShouldTimeout(t *testing.T) {
-	dashboardURL := "http://httpbin.org/delay/5"
-	if err := verifyDashboardConnectivity(dashboardURL); err == nil {
+	server := httptest.NewServer(timeoutHandler{})
+	defer server.Close()
+	if err := verifyDashboardConnectivity(server.URL + "/3"); err == nil {
 		t.Errorf("ip returned an error %v", err)
 	}
 }
