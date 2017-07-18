@@ -22,7 +22,7 @@
 
     #failed_when: true to always print stderr and stdout
   - name: get docker logs for {{ item }}
-    command: docker logs {{ container_ID.stdout }}
+    command: docker logs {{ containerID.stdout }}
     register: docker_logs
     failed_when: true
     when: containerID is defined and containerID|success and containerID.stdout is defined and containerID.stdout != ""
