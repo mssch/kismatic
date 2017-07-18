@@ -47,7 +47,7 @@ jobs:
       - run: mkdir -p artifact/darwin && mv out-darwin/kismatic.tar.gz artifact/darwin/ # Used for releasing to GH
       # Release to GitHub
       - run: | 
-          if [[ -n "$CIRCLE_TAG" && "$CIRCLE_BRANCH" == "master" ]]
+          if [[ -n "$CIRCLE_TAG" ]]
           then
             go run release.go -tag $CIRCLE_TAG
           fi
