@@ -54,7 +54,6 @@ Nodes in the cluster are upgraded in the following order:
 	cmd.PersistentFlags().BoolVar(&opts.verbose, "verbose", false, "enable verbose logging from the installation")
 	cmd.PersistentFlags().StringVarP(&opts.outputFormat, "output", "o", "simple", "installation output format (options \"simple\"|\"raw\")")
 	cmd.PersistentFlags().BoolVar(&opts.skipPreflight, "skip-preflight", false, "skip upgrade pre-flight checks")
-	cmd.PersistentFlags().BoolVar(&opts.ignoreSafetyChecks, "ignore-safety-checks", false, "ignore upgrade safety checks and continue with the upgrade")
 	cmd.PersistentFlags().BoolVar(&opts.restartServices, "restart-services", false, "force restart cluster services (Use with care)")
 	cmd.PersistentFlags().BoolVar(&opts.partialAllowed, "partial-ok", false, "allow the upgrade of ready nodes, and skip nodes that have been deemed unready for upgrade")
 	cmd.PersistentFlags().BoolVar(&opts.dryRun, "dry-run", false, "simulate the upgrade, but don't actually upgrade the cluster")
@@ -108,6 +107,7 @@ before any changes are applied.
 			return doUpgrade(in, out, opts)
 		},
 	}
+	cmd.PersistentFlags().BoolVar(&opts.ignoreSafetyChecks, "ignore-safety-checks", false, "ignore upgrade safety checks and continue with the upgrade")
 	return &cmd
 }
 
