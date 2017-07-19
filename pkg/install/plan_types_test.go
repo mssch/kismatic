@@ -1,9 +1,9 @@
 package install
 
 import (
-	"testing"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"testing"
 )
 
 func TestCanReadAPIServerOverrides(t *testing.T) {

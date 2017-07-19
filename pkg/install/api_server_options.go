@@ -6,7 +6,7 @@ import (
 )
 
 type APIServerOptions struct {
-  Overrides  map[string]string `yaml:"option_overrides"`
+	Overrides map[string]string `yaml:"option_overrides"`
 }
 
 var protectedOptions = []string{
@@ -35,9 +35,9 @@ func (options *APIServerOptions) validate() (bool, []error) {
 		}
 	}
 
-	if len(overrides) > 0  {
+	if len(overrides) > 0 {
 		v.addError(fmt.Errorf("Kube ApiServer Option(s) [%v] should not be overridden", strings.Join(overrides, ", ")))
 	}
 
-	return v.valid();
+	return v.valid()
 }
