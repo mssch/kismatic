@@ -39,6 +39,9 @@ Here are some example commands to get you started with upgrading your Kubernetes
 
 # Run an online upgrade
 ./kismatic upgrade online
+
+# Run an online upgrade, and skip the checks that I know are safe to ignore
+./kismatic upgrade online --ignore-safety-checks
 ```
 
 ## Readiness
@@ -109,11 +112,20 @@ why the upgrade is blocked if the condition is detected.
 | Ingress node                               | Unavailable: we can't ensure that ingress nodes are load balanced         |
 | Storage node                               | Potentially unavailable: brick on node will become unavailable            |
 
+### Ignoring Safety Checks
+Flagged safety checks should usually be resolved before performing an online upgrade. 
+There might be circumstances, however, in which failed checks cannot be resolved and they can
+safely be ignored. For example, a workload using an EmptyDir volume as scratch space
+can be drained from a node, as it won't have any useful data in the EmptyDir.
+
+Once all the resolvable safety checks are taken care of, you may want to
+ignore the remaining safety checks. To ignore them, pass the `--ignore-safety-checks`
+flag to the `kismatic upgrade online` command. The checks will still run, but they
+won't prevent the upgrade from running.
 
 ## Offline Upgrade
 The offline upgrade is available for those clusters in which safety and availabilty are not a concern.
-In this mode, the safety and availability checks will not be performed, nor will the nodes in the cluster
-be drained of workloads.
+In this mode, the safety and availability checks will not be performed.
 
 Performing an offline upgrade could result in loss of critical data and reduced service
 availability. For this reason, this method should not be used for clusters that are housing
