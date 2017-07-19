@@ -117,8 +117,24 @@ func setDefaults(p *Plan) {
 	}
 	if p.AddOns.HeapsterMonitoring == nil {
 		p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
-		p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
 	}
+	if p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas == 0 {
+		p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas = 2
+	}
+	// read field from KET < v1.5.0
+	if p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas != 0 {
+		p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas = p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas
+	}
+	if p.AddOns.HeapsterMonitoring.Options.Heapster.Sink == "" {
+		p.AddOns.HeapsterMonitoring.Options.Heapster.Sink = "influxdb:http://heapster-influxdb.kube-system.svc:8086"
+	}
+	if p.AddOns.HeapsterMonitoring.Options.Heapster.ServiceType == "" {
+		p.AddOns.HeapsterMonitoring.Options.Heapster.ServiceType = "ClusterIP"
+	}
+	if p.AddOns.HeapsterMonitoring.Options.InfluxDBPVCName != "" {
+		p.AddOns.HeapsterMonitoring.Options.InfluxDB.PVCName = p.AddOns.HeapsterMonitoring.Options.InfluxDBPVCName
+	}
+
 	if p.Cluster.Certificates.CAExpiry == "" {
 		p.Cluster.Certificates.CAExpiry = defaultCAExpiry
 	}
@@ -214,7 +230,9 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	p.AddOns.CNI.Options.Calico.Mode = "overlay"
 	// Heapster
 	p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
-	p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
+	p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas = 2
+	p.AddOns.HeapsterMonitoring.Options.Heapster.ServiceType = "ClusterIP"
+	p.AddOns.HeapsterMonitoring.Options.Heapster.Sink = "influxdb:http://heapster-influxdb.kube-system.svc:8086"
 
 	// Package Manager
 	p.AddOns.PackageManager.Provider = "helm"
@@ -328,6 +346,8 @@ var commentMap = map[string]string{
 	"nfs.mount_path":                                     "The mount path of an NFS share. Must start with /",
 	"add_ons.cni.provider":                               "Options: 'calico','weave','contiv','custom'",
 	"add_ons.cni.options.calico.mode":                    "Options: 'overlay','routed'. Routed pods can be addressed from outside the Kubernetes cluster; Overlay pods can only address each other.",
-	"add_ons.heapster.options.influxdb_pvc_name":         "Provide the name of the persistent volume claim that you will create after installation. If not specified, the data will be stored in ephemeral storage.",
+	"add_ons.heapster.options.influxdb.pvc_name":         "Provide the name of the persistent volume claim that you will create after installation. If not specified, the data will be stored in ephemeral storage.",
+	"add_ons.heapster.options.heapster.service_type":     "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'. Specify kubernetes ServiceType; default 'ClusterIP'",
+	"add_ons.heapster.options.heapster.sink":             "Specify the sink to store heapster data; default to a pod running on cluster.",
 	"add_ons.package_manager.provider":                   "Options: 'helm'",
 }

@@ -79,8 +79,12 @@ add_ons:
   heapster:
     disable: false
     options:
-      heapster_replicas: {{if eq .HeapsterReplicas 0}}2{{else}}{{.HeapsterReplicas}}{{end}}
-      influxdb_pvc_name: {{.HeapsterInfluxdbPVC}}
+      heapster:
+        replicas: {{if eq .HeapsterReplicas 0}}2{{else}}{{.HeapsterReplicas}}{{end}}
+        service_type: ClusterIP
+        sink: influxdb:http://heapster-influxdb.kube-system.svc:8086
+      influxdb:
+        pvc_name: {{.HeapsterInfluxdbPVC}}
   package_manager:
     disable: {{.DisableHelm}}
     provider: helm

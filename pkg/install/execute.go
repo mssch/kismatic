@@ -775,8 +775,10 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	// heapster
 	if p.AddOns.HeapsterMonitoring != nil && !p.AddOns.HeapsterMonitoring.Disable {
 		cc.Heapster.Enabled = true
-		cc.Heapster.Options.HeapsterReplicas = p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas
-		cc.Heapster.Options.InfluxDBPVCName = p.AddOns.HeapsterMonitoring.Options.InfluxDBPVCName
+		cc.Heapster.Options.Heapster.Replicas = p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas
+		cc.Heapster.Options.Heapster.ServiceType = p.AddOns.HeapsterMonitoring.Options.Heapster.ServiceType
+		cc.Heapster.Options.Heapster.Sink = p.AddOns.HeapsterMonitoring.Options.Heapster.Sink
+		cc.Heapster.Options.InfluxDB.PVCName = p.AddOns.HeapsterMonitoring.Options.InfluxDB.PVCName
 	}
 	// dashboard
 	cc.Dashboard.Enabled = !p.AddOns.Dashboard.Disable

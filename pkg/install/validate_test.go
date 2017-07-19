@@ -34,7 +34,10 @@ var validPlan = Plan{
 		},
 		HeapsterMonitoring: &HeapsterMonitoring{
 			Options: HeapsterOptions{
-				HeapsterReplicas: 2,
+				Heapster: Heapster{
+					Replicas:    2,
+					ServiceType: "ClusterIP",
+				},
 			},
 		},
 	},
@@ -1091,7 +1094,10 @@ func TestHeapsterAddOn(t *testing.T) {
 		{
 			h: HeapsterMonitoring{
 				Options: HeapsterOptions{
-					HeapsterReplicas: 0,
+					Heapster: Heapster{
+						Replicas:    0,
+						ServiceType: "ClusterIP",
+					},
 				},
 			},
 			valid: false,
@@ -1099,7 +1105,10 @@ func TestHeapsterAddOn(t *testing.T) {
 		{
 			h: HeapsterMonitoring{
 				Options: HeapsterOptions{
-					HeapsterReplicas: -1,
+					Heapster: Heapster{
+						Replicas:    1,
+						ServiceType: "Foo",
+					},
 				},
 			},
 			valid: false,
@@ -1107,7 +1116,21 @@ func TestHeapsterAddOn(t *testing.T) {
 		{
 			h: HeapsterMonitoring{
 				Options: HeapsterOptions{
-					HeapsterReplicas: 1,
+					Heapster: Heapster{
+						Replicas:    -1,
+						ServiceType: "ClusterIP",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			h: HeapsterMonitoring{
+				Options: HeapsterOptions{
+					Heapster: Heapster{
+						Replicas:    1,
+						ServiceType: "ClusterIP",
+					},
 				},
 			},
 			valid: true,
