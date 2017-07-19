@@ -1,9 +1,9 @@
 package install
 
 import (
-	"testing"
 	"fmt"
 	"reflect"
+	"testing"
 )
 
 func TestValidateFailsForOverridingProtectedValue(t *testing.T) {
@@ -23,7 +23,7 @@ func TestValidateFailsForOverridingProtectedValues(t *testing.T) {
 	options := APIServerOptions{
 		Overrides: map[string]string{
 			"advertise-address": "1.2.3.4",
-			"secure-port": "123",
+			"secure-port":       "123",
 		},
 	}
 
@@ -35,8 +35,7 @@ func TestValidateFailsForOverridingProtectedValues(t *testing.T) {
 
 func TestValidatePassesForNoValues(t *testing.T) {
 
-	options := APIServerOptions{
-	}
+	options := APIServerOptions{}
 
 	ok, _ := options.validate()
 
@@ -46,7 +45,7 @@ func TestValidatePassesForNoValues(t *testing.T) {
 func TestValidatePassesForUnprotectedValues(t *testing.T) {
 	options := APIServerOptions{
 		Overrides: map[string]string{
-			"foobar":"baz",
+			"foobar": "baz",
 		},
 	}
 
