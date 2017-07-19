@@ -23,4 +23,4 @@
       fail:
         msg: "Timed out waiting for kubernetes-dashboard pods to be in the ready state."
       when: readyReplicas.stdout|int != [2, groups['worker'] | length] | min
-    when: run_validation|bool == true 
+    when: run_pod_validation|bool == true 

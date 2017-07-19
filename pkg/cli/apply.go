@@ -113,7 +113,7 @@ func (c *applyCmd) run() error {
 
 	// Run smoketest
 	// Don't run
-	if plan.CanValidatePods() {
+	if plan.NetworkConfigured() {
 		if err := c.executor.RunSmokeTest(plan); err != nil {
 			return fmt.Errorf("error running smoke test: %v", err)
 		}

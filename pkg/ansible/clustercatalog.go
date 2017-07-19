@@ -78,7 +78,7 @@ type ClusterCatalog struct {
 		Enabled bool
 	}
 
-	RunValidation bool `yaml:"run_validation"`
+	RunPodValidation bool `yaml:"run_pod_validation"`
 
 	CNI struct {
 		Enabled  bool

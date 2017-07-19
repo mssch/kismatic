@@ -29,6 +29,7 @@ type PlanAWS struct {
 	NoProxy                      string
 	UseDirectLVM                 bool
 	ServiceCIDR                  string
+	DisableCNI                   bool
 	DisableHelm                  bool
 	HeapsterReplicas             int
 	HeapsterInfluxdbPVC          string
@@ -70,7 +71,7 @@ docker_registry:
   CA: {{.DockerRegistryCAPath}}
 add_ons:
   cni:
-    disable: false
+    disable: {{.DisableCNI}}
     provider: calico
     options:
       calico:

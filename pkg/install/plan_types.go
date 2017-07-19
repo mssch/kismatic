@@ -390,7 +390,7 @@ func (p Plan) DockerRegistryPort() string {
 	return strconv.Itoa(port)
 }
 
-// CanValidatePods returns true if pod validation/smoketest should run
-func (p Plan) CanValidatePods() bool {
+// NetworkConfigured returns true if pod validation/smoketest should run
+func (p Plan) NetworkConfigured() bool {
 	return p.AddOns.CNI == nil || !p.AddOns.CNI.Disable
 }

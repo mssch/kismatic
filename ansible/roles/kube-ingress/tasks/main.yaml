@@ -38,4 +38,4 @@
       fail:
         msg: "Timed out waiting for all ingress controllers pods to be in the ready state."
       when: desiredPods.stdout|int != readyPods.stdout|int
-    when: run_validation|bool == true 
+    when: run_pod_validation|bool == true 

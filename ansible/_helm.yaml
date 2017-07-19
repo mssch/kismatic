@@ -37,4 +37,4 @@
           fail:
             msg: "Timed out waiting for the tiller pod to be in the ready state."
           when: readyReplicas.stdout|int != 1
-        when: run_validation|bool == true 
+        when: run_pod_validation|bool == true 

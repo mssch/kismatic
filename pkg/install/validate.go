@@ -228,13 +228,12 @@ func (n *CNI) validate() (bool, []error) {
 	v := newValidator()
 	if n != nil && !n.Disable {
 		if !util.Contains(n.Provider, CNIProviders()) {
-			v.addError(fmt.Errorf("CNI %q is not a valid option %v", n.Provider, CNIProviders()))
+			v.addError(fmt.Errorf("%q is not a valid CNI provider. Optins are %v", n.Provider, CNIProviders()))
 		}
-		if n.Options.Calico.Mode == "" {
-			v.addError(errors.New("Calico mode cannot be empty"))
-		}
-		if !util.Contains(n.Options.Calico.Mode, CalicoMode()) {
-			v.addError(fmt.Errorf("Calico mode %q is not a valid option %v", n.Options.Calico.Mode, CalicoMode()))
+		if n.Provider == "calico" {
+			if !util.Contains(n.Options.Calico.Mode, CalicoMode()) {
+				v.addError(fmt.Errorf("%q is not a valid Calico mode. Options are %v", n.Options.Calico.Mode, CalicoMode()))
+			}
 		}
 	}
 	return v.valid()
