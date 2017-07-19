@@ -15,30 +15,19 @@ git tag v1.1.0
 git push origin v1.1.0
 ```
 
-In our current CI setup on CircleCI, pushing a tag to GitHub will not trigger the
-build pipeline (not supported by CircleCI 2.0). For this reason, the build must be
-triggered manually on CircleCI once the tag is pushed.
-
-The release stage of the build pipeline is triggered when the commit that is being built
-is equal to the commit of the latest tag. The release stage uses the `release.go` script
-to draft a release on GitHub and upload the built artifacts.
+Pushing the tag will trigger a new build on the CI/CD system, which will have the
+release job enabled. Once all tests are finished, the release job will publish a draft
+release on GitHub and upload the binaries.
 
 Once the build is complete, go to `https://github.com/apprenda/kismatic/releases`
-to edit the release draft:
-* Include a section that lists the major features.
-* Include a section that lists any versions that have been changed in this new release
+to edit the release draft. 
+* Include a section that highlights any actions required by the user, if any.
+* Include a section that lists any deprecations that are being made in the release, if any.
+* Include a section that lists the notable changes. Each entry in the list should 
+include a link to the corresponding PR.
+* Include a section that lists any plan file changes.
+* Include a section that lists any component versions that have been changed in this new release
 * Include any other information that is relevant to the release
-
-### Release script usage
-Before being able to run the release script, you need the following:
-* GitHub API token (can be obtained from https://github.com/settings/tokens)
-* Built linux artifact, located at `./artifact/linux/kismatic.tar.gz`
-* Built darwin artifact, located at `./artifact/darwin/kismatic.tar.gz`
-* Git tag to be used (e.g. v1.1.0) for the release
-
-```
-GITHUB_TOKEN=theTokenHere go run release.go -tag v1.1.0
-```
 
 ### Useful Git commands
 Get latest tag name:
