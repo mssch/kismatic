@@ -5,34 +5,28 @@ Wants=docker.service
 After=docker.service
 
 [Service]
-Environment=INTERNAL_IP={{ internal_ipv4 }}
-Environment=CLUSTER_DNS={{ kubernetes_dns_service_ip }}
-Environment=HOSTNAME={{ inventory_hostname }}
-Environment=INFRA_IMG={{ pause_img }}
-Environment=REGISTER_SCHEDULABLE={{ kubernetes_schedulable }}
-Environment=NETWORK_PLUGIN_DIR={{ network_plugin_dir }}
-Environment=POD_MANIFEST_PATH={{ kubelet_pod_manifests_dir }}
 ExecStart=/usr/bin/kubelet \
   --allow-privileged=true \
   --cloud-provider= \
-  --cluster-dns=${CLUSTER_DNS} \
+  --cluster-dns={{ kubernetes_dns_service_ip }} \
   --cluster-domain=cluster.local \
   --container-runtime=docker \
+{%   if cni.enabled|bool == true %}
   --cni-bin-dir=/opt/cni/bin \
   --cni-conf-dir={{ network_plugin_dir }} \
+  --network-plugin=cni \
+{%   endif %}
   --docker=unix:///var/run/docker.sock \
-  --hostname-override=${HOSTNAME} \
+  --hostname-override={{ inventory_hostname }} \
   --require-kubeconfig=true \
   --kubeconfig={{ kubernetes_kubeconfig.kubelet }} \
-  --node-ip=${INTERNAL_IP} \
-  --pod-infra-container-image=${INFRA_IMG} \
-  --pod-manifest-path=${POD_MANIFEST_PATH} \
-  --register-schedulable=${REGISTER_SCHEDULABLE} \
+  --node-ip={{ internal_ipv4 }} \
+  --pod-infra-container-image={{ pause_img }} \
+  --pod-manifest-path={{ kubelet_pod_manifests_dir }} \
+  --register-schedulable={{ kubernetes_schedulable }} \
   --serialize-image-pulls=false \
   --tls-cert-file={{ kubernetes_certificates.kubelet}} \
   --tls-private-key-file={{ kubernetes_certificates.kubelet_key }} \
-  --network-plugin=cni \
-  --network-plugin-dir=${NETWORK_PLUGIN_DIR} \
   --v=2
 Restart=on-failure
 RestartSec=3

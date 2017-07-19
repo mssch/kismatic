@@ -169,12 +169,6 @@ func (c *Cluster) validate() (bool, []error) {
 
 func (n *NetworkConfig) validate() (bool, []error) {
 	v := newValidator()
-	if n.Type == "" {
-		v.addError(errors.New("Networking type cannot be empty"))
-	}
-	if n.Type != "routed" && n.Type != "overlay" {
-		v.addError(fmt.Errorf("Invalid networking type %q was provided", n.Type))
-	}
 	if n.PodCIDRBlock == "" {
 		v.addError(errors.New("Pod CIDR block cannot be empty"))
 	}
@@ -224,8 +218,25 @@ func (s *SSHConfig) validate() (bool, []error) {
 
 func (f *AddOns) validate() (bool, []error) {
 	v := newValidator()
+	v.validate(f.CNI)
 	v.validate(f.HeapsterMonitoring)
 	v.validate(&f.PackageManager)
+	return v.valid()
+}
+
+func (n *CNI) validate() (bool, []error) {
+	v := newValidator()
+	if n != nil && !n.Disable {
+		if !util.Contains(n.Provider, CNIProviders()) {
+			v.addError(fmt.Errorf("CNI %q is not a valid option %v", n.Provider, CNIProviders()))
+		}
+		if n.Options.Calico.Mode == "" {
+			v.addError(errors.New("Calico mode cannot be empty"))
+		}
+		if !util.Contains(n.Options.Calico.Mode, CalicoMode()) {
+			v.addError(fmt.Errorf("Calico mode %q is not a valid option %v", n.Options.Calico.Mode, CalicoMode()))
+		}
+	}
 	return v.valid()
 }
 

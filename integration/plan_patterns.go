@@ -42,7 +42,6 @@ const planAWSOverlay = `cluster:
   disconnected_installation: {{.DisconnectedInstallation}}
   disable_registry_seeding: {{.DisableRegistrySeeding}}
   networking:
-    type: overlay
     pod_cidr_block: 172.16.0.0/16
     service_cidr_block: {{if .ServiceCIDR}}{{.ServiceCIDR}}{{else}}172.20.0.0/16{{end}}
     update_hosts_files: {{.ModifyHostsFiles}}
@@ -70,6 +69,12 @@ docker_registry:
   port: {{.DockerRegistryPort}}
   CA: {{.DockerRegistryCAPath}}
 add_ons:
+  cni:
+    disable: false
+    provider: calico
+    options:
+      calico:
+        mode: overlay
   heapster:
     disable: false
     options:

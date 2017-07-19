@@ -35,6 +35,13 @@ func TestReadWithNil(t *testing.T) {
 	p := &Plan{}
 	setDefaults(p)
 
+	if p.AddOns.CNI.Provider != "calico" {
+		t.Errorf("Expected add_ons.cni.provider to equal 'calico', instead got %s", p.AddOns.CNI.Provider)
+	}
+	if p.AddOns.CNI.Options.Calico.Mode != "overlay" {
+		t.Errorf("Expected add_ons.cni.options.calico.mode to equal 'overlay', instead got %s", p.AddOns.CNI.Options.Calico.Mode)
+	}
+
 	if p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas != 2 {
 		t.Errorf("Expected add_ons.heapster.options.heapster_replicas to equal 2, instead got %d", p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas)
 	}

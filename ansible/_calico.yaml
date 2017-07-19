@@ -1,7 +1,7 @@
 ---
   - hosts: master:worker:ingress:storage
     any_errors_fatal: true
-    name: "{{ play_name | default('Start Network Components') }}"
+    name: "{{ play_name | default('Start Calico Network Components') }}"
     serial: "{{ serial_count | default('100%') }}"
     become: yes
     vars_files:

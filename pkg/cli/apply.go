@@ -103,9 +103,8 @@ func (c *applyCmd) run() error {
 	err = install.GenerateKubeconfig(plan, c.generatedAssetsDir)
 	if err != nil {
 		return fmt.Errorf("error generating kubeconfig file: %v", err)
-	} else {
-		util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory", c.generatedAssetsDir)
 	}
+	util.PrettyPrintOk(c.out, "Generated kubeconfig file in the %q directory", c.generatedAssetsDir)
 
 	// Perform the installation
 	if err := c.executor.Install(plan); err != nil {
@@ -113,8 +112,11 @@ func (c *applyCmd) run() error {
 	}
 
 	// Run smoketest
-	if err := c.executor.RunSmokeTest(plan); err != nil {
-		return fmt.Errorf("error running smoke test: %v", err)
+	// Don't run
+	if plan.CanValidatePods() {
+		if err := c.executor.RunSmokeTest(plan); err != nil {
+			return fmt.Errorf("error running smoke test: %v", err)
+		}
 	}
 
 	util.PrintColor(c.out, util.Green, "\nThe cluster was installed successfully!\n")

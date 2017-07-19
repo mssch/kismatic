@@ -695,7 +695,6 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		ClusterName:               p.Cluster.Name,
 		AdminPassword:             p.Cluster.AdminPassword,
 		TLSDirectory:              tlsDir,
-		CalicoNetworkType:         p.Cluster.Networking.Type,
 		ServicesCIDR:              p.Cluster.Networking.ServiceCIDRBlock,
 		PodCIDR:                   p.Cluster.Networking.PodCIDRBlock,
 		DNSServiceIP:              dnsIP,
@@ -764,6 +763,13 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	cc.EnableGluster = p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0
 
 	// add_ons
+	cc.RunValidation = p.CanValidatePods()
+	// CNI
+	if p.AddOns.CNI != nil && !p.AddOns.CNI.Disable {
+		cc.CNI.Enabled = true
+		cc.CNI.Provider = p.AddOns.CNI.Provider
+		cc.CNI.Options.Calico.Mode = p.AddOns.CNI.Options.Calico.Mode
+	}
 	// DNS
 	cc.DNS.Enabled = !p.AddOns.DNS.Disable
 	// heapster

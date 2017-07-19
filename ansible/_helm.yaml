@@ -24,14 +24,17 @@
         local_action: command ../../helm repo add kismatic https://apprenda.github.io/kismatic-charts/
         become: no
         when: disconnected_installation|bool != true
-      - name: wait until the tiller pod is ready
-        command: kubectl get deployment tiller-deploy -n kube-system -o jsonpath='{.status.availableReplicas}'
-        register: readyReplicas
-        until: readyReplicas.stdout|int == 1
-        retries: 24
-        delay: 10
-        failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
-      - name: fail if the tiller pod is not ready
-        fail:
-          msg: "Timed out waiting for the tiller pod to be in the ready state."
-        when: readyReplicas.stdout|int != 1
+
+      - block:
+        - name: wait until the tiller pod is ready
+          command: kubectl get deployment tiller-deploy -n kube-system -o jsonpath='{.status.availableReplicas}'
+          register: readyReplicas
+          until: readyReplicas.stdout|int == 1
+          retries: 24
+          delay: 10
+          failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
+        - name: fail if the tiller pod is not ready
+          fail:
+            msg: "Timed out waiting for the tiller pod to be in the ready state."
+          when: readyReplicas.stdout|int != 1
+        when: run_validation|bool == true 

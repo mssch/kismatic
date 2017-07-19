@@ -106,6 +106,15 @@ func readDeprecatedFields(p *Plan) {
 }
 
 func setDefaults(p *Plan) {
+	if p.AddOns.CNI == nil {
+		p.AddOns.CNI = &CNI{}
+		p.AddOns.CNI.Provider = "calico"
+		p.AddOns.CNI.Options.Calico.Mode = "overlay"
+		// read KET <v1.5.0 plan option
+		if p.Cluster.Networking.Type != "" {
+			p.AddOns.CNI.Options.Calico.Mode = p.Cluster.Networking.Type
+		}
+	}
 	if p.AddOns.HeapsterMonitoring == nil {
 		p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 		p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
@@ -187,7 +196,6 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	p.Cluster.SSH.Port = 22
 
 	// Set Networking defaults
-	p.Cluster.Networking.Type = "overlay"
 	p.Cluster.Networking.PodCIDRBlock = "172.16.0.0/16"
 	p.Cluster.Networking.ServiceCIDRBlock = "172.20.0.0/16"
 	p.Cluster.Networking.UpdateHostsFiles = false
@@ -200,6 +208,10 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	p.DockerRegistry.Port = 8443
 
 	// Add-Ons
+	// CNI
+	p.AddOns.CNI = &CNI{}
+	p.AddOns.CNI.Provider = "calico"
+	p.AddOns.CNI.Options.Calico.Mode = "overlay"
 	// Heapster
 	p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 	p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas = 2
@@ -286,7 +298,6 @@ var commentMap = map[string]string{
 	"cluster.package_repository_urls":                    "Comma-separated list of URLs of the repositories that should be used during installation. These repositories must contain the kismatic packages and all their transitive dependencies.",
 	"cluster.disconnected_installation":                  "Set to true if you have already installed the required packages on the nodes or provided a local URL in package_repository_urls containing those packages.",
 	"cluster.disable_registry_seeding":                   "Set to true if you have seeded your registry with the required images for the installation.",
-	"cluster.networking.type":                            "overlay or routed. Routed pods can be addressed from outside the Kubernetes cluster; Overlay pods can only address each other.",
 	"cluster.networking.pod_cidr_block":                  "Kubernetes will assign pods IPs in this range. Do not use a range that is already in use on your local network!",
 	"cluster.networking.service_cidr_block":              "Kubernetes will assign services IPs in this range. Do not use a range that is already in use by your local network or pod network!",
 	"cluster.networking.update_hosts_files":              "When true, the installer will add entries for all nodes to other nodes' hosts files. Use when you don't have access to DNS.",
@@ -315,6 +326,8 @@ var commentMap = map[string]string{
 	"nfs":                                                "A set of NFS volumes for use by on-cluster persistent workloads, managed by Kismatic.",
 	"nfs.nfs_host":                                       "The host name or ip address of an NFS server.",
 	"nfs.mount_path":                                     "The mount path of an NFS share. Must start with /",
+	"add_ons.cni.provider":                               "Options: 'calico','weave','contiv','custom'",
+	"add_ons.cni.options.calico.mode":                    "Options: 'overlay','routed'. Routed pods can be addressed from outside the Kubernetes cluster; Overlay pods can only address each other.",
 	"add_ons.heapster.options.influxdb_pvc_name":         "Provide the name of the persistent volume claim that you will create after installation. If not specified, the data will be stored in ephemeral storage.",
 	"add_ons.package_manager.provider":                   "Options: 'helm'",
 }
