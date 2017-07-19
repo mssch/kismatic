@@ -83,6 +83,7 @@ clean:
 	rm -rf integration/vendor
 	rm -rf vendor-kuberang
 	rm -rf vendor-helm
+	rm -rf vendor-kubectl
 
 test: vendor
 	@docker run                             \
@@ -126,17 +127,17 @@ vendor-kuberang/$(KUBERANG_VERSION):
 	mkdir -p vendor-kuberang/$(KUBERANG_VERSION)
 	curl https://kismatic-installer.s3-accelerate.amazonaws.com/kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64 -o vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64
 
-vendor-kubectl/out:
+vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-amd64:
 	mkdir -p vendor-kubectl/out/
-	curl -L https://storage.googleapis.com/kubernetes-release/release/$(KUBECTL_VERSION)/bin/$(GOOS)/amd64/kubectl -o vendor-kubectl/out/kubectl
-	chmod +x vendor-kubectl/out/kubectl
+	curl -L https://storage.googleapis.com/kubernetes-release/release/$(KUBECTL_VERSION)/bin/$(GOOS)/amd64/kubectl -o vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-amd64
+	chmod +x vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-amd64
 
-vendor-helm/out:
+vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-amd64:
 	mkdir -p vendor-helm/out/
 	curl -L https://storage.googleapis.com/kubernetes-helm/helm-$(HELM_VERSION)-$(GOOS)-amd64.tar.gz | tar zx -C vendor-helm
-	cp vendor-helm/$(GOOS)-amd64/helm vendor-helm/out/helm
+	cp vendor-helm/$(GOOS)-amd64/helm vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-amd64
 	rm -rf vendor-helm/$(GOOS)-amd64
-	chmod +x vendor-helm/out/helm
+	chmod +x vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-amd64
 
 dist: vendor
 	@echo "Running dist inside contianer"
@@ -152,7 +153,7 @@ dist: vendor
 	    circleci/golang:$(GO_VERSION)          \
 	    make bare-dist
 
-bare-dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) vendor-kubectl/out vendor-helm/out bare-build bare-build-inspector
+bare-dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-amd64 vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-amd64 bare-build bare-build-inspector
 	mkdir -p out
 	cp bin/$(GOOS)/kismatic out
 	mkdir -p out/ansible
@@ -164,8 +165,8 @@ bare-dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VE
 	mkdir -p out/ansible/playbooks/kuberang/linux/amd64/
 	cp vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64 out/ansible/playbooks/kuberang/linux/amd64/kuberang
 	cp vendor-provision/out/provision-$(GOOS)-amd64 out/provision
-	cp vendor-kubectl/out/kubectl out/kubectl
-	cp vendor-helm/out/helm out/helm
+	cp vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-amd64 out/kubectl
+	cp vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-amd64 out/helm
 	rm -f out/kismatic.tar.gz
 	tar -czf kismatic.tar.gz -C out .
 	mv kismatic.tar.gz out
