@@ -225,6 +225,54 @@ var _ = Describe("kismatic", func() {
 						return verifyNetworkPolicy(nodes.master[0], sshKey)
 					})
 
+					sub.It("should support heapster with persistent storage", func() error {
+						return verifyHeapster(nodes.master[0], sshKey)
+					})
+
+					sub.It("should have tiller running", func() error {
+						return verifyTiller(nodes.master[0], sshKey)
+					})
+				})
+			})
+		})
+
+		Context("when deploying a skunkworks cluster and Weave", func() {
+			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
+				WithInfrastructure(NodeCount{3, 2, 3, 2, 2}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+					// reserve one of the workers for the add-worker test
+					allWorkers := nodes.worker
+					nodes.worker = allWorkers[0 : len(nodes.worker)-1]
+
+					// install cluster
+					installOpts := installOptions{
+						heapsterReplicas:    3,
+						heapsterInfluxdbPVC: "influxdb",
+						cniProvider:         "weave",
+					}
+					err := installKismatic(nodes, installOpts, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+
+					sub := SubDescribe("Using a running cluster")
+					defer sub.Check()
+
+					sub.It("should allow adding a worker node", func() error {
+						newWorker := allWorkers[len(allWorkers)-1]
+						return addWorkerToCluster(newWorker)
+					})
+
+					sub.It("should be able to deploy a workload with ingress", func() error {
+						return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
+					})
+
+					// Use master[0] public IP
+					sub.It("should have an accessible dashboard", func() error {
+						return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
+					})
+
+					sub.It("should respect network policies", func() error {
+						return verifyNetworkPolicy(nodes.master[0], sshKey)
+					})
+
 					// sub.It("should allow creating RBAC policy", func() error {
 					// 	// Run on worker because master uses unauth API endpoint (i.e. localhost:8080)
 					// 	return verifyRBAC(nodes.worker[0], sshKey)

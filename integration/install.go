@@ -43,6 +43,7 @@ type installOptions struct {
 	useDirectLVM                bool
 	serviceCIDR                 string
 	disableCNI                  bool
+	cniProvider                 string
 	heapsterReplicas            int
 	heapsterInfluxdbPVC         string
 }
@@ -100,6 +101,7 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		UseDirectLVM:                 installOpts.useDirectLVM,
 		ServiceCIDR:                  installOpts.serviceCIDR,
 		DisableCNI:                   installOpts.disableCNI,
+		CNIProvider:                  installOpts.cniProvider,
 		DisableHelm:                  disableHelm,
 		HeapsterReplicas:             installOpts.heapsterReplicas,
 		HeapsterInfluxdbPVC:          installOpts.heapsterInfluxdbPVC,

@@ -26,12 +26,18 @@
   # kubelet does not have an API yet to retrieve the status of a DS pod
   # after installing kube-proxy, there is a dependecy on the API server to validate the static pod
   - include: _kube-proxy.yaml
+  - include: _cni.yaml
+    when: cni.enabled|bool == true
   - include: _calico.yaml
     when: cni.enabled|bool == true and cni.provider == "calico"
   - include: _calico-validate.yaml
     when: cni.enabled|bool == true and cni.provider == "calico"
   - include: _calico-network-policy.yaml
     when: cni.enabled|bool == true and cni.provider == "calico"
+  - include: _weave.yaml
+    when: cni.enabled|bool == true and cni.provider == "weave"
+  - include: _weave-validate.yaml
+    when: cni.enabled|bool == true and cni.provider == "weave"
   - include: _kube-dns.yaml
     when: dns.enabled|bool == true
   - include: _heapster.yaml

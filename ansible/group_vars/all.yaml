@@ -12,10 +12,13 @@ docker_engine_yum_version: 1.12.6-1.el7.centos
 docker_engine_apt_version: 1.12.6-0~ubuntu-xenial
 helm_version: v2.5.0
 
+cni_version: "v0.5.2"
 calico_node_version: "v1.3.0"
 calico_ctl_version: "v1.3.0"
 calico_cni_version: "v1.9.1"
 calico_kube_policy_controller_version: "v0.6.0"
+weave_version: "2.0.1"
+weave_npc_version: "2.0.1"
 kubedns_version: "1.14.4"
 kube_dnsmasq_version: "1.14.4"
 kubedns_sidecar_version: "1.14.4"
@@ -92,6 +95,8 @@ calico_dir: /etc/calico
 calicoctl_conf_path: "{{ calico_dir }}/calicoctl.cfg"
 #file modes
 calico_executable_mode: 0775
+# weave
+weave_dir: /etc/weave
 #networking
 kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_master_secure_port}}
 #===============================================================================
@@ -225,6 +230,18 @@ calico_cni_img: '{% if load_private_images|bool == true %}{{ calico_cni_priv_img
 calico_kube_policy_controller_orig_img: calico/kube-policy-controller:{{ calico_kube_policy_controller_version }}
 calico_kube_policy_controller_priv_img: "{{ docker_registry_full_url }}/{{ calico_kube_policy_controller_orig_img }}"
 calico_kube_policy_controller_img: '{% if load_private_images|bool == true %}{{ calico_kube_policy_controller_priv_img }}{% else %}{{ calico_kube_policy_controller_orig_img }}{% endif %}'
+
+cni_bin_orig_img: apprenda/cni-bin:{{ cni_version }}
+cni_bin_priv_img: "{{ docker_registry_full_url }}/{{ cni_bin_orig_img }}"
+cni_bin_img: '{% if load_private_images|bool == true %}{{ cni_bin_priv_img }}{% else %}{{ cni_bin_orig_img }}{% endif %}'
+
+weave_orig_img: weaveworks/weave-kube:{{ weave_version }}
+weave_priv_img: "{{ docker_registry_full_url }}/{{ weave_orig_img }}"
+weave_img: '{% if load_private_images|bool == true %}{{ weave_priv_img }}{% else %}{{ weave_orig_img }}{% endif %}'
+
+weave_npc_orig_img: weaveworks/weave-npc:{{ weave_npc_version }}
+weave_npc_priv_img: "{{ docker_registry_full_url }}/{{ weave_npc_orig_img }}"
+weave_npc_img: '{% if load_private_images|bool == true %}{{ weave_npc_priv_img }}{% else %}{{ weave_npc_orig_img }}{% endif %}'
 
 defaultbackend_orig_img: gcr.io/google_containers/defaultbackend:{{ defaultbackend_version }}
 defaultbackend_priv_img: "{{ docker_registry_full_url }}/{{ defaultbackend_orig_img }}"

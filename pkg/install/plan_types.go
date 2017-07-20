@@ -15,7 +15,7 @@ func PackageManagerProviders() []string {
 }
 
 func CNIProviders() []string {
-	return []string{"calico"} //, "weave", "contiv", "custom"}
+	return []string{"calico", "weave"} //, "contiv", "custom"}
 }
 
 func CalicoMode() []string {
