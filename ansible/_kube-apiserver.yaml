@@ -3,8 +3,7 @@
     any_errors_fatal: true
     name: "{{ play_name | default('Start Kubernetes API Server') }}"
     serial: "{{ serial_count | default('100%') }}"
-    remote_user: root
-    become_method: sudo
+    become: yes
     vars_files:
       - group_vars/all.yaml
 

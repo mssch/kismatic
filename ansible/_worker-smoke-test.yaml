@@ -2,8 +2,7 @@
   - hosts: worker
     any_errors_fatal: true
     name: "Smoke Test New Worker"
-    remote_user: root
-    become_method: sudo
+    become: yes
     run_once: true
 
     roles:

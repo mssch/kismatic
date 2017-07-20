@@ -2,8 +2,7 @@
   - hosts: all
     any_errors_fatal: true
     name: "Update Kismatic Version File"
-    remote_user: root
-    become_method: sudo
+    become: yes
 
     roles:
       - role: update_version

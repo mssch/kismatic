@@ -2,8 +2,7 @@
   - hosts: master[0]
     any_errors_fatal: true
     name: "{{ play_name | default('Configure Calico Network Policy') }}"
-    remote_user: root
-    become_method: sudo
+    become: yes
     run_once: true
 
     pre_tasks:

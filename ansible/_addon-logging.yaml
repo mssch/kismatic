@@ -2,8 +2,7 @@
   - hosts: master[0]
     any_errors_fatal: true
     name: "Add-On Logging"
-    remote_user: root
-    become_method: sudo
+    become: yes
     run_once: true
 
     roles:

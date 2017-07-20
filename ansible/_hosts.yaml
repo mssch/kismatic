@@ -3,8 +3,7 @@
   - hosts: all
     any_errors_fatal: true
     name: "Update Hosts File"
-    remote_user: root
-    become_method: sudo
+    become: yes
 
     roles:
       - role: hosts
