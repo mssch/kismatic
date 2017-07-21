@@ -15,7 +15,7 @@ func PackageManagerProviders() []string {
 }
 
 func CNIProviders() []string {
-	return []string{"calico", "weave"} //, "contiv", "custom"}
+	return []string{"calico", "weave", "custom"} //, "contiv"}
 }
 
 func CalicoMode() []string {
@@ -407,5 +407,6 @@ func (p Plan) DockerRegistryPort() string {
 
 // NetworkConfigured returns true if pod validation/smoketest should run
 func (p Plan) NetworkConfigured() bool {
-	return p.AddOns.CNI == nil || !p.AddOns.CNI.Disable
+	// CNI disabled or "custom" return false
+	return p.AddOns.CNI == nil || (!p.AddOns.CNI.Disable && p.AddOns.CNI.Provider != "custom")
 }

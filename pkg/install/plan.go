@@ -344,7 +344,7 @@ var commentMap = map[string]string{
 	"nfs":                                                "A set of NFS volumes for use by on-cluster persistent workloads, managed by Kismatic.",
 	"nfs.nfs_host":                                       "The host name or ip address of an NFS server.",
 	"nfs.mount_path":                                     "The mount path of an NFS share. Must start with /",
-	"add_ons.cni.provider":                               "Options: 'calico','weave','contiv','custom'",
+	"add_ons.cni.provider":                               "Options: 'calico','weave','contiv','custom'. Selecting 'custom' will result in a CNI ready cluster, however it is up to you to configure a plugin after the install.",
 	"add_ons.cni.options.calico.mode":                    "Options: 'overlay','routed'. Routed pods can be addressed from outside the Kubernetes cluster; Overlay pods can only address each other.",
 	"add_ons.heapster.options.influxdb.pvc_name":         "Provide the name of the persistent volume claim that you will create after installation. If not specified, the data will be stored in ephemeral storage.",
 	"add_ons.heapster.options.heapster.service_type":     "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'. Specify kubernetes ServiceType; default 'ClusterIP'",
