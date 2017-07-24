@@ -75,7 +75,7 @@ type ClusterCatalog struct {
 
 	LocalKubeconfigDirectory string `yaml:"local_kubeconfig_directory"`
 
-	Helm struct {
+	DNS struct {
 		Enabled bool
 	}
 
@@ -85,6 +85,14 @@ type ClusterCatalog struct {
 			HeapsterReplicas int    `yaml:"heapster_replicas"`
 			InfluxDBPVCName  string `yaml:"influxdb_pvc_name"`
 		}
+	}
+
+	Dashboard struct {
+		Enabled bool
+	}
+
+	Helm struct {
+		Enabled bool
 	}
 
 	HTTPProxy  string `yaml:"http_proxy"`

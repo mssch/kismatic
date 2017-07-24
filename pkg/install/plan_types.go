@@ -160,7 +160,9 @@ type SSHConnection struct {
 }
 
 type AddOns struct {
+	DNS                DNS                 `yaml:"dns"`
 	HeapsterMonitoring *HeapsterMonitoring `yaml:"heapster"`
+	Dashboard          Dashboard           `yaml:"dashbard"`
 	PackageManager     PackageManager      `yaml:"package_manager"`
 }
 
@@ -170,9 +172,17 @@ type Features struct {
 	PackageManager *DeprecatedPackageManager `yaml:"package_manager,omitempty"`
 }
 
+type DNS struct {
+	Disable bool
+}
+
 type HeapsterMonitoring struct {
 	Disable bool
 	Options HeapsterOptions `yaml:"options"`
+}
+
+type Dashboard struct {
+	Disable bool
 }
 
 type HeapsterOptions struct {
