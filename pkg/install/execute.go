@@ -764,12 +764,16 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	cc.EnableGluster = p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0
 
 	// add_ons
+	// DNS
+	cc.DNS.Enabled = !p.AddOns.DNS.Disable
 	// heapster
 	if p.AddOns.HeapsterMonitoring != nil && !p.AddOns.HeapsterMonitoring.Disable {
 		cc.Heapster.Enabled = true
 		cc.Heapster.Options.HeapsterReplicas = p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas
 		cc.Heapster.Options.InfluxDBPVCName = p.AddOns.HeapsterMonitoring.Options.InfluxDBPVCName
 	}
+	// dashboard
+	cc.Dashboard.Enabled = !p.AddOns.Dashboard.Disable
 	// package_manager
 	if !p.AddOns.PackageManager.Disable {
 		// Currently only helm is supported
