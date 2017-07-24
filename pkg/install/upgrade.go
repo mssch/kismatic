@@ -24,40 +24,40 @@ type etcdNodeCountErr struct{}
 
 func (e etcdNodeCountErr) Error() string {
 	return "This node is part of an etcd cluster that has less than 3 members. " +
-		"Upgrading it will make the cluster unavailable."
+		"Upgrading it may make the cluster unavailable."
 }
 
 type masterNodeCountErr struct{}
 
 func (e masterNodeCountErr) Error() string {
 	return "This is the only master node in the cluster. " +
-		"Upgrading it will make the cluster unavailable."
+		"Upgrading it may make the cluster unavailable."
 }
 
 type masterNodeLoadBalancingErr struct{}
 
 func (e masterNodeLoadBalancingErr) Error() string {
 	return "This node is acting as the load balanced endpoint for the master nodes. " +
-		"Upgrading it will make the cluster unavailable"
+		"Upgrading it may make the cluster unavailable"
 }
 
 type ingressNotSupportedErr struct{}
 
 func (e ingressNotSupportedErr) Error() string {
-	return "Performing an online upgrade of ingress nodes is not supported."
+	return "Upgrading this node may result in storage volumes becoming temporarily unavailable."
 }
 
 type storageNotSupportedErr struct{}
 
 func (e storageNotSupportedErr) Error() string {
-	return "Performing an online upgrade of storage nodes is not supported."
+	return "Upgrading this node may result in service unavailability if clients are accessing services directly through this ingress point."
 }
 
 type workerNodeCountErr struct{}
 
 func (e workerNodeCountErr) Error() string {
 	return "This is the only worker node in the cluster. " +
-		"Upgrading it will make cluster features unavailable."
+		"Upgrading it may make cluster features unavailable."
 }
 
 type podUnsafeVolumeErr struct {
@@ -90,7 +90,7 @@ type podUnsafeDaemonErr struct {
 
 func (e podUnsafeDaemonErr) Error() string {
 	return fmt.Sprintf(`Pod managed by DaemonSet "%s/%s" is running on this node, and no other nodes `+
-		"are capable of hosting this daemon. Upgrading it will make the daemon unavailable.", e.dsNamespace, e.dsName)
+		"are capable of hosting this daemon. Upgrading it may make the daemon unavailable.", e.dsNamespace, e.dsName)
 }
 
 type unmanagedPodErr struct {

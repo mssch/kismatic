@@ -265,7 +265,11 @@ func upgradeNodes(in io.Reader, out io.Writer, plan install.Plan, opts upgradeOp
 			util.PrettyPrint(out, "%s %v", node.Node.Host, node.Roles)
 			errs := install.DetectNodeUpgradeSafety(plan, node.Node, kubeClient)
 			if len(errs) != 0 {
-				util.PrintError(out)
+				if opts.ignoreSafetyChecks {
+					util.PrintWarn(out)
+				} else {
+					util.PrintError(out)
+				}
 				fmt.Fprintln(out)
 				for _, err := range errs {
 					fmt.Println("-", err.Error())
