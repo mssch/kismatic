@@ -8,9 +8,13 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/apprenda/kismatic/pkg/tls"
+	"github.com/apprenda/kismatic/pkg/util"
 	"github.com/cloudflare/cfssl/helpers"
 )
 
@@ -976,6 +980,114 @@ func TestCertSpecEqual(t *testing.T) {
 		}
 		if test.y.equal(test.x) != test.equal {
 			t.Errorf("expected equal = %v, but got %v. x = %+v, y = %+v", test.equal, !test.equal, test.x, test.y)
+		}
+	}
+}
+
+func TestGenerateCertificate(t *testing.T) {
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	ca, err := pki.GenerateClusterCA(getPlan())
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+
+	tests := []struct {
+		name                  string
+		validityPeriod        string
+		commonName            string
+		subjectAlternateNames []string
+		organizations         []string
+		ca                    *tls.CA
+		overwrite             bool
+		exists                bool
+		valid                 bool
+	}{
+		{
+			name:           "foo",
+			commonName:     "foo",
+			validityPeriod: "8650h",
+			ca:             ca,
+			valid:          true,
+		},
+		{
+			name:                  "bar",
+			validityPeriod:        "17300h",
+			commonName:            "bar-cn",
+			subjectAlternateNames: []string{"bar-alt"},
+			organizations:         []string{"admin"},
+			ca:                    ca,
+			valid:                 true,
+		},
+		{
+			name:           "foo",
+			commonName:     "foo",
+			validityPeriod: "8650h",
+			ca:             ca,
+			exists:         true,
+			valid:          true,
+		},
+		{
+			name:                  "foo",
+			validityPeriod:        "8650h",
+			commonName:            "foo-cn",
+			subjectAlternateNames: []string{"foo-alt"},
+			organizations:         []string{"admin"},
+			ca:                    ca,
+			overwrite:             true,
+			exists:                true,
+			valid:                 true,
+		},
+		{
+			name:  "alice",
+			ca:    ca,
+			valid: false,
+		},
+		{
+			validityPeriod: "8650h",
+			ca:             ca,
+			valid:          false,
+		},
+		{
+			name:           "alice",
+			validityPeriod: "8650h",
+			valid:          false,
+		},
+	}
+	for i, test := range tests {
+		exists, err := pki.GenerateCertificate(test.name, test.validityPeriod, test.commonName, test.subjectAlternateNames, test.organizations, test.ca, test.overwrite)
+
+		if (err != nil) == test.valid {
+			t.Errorf("test %d: expect valid to be %t, but got %v", i, test.valid, err)
+		}
+		if exists != test.exists {
+			t.Errorf("test %d: expect exists to be %t, but got %t", i, test.exists, exists)
+		}
+
+		if test.valid {
+			cert := mustReadCertFile(filepath.Join(pki.GeneratedCertsDirectory, fmt.Sprintf("%s.pem", test.name)), t)
+			if cert.Subject.CommonName != test.commonName {
+				t.Errorf("test %d: expect commonName to be %s, but got %s", i, test.commonName, cert.Subject.CommonName)
+			}
+			if !util.Subset(cert.DNSNames, test.subjectAlternateNames) {
+				t.Errorf("test %d: expect subjectAlternateNames to be %v, but got %v", i, test.subjectAlternateNames, cert.DNSNames)
+			}
+			if !util.Subset(cert.Subject.Organization, test.organizations) {
+				t.Errorf("test %d: expect organizations to be %v, but got %v", i, test.organizations, cert.Subject.Organization)
+			}
+			if test.validityPeriod != "" {
+
+			}
+			validity, err := strconv.Atoi(strings.TrimRight(test.validityPeriod, "h"))
+			if err != nil {
+				t.Errorf("test %d: could not parse validityPeriod %s", i, test.validityPeriod)
+			} else {
+				expirationDate := time.Now().Add(time.Duration(validity) * time.Hour)
+				if cert.NotAfter.Year() != expirationDate.Year() || cert.NotAfter.YearDay() != expirationDate.YearDay() {
+					t.Errorf("test %d: bad expiration date on generated cert. expected %v, got %v", i, expirationDate, cert.NotAfter)
+				}
+			}
 		}
 	}
 }
