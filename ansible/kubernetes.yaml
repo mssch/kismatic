@@ -11,6 +11,7 @@
   # etcd
   - include: _etcd-k8s.yaml
   - include: _etcd-networking.yaml
+    when: cni.enabled|bool == true and cni.provider == "calico"
   # docker
   - include: _docker.yaml
   - include: _docker-registry.yaml
@@ -26,8 +27,11 @@
   # after installing kube-proxy, there is a dependecy on the API server to validate the static pod
   - include: _kube-proxy.yaml
   - include: _calico.yaml
+    when: cni.enabled|bool == true and cni.provider == "calico"
   - include: _calico-validate.yaml
+    when: cni.enabled|bool == true and cni.provider == "calico"
   - include: _calico-network-policy.yaml
+    when: cni.enabled|bool == true and cni.provider == "calico"
   - include: _kube-dns.yaml
     when: dns.enabled|bool == true
   - include: _heapster.yaml

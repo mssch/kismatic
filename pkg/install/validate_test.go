@@ -24,6 +24,14 @@ var validPlan = Plan{
 		},
 	},
 	AddOns: AddOns{
+		CNI: &CNI{
+			Provider: "calico",
+			Options: CNIOptions{
+				Calico: CalicoOptions{
+					Mode: "overlay",
+				},
+			},
+		},
 		HeapsterMonitoring: &HeapsterMonitoring{
 			Options: HeapsterOptions{
 				HeapsterReplicas: 2,
@@ -97,12 +105,6 @@ func TestValidateValidPlan(t *testing.T) {
 		t.Errorf("expected valid, but got invalid")
 	}
 	fmt.Println(errs)
-}
-
-func TestValidatePlanInvalidNetworkOption(t *testing.T) {
-	p := validPlan
-	p.Cluster.Networking.Type = "foo"
-	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptyPodCIDR(t *testing.T) {
@@ -961,6 +963,120 @@ func TestRepository(t *testing.T) {
 		p := &validPlan
 		p.Cluster.PackageRepoURLs = test.config.PackageRepoURLs
 		ok, _ := p.Cluster.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}
+
+func TestCNIAddOn(t *testing.T) {
+	tests := []struct {
+		n     CNI
+		valid bool
+	}{
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode: "overlay",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode: "routed",
+					},
+				},
+			},
+			valid: true,
+		},
+		// {
+		// 	n: CNI{
+		// 		Provider: "weave",
+		// 		Options: CNIOptions{
+		// 			Calico: CalicoOptions{
+		// 				Mode: "overlay"},
+		// 		},
+		// 	},
+		// 	valid: true,
+		// },
+		// {
+		// 	n: CNI{
+		// 		Provider: "contiv",
+		// 		Options: CNIOptions{
+		// 			Calico: CalicoOptions{
+		// 				Mode: "overlay",
+		// 			},
+		// 		},
+		// 	},
+		// 	valid: true,
+		// },
+		// {
+		// 	n: CNI{
+		// 		Provider: "custom",
+		// 		Options: CNIOptions{
+		// 			Calico: CalicoOptions{
+		// 				Mode: "overlay",
+		// 			},
+		// 		},
+		// 	},
+		// 	valid: true,
+		// },
+		{
+			n: CNI{
+				Provider: "foo",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode: "overlay",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode: "foo",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: CNI{
+				Provider: "foo",
+				Disable:  true,
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode: "overlay",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Disable:  true,
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode: "foo",
+					},
+				},
+			},
+			valid: true,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.n.validate()
 		if ok != test.valid {
 			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
 		}

@@ -236,8 +236,10 @@ without the "--partial-ok" flag to perform a full upgrade.
 		return fmt.Errorf("Failed to upgrade cluster services: %v", err)
 	}
 
-	if err := executor.RunSmokeTest(plan); err != nil {
-		return fmt.Errorf("Smoke test failed: %v", err)
+	if plan.NetworkConfigured() {
+		if err := executor.RunSmokeTest(plan); err != nil {
+			return fmt.Errorf("Smoke test failed: %v", err)
+		}
 	}
 
 	if !opts.dryRun {

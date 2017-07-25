@@ -10,6 +10,8 @@
   - include: _kubelet.yaml
   - include: _kube-proxy.yaml
   - include: _calico.yaml
+    when: cni.enabled|bool == true and cni.provider == "calico"
   - include: _calico-validate.yaml
+    when: cni.enabled|bool == true and cni.provider == "calico"
   - include: _update-version.yaml
   - include: _worker-smoke-test.yaml

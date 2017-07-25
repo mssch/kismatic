@@ -14,9 +14,17 @@ func PackageManagerProviders() []string {
 	return []string{"helm", ""}
 }
 
+func CNIProviders() []string {
+	return []string{"calico"} //, "weave", "contiv", "custom"}
+}
+
+func CalicoMode() []string {
+	return []string{"overlay", "routed"}
+}
+
 // NetworkConfig describes the cluster's networking configuration
 type NetworkConfig struct {
-	Type             string
+	Type             string `yaml:"type,omitempty"`
 	PodCIDRBlock     string `yaml:"pod_cidr_block"`
 	ServiceCIDRBlock string `yaml:"service_cidr_block"`
 	UpdateHostsFiles bool   `yaml:"update_hosts_files"`
@@ -160,6 +168,7 @@ type SSHConnection struct {
 }
 
 type AddOns struct {
+	CNI                *CNI                `yaml:"cni"`
 	DNS                DNS                 `yaml:"dns"`
 	HeapsterMonitoring *HeapsterMonitoring `yaml:"heapster"`
 	Dashboard          Dashboard           `yaml:"dashbard"`
@@ -170,6 +179,20 @@ type AddOns struct {
 // When writing out a new plan file, this will be nil and will not appear
 type Features struct {
 	PackageManager *DeprecatedPackageManager `yaml:"package_manager,omitempty"`
+}
+
+type CNI struct {
+	Disable  bool
+	Provider string
+	Options  CNIOptions `yaml:"options"`
+}
+
+type CNIOptions struct {
+	Calico CalicoOptions
+}
+
+type CalicoOptions struct {
+	Mode string
 }
 
 type DNS struct {
@@ -365,4 +388,9 @@ func (p Plan) DockerRegistryPort() string {
 		port = p.DockerRegistry.Port
 	}
 	return strconv.Itoa(port)
+}
+
+// NetworkConfigured returns true if pod validation/smoketest should run
+func (p Plan) NetworkConfigured() bool {
+	return p.AddOns.CNI == nil || !p.AddOns.CNI.Disable
 }

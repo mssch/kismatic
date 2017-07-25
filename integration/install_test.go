@@ -90,6 +90,18 @@ var _ = Describe("kismatic", func() {
 			})
 		})
 
+		Context("when deploying a cluster with all node roles and disabled CNI", func() {
+			installOpts := installOptions{
+				disableCNI: true,
+			}
+			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
+				WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+					err := installKismatic(nodes, installOpts, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+		})
+
 		Context("when targetting CentOS", func() {
 			ItOnAWS("should install successfully", func(aws infrastructureProvisioner) {
 				WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {

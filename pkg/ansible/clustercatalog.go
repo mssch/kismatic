@@ -10,7 +10,6 @@ type ClusterCatalog struct {
 	ClusterName               string `yaml:"kubernetes_cluster_name"`
 	AdminPassword             string `yaml:"kubernetes_admin_password"`
 	TLSDirectory              string `yaml:"tls_directory"`
-	CalicoNetworkType         string `yaml:"calico_network_type"`
 	ServicesCIDR              string `yaml:"kubernetes_services_cidr"`
 	PodCIDR                   string `yaml:"kubernetes_pods_cidr"`
 	DNSServiceIP              string `yaml:"kubernetes_dns_service_ip"`
@@ -77,6 +76,18 @@ type ClusterCatalog struct {
 
 	DNS struct {
 		Enabled bool
+	}
+
+	RunPodValidation bool `yaml:"run_pod_validation"`
+
+	CNI struct {
+		Enabled  bool
+		Provider string
+		Options  struct {
+			Calico struct {
+				Mode string
+			}
+		}
 	}
 
 	Heapster struct {
