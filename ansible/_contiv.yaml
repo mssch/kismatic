@@ -1,0 +1,11 @@
+---
+  - hosts: master:worker:ingress:storage
+    any_errors_fatal: true
+    name: "{{ play_name | default('Start Contiv Network Components') }}"
+    serial: "{{ serial_count | default('100%') }}"
+    become: yes
+    vars_files:
+      - group_vars/all.yaml
+
+    roles:
+      - contiv

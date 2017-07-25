@@ -21,6 +21,9 @@ ExecStart=/usr/bin/kubelet \
   --require-kubeconfig=true \
   --kubeconfig={{ kubernetes_kubeconfig.kubelet }} \
   --node-ip={{ internal_ipv4 }} \
+{% if inventory_hostname in groups['master'] %}
+  --node-labels=node-role.kubernetes.io/master= \
+{% endif %}
   --pod-infra-container-image={{ pause_img }} \
   --pod-manifest-path={{ kubelet_pod_manifests_dir }} \
   --register-schedulable={{ kubernetes_schedulable }} \

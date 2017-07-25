@@ -9,3 +9,5 @@ etcd_service_data_dir: /var/lib/etcd_networking
 etcd_service_peer_port: 6660
 etcd_service_client_port: 6666
 etcd_service_cluster_token: etcd-cluster-networking #TODO some random/custom string to not collide with another etcd on the network
+etcd_service_template: "{% if insecure_networking_etcd|default('false')|bool == true %}etcd.insecure.service{% else %}etcd.service{% endif %}"
+etcd_insecure_validate: "{{ insecure_networking_etcd|default('false')|bool }}"

@@ -11,7 +11,7 @@
   # etcd
   - include: _etcd-k8s.yaml
   - include: _etcd-networking.yaml
-    when: cni.enabled|bool == true and cni.provider == "calico"
+    when: cni.enabled|bool == true and (cni.provider == "calico" or cni.provider == "contiv")
   # docker
   - include: _docker.yaml
   - include: _docker-registry.yaml
@@ -38,6 +38,8 @@
     when: cni.enabled|bool == true and cni.provider == "weave"
   - include: _weave-validate.yaml
     when: cni.enabled|bool == true and cni.provider == "weave"
+  - include: _contiv.yaml
+    when: cni.enabled|bool == true and cni.provider == "contiv"
   - include: _kube-dns.yaml
     when: dns.enabled|bool == true
   - include: _heapster.yaml

@@ -108,7 +108,7 @@ func readDeprecatedFields(p *Plan) {
 func setDefaults(p *Plan) {
 	if p.AddOns.CNI == nil {
 		p.AddOns.CNI = &CNI{}
-		p.AddOns.CNI.Provider = "calico"
+		p.AddOns.CNI.Provider = cniProviderCalico
 		p.AddOns.CNI.Options.Calico.Mode = "overlay"
 		// read KET <v1.5.0 plan option
 		if p.Cluster.Networking.Type != "" {
@@ -226,7 +226,7 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	// Add-Ons
 	// CNI
 	p.AddOns.CNI = &CNI{}
-	p.AddOns.CNI.Provider = "calico"
+	p.AddOns.CNI.Provider = cniProviderCalico
 	p.AddOns.CNI.Options.Calico.Mode = "overlay"
 	// Heapster
 	p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}

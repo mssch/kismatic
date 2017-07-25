@@ -1,0 +1,143 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: contiv-netplugin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: contiv-netplugin
+subjects:
+- kind: ServiceAccount
+  name: contiv-netplugin
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: contiv-netplugin
+  namespace: kube-system
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+    verbs:
+      - watch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: contiv-netplugin
+  namespace: kube-system
+---
+# This manifest installs contiv-netplugin container, as well
+# as the Contiv CNI plugins and network config on
+# each master and worker node in a Kubernetes cluster.
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: contiv-netplugin
+  namespace: kube-system
+  labels:
+    k8s-app: contiv-netplugin
+spec:
+  selector:
+    matchLabels:
+      k8s-app: contiv-netplugin
+  template:
+    metadata:
+      labels:
+        k8s-app: contiv-netplugin
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      hostNetwork: true
+      hostPID: true
+      # Not using tolerations until we implement our taints/tolerations strategy.
+      # tolerations:
+      # - key: node-role.kubernetes.io/master
+      #   effect: NoSchedule
+      serviceAccountName: contiv-netplugin
+      containers:
+        # Runs netplugin container on each Kubernetes node. This
+        # container programs network policy and routes on each
+        # host.
+        - name: contiv-netplugin
+          image: "{{ contiv_netplugin_img }}"
+          args:
+            - -pkubernetes
+          env:
+            - name: VLAN_IF
+              valueFrom:
+                configMapKeyRef:
+                  name: contiv-config
+                  key: vlan_if
+            - name: VTEP_IP
+              valueFrom:
+                 fieldRef:
+                    fieldPath: status.podIP
+            - name: CONTIV_ETCD
+              valueFrom:
+                configMapKeyRef:
+                  name: contiv-config
+                  key: cluster_store
+            - name: CONTIV_CNI_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: contiv-config
+                  key: cni_config
+            - name: CONTIV_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: contiv-config
+                  key: config
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /etc/openvswitch
+              name: etc-openvswitch
+              readOnly: false
+            - mountPath: /lib/modules
+              name: lib-modules
+              readOnly: false
+            - mountPath: /var/run
+              name: var-run
+              readOnly: false
+            - mountPath: /var/contiv
+              name: var-contiv
+              readOnly: false
+            - mountPath: /opt/cni/bin
+              name: cni-bin-dir
+              readOnly: false
+            - mountPath: /etc/cni/net.d/
+              name: etc-cni-dir
+              readOnly: false
+      volumes:
+        # Used by contiv-netplugin
+        - name: etc-openvswitch
+          hostPath:
+            path: /etc/openvswitch
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: var-run
+          hostPath:
+            path: /var/run
+        - name: var-contiv
+          hostPath:
+            path: /var/contiv
+        # Used to install Contiv CNI plugin
+        - name: cni-bin-dir
+          hostPath:
+            path: /opt/cni/bin
+        - name: etc-cni-dir
+          hostPath:
+            path: /etc/cni/net.d/

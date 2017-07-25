@@ -1,0 +1,26 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: contiv-config
+  namespace: kube-system
+data:
+  cluster_store: "etcd://{{ groups['etcd'][0] }}:{{ etcd_networking_client_port }}"
+  vlan_if: "{{ contiv.vlan_iface }}"
+  # The CNI network configuration that gets installed on each node.
+  cni_config: |-
+    {
+      "cniVersion": "0.1.0",
+      "name": "contiv-net",
+      "type": "contivk8s"
+    }
+  config: |-
+    {
+       "K8S_API_SERVER": "https://{{ kubernetes_load_balanced_fqdn }}:6443",
+       "K8S_CA": "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+       "K8S_KEY": "",
+       "K8S_CERT": "",
+       "K8S_TOKEN": "",
+       "SVC_SUBNET": "{{ kubernetes_services_cidr }}"
+    }
+---

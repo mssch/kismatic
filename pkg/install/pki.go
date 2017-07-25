@@ -30,6 +30,7 @@ const (
 	kubeProxyUser                       = "system:kube-proxy"
 	kubeletUserPrefix                   = "system:node"
 	kubeletGroup                        = "system:nodes"
+	contivProxyServerCertFilename       = "contiv-proxy-server"
 )
 
 // The PKI provides a way for generating certificates for the cluster described by the Plan
@@ -223,6 +224,15 @@ func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
 			filename:              dockerRegistryCertFilename,
 			commonName:            dockerRegistryNode.Host,
 			subjectAlternateNames: san,
+		})
+	}
+
+	// Contiv certificates
+	if plan.AddOns.CNI.Provider == cniProviderContiv {
+		m = append(m, certificateSpec{
+			description: "contiv proxy server",
+			filename:    contivProxyServerCertFilename,
+			commonName:  "auth-local.cisco.com", // using the same as contiv install script
 		})
 	}
 

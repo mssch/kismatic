@@ -1,0 +1,141 @@
+---
+  # Pre-download contiv images
+  - name: download contiv container images
+    command: docker pull {{ contiv_netplugin_img }}
+
+  # Create a secret that contains the contiv certificates.
+  # Runs on the first master node if we find that the secret does 
+  # not exist
+  - name: check if contiv proxy server certs secert exists
+    command: kubectl -n kube-system get secret {{ contiv.proxy_server_certs_secret_name }} -o jsonpath='{.metadata.name}' --ignore-not-found 
+    register: certs_check_result
+
+  - block:
+    - name: create tmp dir for contiv certs
+      file:
+        path: "/tmp/contiv-certs"
+        state: directory
+
+    - name: copy contiv proxy server certificates
+      copy:
+        src: "{{ tls_directory }}/{{ item }}"
+        dest: "/tmp/contiv-certs/{{ item }}"
+        owner: "{{ kubernetes_owner }}"
+        group: "{{ kubernetes_group }}"
+        mode: "{{ kubernetes_service_mode }}"
+      with_items:
+        - "{{ contiv.certs.proxy_server_key_filename }}"
+        - "{{ contiv.certs.proxy_server_cert_filename }}"
+
+    - name: create secret for contiv proxy server certificates
+      command: kubectl -n kube-system create secret tls {{ contiv.proxy_server_certs_secret_name }} --key=/tmp/contiv-certs/{{ contiv.certs.proxy_server_key_filename }} --cert=/tmp/contiv-certs/{{ contiv.certs.proxy_server_cert_filename }}
+
+    - name: delete temp contiv certs
+      file:
+        path: "/tmp/contiv-certs"
+        state: absent
+    when: inventory_hostname == groups['master'][0] and certs_check_result.stdout != contiv.proxy_server_certs_secret_name
+
+  # Deploy and configure contiv.
+  # Runs on master nodes so that the netctl utility is available to operators if they
+  # ever need it.
+  - block:
+    - name: create /etc/contiv directory
+      file:
+        path: "{{ contiv.dir.config }}"
+        state: directory
+
+    - name: copy deployment files to remote
+      template:
+        src: "{{ item }}"
+        dest: "{{ contiv.dir.config }}/{{ item }}"
+        owner: "{{ kubernetes_owner }}"
+        group: "{{ kubernetes_group }}"
+        mode: "{{ kubernetes_service_mode }}"
+      with_items:
+        - "configmap.yaml"
+        - "netmaster.yaml"
+        - "netplugin.yaml"
+
+    - name: deploy contiv components
+      command: kubectl apply -f /etc/contiv --kubeconfig {{ kubernetes_kubeconfig_path }}
+      run_once: true
+    
+    # Wait until netmaster pods are up
+    - name: get desired number of netmaster pods
+      command: kubectl get ds contiv-netmaster -o=jsonpath='{.status.desiredNumberScheduled}' --namespace=kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
+      register: desiredPods
+      until: desiredPods|success
+      retries: 20
+      delay: 6
+      run_once: true
+
+    - name: wait until all netmaster pods are ready
+      command: kubectl get ds contiv-netmaster -o=jsonpath='{.status.numberAvailable}' --namespace=kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
+      register: readyPods
+      until: desiredPods.stdout|int == readyPods.stdout|int
+      retries: 20
+      delay: 6
+      failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
+      run_once: true
+
+    - name: fail if any netmaster pods are not ready
+      fail:
+        msg: "Timed out waiting for all contiv netmaster pods to be ready."
+      run_once: true
+      when: desiredPods.stdout|int != readyPods.stdout|int
+    
+    - name: set forwarding mode to routed
+      command: docker run --net host --rm --entrypoint /contiv/bin/netctl {{ contiv_netplugin_img }} --netmaster http://localhost:9999 global set --fwd-mode routing
+      run_once: true
+
+    - name: list existing contiv networks
+      command: docker run --net host --rm --entrypoint /contiv/bin/netctl {{ contiv_netplugin_img }} --netmaster http://localhost:9999 net ls
+      register: contiv_networks
+      run_once: true
+
+    - name: create infra network if missing
+      command: docker run --net host --rm --entrypoint /contiv/bin/netctl {{ contiv_netplugin_img }} --netmaster http://localhost:9999 net create -n infra -s 132.1.1.0/24 -g 132.1.1.1 contivh1 # using defaults from installation script
+      when: "'contivh1' not in contiv_networks.stdout"
+      run_once: true
+
+    - name: restart netplugin to propagate forwarding mode change
+      command: kubectl -n kube-system delete pod --selector k8s-app=contiv-netplugin
+      run_once: true
+
+    # Wait until netplugins pods are up
+    - name: get desired number of netplugin pods
+      command: kubectl get ds contiv-netplugin -o=jsonpath='{.status.desiredNumberScheduled}' --namespace=kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
+      register: desiredPods
+      until: desiredPods|success
+      retries: 20
+      delay: 6
+      run_once: true
+
+    - name: wait until all netplugin pods are ready
+      command: kubectl get ds contiv-netplugin -o=jsonpath='{.status.numberReady}' --namespace=kube-system --kubeconfig {{ kubernetes_kubeconfig_path }}
+      register: readyPods
+      until: desiredPods.stdout|int == readyPods.stdout|int
+      retries: 20
+      delay: 6
+      failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
+      run_once: true
+
+    - name: fail if any netplugin pods are not ready
+      fail:
+        msg: "Timed out waiting for all contiv netplugin pods to be ready."
+      run_once: true
+      when: desiredPods.stdout|int != readyPods.stdout|int
+
+    - name: list existing contiv networks
+      command: docker run --net host --rm --entrypoint /contiv/bin/netctl {{ contiv_netplugin_img }} --netmaster http://localhost:9999 net ls
+      register: contiv_networks
+      run_once: true
+
+    - name: create pod network # the name of the network, 'default-net', is a magic string. don't change.
+      command: docker run --net host --rm --entrypoint /contiv/bin/netctl {{ contiv_netplugin_img }} --netmaster http://localhost:9999 net create -t default --subnet={{ kubernetes_pods_cidr }} --gateway {{ kubernetes_pods_cidr | ipaddr('net') | ipaddr('1') | ipaddr('address') }} default-net
+      run_once: true
+      when:  "'default-net' not in contiv_networks.stdout"
+
+    when: "'master' in group_names"
+  
