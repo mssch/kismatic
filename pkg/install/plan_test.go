@@ -42,8 +42,16 @@ func TestReadWithNil(t *testing.T) {
 		t.Errorf("Expected add_ons.cni.options.calico.mode to equal 'overlay', instead got %s", p.AddOns.CNI.Options.Calico.Mode)
 	}
 
-	if p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas != 2 {
-		t.Errorf("Expected add_ons.heapster.options.heapster_replicas to equal 2, instead got %d", p.AddOns.HeapsterMonitoring.Options.HeapsterReplicas)
+	if p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas != 2 {
+		t.Errorf("Expected add_ons.heapster.options.heapster.replicas to equal 2, instead got %d", p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas)
+	}
+
+	if p.AddOns.HeapsterMonitoring.Options.Heapster.ServiceType != "ClusterIP" {
+		t.Errorf("Expected add_ons.heapster.options.heapster.service_type to equal ClusterIP, instead got %s", p.AddOns.HeapsterMonitoring.Options.Heapster.ServiceType)
+	}
+
+	if p.AddOns.HeapsterMonitoring.Options.Heapster.Sink != "influxdb:http://heapster-influxdb.kube-system.svc:8086" {
+		t.Errorf("Expected add_ons.heapster.options.heapster.service_type to equal 'influxdb:http://heapster-influxdb.kube-system.svc:8086', instead got %s", p.AddOns.HeapsterMonitoring.Options.Heapster.Sink)
 	}
 
 	if p.Cluster.Certificates.CAExpiry != defaultCAExpiry {

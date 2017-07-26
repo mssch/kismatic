@@ -15,15 +15,15 @@ Heapster is a monitoring solution that enables container monitoring throughout
 the cluster. When heapster is running on the cluster, `kubectl` and the Kubernetes 
 dashboard surface resource utilization metrics for all pods.
 
-**Important:** If you wish to persist the gathered metrics, you must set the `add_ons.heapster.options.influxdb_pvc_name` option.
+**Important:** If you wish to persist the gathered metrics, you must set the `add_ons.heapster.options.influxdb.pvc_name` option.
 
 Plan file options:
 
 | Plan file key | Description |
 |---------------|-------------|
 | add_ons.heapster.disable | Set to true if heapster should not be deployed during installation |
-| add_ons.heapster.options.heapster_replicas  | Number of replicas for the heapster deployment |
-| add_ons.heapster.options.influxdb_pvc_name | Name of a persistent volume claim that will be used by the influxdb databse for persistence. This PVC must be manually created after installation. |
+| add_ons.heapster.options.heapster.replicas  | Number of replicas for the heapster deployment |
+| add_ons.heapster.options.influxdb.pvc_name | Name of a persistent volume claim that will be used by the influxdb databse for persistence. This PVC must be manually created after installation. |
 
 ### Package Manager
 Helm is the official package manager for Kubernetes. KET includes the `helm` client-side binary in the distribution package. KET also installs the server-side agent, Tiller, on the cluster during installation. 

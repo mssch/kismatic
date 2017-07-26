@@ -18,6 +18,7 @@ spec:
     targetPort: 8082
   selector:
     k8s-app: heapster
+  type: {{ heapster.options.heapster.service_type }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -27,7 +28,7 @@ metadata:
   annotations:
     kismatic/version: "{{ kismatic_short_version }}"
 spec:
-  replicas: {{ heapster.options.heapster_replicas }}
+  replicas: {{ heapster.options.heapster.replicas }}
   template:
     metadata:
       labels:
@@ -42,4 +43,4 @@ spec:
         command:
         - /heapster
         - --source=kubernetes:https://kubernetes.default
-        - --sink=influxdb:http://heapster-influxdb.kube-system.svc:8086
+        - --sink={{ heapster.options.heapster.sink }}

@@ -22,6 +22,10 @@ func CalicoMode() []string {
 	return []string{"overlay", "routed"}
 }
 
+func ServiceTypes() []string {
+	return []string{"ClusterIP", "NodePort", "LoadBalancer", "ExternalName"}
+}
+
 // NetworkConfig describes the cluster's networking configuration
 type NetworkConfig struct {
 	Type             string `yaml:"type,omitempty"`
@@ -209,8 +213,19 @@ type Dashboard struct {
 }
 
 type HeapsterOptions struct {
-	HeapsterReplicas int    `yaml:"heapster_replicas"`
-	InfluxDBPVCName  string `yaml:"influxdb_pvc_name"`
+	Heapster         Heapster `yaml:"heapster"`
+	InfluxDB         InfluxDB `yaml:"influxdb"`
+	HeapsterReplicas int      `yaml:"heapster_replicas,omitempty"`
+	InfluxDBPVCName  string   `yaml:"influxdb_pvc_name,omitempty"`
+}
+
+type Heapster struct {
+	Replicas    int    `yaml:"replicas"`
+	ServiceType string `yaml:"service_type"`
+	Sink        string `yaml:"sink"`
+}
+type InfluxDB struct {
+	PVCName string `yaml:"pvc_name"`
 }
 
 type PackageManager struct {
