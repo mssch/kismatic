@@ -14,5 +14,5 @@
   - name: fail if the block device is already mounted
     fail:
       msg: "Block deviced specified for docker storage is currently mounted. This should be an unmounted, unused device"
-    with_items: "(( ansible_mounts }}"
+    with_items: "{{ ansible_mounts }}"
     when: item.device == "{{ docker_direct_lvm_block_device_path }}"
