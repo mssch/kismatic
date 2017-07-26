@@ -40,6 +40,7 @@ type PKI interface {
 	GetClusterCA() (*tls.CA, error)
 	GenerateClusterCA(p *Plan) (*tls.CA, error)
 	GenerateClusterCertificates(p *Plan, ca *tls.CA) error
+	GenerateCertificate(name string, validityPeriod string, commonName string, subjectAlternateNames []string, organizations []string, ca *tls.CA, overwrite bool) (bool, error)
 }
 
 // LocalPKI is a file-based PKI
@@ -425,6 +426,44 @@ func (lp *LocalPKI) GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) e
 		util.PrettyPrintOk(lp.Log, "Generated certificate for %s", s.description)
 	}
 	return nil
+}
+
+// GenerateCertificate creates a private key and certificate for the given name, CN, subjectAlternateNames and organizations
+// If cert exists, will not fail
+// Pass overwrite to replace an existing cert
+func (lp *LocalPKI) GenerateCertificate(name string, validityPeriod string, commonName string, subjectAlternateNames []string, organizations []string, ca *tls.CA, overwrite bool) (bool, error) {
+	if name == "" {
+		return false, fmt.Errorf("name cannot be empty")
+	}
+	if validityPeriod == "" {
+		return false, fmt.Errorf("validityPeriod cannot be empty")
+	}
+	if ca == nil {
+		return false, fmt.Errorf("ca cannot be nil")
+	}
+	exists, err := tls.CertKeyPairExists(name, lp.GeneratedCertsDirectory)
+	if err != nil {
+		return false, fmt.Errorf("could not determine if certificate for %s exists: %v", name, err)
+	}
+	// if exists and overwrite == false return
+	// otherwise cert will be created and replaced if exists
+	if exists && !overwrite {
+		return true, nil
+	}
+
+	spec := certificateSpec{
+		description:           name,
+		filename:              name,
+		commonName:            commonName,
+		subjectAlternateNames: subjectAlternateNames,
+		organizations:         organizations,
+	}
+
+	if err := generateCert(ca, lp.GeneratedCertsDirectory, spec, validityPeriod); err != nil {
+		return exists, fmt.Errorf("could not generate certificate %s: %v", name, err)
+	}
+
+	return exists, nil
 }
 
 func generateCert(ca *tls.CA, certDir string, spec certificateSpec, expiryStr string) error {

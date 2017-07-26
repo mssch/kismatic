@@ -112,3 +112,8 @@ func (fp *fakePKI) GenerateClusterCerts(p *install.Plan, ca *tls.CA, users []str
 	fp.called = true
 	return fp.err
 }
+
+func (fp *fakePKI) GenerateCertificate(name string, validityPeriod string, commonName string, subjectAlternateNames []string, organizations []string, ca *tls.CA, overwrite bool) (bool, error) {
+	fp.called = true
+	return false, fp.err
+}
