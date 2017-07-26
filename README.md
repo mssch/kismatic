@@ -48,6 +48,8 @@ KET operational tools include:
 
 [Plan & Build a Kubernetes cluster](docs/INSTALL.md) -- Details instructions on using KET to install a Kubernetes cluster.
 
+[Upgrade a Kubernetes cluster](docs/UPGRADE.md) -- Instructions on how to use KET to upgrade your Kubernetes cluster.
+
 [Using KET with Calico](docs/NETWORKING.md) -- Instructions on how to use KET with the built-in SDN controller Project Calico.
 
 [Cert Generation](docs/CERT_GENERATION.md) -- Information on how KET handles certificates.
