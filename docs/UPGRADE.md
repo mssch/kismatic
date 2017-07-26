@@ -28,6 +28,11 @@ Cluster services include the pod network provider (e.g. Calico), Dashboard, clus
 - SSH access to cluster nodes
 - Cluster in a healthy state
 
+## Supported Upgrade Paths
+KET supports upgrades from the following source versions:
+- Same minor version, any patch version. For example, KET supports an upgrade from v1.3.0 to v1.3.4.
+- Previous minor version, last patch version. For example, KET supports an upgrade from v1.3.3 to v1.4.0, but it does not support an upgrade from v1.3.0 to v1.4.0.
+
 ## Quick Start
 Here are some example commands to get you started with upgrading your Kubernetes cluster. We encourage you to read this doc and understand the upgrade process before performing an upgrade.
 ```
