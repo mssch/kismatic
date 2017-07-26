@@ -29,11 +29,11 @@ KET operational tools include:
 ## Dependencies
 | Dependency | Current version |
 | --- | --- |
-| Kubernetes | v1.7.1 |
+| Kubernetes | v1.7.2 |
 | Docker | v1.12.6 |
 | Calico | v2.3.0 |
-| Etcd (for Kubernetes) | v3.1.9 |
-| Etcd (for Calico) | v3.1.9 |
+| Etcd (for Kubernetes) | v3.1.10 |
+| Etcd (for Calico) | v3.1.10 |
 
 [Download KET here](https://github.com/apprenda/kismatic/releases)
 

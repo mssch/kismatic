@@ -1,16 +1,16 @@
 #===============================================================================
 # VERSIONS
-kubernetes_version: v1.7.1
-kismatic_yum_version: 1.7.1_1-1
-kismatic_deb_version: 1.7.1-1
-etcd_version: 3.1.9
-etcd_yum_version: 3.1.9-1
-etcd_apt_version: 3.1.9
+kubernetes_version: v1.7.2
+kismatic_yum_version: 1.7.2_1-1
+kismatic_deb_version: 1.7.2-1
+etcd_version: 3.1.10
+etcd_yum_version: 3.1.10-1
+etcd_apt_version: 3.1.10
 transition_etcd_yum_version: 3.0.17-1
 transition_etcd_apt_version: 3.0.17
 docker_engine_yum_version: 1.12.6-1.el7.centos
 docker_engine_apt_version: 1.12.6-0~ubuntu-xenial
-helm_version: v2.5.0
+helm_version: v2.5.1
 
 cni_version: "v0.5.2"
 calico_node_version: "v1.3.0"
@@ -22,15 +22,15 @@ weave_npc_version: "2.0.1"
 kubedns_version: "1.14.4"
 kube_dnsmasq_version: "1.14.4"
 kubedns_sidecar_version: "1.14.4"
-kubernetes_dashboard_version: "v1.6.1"
+kubernetes_dashboard_version: "v1.6.2"
 defaultbackend_version: "1.0"
 nginx_ingress_controller_version: "0.8.3"
-docker_registry_version: "2.5.1"
+docker_registry_version: "2.6.2"
 nginx_version: "stable-alpine"
 busybox_version: "latest"
 pause_version: "3.0"
 apprenda_tcp_healthz_version: "v1.0.0"
-heapster_version: "v1.3.0"
+heapster_version: "v1.4.0"
 influxdb_version: "v1.1.1"
 glusterfs_server_version_rhel: "3.8.7-1.el7"
 glusterfs_server_version_ubuntu: "3.8.7-ubuntu1~xenial1"
