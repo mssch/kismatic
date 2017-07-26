@@ -147,6 +147,9 @@ spec:
           imagePullPolicy: IfNotPresent
           command: ["/install-cni.sh"]
           env:
+            # Use apprenda/cni-bin image for all plugins
+            - name: SKIP_CNI_BINARIES
+              value: "true"
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
               valueFrom:

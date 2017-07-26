@@ -30,6 +30,7 @@ type PlanAWS struct {
 	UseDirectLVM                 bool
 	ServiceCIDR                  string
 	DisableCNI                   bool
+	CNIProvider                  string
 	DisableHelm                  bool
 	HeapsterReplicas             int
 	HeapsterInfluxdbPVC          string
@@ -72,7 +73,7 @@ docker_registry:
 add_ons:
   cni:
     disable: {{.DisableCNI}}
-    provider: calico
+    provider: {{if .CNIProvider}}{{.CNIProvider}}{{else}}calico{{end}}
     options:
       calico:
         mode: overlay

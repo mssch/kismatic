@@ -999,16 +999,12 @@ func TestCNIAddOn(t *testing.T) {
 			},
 			valid: true,
 		},
-		// {
-		// 	n: CNI{
-		// 		Provider: "weave",
-		// 		Options: CNIOptions{
-		// 			Calico: CalicoOptions{
-		// 				Mode: "overlay"},
-		// 		},
-		// 	},
-		// 	valid: true,
-		// },
+		{
+			n: CNI{
+				Provider: "weave",
+			},
+			valid: true,
+		},
 		// {
 		// 	n: CNI{
 		// 		Provider: "contiv",
