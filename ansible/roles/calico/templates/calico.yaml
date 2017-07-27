@@ -70,8 +70,6 @@ spec:
            {"key":"CriticalAddonsOnly", "operator":"Exists"}]
     spec:
       hostNetwork: true
-      nodeSelector:
-        kismatic/calico: "true"
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
