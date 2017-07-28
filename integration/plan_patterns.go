@@ -36,14 +36,15 @@ type PlanAWS struct {
 	HeapsterInfluxdbPVC          string
 }
 
+// Certain fields are still present for backwards compatabilty when testing upgrades
 const planAWSOverlay = `cluster:
   name: kubernetes
   admin_password: abbazabba
-  allow_package_installation: {{not .DisablePackageInstallation}} # Required for KET <= v1.3.3
   disable_package_installation: {{.DisablePackageInstallation}}
   disconnected_installation: {{.DisconnectedInstallation}}
   disable_registry_seeding: {{.DisableRegistrySeeding}}
   networking:
+    type: overlay                                                 # Required for KET <= v1.4.1
     pod_cidr_block: 172.16.0.0/16
     service_cidr_block: {{if .ServiceCIDR}}{{.ServiceCIDR}}{{else}}172.20.0.0/16{{end}}
     update_hosts_files: {{.ModifyHostsFiles}}
@@ -52,13 +53,13 @@ const planAWSOverlay = `cluster:
     no_proxy: {{.NoProxy}}
   certificates:
     expiry: 17520h
-    location_city: Troy
-    location_state: New York
-    location_country: US
+    ca_expiry: 17520h
   ssh:
     user: {{.SSHUser}}
     ssh_key: {{.SSHKeyFile}}
     ssh_port: 22{{if .UseDirectLVM}}
+  kube_apiserver:
+    option_overrides: {}
 docker:
   storage:
     direct_lvm:
@@ -80,6 +81,7 @@ add_ons:
   heapster:
     disable: false
     options:
+      heapster_replicas: {{if eq .HeapsterReplicas 0}}2{{else}}{{.HeapsterReplicas}}{{end}}
       heapster:
         replicas: {{if eq .HeapsterReplicas 0}}2{{else}}{{.HeapsterReplicas}}{{end}}
         service_type: ClusterIP

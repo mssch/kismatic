@@ -13,10 +13,16 @@
      - kube-controller-manager
      - kube-scheduler
      - kube-apiserver
+     - cni-bin
      - calico
      - calico-ctl
      - calico-cni
      - kube-policy-controller
+     - weave-kube
+     - weave-npc
+     - netplugin
+     - auth-proxy
+     - aci-gw
      - kubedns
      - kube-dnsmasq
      - kubedns-sidecar
@@ -38,10 +44,13 @@
       - "{{ kube_controller_manager_orig_img }} {{ kube_controller_manager_priv_img }}"
       - "{{ kube_scheduler_orig_img }} {{ kube_scheduler_priv_img }}"
       - "{{ kube_apiserver_orig_img }} {{ kube_apiserver_priv_img }}"
+      - "{{ cni_bin_orig_img }} {{ cni_bin_priv_img }}"
       - "{{ calico_node_orig_img }} {{ calico_node_priv_img }}"
       - "{{ calico_ctl_orig_img }} {{ calico_ctl_priv_img }}"
       - "{{ calico_cni_orig_img }} {{ calico_cni_priv_img }}"
       - "{{ calico_kube_policy_controller_orig_img }} {{ calico_kube_policy_controller_priv_img }}"
+      - "{{ weave_orig_img }} {{ weave_priv_img }}"
+      - "{{ weave_npc_orig_img }} {{ weave_npc_priv_img }}"
       - "{{ kubedns_orig_img }} {{kubedns_priv_img }}"
       - "{{ kube_dnsmasq_orig_img }} {{kube_dnsmasq_priv_img }}"
       - "{{ kubedns_sidecar_orig_img }} {{ kubedns_sidecar_priv_img }}"
@@ -63,10 +72,13 @@
       - "{{ kube_controller_manager_priv_img }}"
       - "{{ kube_scheduler_priv_img }}"
       - "{{ kube_apiserver_priv_img }}"
+      - "{{ cni_bin_priv_img }}"
       - "{{ calico_node_priv_img }}"
       - "{{ calico_ctl_priv_img }}"
       - "{{ calico_cni_priv_img }}"
       - "{{ calico_kube_policy_controller_priv_img }}"
+      - "{{ weave_priv_img }}"
+      - "{{ weave_npc_priv_img }}"
       - "{{ kubedns_priv_img }}"
       - "{{ kube_dnsmasq_priv_img }}"
       - "{{ kubedns_sidecar_priv_img }}"
