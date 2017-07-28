@@ -16,7 +16,7 @@ HOST_GOARCH = $(shell go env GOARCH)
 GLIDE_VERSION = v0.11.1
 ANSIBLE_VERSION = 2.3.0.0
 PROVISIONER_VERSION = v1.3.0
-KUBERANG_VERSION = v1.1.3
+KUBERANG_VERSION = v1.2.0
 GO_VERSION = 1.8.0
 KUBECTL_VERSION = v1.7.1
 HELM_VERSION = v2.5.0
@@ -125,7 +125,7 @@ vendor-provision/out:
 
 vendor-kuberang/$(KUBERANG_VERSION):
 	mkdir -p vendor-kuberang/$(KUBERANG_VERSION)
-	curl https://kismatic-installer.s3-accelerate.amazonaws.com/kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64 -o vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64
+	curl -L https://github.com/apprenda/kuberang/releases/download/$(KUBERANG_VERSION)/kuberang-linux-amd64 -o vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-amd64
 
 vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-amd64:
 	mkdir -p vendor-kubectl/out/
