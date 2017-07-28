@@ -11,4 +11,4 @@
     roles:
       - role: etcd-backup
         when: upgrading is defined and upgrading|bool == true
-      - etcd
+      - role: etcd

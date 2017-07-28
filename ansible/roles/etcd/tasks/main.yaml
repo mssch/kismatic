@@ -1,8 +1,8 @@
----
+---      
   # install and start etcd service
   - name: copy etcd.service to remote
     template:
-      src: "etcd.service"
+      src: "{{ etcd_service_template }}"
       dest: "{{ init_system_dir }}/{{ etcd_service_name }}"
       owner: "{{ etcd_service_owner }}"
       group: "{{ etcd_service_group }}"
@@ -49,3 +49,12 @@
     until: result|success
     retries: 3
     delay: 5
+    when: "{{ etcd_insecure_validate|default('false')|bool == false }}"
+
+  - name: verify insecure {{ etcd_install_bin_name }} cluster health
+    command: "{{ bin_dir }}/{{ etcdctl_install_bin_name }} --endpoint='http://127.0.0.1:{{ etcd_service_client_port }}/' cluster-health"
+    register: result
+    until: result|success
+    retries: 3
+    delay: 5
+    when: "{{ etcd_insecure_validate|default('false')|bool == true }}"

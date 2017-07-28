@@ -227,12 +227,12 @@ func (f *AddOns) validate() (bool, []error) {
 func (n *CNI) validate() (bool, []error) {
 	v := newValidator()
 	if n != nil && !n.Disable {
-		if !util.Contains(n.Provider, CNIProviders()) {
-			v.addError(fmt.Errorf("%q is not a valid CNI provider. Optins are %v", n.Provider, CNIProviders()))
+		if !util.Contains(n.Provider, cniProviders()) {
+			v.addError(fmt.Errorf("%q is not a valid CNI provider. Optins are %v", n.Provider, cniProviders()))
 		}
 		if n.Provider == "calico" {
-			if !util.Contains(n.Options.Calico.Mode, CalicoMode()) {
-				v.addError(fmt.Errorf("%q is not a valid Calico mode. Options are %v", n.Options.Calico.Mode, CalicoMode()))
+			if !util.Contains(n.Options.Calico.Mode, calicoMode()) {
+				v.addError(fmt.Errorf("%q is not a valid Calico mode. Options are %v", n.Options.Calico.Mode, calicoMode()))
 			}
 		}
 	}
@@ -245,8 +245,8 @@ func (h *HeapsterMonitoring) validate() (bool, []error) {
 		if h.Options.Heapster.Replicas <= 0 {
 			v.addError(fmt.Errorf("Heapster replicas %d is not valid, must be greater than 0", h.Options.HeapsterReplicas))
 		}
-		if !util.Contains(h.Options.Heapster.ServiceType, ServiceTypes()) {
-			v.addError(fmt.Errorf("Heapster Service Type %q is not a valid option %v", h.Options.Heapster.ServiceType, ServiceTypes()))
+		if !util.Contains(h.Options.Heapster.ServiceType, serviceTypes()) {
+			v.addError(fmt.Errorf("Heapster Service Type %q is not a valid option %v", h.Options.Heapster.ServiceType, serviceTypes()))
 		}
 	}
 	return v.valid()
@@ -255,8 +255,8 @@ func (h *HeapsterMonitoring) validate() (bool, []error) {
 func (p *PackageManager) validate() (bool, []error) {
 	v := newValidator()
 	if !p.Disable {
-		if !util.Contains(p.Provider, PackageManagerProviders()) {
-			v.addError(fmt.Errorf("Package Manager %q is not a valid option %v", p.Provider, PackageManagerProviders()))
+		if !util.Contains(p.Provider, packageManagerProviders()) {
+			v.addError(fmt.Errorf("Package Manager %q is not a valid option %v", p.Provider, packageManagerProviders()))
 		}
 	}
 	return v.valid()

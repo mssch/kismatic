@@ -8,18 +8,14 @@ Type=notify
 ExecStart={{ bin_dir }}/{{ etcd_install_bin_name }} \
   --name={{ inventory_hostname }} \
   --data-dir={{ etcd_service_data_dir }} \
-  --client-cert-auth \
-  --cert-file={{ etcd_certificates.etcd }} \
-  --key-file={{ etcd_certificates.etcd_key }} \
   --peer-client-cert-auth \
   --peer-cert-file={{ etcd_certificates.etcd }} \
   --peer-key-file={{ etcd_certificates.etcd_key }} \
-  --trusted-ca-file={{ etcd_certificates.ca }} \
   --peer-trusted-ca-file={{ etcd_certificates.ca }} \
   --initial-advertise-peer-urls=https://{{ internal_ipv4 }}:{{ etcd_service_peer_port }} \
   --listen-peer-urls=https://{{ internal_ipv4 }}:{{ etcd_service_peer_port }} \
-  --listen-client-urls=https://{{ internal_ipv4 }}:{{ etcd_service_client_port }},https://127.0.0.1:{{ etcd_service_client_port }} \
-  --advertise-client-urls=https://{{ internal_ipv4 }}:{{ etcd_service_client_port }} \
+  --listen-client-urls=http://{{ internal_ipv4 }}:{{ etcd_service_client_port }},http://127.0.0.1:{{ etcd_service_client_port }} \
+  --advertise-client-urls=http://{{ internal_ipv4 }}:{{ etcd_service_client_port }} \
   --initial-cluster-token={{ etcd_service_cluster_token }} \
   --initial-cluster={{ etcd_service_cluster_string }} \
   --initial-cluster-state=new

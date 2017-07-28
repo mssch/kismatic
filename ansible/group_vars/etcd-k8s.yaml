@@ -9,3 +9,4 @@ etcd_service_data_dir: /var/lib/etcd_k8s
 etcd_service_peer_port: 2380
 etcd_service_client_port: 2379
 etcd_service_cluster_token: etcd-cluster-k8s #TODO some random/custom string to not collide with another etcd on the network
+etcd_service_template: "etcd.service"

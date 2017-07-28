@@ -112,6 +112,8 @@ type ClusterCatalog struct {
 		Enabled bool
 	}
 
+	InsecureNetworkingEtcd bool `yaml:"insecure_networking_etcd"`
+
 	HTTPProxy  string `yaml:"http_proxy"`
 	HTTPSProxy string `yaml:"https_proxy"`
 	NoProxy    string `yaml:"no_proxy"`

@@ -19,6 +19,7 @@ calico_cni_version: "v1.9.1"
 calico_kube_policy_controller_version: "v0.6.0"
 weave_version: "2.0.1"
 weave_npc_version: "2.0.1"
+contiv_version: "1.1.1"
 kubedns_version: "1.14.4"
 kube_dnsmasq_version: "1.14.4"
 kubedns_sidecar_version: "1.14.4"
@@ -99,6 +100,17 @@ calico_executable_mode: 0775
 weave_dir: /etc/weave
 #networking
 kubernetes_dns_service_addr: https://{{kubernetes_dns_service_ip}}:{{kubernetes_master_secure_port}}
+#===============================================================================
+# contiv
+contiv:
+  certs:
+    proxy_server_key_filename: "contiv-proxy-server-key.pem"
+    proxy_server_cert_filename: "contiv-proxy-server.pem"
+  dir: 
+    config: /etc/contiv
+    var: /var/contiv
+  proxy_server_certs_secret_name: "contiv-proxy-server-certs"
+  vlan_iface: ""
 #===============================================================================
 # kubernetes
 # directories
@@ -234,6 +246,10 @@ calico_kube_policy_controller_img: '{% if load_private_images|bool == true %}{{ 
 cni_bin_orig_img: apprenda/cni-bin:{{ cni_version }}
 cni_bin_priv_img: "{{ docker_registry_full_url }}/{{ cni_bin_orig_img }}"
 cni_bin_img: '{% if load_private_images|bool == true %}{{ cni_bin_priv_img }}{% else %}{{ cni_bin_orig_img }}{% endif %}'
+
+contiv_netplugin_orig_img: contiv/netplugin:{{ contiv_version }}
+contiv_netplugin_priv_img: "{{ docker_registry_full_url }}/{{ contiv_netplugin_orig_img }}"
+contiv_netplugin_img: '{% if load_private_images|bool == true %}{{ contiv_netplugin_priv_img }}{% else %}{{ contiv_netplugin_orig_img }}{% endif %}'
 
 weave_orig_img: weaveworks/weave-kube:{{ weave_version }}
 weave_priv_img: "{{ docker_registry_full_url }}/{{ weave_orig_img }}"

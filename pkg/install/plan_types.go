@@ -8,21 +8,26 @@ import (
 	"github.com/apprenda/kismatic/pkg/ssh"
 )
 
-const DefaultPackageManagerProvider = "helm"
+const (
+	cniProviderContiv = "contiv"
+	cniProviderCalico = "calico"
+	cniProviderWeave  = "weave"
+	cniProviderCustom = "custom"
+)
 
-func PackageManagerProviders() []string {
+func packageManagerProviders() []string {
 	return []string{"helm", ""}
 }
 
-func CNIProviders() []string {
-	return []string{"calico", "weave", "custom"} //, "contiv"}
+func cniProviders() []string {
+	return []string{cniProviderCalico, cniProviderContiv, cniProviderWeave, cniProviderCustom}
 }
 
-func CalicoMode() []string {
+func calicoMode() []string {
 	return []string{"overlay", "routed"}
 }
 
-func ServiceTypes() []string {
+func serviceTypes() []string {
 	return []string{"ClusterIP", "NodePort", "LoadBalancer", "ExternalName"}
 }
 

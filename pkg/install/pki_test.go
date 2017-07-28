@@ -60,6 +60,9 @@ func getPlan() *Plan {
 				ServiceCIDRBlock: "10.0.0.0/24", // required for DNS service
 			},
 		},
+		AddOns: AddOns{
+			CNI: &CNI{},
+		},
 		Etcd: NodeGroup{
 			Nodes: []Node{
 				Node{
@@ -604,6 +607,24 @@ func TestInternalDockerRegistryCertGenerated(t *testing.T) {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
 	certFile := filepath.Join(pki.GeneratedCertsDirectory, "docker-registry.pem")
+	mustReadCertFile(certFile, t)
+}
+
+func TestContivProxyServerCertGenerated(t *testing.T) {
+	pki := getPKI(t)
+	defer cleanup(pki.GeneratedCertsDirectory, t)
+
+	p := getPlan()
+	p.AddOns.CNI = &CNI{Provider: cniProviderContiv}
+
+	ca, err := pki.GenerateClusterCA(p)
+	if err != nil {
+		t.Fatalf("error generating CA for test: %v", err)
+	}
+	if err = pki.GenerateClusterCertificates(p, ca); err != nil {
+		t.Fatalf("failed to generate certs: %v", err)
+	}
+	certFile := filepath.Join(pki.GeneratedCertsDirectory, "contiv-proxy-server.pem")
 	mustReadCertFile(certFile, t)
 }
 
