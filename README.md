@@ -26,14 +26,17 @@ KET operational tools include:
 5. [`Kismatic Provision`](https://github.com/apprenda/kismatic-provision)
    * Quickly provision infrastructure on public clouds such as AWS and Packet. Makes building demo and development clusters a 2-step process.
 
-## Dependencies
-| Dependency | Current version |
+## Components
+| Component | Version |
 | --- | --- |
 | Kubernetes | v1.7.2 |
 | Docker | v1.12.6 |
-| Calico | v2.3.0 |
 | Etcd (for Kubernetes) | v3.1.10 |
-| Etcd (for Calico) | v3.1.10 |
+| Etcd (for Calico & Contiv) | v3.1.10 |
+| Calico | v2.3.0 |
+| Weave | v2.0.1 |
+| Contiv | v1.1.1 |
+
 
 [Download KET here](https://github.com/apprenda/kismatic/releases)
 
