@@ -47,19 +47,19 @@ KET operational tools include:
 
 # Usage Documentation
 
-[Installation Overview](docs/INTENT.md) -- Useful examples for various ways you can use Kismatic in your organization.
+[Installation Overview](docs/INSTALL.md) -- Instructions on using KET to install a Kubernetes cluster.
 
-[Plan & Build a Kubernetes cluster](docs/INSTALL.md) -- Details instructions on using KET to install a Kubernetes cluster.
+[Upgrade a Kubernetes cluster](docs/UPGRADE.md) -- Instructions on using KET to upgrade your Kubernetes cluster.
 
-[Upgrade a Kubernetes cluster](docs/UPGRADE.md) -- Instructions on how to use KET to upgrade your Kubernetes cluster.
+[Cluster Examples](docs/INTENT.md) -- Examples for various ways you can use Kismatic in your organization.
 
 [Using KET with Calico](docs/NETWORKING.md) -- Instructions on how to use KET with the built-in SDN controller Project Calico.
 
 [Cert Generation](docs/CERT_GENERATION.md) -- Information on how KET handles certificates.
 
-[Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/docs/kismatic-cli) -- Dynamically generated Cobra documentation for the Kismatic CLI.
+[Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/docs/kismatic-cli) -- Dynamically generated documentation for the Kismatic CLI.
 
-[Roadmap](ROADMAP.md) -- Insight into the near-term features roadmap for the next few releases of KET.
+[Roadmap](ROADMAP.md) -- The feature roadmap for the next few releases of KET.
 
 # Development Documentation
 
@@ -98,4 +98,4 @@ Simply use the `kismatic dashboard` command to open the dashboard
 
 You may be prompted for credentials, use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
 
-The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/), just follow the instructions provided at the end of the installation to use it.
+The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/). Instructions are provided at the end of the installation on how to use it.
