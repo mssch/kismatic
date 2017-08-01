@@ -5,9 +5,6 @@
     become: yes
     run_once: true
 
-    environment:
-      KUBECONFIG: "{{ local_kubeconfig_directory }}"
-
     tasks:
       - name: "create new serviceaccount for tiller"
         command: "kubectl -n kube-system create sa tiller"
@@ -20,9 +17,13 @@
       - name: "run helm init"
         local_action: command ../../helm init --service-account=tiller -i="{{ helm_img }}" --upgrade
         become: no
+        environment:
+          KUBECONFIG: "{{ local_kubeconfig_directory }}"
       - name: "add kismatic helm repo"
         local_action: command ../../helm repo add kismatic https://apprenda.github.io/kismatic-charts/
         become: no
+        environment:
+          KUBECONFIG: "{{ local_kubeconfig_directory }}"
         when: disconnected_installation|bool != true
 
       - block:
