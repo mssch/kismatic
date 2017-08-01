@@ -53,6 +53,8 @@ jobs:
             GINKGO_OPTS: "-nodes=64 --flakeAttempts=2"
             ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
             ANSIBLE_SSH_ARGS: "-o ControlMaster=auto -o ControlPersist=1800s -o ControlPath=/run/user/1026/ssh-%r-%h-%p"
+      - store_test_results:
+          path: /tmp/ket-junit-results
       - run:
           name: Darwin dist
           command: GLIDE_GOOS=linux GOOS=darwin make bare-dist

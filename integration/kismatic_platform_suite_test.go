@@ -19,13 +19,18 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/config"
+	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 )
 
 func TestKismaticPlatform(t *testing.T) {
 	if !testing.Short() {
 		RegisterFailHandler(Fail)
-		RunSpecs(t, "KismaticPlatform Suite")
+		junitResultsDir := createJUnitResultsDirectory(t)
+		filename := filepath.Join(junitResultsDir, fmt.Sprintf("junit_%d_%d.xml", config.GinkgoConfig.ParallelNode, time.Now().UnixNano()))
+		junitReporter := reporters.NewJUnitReporter(filename)
+		RunSpecsWithDefaultAndCustomReporters(t, "KET Suite", []Reporter{junitReporter})
 	}
 }
 
@@ -269,4 +274,16 @@ func uploadKismaticLogs(path string) {
 	if err != nil {
 		fmt.Printf("Error uploading logs to S3: %v", err)
 	}
+}
+
+func createJUnitResultsDirectory(t *testing.T) string {
+	dir := "/tmp/ket-junit-results"
+	err := os.Mkdir(dir, 0755)
+	if os.IsExist(err) {
+		return dir
+	}
+	if err != nil {
+		t.Fatalf("error creating junit results directory: %v", err)
+	}
+	return dir
 }
