@@ -313,9 +313,10 @@ var _ = Describe("kismatic", func() {
 							return addWorkerToCluster(newWorker)
 						})
 
-						sub.It("should be able to deploy a workload with ingress", func() error {
-							return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
-						})
+						// This test is flaky with contiv
+						// sub.It("should be able to deploy a workload with ingress", func() error {
+						// 	return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
+						// })
 
 						// Use master[0] public IP
 						// There is an issue with contiv that prevents this test from passing consistently
