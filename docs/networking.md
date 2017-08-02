@@ -4,7 +4,7 @@ CNI providers out of the box. Choosing the CNI provider will depend on your spec
 infrastructure and application needs. 
 
 The CNI provider is exposed as an Add-On in the KET plan file via the 
-`add_ons.cni.provider` field. See the [CNI Add-On reference documentation](ADD_ONS.md#cni)
+`add_ons.cni.provider` field. See the [CNI Add-On reference documentation](add_ons.md#cni)
 for more information on how to configure CNI.
 
 
