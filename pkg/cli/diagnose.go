@@ -41,6 +41,8 @@ func NewCmdDiagnostic(out io.Writer) *cobra.Command {
 }
 
 func doDiagnostics(out io.Writer, opts *diagsOpts) error {
+	util.PrintHeader(out, "Gathering Diagnostic Data", '=')
+
 	planFile := opts.planFilename
 	planner := install.FilePlanner{File: planFile}
 
@@ -64,6 +66,7 @@ func doDiagnostics(out io.Writer, opts *diagsOpts) error {
 	}
 	util.PrettyPrintOk(out, "Validate SSH connectivity to nodes")
 
+	// Get diagnostics from nodes
 	options := install.ExecutorOptions{
 		OutputFormat: opts.outputFormat,
 		Verbose:      opts.verbose,
@@ -72,6 +75,13 @@ func doDiagnostics(out io.Writer, opts *diagsOpts) error {
 	if err != nil {
 		return err
 	}
-	return executor.DiagnoseNodes(*plan)
 
+	if err := executor.DiagnoseNodes(*plan); err != nil {
+		return err
+	}
+
+	util.PrintColor(out, util.Green, "\nFinished gathering diagnostic information from all nodes in the cluster.\n")
+	util.PrintColor(out, util.Green, "You may find the diagnostic data in the ./diagnostics directory.\n\n")
+
+	return nil
 }

@@ -1,7 +1,6 @@
 ---
   - hosts: all
-    name: "Diagnose Nodes"
-    #become: yes
+    name: "Gather Node Diagnostics"
     vars_files:
       - group_vars/all.yaml
       - group_vars/diagnostics.yaml
