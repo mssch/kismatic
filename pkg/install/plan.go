@@ -204,6 +204,8 @@ func (fp *FilePlanner) Write(p *Plan) error {
 
 func getCommentedLine(line string, commentLines []string) string {
 	var b bytes.Buffer
+	// Print out a new line before each comment block
+	b.WriteString("\n")
 	// Print out the comment lines
 	for _, c := range commentLines {
 		// Indent the comment to the same level as the field we are commenting
