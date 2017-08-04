@@ -1,51 +1,51 @@
 ---
 diagnostics:
   host_diagnostics:
-    - {msg: "Getting date", command: "date", file: "date"}
-    - {msg: "Getting hostname", command: "hostname", file: "hostname"}
-    - {msg: "Dumping /etc/hosts", command: "cat /etc/hosts", file: "hosts_file"}
+    - {msg: "Getting date", command: "date", file: "date.log"}
+    - {msg: "Getting hostname", command: "hostname", file: "hostname.log"}
+    - {msg: "Dumping /etc/hosts", command: "cat /etc/hosts", file: "hosts_file.log"}
   docker_diagnostics:
-    - {msg: "Dumping docker.service status", command: "systemctl status docker", file: "systemd_docker"}
-    - {msg: "Dumping journal for docker.service", command: "journalctl -u docker.service --no-pager", file: "journalctl_docker"}
-    - {msg: "Dumping docker ps", command: "docker ps -a", file: "docker_ps"}
-    - {msg: "Dumping docker images", command: "docker images", file: "docker_images"}
+    - {msg: "Dumping docker.service status", command: "systemctl status docker", file: "systemd_docker.log"}
+    - {msg: "Dumping journal for docker.service", command: "journalctl -u docker.service --no-pager", file: "journalctl_docker.log"}
+    - {msg: "Dumping docker ps", command: "docker ps -a", file: "docker_ps.log"}
+    - {msg: "Dumping docker images", command: "docker images", file: "docker_images.log"}
   k8s_diagnostics:
-    - {msg: "Dumping kubelet.service status", command: "systemctl status kubelet", file: "systemd_kubelet"}
-    - {msg: "Dumping journal for kubelet.service", command: "journalctl -u kubelet.service --no-pager", file: "journalctl_kubelet"}
-    - {msg: "Dumping kube-proxy docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-proxy --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_proxy"}
+    - {msg: "Dumping kubelet.service status", command: "systemctl status kubelet", file: "systemd_kubelet.log"}
+    - {msg: "Dumping journal for kubelet.service", command: "journalctl -u kubelet.service --no-pager", file: "journalctl_kubelet.log"}
+    - {msg: "Dumping kube-proxy docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-proxy --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_proxy.log"}
   k8s_master_diagnostics:
-    - {msg: "Dumping kube-apiserver docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-apiserver --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_apiserver"}
-    - {msg: "Dumping kube-controller-manager docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-controller-manager --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_controller_manager"}
-    - {msg: "Dumping kube-scheduler docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-scheduler --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_scheduler"}
-    - {msg: "Dumping nodes", command: "kubectl get nodes", file: "kubectl_nodes"}
-    - {msg: "Dumping apis", command: "kubectl get api-versions", file: "kubectl_apis"}
-    - {msg: "Dumping pods in all namespaces", command: "kubectl get pods --all-namespaces -o wide", file: "kubectl_pods"}
-    - {msg: "Dumping kube-system pods details", command: "kubectl describe pods -n kube-system", file: "kubectl_describe_pods"}
-    - {msg: "Dumping services", command: "kubectl get services -n kube-system", file: "kubectl_services"}
-    - {msg: "Dumping daemonsets", command: "kubectl get ds -n kube-system", file: "kubectl_daemonset"}
-    - {msg: "Dumping deployments", command: "kubectl get deployments -n kube-system", file: "kubectl_deployments"}
+    - {msg: "Dumping kube-apiserver docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-apiserver --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_apiserver.log"}
+    - {msg: "Dumping kube-controller-manager docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-controller-manager --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_controller_manager.log"}
+    - {msg: "Dumping kube-scheduler docker logs", command: "docker logs `docker ps -a -f name=k8s_kube-scheduler --format=\\{\\{.ID\\}\\} -l`", file: "logs_kube_scheduler.log"}
+    - {msg: "Dumping nodes", command: "kubectl get nodes", file: "kubectl_nodes.log"}
+    - {msg: "Dumping apis", command: "kubectl get api-versions", file: "kubectl_apis.log"}
+    - {msg: "Dumping pods in all namespaces", command: "kubectl get pods --all-namespaces -o wide", file: "kubectl_pods.log"}
+    - {msg: "Dumping kube-system pods details", command: "kubectl describe pods -n kube-system", file: "kubectl_describe_pods.log"}
+    - {msg: "Dumping services", command: "kubectl get services -n kube-system", file: "kubectl_services.log"}
+    - {msg: "Dumping daemonsets", command: "kubectl get ds -n kube-system", file: "kubectl_daemonset.log"}
+    - {msg: "Dumping deployments", command: "kubectl get deployments -n kube-system", file: "kubectl_deployments.log"}
   k8s_worker_diagnostics:
-    - {msg: "Dumping kube-dashboard docker logs", command: "docker logs `docker ps -a -f name=k8s_kubernetes-dashboard --format=\\{\\{.ID\\}\\} -l`", file: "logs_kubernetes_dashboard"}
-    - {msg: "Dumping kubedns docker logs", command: "docker logs `docker ps -a -f name=k8s_kubedns --format=\\{\\{.ID\\}\\} -l`", file: "logs_kubedns"}
-    - {msg: "Dumping dnsmasq docker logs", command: "docker logs `docker ps -a -f name=k8s_dnsmasq --format=\\{\\{.ID\\}\\} -l`", file: "logs_dnsmasq"}
-    - {msg: "Dumping kubedns sidecar docker logs", command: "docker logs `docker ps -a -f name=k8s_sidecar_kube-dns --format=\\{\\{.ID\\}\\} -l`", file: "logs_kubedns_sidecar"}
+    - {msg: "Dumping kube-dashboard docker logs", command: "docker logs `docker ps -a -f name=k8s_kubernetes-dashboard --format=\\{\\{.ID\\}\\} -l`", file: "logs_kubernetes_dashboard.log"}
+    - {msg: "Dumping kubedns docker logs", command: "docker logs `docker ps -a -f name=k8s_kubedns --format=\\{\\{.ID\\}\\} -l`", file: "logs_kubedns.log"}
+    - {msg: "Dumping dnsmasq docker logs", command: "docker logs `docker ps -a -f name=k8s_dnsmasq --format=\\{\\{.ID\\}\\} -l`", file: "logs_dnsmasq.log"}
+    - {msg: "Dumping kubedns sidecar docker logs", command: "docker logs `docker ps -a -f name=k8s_sidecar_kube-dns --format=\\{\\{.ID\\}\\} -l`", file: "logs_kubedns_sidecar.log"}
   calico_diagnostics:
-    - {msg: "Dumping calico-node nodes", command: "docker run -i{% if modify_hosts_file is defined and modify_hosts_file|bool == true %} -v /etc/hosts:/etc/hosts{% endif %} -v /etc/kubernetes:/etc/kubernetes -v {{ calicoctl_conf_path }}:{{ calicoctl_conf_path }} {{ calico_ctl_img }} get nodes -o wide", file: "calicoctl_nodes"}
-    - {msg: "Dumping calico-node docker logs", command: "docker logs `docker ps -a -f name=k8s_calico-node --format=\\{\\{.ID\\}\\} -l`", file: "logs_calico_node"}
-    - {msg: "Dumping calico-cni docker logs", command: "docker logs `docker ps -a -f name=k8s_install-cni --format=\\{\\{.ID\\}\\} -l`", file: "logs_calico_cni"}
-    - {msg: "Dumping netstat", command: "netstat --all --numeric", file: "netstat"}
-    - {msg: "Dumping routes", command: "route", file: "route"}
-    - {msg: "Dumping routes (IPv4)", command: "ip -4 route", file: "ipv4_route"}
-    - {msg: "Dumping routes (IPv6)", command: "ip -6 route", file: "ipv6_route"}
-    - {msg: "Dumping interface info (IPv4)", command: "ip -4 addr", file: "ipv4_addr"}
-    - {msg: "Dumping interface info (IPv6)", command: "ip -6 addr", file: "ipv6_addr"}
-    - {msg: "Dumping iptables (IPv4)", command: "iptables-save", file: "ipv4_tables"}
-    - {msg: "Dumping iptables (IPv6)", command: "ip6tables-save", file: "ipv6_tables"}
-    - {msg: "Dumping ipsets", command: "ipset list", file: "ipsets"}
+    - {msg: "Dumping calico-node nodes", command: "docker run -i{% if modify_hosts_file is defined and modify_hosts_file|bool == true %} -v /etc/hosts:/etc/hosts{% endif %} -v /etc/kubernetes:/etc/kubernetes -v {{ calicoctl_conf_path }}:{{ calicoctl_conf_path }} {{ calico_ctl_img }} get nodes -o wide", file: "calicoctl_nodes.log"}
+    - {msg: "Dumping calico-node docker logs", command: "docker logs `docker ps -a -f name=k8s_calico-node --format=\\{\\{.ID\\}\\} -l`", file: "logs_calico_node.log"}
+    - {msg: "Dumping calico-cni docker logs", command: "docker logs `docker ps -a -f name=k8s_install-cni --format=\\{\\{.ID\\}\\} -l`", file: "logs_calico_cni.log"}
+    - {msg: "Dumping netstat", command: "netstat --all --numeric", file: "netstat.log"}
+    - {msg: "Dumping routes", command: "route", file: "route.log"}
+    - {msg: "Dumping routes (IPv4)", command: "ip -4 route", file: "ipv4_route.log"}
+    - {msg: "Dumping routes (IPv6)", command: "ip -6 route", file: "ipv6_route.log"}
+    - {msg: "Dumping interface info (IPv4)", command: "ip -4 addr", file: "ipv4_addr.log"}
+    - {msg: "Dumping interface info (IPv6)", command: "ip -6 addr", file: "ipv6_addr.log"}
+    - {msg: "Dumping iptables (IPv4)", command: "iptables-save", file: "ipv4_tables.log"}
+    - {msg: "Dumping iptables (IPv6)", command: "ip6tables-save", file: "ipv6_tables.log"}
+    - {msg: "Dumping ipsets", command: "ipset list", file: "ipsets.log"}
   etcd_diagnostics:
-    - {msg: "Dumping etcd_k8s.service status", command: "systemctl status etcd_k8s", file: "systemd_etcd_k8s"}
-    - {msg: "Dumping journal for etcd_k8s.service", command: "journalctl -u etcd_k8s.service --no-pager", file: "journalctl_etcd_k8s"}
-    - {msg: "Getting etcd_k8s health", command: "/usr/bin/etcdctl --endpoint='https://127.0.0.1:2379/' --cert-file=/etc/etcd_networking/etcd.pem --key-file=/etc/etcd_networking/etcd-key.pem --ca-file=/etc/etcd_networking/ca.pem cluster-health", file: "etcd_k8s_health"}
-    - {msg: "Dumping etcd_networking.service status", command: "systemctl status etcd_networking", file: "systemd_etcd_networking"}
-    - {msg: "Dumping journal for etcd_networking.service", command: "journalctl -u etcd_networking.service --no-pager", file: "journalctl_etcd_networking"}
-    - {msg: "Getting etcd_networking health", command: "/usr/bin/etcdctl --endpoint='https://127.0.0.1:6666/' --cert-file=/etc/etcd_networking/etcd.pem --key-file=/etc/etcd_networking/etcd-key.pem --ca-file=/etc/etcd_networking/ca.pem cluster-health", file: "etcd_networking_health"}
+    - {msg: "Dumping etcd_k8s.service status", command: "systemctl status etcd_k8s", file: "systemd_etcd_k8s.log"}
+    - {msg: "Dumping journal for etcd_k8s.service", command: "journalctl -u etcd_k8s.service --no-pager", file: "journalctl_etcd_k8s.log"}
+    - {msg: "Getting etcd_k8s health", command: "/usr/bin/etcdctl --endpoint='https://127.0.0.1:2379/' --cert-file=/etc/etcd_networking/etcd.pem --key-file=/etc/etcd_networking/etcd-key.pem --ca-file=/etc/etcd_networking/ca.pem cluster-health", file: "etcd_k8s_health.log"}
+    - {msg: "Dumping etcd_networking.service status", command: "systemctl status etcd_networking", file: "systemd_etcd_networking.log"}
+    - {msg: "Dumping journal for etcd_networking.service", command: "journalctl -u etcd_networking.service --no-pager", file: "journalctl_etcd_networking.log"}
+    - {msg: "Getting etcd_networking health", command: "/usr/bin/etcdctl --endpoint='https://127.0.0.1:6666/' --cert-file=/etc/etcd_networking/etcd.pem --key-file=/etc/etcd_networking/etcd-key.pem --ca-file=/etc/etcd_networking/ca.pem cluster-health", file: "etcd_networking_health.log"}
