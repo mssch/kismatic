@@ -1,0 +1,27 @@
+---
+  - hosts: master:worker:ingress:storage
+    any_errors_fatal: true
+    name: "{{ play_name | default('Stop Kubernetes Control Plane') }}"
+    become: yes
+    vars_files:
+      - group_vars/all.yaml
+
+    tasks:
+      - name: backup static pod manifests directory
+        file:
+          path: "{{ kubelet_pod_manifests_backup_dir }}"
+          state: directory
+          mode: 0700
+      - name: determine if kube-proxy.yaml manifest exists
+        stat:
+          path: "{{ kubelet_pod_manifests_dir }}/kube-proxy.yaml"
+        register: pod_stat
+      - name: move kube-proxy.yaml manifest if present
+        shell: cp {{ kubelet_pod_manifests_dir }}/kube-proxy.yaml {{ kubelet_pod_manifests_backup_dir }}/kube-proxy.yaml && rm -f {{ kubelet_pod_manifests_dir }}/kube-proxy.yaml
+        when: pod_stat is defined and pod_stat.stat.exists
+      - name: wait until kube-proxy is stopped
+        wait_for:
+          port: "{{ kubernetes_proxy_insecure_port }}"
+          state: stopped
+          delay: 1
+          timeout: 60

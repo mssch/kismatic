@@ -24,13 +24,14 @@
     when: cni.enabled|bool == true and cni.provider == "calico"
   
   # kubernetes
-  - include: _kube-apiserver-stop.yaml 
+  - include: _kube-control-plane-stop.yaml
   - include: _kubeconfig.yaml upgrading=true
   - include: _kubelet.yaml play_name="Upgrade Kubernetes Kubelet" upgrading=true
   - include: _kube-apiserver.yaml play_name="Upgrade Kubernetes API Server" upgrading=true
   - include: _kube-scheduler.yaml play_name="Upgrade Kubernetes Scheduler" upgrading=true
   - include: _kube-controller-manager.yaml play_name="Upgrade Kubernetes Controller Manager" upgrading=true
   - include: _validate-control-plane-node.yaml serial_count="1" upgrading=true
+  - include: _kube-proxy-stop.yaml play_name="Upgrade Kubernetes Proxy" upgrading=true
   - include: _kube-proxy.yaml play_name="Upgrade Kubernetes Proxy" upgrading=true
   - include: _cni.yaml play_name="Upgrade Kubernetes CNI" upgrading=true
     when: cni.enabled|bool == true

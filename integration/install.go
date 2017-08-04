@@ -119,6 +119,7 @@ func installKismaticWithPlan(plan PlanAWS, sshKey string) error {
 
 	if err := cmd.Run(); err != nil {
 		// run diagnostics on error
+		fmt.Println("----- Running diagnose command -----")
 		diagsCmd := exec.Command("./kismatic", "diagnose", "-f", "kismatic-testing.yaml")
 		diagsCmd.Stdout = os.Stdout
 		diagsCmd.Stderr = os.Stderr
