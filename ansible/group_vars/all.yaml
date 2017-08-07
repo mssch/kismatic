@@ -1,8 +1,8 @@
 #===============================================================================
 # VERSIONS
-kubernetes_version: v1.7.2
-kismatic_yum_version: 1.7.2_1-1
-kismatic_deb_version: 1.7.2-1
+kubernetes_version: v1.7.3
+kismatic_yum_version: 1.7.3_1-1
+kismatic_deb_version: 1.7.3-1
 etcd_version: 3.1.10
 etcd_yum_version: 3.1.10-1
 etcd_apt_version: 3.1.10
@@ -23,7 +23,7 @@ contiv_version: "1.1.1"
 kubedns_version: "1.14.4"
 kube_dnsmasq_version: "1.14.4"
 kubedns_sidecar_version: "1.14.4"
-kubernetes_dashboard_version: "v1.6.2"
+kubernetes_dashboard_version: "v1.6.3"
 defaultbackend_version: "1.0"
 nginx_ingress_controller_version: "0.8.3"
 docker_registry_version: "2.6.2"
