@@ -1,6 +1,11 @@
 package install
 
-import "testing"
+import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestGenerateAlphaNumericPassword(t *testing.T) {
 	_, err := generateAlphaNumericPassword()
@@ -57,4 +62,83 @@ func TestReadWithNil(t *testing.T) {
 	if p.Cluster.Certificates.CAExpiry != defaultCAExpiry {
 		t.Errorf("expected ca cert expiry to be %s, but got %s", defaultCAExpiry, p.Cluster.Certificates.CAExpiry)
 	}
+}
+
+func TestReadDeprecatedDashboard(t *testing.T) {
+	tmpDir, err := ioutil.TempDir("", "test-read-deprecated-dashboard")
+	if err != nil {
+		t.Fatalf("error creating tmp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+	file := filepath.Join(tmpDir, "kismatic-cluster.yaml")
+
+	tests := []struct {
+		name           string
+		planStr        string
+		expectDisabled bool
+	}{
+		{
+			name:           "deprecated is set to true",
+			planStr:        `{'add_ons': {'dashbard': {'disable': true}}}`,
+			expectDisabled: true,
+		},
+		{
+			name:           "deprecated is set to false",
+			planStr:        `{'add_ons': {'dashbard': {'disable': false}}}`,
+			expectDisabled: false,
+		},
+		{
+			name:           "actual field is set to true",
+			planStr:        `{'add_ons': {'dashboard': {'disable': true}}}`,
+			expectDisabled: true,
+		},
+		{
+			name:           "actual field is set to false",
+			planStr:        `{'add_ons': {'dashboard': {'disable': false}}}`,
+			expectDisabled: false,
+		},
+		{
+			name:           "both fields are set to true",
+			planStr:        `{'add_ons': {'dashboard': {'disable': true}, 'dashbard': {'disable': true}}}`,
+			expectDisabled: true,
+		},
+		{
+			name:           "both fields are set to false",
+			planStr:        `{'add_ons': {'dashboard': {'disable': false}, 'dashbard': {'disable': false}}}`,
+			expectDisabled: false,
+		},
+		{
+			name:           "both are missing",
+			planStr:        "",
+			expectDisabled: false,
+		},
+		{
+			name:           "deprecated is set to false, new one is set to true",
+			planStr:        `{'add_ons': {'dashbard': {'disable': false}, 'dashboard': {'disable': true}}}`,
+			expectDisabled: true,
+		},
+		{
+			name:           "deprecated is set to true, new one is set to false",
+			planStr:        `{'add_ons': {'dashbard': {'disable': true}, 'dashboard': {'disable': false}}}`,
+			expectDisabled: false,
+		},
+	}
+
+	for _, test := range tests {
+		// writeFile truncates before writing, so we can reuse the file
+		if err = ioutil.WriteFile(file, []byte(test.planStr), 0666); err != nil {
+			t.Fatalf("error writing plan file")
+		}
+
+		planner := FilePlanner{file}
+		plan, err := planner.Read()
+		if err != nil {
+			t.Fatalf("error reading plan file")
+		}
+
+		if plan.AddOns.Dashboard.Disable != test.expectDisabled {
+			t.Errorf("name: %s: expected disabled to be %v, but got %v.", test.name, test.expectDisabled, plan.AddOns.Dashboard.Disable)
+		}
+	}
+
 }
