@@ -1,0 +1,56 @@
+---
+  - hosts: master
+    any_errors_fatal: true
+    name: "{{ play_name | default('Stop Kubernetes Control Plane') }}"
+    become: yes
+    vars_files:
+      - group_vars/all.yaml
+
+    tasks:
+      - name: backup static pod manifests directory
+        file:
+          path: "{{ kubelet_pod_manifests_backup_dir }}"
+          state: directory
+          mode: 0700
+      - name: determine if kube-apiserver.yaml manifest exists
+        stat:
+          path: "{{ kubelet_pod_manifests_dir }}/kube-apiserver.yaml"
+        register: pod_stat
+      - name: move kube-apiserver.yaml manifest if present
+        shell: cp {{ kubelet_pod_manifests_dir }}/kube-apiserver.yaml {{ kubelet_pod_manifests_backup_dir }}/kube-apiserver.yaml && rm -f {{ kubelet_pod_manifests_dir }}/kube-apiserver.yaml
+        when: pod_stat is defined and pod_stat.stat.exists
+      - name: wait until kube-apiserver is stopped
+        wait_for:
+          port: "{{ kubernetes_master_insecure_port }}"
+          state: stopped
+          delay: 1
+          timeout: 30
+
+      - name: determine if kube-scheduler.yaml manifest exists
+        stat:
+          path: "{{ kubelet_pod_manifests_dir }}/kube-scheduler.yaml"
+        register: pod_stat
+      - name: move kube-scheduler.yaml manifest if present
+        shell: cp {{ kubelet_pod_manifests_dir }}/kube-scheduler.yaml {{ kubelet_pod_manifests_backup_dir }}/kube-scheduler.yaml && rm -f {{ kubelet_pod_manifests_dir }}/kube-scheduler.yaml
+        when: pod_stat is defined and pod_stat.stat.exists
+      - name: wait until kube-scheduler is stopped
+        wait_for:
+          port: "{{ kubernetes_scheduler_insecure_port }}"
+          state: stopped
+          delay: 1
+          timeout: 30
+      
+      - name: determine if kube-controller-manager.yaml manifest exists
+        stat:
+          path: "{{ kubelet_pod_manifests_dir }}/kube-controller-manager.yaml"
+        register: pod_stat
+      - name: move kube-controller-manager.yaml manifest if present
+        shell: cp {{ kubelet_pod_manifests_dir }}/kube-controller-manager.yaml {{ kubelet_pod_manifests_backup_dir }}/kube-controller-manager.yaml && rm -f {{ kubelet_pod_manifests_dir }}/kube-controller-manager.yaml
+        when: pod_stat is defined and pod_stat.stat.exists
+      - name: wait until kube-controller-manager is stopped
+        wait_for:
+          port: "{{ kubernetes_controller_mgr_insecure_port }}"
+          state: stopped
+          delay: 1
+          timeout: 30
+      
