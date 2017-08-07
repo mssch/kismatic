@@ -786,8 +786,13 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.Heapster.Options.Heapster.Sink = p.AddOns.HeapsterMonitoring.Options.Heapster.Sink
 		cc.Heapster.Options.InfluxDB.PVCName = p.AddOns.HeapsterMonitoring.Options.InfluxDB.PVCName
 	}
+
 	// dashboard
-	cc.Dashboard.Enabled = !p.AddOns.Dashboard.Disable
+	cc.Dashboard.Enabled = true
+	if p.AddOns.Dashboard != nil && p.AddOns.Dashboard.Disable {
+		cc.Dashboard.Enabled = false
+	}
+
 	// package_manager
 	if !p.AddOns.PackageManager.Disable {
 		// Currently only helm is supported

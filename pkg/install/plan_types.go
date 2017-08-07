@@ -177,11 +177,12 @@ type SSHConnection struct {
 }
 
 type AddOns struct {
-	CNI                *CNI                `yaml:"cni"`
-	DNS                DNS                 `yaml:"dns"`
-	HeapsterMonitoring *HeapsterMonitoring `yaml:"heapster"`
-	Dashboard          Dashboard           `yaml:"dashbard"`
-	PackageManager     PackageManager      `yaml:"package_manager"`
+	CNI                 *CNI                `yaml:"cni"`
+	DNS                 DNS                 `yaml:"dns"`
+	HeapsterMonitoring  *HeapsterMonitoring `yaml:"heapster"`
+	Dashboard           *Dashboard          `yaml:"dashboard"`
+	DashboardDeprecated *Dashboard          `yaml:"dashbard"`
+	PackageManager      PackageManager      `yaml:"package_manager"`
 }
 
 // Features is deprecated, required to support KET v1.3.3

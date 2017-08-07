@@ -103,6 +103,13 @@ func readDeprecatedFields(p *Plan) {
 	if p.Cluster.AllowPackageInstallation != nil {
 		p.Cluster.DisablePackageInstallation = !*p.Cluster.AllowPackageInstallation
 	}
+
+	// Only read the deprecated dashboard field if the new one is not set
+	if p.AddOns.DashboardDeprecated != nil && p.AddOns.Dashboard == nil {
+		p.AddOns.Dashboard = &Dashboard{
+			Disable: p.AddOns.DashboardDeprecated.Disable,
+		}
+	}
 }
 
 func setDefaults(p *Plan) {
@@ -137,6 +144,10 @@ func setDefaults(p *Plan) {
 
 	if p.Cluster.Certificates.CAExpiry == "" {
 		p.Cluster.Certificates.CAExpiry = defaultCAExpiry
+	}
+
+	if p.AddOns.Dashboard == nil {
+		p.AddOns.Dashboard = &Dashboard{}
 	}
 }
 
