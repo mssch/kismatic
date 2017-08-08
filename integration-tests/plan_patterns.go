@@ -31,6 +31,7 @@ type PlanAWS struct {
 	ServiceCIDR                  string
 	DisableCNI                   bool
 	CNIProvider                  string
+	DNSProvider                  string
 	DisableHelm                  bool
 	HeapsterReplicas             int
 	HeapsterInfluxdbPVC          string
@@ -99,6 +100,9 @@ add_ons:
       calico:
         mode: overlay
         log_level: info
+  dns:
+    disable: false
+    provider: {{if .DNSProvider}}{{.DNSProvider}}{{else}}kubedns{{end}}
   heapster:
     disable: false
     options:

@@ -15,12 +15,21 @@ const (
 	cniProviderCustom = "custom"
 )
 
+const (
+	dnsProviderKubedns = "kubedns"
+	dnsProviderCoredns = "coredns"
+)
+
 func packageManagerProviders() []string {
 	return []string{"helm", ""}
 }
 
 func cniProviders() []string {
 	return []string{cniProviderCalico, cniProviderContiv, cniProviderWeave, cniProviderCustom}
+}
+
+func dnsProviders() []string {
+	return []string{dnsProviderKubedns, dnsProviderCoredns}
 }
 
 func calicoMode() []string {
@@ -351,6 +360,11 @@ type DNS struct {
 	// Whether the DNS add-on should be disabled.
 	// When set to true, no DNS solution will be deployed on the cluster.
 	Disable bool
+	// This property indicates the in-cluster DNS provider.
+	// +required
+	// +options=kubedns,coredns
+	// +default=kubedns
+	Provider string
 }
 
 // The HeapsterMonitoring add-on configuration

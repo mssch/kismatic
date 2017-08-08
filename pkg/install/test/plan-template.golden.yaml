@@ -149,6 +149,9 @@ add_ons:
   dns:
     disable: false
 
+    # Options: 'kubedns','coredns'.
+    provider: kubedns
+
   heapster:
     disable: false
     options:

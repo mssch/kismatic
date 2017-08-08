@@ -44,6 +44,7 @@ type installOptions struct {
 	serviceCIDR                  string
 	disableCNI                   bool
 	cniProvider                  string
+	dnsProvider                  string
 	heapsterReplicas             int
 	heapsterInfluxdbPVC          string
 	cloudProvider                string
@@ -109,6 +110,7 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		ServiceCIDR:                  installOpts.serviceCIDR,
 		DisableCNI:                   installOpts.disableCNI,
 		CNIProvider:                  installOpts.cniProvider,
+		DNSProvider:                  installOpts.dnsProvider,
 		DisableHelm:                  disableHelm,
 		HeapsterReplicas:             installOpts.heapsterReplicas,
 		HeapsterInfluxdbPVC:          installOpts.heapsterInfluxdbPVC,

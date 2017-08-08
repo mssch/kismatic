@@ -89,7 +89,8 @@ type ClusterCatalog struct {
 	CloudConfig   string `yaml:"cloud_config_local"`
 
 	DNS struct {
-		Enabled bool
+		Enabled  bool
+		Provider string
 	}
 
 	RunPodValidation bool `yaml:"run_pod_validation"`

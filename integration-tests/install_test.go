@@ -398,6 +398,51 @@ var _ = Describe("kismatic", func() {
 		// 	})
 		// })
 
+		Context("when deploying a skunkworks cluster", func() {
+			Context("with CoreDNS as the DNS provider", func() {
+				ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
+					WithInfrastructure(NodeCount{3, 2, 3, 2, 2}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+						// reserve one of the workers for the add-worker test
+						allWorkers := nodes.worker
+						nodes.worker = allWorkers[0 : len(nodes.worker)-1]
+
+						// install cluster
+						installOpts := installOptions{
+							heapsterReplicas:    3,
+							heapsterInfluxdbPVC: "influxdb",
+							dnsProvider:         "coredns",
+						}
+						err := installKismatic(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+
+						sub := SubDescribe("Using a running cluster")
+						defer sub.Check()
+
+						sub.It("should allow adding a worker node", func() error {
+							newWorker := allWorkers[len(allWorkers)-1]
+							return addWorkerToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"})
+						})
+
+						sub.It("should be able to deploy a workload with ingress", func() error {
+							return verifyIngressNodes(nodes.master[0], nodes.ingress, sshKey)
+						})
+
+						sub.It("should respect network policies", func() error {
+							return verifyNetworkPolicy(nodes.master[0], sshKey)
+						})
+
+						sub.It("should support heapster with persistent storage", func() error {
+							return verifyHeapster(nodes.master[0], sshKey)
+						})
+
+						sub.It("should have tiller running", func() error {
+							return verifyTiller(nodes.master[0], sshKey)
+						})
+					})
+				})
+			})
+		})
+
 		ItOnPacket("should install successfully [slow]", func(packet infrastructureProvisioner) {
 			WithMiniInfrastructure(Ubuntu1604LTS, packet, func(node NodeDeets, sshKey string) {
 				err := installKismaticMini(node, sshKey, "")

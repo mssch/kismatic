@@ -9,4 +9,7 @@
       - group_vars/container_images.yaml
       
     roles:
-      - kube-dns
+      - role: kube-dns
+        when: dns.provider == "kubedns"
+      - role: coredns
+        when: dns.provider == "coredns"
