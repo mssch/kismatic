@@ -20,6 +20,12 @@
       delay: 10
       failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
     
+    - name: fail if DNS pod validation command returned an error
+      fail:
+        msg: |
+          Attempted to validate the DNS pods, but got an error from kubectl: {{ readyReplicas.stderr }}
+      when: readyReplicas.stderr != ""
+
     - name: find the DNS pods that failed to start
       # Get the name and status/phase for all kubedns pods, and then filter out the ones that are not running.
       # Once we have those, grab the first one, and cut the status/phase out of the output.
@@ -43,5 +49,7 @@
 
           {{ failedDNSPodLogs.stdout }}
 
-      when: readyReplicas.stdout|int != kube_dns_replicas|int
+      when: "'stdout' in failedDNSPodLogs and readyReplicas.stdout|int != kube_dns_replicas|int"
+
+
     when: run_pod_validation|bool == true 
