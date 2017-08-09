@@ -181,7 +181,7 @@ type AddOns struct {
 	DNS                 DNS                 `yaml:"dns"`
 	HeapsterMonitoring  *HeapsterMonitoring `yaml:"heapster"`
 	Dashboard           *Dashboard          `yaml:"dashboard"`
-	DashboardDeprecated *Dashboard          `yaml:"dashbard"`
+	DashboardDeprecated *Dashboard          `yaml:"dashbard,omitempty"`
 	PackageManager      PackageManager      `yaml:"package_manager"`
 }
 
