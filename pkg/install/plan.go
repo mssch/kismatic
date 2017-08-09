@@ -155,7 +155,10 @@ var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z]+)[ ]*:`)
 
 // Write the plan to the file system
 func (fp *FilePlanner) Write(p *Plan) error {
-	oneTimeComments := commentMap
+	oneTimeComments := map[string]string{}
+	for k, v := range commentMap {
+		oneTimeComments[k] = v
+	}
 	bytez, marshalErr := yaml.Marshal(p)
 	if marshalErr != nil {
 		return fmt.Errorf("error marshalling plan to yaml: %v", marshalErr)
@@ -209,11 +212,14 @@ func (fp *FilePlanner) PlanExists() bool {
 func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 	// Set sensible defaults
 	p.Cluster.Name = "kubernetes"
-	generatedAdminPass, err := generateAlphaNumericPassword()
-	if err != nil {
-		return fmt.Errorf("error generating random password: %v", err)
+	if p.Cluster.AdminPassword == "" {
+		generatedAdminPass, err := generateAlphaNumericPassword()
+		if err != nil {
+			return fmt.Errorf("error generating random password: %v", err)
+		}
+		p.Cluster.AdminPassword = generatedAdminPass
 	}
-	p.Cluster.AdminPassword = generatedAdminPass
+
 	p.Cluster.DisablePackageInstallation = false
 	p.Cluster.DisconnectedInstallation = false
 
@@ -247,6 +253,9 @@ func WritePlanTemplate(p *Plan, w PlanReadWriter) error {
 
 	// Package Manager
 	p.AddOns.PackageManager.Provider = "helm"
+
+	p.AddOns.Dashboard = &Dashboard{}
+	p.AddOns.Dashboard.Disable = false
 
 	// Generate entries for all node types
 	n := Node{}
