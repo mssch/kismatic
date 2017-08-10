@@ -19,6 +19,9 @@
         become: no
         environment:
           KUBECONFIG: "{{ local_kubeconfig_directory }}"
+          https_proxy: "{{ https_proxy }}"
+          http_proxy: "{{ http_proxy }}"
+          no_proxy: "{{ no_proxy }}"
       - name: "add kismatic helm repo"
         local_action: command ../../helm repo add kismatic https://apprenda.github.io/kismatic-charts/
         become: no
