@@ -31,6 +31,10 @@ func serviceTypes() []string {
 	return []string{"ClusterIP", "NodePort", "LoadBalancer", "ExternalName"}
 }
 
+func cloudProviders() []string {
+	return []string{"aws", "azure", "cloudstack", "fake", "gce", "mesos", "openstack", "ovirt", "photon", "rackspace", "vsphere"}
+}
+
 // Plan is the installation plan that the user intends to execute
 type Plan struct {
 	// Kubernetes cluster configuration
@@ -105,6 +109,8 @@ type Cluster struct {
 	// API server configuration. This is an advanced feature that can prevent
 	// the API server from starting up if invalid configuration is provided.
 	APIServerOptions APIServerOptions `yaml:"kube_apiserver"`
+	// The CloudProvider configuration for the cluster.
+	CloudProvider CloudProvider `yaml:"cloud_provider"`
 }
 
 // NetworkConfig describes the cluster's networking configuration
@@ -159,6 +165,15 @@ type SSHConfig struct {
 	// The port number on which cluster nodes are listening for SSH connections.
 	// +required
 	Port int `yaml:"ssh_port"`
+}
+
+// CloudProvider controls the Kubernetes cloud providers feature
+type CloudProvider struct {
+	// The cloud provider that should be set in the Kubernetes components
+	// +options=aws,azure,cloudstack,fake,gce,mesos,openstack,ovirt,photon,rackspace,vsphere
+	Provider string
+	// Path to the cloud provider config file. This will be copied to all the machines in the cluster
+	Config string
 }
 
 // Docker includes the configuration for the docker installation owned by KET.

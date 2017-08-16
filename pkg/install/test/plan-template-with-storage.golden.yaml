@@ -60,6 +60,15 @@ cluster:
     ssh_port: 22
   kube_apiserver:
     option_overrides: {}
+  cloud_provider:
+
+    # Options: 'aws','azure','cloudstack','fake','gce','mesos','openstack',
+    # 'ovirt','photon','rackspace','vsphere'.
+    # Leave empty for bare metal setups or other unsupported providers.
+    provider: ""
+
+    # Path to the config file, leave empty if provider does not require it.
+    config: ""
 docker:
   storage:
 

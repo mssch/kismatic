@@ -24,6 +24,9 @@
     * [ssh_key](#clustersshssh_key)
     * [ssh_port](#clustersshssh_port)
   * [kube_apiserver](#clusterkube_apiserver)
+  * [cloud_provider](#clustercloud_provider)
+    * [provider](#clustercloud_providerprovider)
+    * [config](#clustercloud_providerconfig)
 * [docker](#docker)
   * [storage](#dockerstorage)
     * [direct_lvm](#dockerstoragedirect_lvm)
@@ -311,6 +314,31 @@
 ###  cluster.kube_apiserver
 
  Listing of option overrides that are to be applied to the Kubernetes API server configuration. This is an advanced feature that can prevent the API server from starting up if invalid configuration is provided. 
+
+###  cluster.cloud_provider
+
+ The CloudProvider configuration for the cluster. 
+
+###  cluster.cloud_provider.provider
+
+ The cloud provider that should be set in the Kubernetes components 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+| **Options** |  `aws`, `azure`, `cloudstack`, `fake`, `gce`, `mesos`, `openstack`, `ovirt`, `photon`, `rackspace`, `vsphere`
+
+###  cluster.cloud_provider.config
+
+ Path to the cloud provider config file. This will be copied to all the machines in the cluster 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
 
 ##  docker
 

@@ -163,6 +163,7 @@ func (c *Cluster) validate() (bool, []error) {
 	v.validate(&c.Certificates)
 	v.validate(&c.SSH)
 	v.validate(&c.APIServerOptions)
+	v.validate(&c.CloudProvider)
 
 	return v.valid()
 }
@@ -212,6 +213,21 @@ func (s *SSHConfig) validate() (bool, []error) {
 	}
 	if s.Port < 1 || s.Port > 65535 {
 		v.addError(fmt.Errorf("SSH port %d is invalid. Port must be in the range 1-65535", s.Port))
+	}
+	return v.valid()
+}
+
+func (c *CloudProvider) validate() (bool, []error) {
+	v := newValidator()
+	if c.Provider != "" {
+		if !util.Contains(c.Provider, cloudProviders()) {
+			v.addError(fmt.Errorf("%q is not a valid cloud provider. Optins are %v", c.Provider, cloudProviders()))
+		}
+		if c.Config != "" {
+			if _, err := os.Stat(c.Config); os.IsNotExist(err) {
+				v.addError(fmt.Errorf("cloud config file was not found at %q", c.Config))
+			}
+		}
 	}
 	return v.valid()
 }
