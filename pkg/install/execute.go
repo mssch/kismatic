@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"strings"
@@ -383,12 +382,7 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 }
 
 func setPreflightOptions(p Plan, cc ansible.ClusterCatalog) (*ansible.ClusterCatalog, error) {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
 	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
-	cc.KismaticPreflightCheckerLocal = filepath.Join(pwd, "ansible", "playbooks", "inspector", runtime.GOOS, runtime.GOARCH, "kismatic-inspector")
 	cc.EnablePackageInstallation = !p.Cluster.DisablePackageInstallation
 	return &cc, nil
 }

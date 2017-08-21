@@ -41,7 +41,6 @@ type ClusterCatalog struct {
 	EnableConfigureIngress bool `yaml:"configure_ingress"`
 
 	KismaticPreflightCheckerLinux string `yaml:"kismatic_preflight_checker"`
-	KismaticPreflightCheckerLocal string `yaml:"kismatic_preflight_checker_local"`
 
 	WorkerNode string `yaml:"worker_node"`
 
