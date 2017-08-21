@@ -11,6 +11,10 @@
     retries: 3
     delay: 3
     when: ansible_os_family == 'RedHat'
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
 
   # DEB
   - name: install docker-engine deb package
@@ -24,3 +28,7 @@
     retries: 3
     delay: 3
     when: ansible_os_family == 'Debian'
+    environment:
+      https_proxy: "{{ https_proxy }}"
+      http_proxy: "{{ http_proxy }}"
+      no_proxy: "{{ no_proxy }}"
