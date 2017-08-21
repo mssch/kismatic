@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/apprenda/kismatic/pkg/ssh"
 )
@@ -137,6 +138,7 @@ type NetworkConfig struct {
 	HTTPSProxy string `yaml:"https_proxy"`
 	// Comma-separated list of host names and/or IPs for which connections
 	// should not go through a proxy.
+	// All nodes' 'host' and 'IPs' are always set.
 	NoProxy string `yaml:"no_proxy"`
 }
 
@@ -481,6 +483,20 @@ func (p *Plan) getNodeWithIP(ip string) (*Node, error) {
 		}
 	}
 	return nil, fmt.Errorf("Node with IP %q was not found in plan", ip)
+}
+
+// AllAddresses will return the hostnames, IPs and internal IPs for all nodes
+func (p *Plan) AllAddresses() string {
+	nodes := p.GetUniqueNodes()
+	var addr []string
+	for _, n := range nodes {
+		addr = append(addr, n.Host)
+		addr = append(addr, n.IP)
+		if n.InternalIP != "" {
+			addr = append(addr, n.InternalIP)
+		}
+	}
+	return strings.Join(addr, ",")
 }
 
 // GetSSHConnection returns the SSHConnection struct containing the node and SSHConfig details

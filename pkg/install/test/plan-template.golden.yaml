@@ -39,11 +39,12 @@ cluster:
     # Set the proxy server to use for HTTP connections.
     http_proxy: ""
 
-    # Set the proxy server to use for HTTPs connections
+    # Set the proxy server to use for HTTPs connections.
     https_proxy: ""
 
-    # List of host names and/or IPs that shouldn't go through any proxy. If set
-    # to a asterisk '*' only, it matches all hosts.
+    # List of host names and/or IPs that shouldn't go through any proxy.
+    # If set to an asterisk '*' only, it matches all hosts.
+    # All nodes' 'host' and 'IPs' are always set.
     no_proxy: ""
   certificates:
 

@@ -706,10 +706,15 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		SeedRegistry:              !p.Cluster.DisableRegistrySeeding,
 		HTTPProxy:                 p.Cluster.Networking.HTTPProxy,
 		HTTPSProxy:                p.Cluster.Networking.HTTPSProxy,
-		NoProxy:                   p.Cluster.Networking.NoProxy,
 		TargetVersion:             KismaticVersion.String(),
 		APIServerOptions:          p.Cluster.APIServerOptions.Overrides,
 	}
+
+	cc.NoProxy = p.AllAddresses()
+	if p.Cluster.Networking.NoProxy != "" {
+		cc.NoProxy = cc.NoProxy + "," + p.Cluster.Networking.NoProxy
+	}
+
 	cc.LocalKubeconfigDirectory = filepath.Join(ae.options.GeneratedAssetsDirectory, "kubeconfig")
 	// absolute path required for ansible
 	generatedDir, err := filepath.Abs(filepath.Join(ae.options.GeneratedAssetsDirectory, "kubeconfig"))
