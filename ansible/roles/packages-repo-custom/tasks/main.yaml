@@ -1,5 +1,4 @@
 ---
-
   - name: copy Kismatic GPG keys to /tmp
     copy:
       src: "./"
@@ -19,7 +18,7 @@
       baseurl: "{{ item.1 }}"
       gpgcheck: yes
     when: ansible_os_family == 'RedHat' and (package_repository_urls is defined and package_repository_urls != "")
-    with_indexed_items: "package_repository_urls.split(',')"
+    with_indexed_items: "{{ package_repository_urls.split(',') }}"
 
   - name: clean kismatic yum cache
     command: 'yum --disablerepo="*" --enablerepo="kismatic-*" makecache'
@@ -61,7 +60,7 @@
       repo: 'deb {{ item }} kismatic-xenial main'
       validate_certs: no
     when: ansible_os_family == 'Debian'
-    with_items: "package_repository_urls.split(',')"
+    with_items: "{{ package_repository_urls.split(',') }}"
 
   - name: apt-get update
     apt:
