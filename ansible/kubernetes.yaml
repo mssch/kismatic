@@ -8,12 +8,12 @@
   - include: _certs-etcd.yaml
   - include: _packages-repo.yaml
     when: allow_package_installation|bool == true
+  # docker
+  - include: _docker.yaml
   # etcd
   - include: _etcd-k8s.yaml
   - include: _etcd-networking.yaml
     when: cni.enabled|bool == true and (cni.provider == "calico" or cni.provider == "contiv")
-  # docker
-  - include: _docker.yaml
   # kubernetes
   - include: _kubelet.yaml
   - include: _kube-apiserver.yaml

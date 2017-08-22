@@ -36,11 +36,9 @@ type Executor interface {
 	RunPlay(string, *Plan) error
 	AddVolume(*Plan, StorageVolume) error
 	DeleteVolume(*Plan, string) error
-	UpgradeEtcd2Nodes(plan Plan, nodesToUpgrade []ListableNode) error
 	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int) error
 	ValidateControlPlane(plan Plan) error
 	UpgradeClusterServices(plan Plan) error
-	MigrateEtcdCluster(plan Plan) error
 }
 
 // DiagnosticsExecutor will run diagnostics on the nodes after an install
@@ -476,16 +474,6 @@ func (ae *ansibleExecutor) DeleteVolume(plan *Plan, name string) error {
 	return ae.execute(t)
 }
 
-func (ae *ansibleExecutor) UpgradeEtcd2Nodes(plan Plan, nodesToUpgrade []ListableNode) error {
-	for _, nodeToUpgrade := range nodesToUpgrade {
-		if err := ae.upgradeEtcd2Node(plan, nodeToUpgrade); err != nil {
-			return fmt.Errorf("error upgrading node %q: %v", nodeToUpgrade.Node.Host, err)
-		}
-	}
-
-	return nil
-}
-
 // UpgradeNodes upgrades the nodes of the cluster in the following phases:
 //   1. Etcd nodes
 //   2. Master nodes
@@ -587,25 +575,6 @@ func (ae *ansibleExecutor) upgradeNodes(plan Plan, onlineUpgrade bool, nodes ...
 	return ae.execute(t)
 }
 
-func (ae *ansibleExecutor) upgradeEtcd2Node(plan Plan, node ListableNode) error {
-	inventory := buildInventoryFromPlan(&plan)
-	cc, err := ae.buildClusterCatalog(&plan)
-	if err != nil {
-		return err
-	}
-	t := task{
-		name:           "upgrade-etcd2-node",
-		playbook:       "upgrade-etcd2-node.yaml",
-		inventory:      inventory,
-		clusterCatalog: *cc,
-		plan:           plan,
-		explainer:      ae.defaultExplainer(),
-		limit:          []string{node.Node.Host},
-	}
-	util.PrintHeader(ae.stdout, fmt.Sprintf("Upgrade: %s to Temporary Etcd3", node.Node.Host), '=')
-	return ae.execute(t)
-}
-
 func (ae *ansibleExecutor) ValidateControlPlane(plan Plan) error {
 	inventory := buildInventoryFromPlan(&plan)
 	cc, err := ae.buildClusterCatalog(&plan)
@@ -632,23 +601,6 @@ func (ae *ansibleExecutor) UpgradeClusterServices(plan Plan) error {
 	t := task{
 		name:           "upgrade-cluster-services",
 		playbook:       "upgrade-cluster-services.yaml",
-		inventory:      inventory,
-		clusterCatalog: *cc,
-		plan:           plan,
-		explainer:      ae.defaultExplainer(),
-	}
-	return ae.execute(t)
-}
-
-func (ae *ansibleExecutor) MigrateEtcdCluster(plan Plan) error {
-	inventory := buildInventoryFromPlan(&plan)
-	cc, err := ae.buildClusterCatalog(&plan)
-	if err != nil {
-		return err
-	}
-	t := task{
-		name:           "etcd-migrate",
-		playbook:       "etcd-migrate.yaml",
 		inventory:      inventory,
 		clusterCatalog: *cc,
 		plan:           plan,
