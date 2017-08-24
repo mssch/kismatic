@@ -4,6 +4,7 @@ metadata:
   labels:
     tier: control-plane
     component: kube-scheduler
+    kismatic/nodeIP: {{ internal_ipv4 }}
   annotations:
     version: "{{ kubernetes_version }}"
     kismatic/version: "{{ kismatic_short_version }}"

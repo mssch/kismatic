@@ -4,6 +4,7 @@ metadata:
   labels:
     tier: control-plane
     component: kube-apiserver
+    kismatic/nodeIP: {{ internal_ipv4 }}
   annotations:
     version: "{{ kubernetes_version }}"
     kismatic/version: "{{ kismatic_short_version }}"
