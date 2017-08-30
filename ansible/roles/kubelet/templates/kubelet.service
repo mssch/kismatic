@@ -21,11 +21,8 @@ ExecStart=/usr/bin/kubelet \
   --hostname-override={{ inventory_hostname }} \
   --require-kubeconfig=true \
   --kubeconfig={{ kubernetes_kubeconfig.kubelet }} \
-  --node-labels=kismatic/nodeIP={{ internal_ipv4 }},kismatic/cni-provider={{ cni.provider|default("")}}{% if 'ingress' in group_names%},kismatic/ingress=true{% endif %}{% if 'storage' in group_names%},kismatic/storage=true{% endif %} \
+  --node-labels=kismatic/host={{ inventory_hostname }},kismatic/cni-provider={{ cni.provider|default("")}}{% if 'ingress' in group_names%},kismatic/ingress=true{% endif %}{% if 'storage' in group_names%},kismatic/storage=true{% endif %}{% if inventory_hostname in groups['master'] %},node-role.kubernetes.io/master={% endif %} \
   --node-ip={{ internal_ipv4 }} \
-{% if inventory_hostname in groups['master'] %}
-  --node-labels=node-role.kubernetes.io/master= \
-{% endif %}
   --pod-infra-container-image={{ pause_img }} \
   --pod-manifest-path={{ kubelet_pod_manifests_dir }} \
   --register-schedulable={{ kubernetes_schedulable }} \

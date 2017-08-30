@@ -156,7 +156,7 @@ kubernetes_master_ip: https://{{ kubernetes_load_balanced_fqdn }}:{{ kubernetes_
 kubernetes_schedulable: "{% if 'worker' in group_names %}true{% else %}false{% endif %}"
 kube_dns_replicas: "{{ [2, groups['worker'] | length] | min }}"
 # cloud provider
-cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' %}{{ kubernetes_install_dir }}/cloud_config{% else %}{% endif %}"
+cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' %}{{ kubernetes_install_dir }}/cloud-provider.conf{% else %}{% endif %}"
 
 # kubernetes certificate config
 # TODO: Do we want to change this?
