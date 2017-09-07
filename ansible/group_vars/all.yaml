@@ -33,8 +33,8 @@ pause_version: "3.0"
 apprenda_tcp_healthz_version: "v1.0.0"
 heapster_version: "v1.4.0"
 influxdb_version: "v1.1.1"
-glusterfs_server_version_rhel: "3.8.7-1.el7"
-glusterfs_server_version_ubuntu: "3.8.7-ubuntu1~xenial1"
+glusterfs_server_version_rhel: "3.8.15-2.el7"
+glusterfs_server_version_ubuntu: "3.8.15-ubuntu1~xenial1"
 #===============================================================================
 # common variables for all hosts
 init_system_dir: /etc/systemd/system/
