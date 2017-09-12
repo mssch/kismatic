@@ -149,6 +149,7 @@ var _ = Describe("disconnected install feature", func() {
 					modifyHostsFiles: true,
 					httpProxy:        fmt.Sprintf("%s:%d", proxyNode.PrivateIP, proxyPort),
 					httpsProxy:       fmt.Sprintf("%s:%d", proxyNode.PrivateIP, proxyPort),
+					noProxy:          fmt.Sprintf("%s,%s", "kubernetes-charts.storage.googleapis.com", "apprenda.github.io"),
 				}
 				err = installKismatic(clusterNodes, installOpts, sshKey)
 				Expect(err).ToNot(HaveOccurred())
