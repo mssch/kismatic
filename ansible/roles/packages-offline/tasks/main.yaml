@@ -11,10 +11,7 @@
     retries: 3
     delay: 3
     when: "ansible_os_family == 'RedHat' and inventory_hostname == groups['master'][0]"
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   # DEB
   - name: install kismatic offline deb package
@@ -28,7 +25,4 @@
     retries: 3
     delay: 3
     when: "ansible_os_family == 'Debian' and inventory_hostname == groups['master'][0]"
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"

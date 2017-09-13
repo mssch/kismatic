@@ -11,10 +11,7 @@
     retries: 3
     delay: 3
     when: ansible_os_family == 'RedHat'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: install kubectl yum package
     yum:
@@ -28,10 +25,7 @@
     retries: 3
     delay: 3
     when: ansible_os_family == 'RedHat'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   # DEB
   - name: install kubelet deb package
@@ -45,10 +39,7 @@
     retries: 3
     delay: 3
     when: ansible_os_family == 'Debian'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: install kubectl deb package
     apt:
@@ -61,7 +52,4 @@
     retries: 3
     delay: 3
     when: ansible_os_family == 'Debian'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"

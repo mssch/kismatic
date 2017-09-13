@@ -8,10 +8,7 @@
       gpgkey: "{{ yum_gpg_key_url }}"
       gpgcheck: yes
     when: ansible_os_family == 'RedHat'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: add Gluster yum repository
     yum_repository:
@@ -21,18 +18,12 @@
       gpgkey: "https://download.gluster.org/pub/gluster/glusterfs/3.8/3.8.7/rsa.pub"
       gpgcheck: yes
     when: ansible_os_family == 'RedHat' and 'storage' in group_names
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: clean kismatic yum cache
     command: 'yum --disablerepo="*" --enablerepo="kismatic,gluster" makecache'
     when: ansible_os_family == 'RedHat'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   # DEB
   - name: install apt-transport-https package
@@ -41,46 +32,31 @@
       state: latest
       update_cache: yes
     when: ansible_os_family == 'Debian'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: add Kismatic deb key
     apt_key:
       url: "{{ deb_gpg_key_url }}"
       validate_certs: no
     when: ansible_os_family == 'Debian'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: add Kismatic deb repository
     apt_repository:
       repo: 'deb {{ deb_repository_url }} kismatic-xenial main'
       validate_certs: no
     when: ansible_os_family == 'Debian'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: add Gluster deb repository
     apt_repository:
       repo: ppa:gluster/glusterfs-3.8
       update_cache: yes
     when: ansible_os_family == 'Debian' and 'storage' in group_names
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
 
   - name: apt-get update
     apt:
       update_cache: yes
     when: ansible_os_family == 'Debian'
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"

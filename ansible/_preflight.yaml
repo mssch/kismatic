@@ -7,7 +7,4 @@
       - group_vars/all.yaml
     roles:
       - preflight
-    environment:
-      https_proxy: "{{ https_proxy }}"
-      http_proxy: "{{ http_proxy }}"
-      no_proxy: "{{ no_proxy }}"
+    environment: "{{proxy_env}}"
