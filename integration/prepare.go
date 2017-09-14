@@ -189,9 +189,19 @@ func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (str
 	err = copyFileToRemote("docker-key.pem", "~/certs/docker-key.pem", node, sshKey, 1*time.Minute)
 	FailIfError(err, "failed to copy docker-key.pem")
 
+	htpasswdCmd := []string{"mkdir auth", "sudo docker run --entrypoint htpasswd registry -Bbn kismaticuser kismaticpassword > auth/htpasswd"}
+	err = runViaSSH(htpasswdCmd, []NodeDeets{node}, sshKey, 1*time.Minute)
+	FailIfError(err, "Failed to create htpasswd file for Docker registry")
+
 	startDockerRegistryCmd := []string{fmt.Sprintf("sudo docker run -d -p %d:5000 --restart=always ", listeningPort) +
-		"--name registry -v ~/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker.pem " +
-		"-e REGISTRY_HTTP_TLS_KEY=/certs/docker-key.pem registry"}
+		" --name registry" +
+		" -v ~/certs:/certs" +
+		" -v `pwd`/auth:/auth" +
+		" -e \"REGISTRY_AUTH=htpasswd\"" +
+		" -e \"REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm\"" +
+		" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" +
+		" -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/docker.pem" +
+		" -e REGISTRY_HTTP_TLS_KEY=/certs/docker-key.pem registry"}
 	err = runViaSSH(startDockerRegistryCmd, []NodeDeets{node}, sshKey, 1*time.Minute)
 	FailIfError(err, "Failed to start docker registry over SSH")
 

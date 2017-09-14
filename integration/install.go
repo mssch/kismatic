@@ -36,6 +36,8 @@ type installOptions struct {
 	dockerRegistryIP            string
 	dockerRegistryPort          int
 	dockerRegistryCAPath        string
+	dockerRegistryUsername      string
+	dockerRegistryPassword      string
 	modifyHostsFiles            bool
 	httpProxy                   string
 	httpsProxy                  string
@@ -95,6 +97,8 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		DockerRegistryCAPath:         installOpts.dockerRegistryCAPath,
 		DockerRegistryIP:             installOpts.dockerRegistryIP,
 		DockerRegistryPort:           installOpts.dockerRegistryPort,
+		DockerRegistryUsername:       installOpts.dockerRegistryUsername,
+		DockerRegistryPassword:       installOpts.dockerRegistryPassword,
 		ModifyHostsFiles:             installOpts.modifyHostsFiles,
 		HTTPProxy:                    installOpts.httpProxy,
 		HTTPSProxy:                   installOpts.httpsProxy,

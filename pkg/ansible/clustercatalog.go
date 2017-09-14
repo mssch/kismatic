@@ -28,6 +28,8 @@ type ClusterCatalog struct {
 	DockerCAPath                       string `yaml:"docker_certificates_ca_path"`
 	DockerRegistryAddress              string `yaml:"docker_registry_address"`
 	DockerRegistryPort                 string `yaml:"docker_registry_port"`
+	DockerRegistryUsername             string `yaml:"docker_registry_username"`
+	DockerRegistryPassword             string `yaml:"docker_registry_password"`
 
 	ForceEtcdRestart              bool `yaml:"force_etcd_restart"`
 	ForceAPIServerRestart         bool `yaml:"force_apiserver_restart"`

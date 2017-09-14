@@ -729,6 +729,8 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.DockerRegistryAddress = p.DockerRegistryAddress()
 		cc.DockerRegistryPort = p.DockerRegistryPort()
 		cc.DockerCAPath = filepath.Join(tlsDir, "ca.pem")
+		cc.DockerRegistryUsername = p.DockerRegistry.Username
+		cc.DockerRegistryPassword = p.DockerRegistry.Password
 	}
 	if p.DockerRegistry.Address != "" { // Use external registry
 		cc.DockerCAPath = p.DockerRegistry.CAPath

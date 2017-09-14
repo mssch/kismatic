@@ -23,6 +23,8 @@ type PlanAWS struct {
 	DockerRegistryIP             string
 	DockerRegistryPort           int
 	DockerRegistryCAPath         string
+	DockerRegistryUsername       string
+	DockerRegistryPassword       string
 	ModifyHostsFiles             bool
 	HTTPProxy                    string
 	HTTPSProxy                   string
@@ -74,6 +76,8 @@ docker_registry:
   address: {{.DockerRegistryIP}}
   port: {{.DockerRegistryPort}}
   CA: {{.DockerRegistryCAPath}}
+  username: {{.DockerRegistryUsername}}
+  password: {{.DockerRegistryPassword}}
 add_ons:
   cni:
     disable: {{.DisableCNI}}
