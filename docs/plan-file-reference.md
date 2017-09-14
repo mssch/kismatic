@@ -245,7 +245,7 @@
 
 ###  cluster.networking.no_proxy
 
- Comma-separated list of host names and/or IPs for which connections should not go through a proxy. 
+ Comma-separated list of host names and/or IPs for which connections should not go through a proxy. All nodes' 'host' and 'IPs' are always set. 
 
 | | |
 |----------|-----------------|

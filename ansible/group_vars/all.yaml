@@ -346,3 +346,8 @@ volume_base_dir: data/
 volume_mode: 0777
 volume_replica_count: 2
 volume_distribution_count: 1
+
+proxy_env:
+  https_proxy: "{{ https_proxy }}"
+  http_proxy: "{{ http_proxy }}"
+  no_proxy: "{{ no_proxy }}"
