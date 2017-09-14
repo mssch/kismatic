@@ -380,13 +380,14 @@ const defaultRuleSet = `---
   timeout: 5s
 
 # Ports required for NFS
-- kind: TCPPortAvailable
-  when: ["storage"]
-  port: 111
-- kind: TCPPortAccessible
-  when: ["storage"]
-  port: 111
-  timeout: 5s
+# Removed due to https://github.com/apprenda/kismatic/issues/784
+#- kind: TCPPortAvailable
+#  when: ["storage"]
+#  port: 111
+#- kind: TCPPortAccessible
+#  when: ["storage"]
+#  port: 111
+#  timeout: 5s
 - kind: TCPPortAvailable
   when: ["storage"]
   port: 2049
