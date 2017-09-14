@@ -155,6 +155,8 @@ local_kubernetes_master_ip: https://127.0.0.1:{{ kubernetes_master_secure_port }
 kubernetes_master_ip: https://{{ kubernetes_load_balanced_fqdn }}:{{ kubernetes_master_secure_port }}
 kubernetes_schedulable: "{% if 'worker' in group_names %}true{% else %}false{% endif %}"
 kube_dns_replicas: "{{ [2, groups['worker'] | length] | min }}"
+# cloud provider
+cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' %}{{ kubernetes_install_dir }}/cloud-provider.conf{% else %}{% endif %}"
 
 # kubernetes certificate config
 # TODO: Do we want to change this?
@@ -187,6 +189,8 @@ kubernetes_api_server_option_defaults:
   "basic-auth-file":  "{{ kubernetes_basic_auth_path }}"
   "bind-address": "0.0.0.0"
   "client-ca-file":  "{{ kubernetes_certificates.ca }}"
+  "cloud-provider": "{{ cloud_provider | quote }}"
+  "cloud-config": "{{ cloud_config }}"
   "enable-swagger-ui": "true"
   "etcd-cafile":  "{{ kubernetes_certificates.ca }}"
   "etcd-certfile":  "{{ kubernetes_certificates.etcd_client }}"

@@ -74,6 +74,9 @@ type ClusterCatalog struct {
 
 	LocalKubeconfigDirectory string `yaml:"local_kubeconfig_directory"`
 
+	CloudProvider string `yaml:"cloud_provider"`
+	CloudConfig   string `yaml:"cloud_config_local"`
+
 	DNS struct {
 		Enabled bool
 	}

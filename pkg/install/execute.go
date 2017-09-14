@@ -762,6 +762,9 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 
 	cc.EnableGluster = p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0
 
+	cc.CloudProvider = p.Cluster.CloudProvider.Provider
+	cc.CloudConfig = p.Cluster.CloudProvider.Config
+
 	// add_ons
 	cc.RunPodValidation = p.NetworkConfigured()
 	// CNI
