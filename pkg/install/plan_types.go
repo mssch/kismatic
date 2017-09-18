@@ -28,6 +28,10 @@ func calicoMode() []string {
 	return []string{"overlay", "routed"}
 }
 
+func calicoLogLevel() []string {
+	return []string{"warning", "info", "debug", ""}
+}
+
 func serviceTypes() []string {
 	return []string{"ClusterIP", "NodePort", "LoadBalancer", "ExternalName"}
 }
@@ -276,6 +280,10 @@ type CalicoOptions struct {
 	// +default=overlay
 	// +options=overlay,routed
 	Mode string
+	// The logging level for the CNI plugin
+	// +default=info
+	// +options=warning,info,debug
+	LogLevel string `yaml:"log_level"`
 }
 
 // The DNS add-on configuration

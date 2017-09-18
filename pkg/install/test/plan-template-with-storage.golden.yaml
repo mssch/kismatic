@@ -120,6 +120,9 @@ add_ons:
         # Overlay pods can only address each other.
         # Options: 'overlay','routed'.
         mode: overlay
+
+        # Options: 'warning','info','debug'.
+        log_level: info
   dns:
     disable: false
   heapster:

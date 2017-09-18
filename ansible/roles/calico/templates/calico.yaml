@@ -19,7 +19,7 @@ data:
         "etcd_key_file": "{{ kubernetes_certificates.etcd_client_key }}",
         "etcd_cert_file": "{{ kubernetes_certificates.etcd_client }}",
         "etcd_ca_cert_file": "{{ kubernetes_certificates.ca }}",
-        "log_level": "info",
+        "log_level": "{{ cni.options.calico.log_level }}",
         "ipam": {
             "type": "calico-ipam"
         },

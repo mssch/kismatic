@@ -28,7 +28,8 @@ var validPlan = Plan{
 			Provider: "calico",
 			Options: CNIOptions{
 				Calico: CalicoOptions{
-					Mode: "overlay",
+					Mode:     "overlay",
+					LogLevel: "info",
 				},
 			},
 		},
@@ -1056,6 +1057,78 @@ func TestCNIAddOn(t *testing.T) {
 				},
 			},
 			valid: true,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode:     "overlay",
+						LogLevel: "",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode:     "overlay",
+						LogLevel: "info",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode:     "overlay",
+						LogLevel: "warning",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode:     "overlay",
+						LogLevel: "debug",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode:     "overlay",
+						LogLevel: "INFO",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode:     "overlay",
+						LogLevel: "foo",
+					},
+				},
+			},
+			valid: false,
 		},
 	}
 	for i, test := range tests {
