@@ -69,7 +69,7 @@ spec:
       serviceAccountName: contiv-netmaster
       containers:
         - name: contiv-netmaster
-          image: "{{ contiv_netplugin_img }}"
+          image: "{{ images.contiv_netplugin }}"
           args:
             - -m
             - -pkubernetes

@@ -10,7 +10,7 @@
       
     pre_tasks:
       - name: download etcd image
-        command: docker pull {{ etcd_img }}
+        command: docker pull {{ images.etcd }}
         register: result
         until: result|succeeded
         retries: 2

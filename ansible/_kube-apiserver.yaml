@@ -9,7 +9,7 @@
 
     pre_tasks:
       - name: download kube-apiserver image
-        command: docker pull {{ kube_apiserver_img }}
+        command: docker pull {{ images.kube_apiserver }}
         register: result
         until: result|succeeded
         retries: 2

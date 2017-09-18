@@ -83,7 +83,7 @@ items:
                       fieldPath: spec.nodeName
                 - name: IPALLOC_RANGE
                   value: "{{ kubernetes_pods_cidr }}"
-              image: '{{ weave_img }}'
+              image: '{{ images.weave }}'
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 httpGet:
@@ -116,7 +116,7 @@ items:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: spec.nodeName
-              image: '{{ weave_npc_img }}'
+              image: '{{ images.weave_npc }}'
               imagePullPolicy: IfNotPresent
               resources:
                 requests:

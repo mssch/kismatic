@@ -14,7 +14,7 @@ spec:
   hostNetwork: true
   containers:
   - name: kube-proxy
-    image: {{ kube_proxy_img }}
+    image: {{ images.kube_proxy }}
     imagePullPolicy: IfNotPresent
     command:
       - kube-proxy

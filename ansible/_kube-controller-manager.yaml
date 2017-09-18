@@ -9,7 +9,7 @@
 
     pre_tasks:
       - name: download kube-controller-manager image
-        command: docker pull {{ kube_controller_manager_img }}
+        command: docker pull {{ images.kube_controller_manager }}
         register: result
         until: result|succeeded
         retries: 2

@@ -16,7 +16,7 @@
         failed_when: 'out.rc != 0 and out.stderr is defined and "Error from server (AlreadyExists)" not in out.stderr'
         
       - name: "run helm init"
-        local_action: command ../../helm init --service-account=tiller -i="{{ helm_img }}" --upgrade {% if disconnected_installation|bool == true %}--skip-refresh{% endif %}
+        local_action: command ../../helm init --service-account=tiller -i="{{ images.helm }}" --upgrade {% if disconnected_installation|bool == true %}--skip-refresh{% endif %}
         become: no
         environment:
           KUBECONFIG: "{{ local_kubeconfig_directory }}"

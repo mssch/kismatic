@@ -11,8 +11,8 @@
       - name: download networking images
         command: docker pull {{ item }}
         with_items:
-          - "{{ weave_img }}"
-          - "{{ weave_npc_img }}"
+          - "{{ images.weave }}"
+          - "{{ images.weave_npc }}"
         register: result
         until: result|succeeded
         retries: 2

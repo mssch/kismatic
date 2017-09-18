@@ -9,7 +9,7 @@
 
     pre_tasks:
       - name: download kube-proxy image
-        command: docker pull {{ kube_proxy_img }}
+        command: docker pull {{ images.kube_proxy }}
         register: result
         until: result|succeeded
         retries: 2

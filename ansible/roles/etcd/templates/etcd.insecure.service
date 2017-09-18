@@ -14,7 +14,7 @@ ExecStart={{ bin_dir }}/docker run \
   --volume={{ etcd_service_data_dir }}:/etcd-data \
   --volume={{ etcd_install_dir }}:{{ etcd_install_dir }}:ro \
   --volume=/etc/ssl/certs/:/etc/ssl/certs/:ro \
-  --name {{ etcd_name }} {{ etcd_img }} \
+  --name {{ etcd_name }} {{ images.etcd }} \
   --name={{ inventory_hostname }} \
   --data-dir=/etcd-data \
   --peer-client-cert-auth \

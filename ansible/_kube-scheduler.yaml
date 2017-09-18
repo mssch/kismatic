@@ -9,7 +9,7 @@
 
     pre_tasks:
       - name: download kube-scheduler image
-        command: docker pull {{ kube_scheduler_img }}
+        command: docker pull {{ images.kube_scheduler }}
         register: result
         until: result|succeeded
         retries: 2
