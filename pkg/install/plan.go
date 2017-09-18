@@ -99,11 +99,16 @@ func setDefaults(p *Plan) {
 		p.AddOns.CNI = &CNI{}
 		p.AddOns.CNI.Provider = cniProviderCalico
 		p.AddOns.CNI.Options.Calico.Mode = "overlay"
+		p.AddOns.CNI.Options.Calico.LogLevel = "info"
 		// read KET <v1.5.0 plan option
 		if p.Cluster.Networking.Type != "" {
 			p.AddOns.CNI.Options.Calico.Mode = p.Cluster.Networking.Type
 		}
 	}
+	if p.AddOns.CNI.Options.Calico.LogLevel == "" {
+		p.AddOns.CNI.Options.Calico.LogLevel = "info"
+	}
+
 	if p.AddOns.HeapsterMonitoring == nil {
 		p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 	}
@@ -282,6 +287,7 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 	p.AddOns.CNI = &CNI{}
 	p.AddOns.CNI.Provider = cniProviderCalico
 	p.AddOns.CNI.Options.Calico.Mode = "overlay"
+	p.AddOns.CNI.Options.Calico.LogLevel = "info"
 	// Heapster
 	p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 	p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas = 2
@@ -416,6 +422,7 @@ var commentMap = map[string][]string{
 	"nfs.mount_path":                                     []string{"The mount path of an NFS share. Must start with /"},
 	"add_ons.cni.provider":                               []string{"Selecting 'custom' will result in a CNI ready cluster, however it is up to", "you to configure a plugin after the install.", "Options: 'calico','weave','contiv','custom'."},
 	"add_ons.cni.options.calico.mode":                    []string{"Routed pods can be addressed from outside the Kubernetes cluster", "Overlay pods can only address each other.", "Options: 'overlay','routed'."},
+	"add_ons.cni.options.calico.log_level":               []string{"Options: 'warning','info','debug'."},
 	"add_ons.heapster.options.influxdb.pvc_name":         []string{"Provide the name of the persistent volume claim that you will create", "after installation. If not specified, the data will be stored in", "ephemeral storage."},
 	"add_ons.heapster.options.heapster.service_type":     []string{"Specify kubernetes ServiceType; default 'ClusterIP'", "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'."},
 	"add_ons.heapster.options.heapster.sink":             []string{"Specify the sink to store heapster data. Defaults to a pod running", "on the cluster."},

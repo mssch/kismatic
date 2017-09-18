@@ -45,6 +45,7 @@
     * [options](#add_onscnioptions)
       * [calico](#add_onscnioptionscalico)
         * [mode](#add_onscnioptionscalicomode)
+        * [log_level](#add_onscnioptionscalicolog_level)
   * [dns](#add_onsdns)
     * [disable](#add_onsdnsdisable)
   * [heapster](#add_onsheapster)
@@ -473,6 +474,17 @@
 | **Required** |  No |
 | **Default** | `overlay` | 
 | **Options** |  `overlay`, `routed`
+
+###  add_ons.cni.options.calico.log_level
+
+ The logging level for the CNI plugin 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | `info` | 
+| **Options** |  `warning`, `info`, `debug`
 
 ###  add_ons.dns
 

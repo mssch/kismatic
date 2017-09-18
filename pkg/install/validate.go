@@ -250,6 +250,9 @@ func (n *CNI) validate() (bool, []error) {
 			if !util.Contains(n.Options.Calico.Mode, calicoMode()) {
 				v.addError(fmt.Errorf("%q is not a valid Calico mode. Options are %v", n.Options.Calico.Mode, calicoMode()))
 			}
+			if !util.Contains(n.Options.Calico.LogLevel, calicoLogLevel()) {
+				v.addError(fmt.Errorf("%q is not a valid Calico log level. Options are %v", n.Options.Calico.LogLevel, calicoLogLevel()))
+			}
 		}
 	}
 	return v.valid()

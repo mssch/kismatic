@@ -87,7 +87,8 @@ type ClusterCatalog struct {
 		Provider string
 		Options  struct {
 			Calico struct {
-				Mode string
+				Mode     string
+				LogLevel string `yaml:"log_level"`
 			}
 		}
 	}

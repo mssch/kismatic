@@ -81,6 +81,7 @@ add_ons:
     options:
       calico:
         mode: overlay
+        log_level: info
   heapster:
     disable: false
     options:
