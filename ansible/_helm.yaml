@@ -4,6 +4,9 @@
     name: "{{ play_name | default('Initialize Helm and Start Tiller') }}"
     become: yes
     run_once: true
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/container_images.yaml
 
     tasks:
       - name: "create new serviceaccount for tiller"

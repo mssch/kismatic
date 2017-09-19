@@ -6,7 +6,7 @@ metadata:
     component: kube-proxy
     kismatic/host: {{ inventory_hostname }}
   annotations:
-    version: "{{ kubernetes_version }}"
+    version: "{{ official_images.kube_apiserver.version }}"
     kismatic/version: "{{ kismatic_short_version }}"
   name: kube-proxy
   namespace: kube-system

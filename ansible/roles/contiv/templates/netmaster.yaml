@@ -89,7 +89,7 @@ spec:
               name: var-contiv
               readOnly: false
         - name: contiv-api-proxy
-          image: contiv/auth_proxy:{{ contiv_version }}
+          image: "{{ images.contiv_authproxy }}"
           args:
             - --tls-key-file=/var/contiv/certs/tls.key
             - --tls-certificate=/var/contiv/certs/tls.crt

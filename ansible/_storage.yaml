@@ -14,5 +14,8 @@
     name: "Create NFS service on the cluster"
     run_once: true
     become: yes
+    vars_files:
+      - group_vars/all.yaml
+      - group_vars/container_images.yaml
     roles:
       - glusterfs-k8s
