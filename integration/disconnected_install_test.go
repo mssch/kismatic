@@ -3,52 +3,191 @@ package integration
 import (
 	"fmt"
 	"os"
-	"os/exec"
+	"path/filepath"
 	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-const proxyPort = 3128
+const (
+	proxyPort          = 3128
+	dockerRegistryPort = 8443
+)
 
-var _ = Describe("disconnected install feature", func() {
+var _ = Describe("disconnected installation", func() {
 	BeforeEach(func() {
 		dir := setupTestWorkingDir()
 		os.Chdir(dir)
 	})
 
-	Describe("installing on machines with no internet access", func() {
-		Context("with kismatic packages installed", func() {
+	Context("with an existing package mirror and image registry", func() {
+		Context("on CentOS", func() {
 			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
-				WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {
-					By("Installing the RPMs on the node")
-					theNode := []NodeDeets{node}
-					nodes := provisionedNodes{
-						etcd:    theNode,
-						master:  theNode,
-						worker:  theNode,
-						ingress: theNode,
+				WithInfrastructure(NodeCount{1, 1, 2, 1, 1}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
+					// One of the workers is used as the repository and registry
+					repoNode := nodes.worker[1]
+					nodes.worker = nodes.worker[0:1]
+
+					// Create a package repo
+					By("Creating a package repository")
+					start := time.Now()
+					err := copyFileToRemote("test-resources/disconnected-installation/mirror-rpms.sh", "/tmp/mirror-rpms.sh", repoNode, sshKey, 10*time.Second)
+					FailIfError(err, "Failed to copy script to remote node")
+					cmds := []string{"chmod +x /tmp/mirror-rpms.sh", "sudo /tmp/mirror-rpms.sh"}
+					err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 45*time.Minute)
+					FailIfError(err, "Failed to mirror package repositories")
+					elapsed := time.Since(start)
+					fmt.Println("Creating a package repository took", elapsed)
+
+					// Deploy a docker registry on the node
+					By("Deploying a docker registry")
+					caFile, err := deployAuthenticatedDockerRegistry(repoNode, dockerRegistryPort, sshKey)
+					FailIfError(err, "Failed to deploy docker registry")
+
+					By("Adding the docker registry self-signed cert to the registry node")
+					registry := fmt.Sprintf("%s:%d", repoNode.PublicIP, dockerRegistryPort)
+					err = copyFileToRemote(caFile, "/tmp/docker-registry-ca.crt", repoNode, sshKey, 30*time.Second)
+					FailIfError(err, "Failed to copy registry cert to registry node")
+					cmds = []string{
+						fmt.Sprintf("sudo mkdir -p /etc/docker/certs.d/%s", registry),
+						fmt.Sprintf("sudo mv /tmp/docker-registry-ca.crt /etc/docker/certs.d/%s/ca.crt", registry),
 					}
-					InstallKismaticPackages(nodes, CentOS7, sshKey, true)
+					err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 10*time.Minute)
+					FailIfError(err, "Error adding self-signed cert to registry node")
 
-					By("Verifying connectivity to google.com")
-					err := runViaSSH([]string{"curl --head www.google.com"}, theNode, sshKey, 1*time.Minute)
-					FailIfError(err, "Failed to curl google")
+					By("Copying KET to the registry node for seeding")
+					err = copyFileToRemote(filepath.Join(currentKismaticDir, "kismatic.tar.gz"), "/tmp/kismatic.tar.gz", repoNode, sshKey, 5*time.Minute)
+					FailIfError(err, "Error copying KET to the registry node")
 
-					err = disableInternetAccess(theNode, sshKey)
+					By("Seeding the registry")
+					start = time.Now()
+					cmds = []string{
+						fmt.Sprintf("sudo docker login -u kismaticuser -p kismaticpassword %s", registry),
+						"sudo tar -xf /tmp/kismatic.tar.gz",
+						fmt.Sprintf("sudo ./kismatic seed-registry --server %s", registry),
+					}
+					err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 30*time.Minute)
+					FailIfError(err, "Failed to seed the registry")
+					elapsed = time.Since(start)
+					fmt.Println("Seeding the registry took", elapsed)
+
+					By("Disabling internet access")
+					err = disableInternetAccess(nodes.allNodes(), sshKey)
 					FailIfError(err, "Failed to create iptable rule")
 
-					if err := verifyNoInternetAccess(theNode, sshKey); err == nil {
-						Fail("was able to ping google with outgoing connections blocked")
+					// Configure the repos on the nodes
+					By("Configuring repository on nodes")
+					for _, n := range nodes.allNodes() {
+						err = copyFileToRemote("test-resources/disconnected-installation/configure-rpm-mirrors.sh", "/tmp/configure-rpm-mirrors.sh", n, sshKey, 15*time.Second)
+						FailIfError(err, "Failed to copy script to nodes")
 					}
+					cmds = []string{
+						"chmod +x /tmp/configure-rpm-mirrors.sh",
+						fmt.Sprintf("sudo /tmp/configure-rpm-mirrors.sh http://%s", repoNode.PrivateIP),
+					}
+					err = runViaSSH(cmds, nodes.allNodes(), sshKey, 5*time.Minute)
+					FailIfError(err, "Failed to run mirror configuration script")
 
-					By("Running kismatic install apply")
 					installOpts := installOptions{
-						disablePackageInstallation: true,
+						disablePackageInstallation: false,
 						disconnectedInstallation:   true,
 						modifyHostsFiles:           true,
+						dockerRegistryCAPath:       caFile,
+						dockerRegistryIP:           repoNode.PrivateIP,
+						dockerRegistryPort:         dockerRegistryPort,
+						dockerRegistryUsername:     "kismaticuser",
+						dockerRegistryPassword:     "kismaticpassword",
 					}
+
+					// installOpts.disableRegistrySeeding = true
+					By("Running kismatic install apply")
+					err = installKismatic(nodes, installOpts, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+		})
+
+		Context("on Ubuntu", func() {
+			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
+				WithInfrastructure(NodeCount{1, 1, 2, 1, 1}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+					// One of the workers is used as the repository and registry
+					repoNode := nodes.worker[1]
+					nodes.worker = nodes.worker[0:1]
+
+					// Create a package repo
+					By("Creating a package repository")
+					start := time.Now()
+					err := copyFileToRemote("test-resources/disconnected-installation/mirror-debs.sh", "/tmp/mirror-debs.sh", repoNode, sshKey, 10*time.Second)
+					FailIfError(err, "Failed to copy script to remote node")
+					cmds := []string{"chmod +x /tmp/mirror-debs.sh", "sudo /tmp/mirror-debs.sh"}
+					err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 45*time.Minute)
+					FailIfError(err, "Failed to mirror package repositories")
+					elapsed := time.Since(start)
+					fmt.Println("Creating a package repository took", elapsed)
+
+					// Deploy a docker registry on the node
+					By("Deploying a docker registry")
+					caFile, err := deployAuthenticatedDockerRegistry(repoNode, dockerRegistryPort, sshKey)
+					FailIfError(err, "Failed to deploy docker registry")
+
+					By("Adding the docker registry self-signed cert to the registry node")
+					registry := fmt.Sprintf("%s:%d", repoNode.PublicIP, dockerRegistryPort)
+					err = copyFileToRemote(caFile, "/tmp/docker-registry-ca.crt", repoNode, sshKey, 30*time.Second)
+					FailIfError(err, "Failed to copy registry cert to registry node")
+					cmds = []string{
+						fmt.Sprintf("sudo mkdir -p /etc/docker/certs.d/%s", registry),
+						fmt.Sprintf("sudo mv /tmp/docker-registry-ca.crt /etc/docker/certs.d/%s/ca.crt", registry),
+					}
+					err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 10*time.Minute)
+					FailIfError(err, "Error adding self-signed cert to registry node")
+
+					By("Copying KET to the registry node for seeding")
+					err = copyFileToRemote(filepath.Join(currentKismaticDir, "kismatic.tar.gz"), "/tmp/kismatic.tar.gz", repoNode, sshKey, 5*time.Minute)
+					FailIfError(err, "Error copying KET to the registry node")
+
+					By("Seeding the registry")
+					start = time.Now()
+					cmds = []string{
+						fmt.Sprintf("sudo docker login -u kismaticuser -p kismaticpassword %s", registry),
+						"sudo tar -xf /tmp/kismatic.tar.gz",
+						fmt.Sprintf("sudo ./kismatic seed-registry --server %s", registry),
+					}
+					err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 30*time.Minute)
+					FailIfError(err, "Failed to seed the registry")
+					elapsed = time.Since(start)
+					fmt.Println("Seeding the registry took", elapsed)
+
+					By("Disabling internet access")
+					err = disableInternetAccess(nodes.allNodes(), sshKey)
+					FailIfError(err, "Failed to create iptable rule")
+
+					// Configure the repos on the nodes
+					By("Configuring repository on nodes")
+					for _, n := range nodes.allNodes() {
+						err = copyFileToRemote("test-resources/disconnected-installation/configure-deb-mirrors.sh", "/tmp/configure-deb-mirrors.sh", n, sshKey, 15*time.Second)
+						FailIfError(err, "Failed to copy script to nodes")
+					}
+					cmds = []string{
+						"chmod +x /tmp/configure-deb-mirrors.sh",
+						fmt.Sprintf("sudo /tmp/configure-deb-mirrors.sh http://%s", repoNode.PrivateIP),
+					}
+					err = runViaSSH(cmds, nodes.allNodes(), sshKey, 5*time.Minute)
+					FailIfError(err, "Failed to run mirror configuration script")
+
+					installOpts := installOptions{
+						disablePackageInstallation: false,
+						disconnectedInstallation:   true,
+						modifyHostsFiles:           true,
+						dockerRegistryCAPath:       caFile,
+						dockerRegistryIP:           repoNode.PrivateIP,
+						dockerRegistryPort:         dockerRegistryPort,
+						dockerRegistryUsername:     "kismaticuser",
+						dockerRegistryPassword:     "kismaticpassword",
+					}
+
+					// installOpts.disableRegistrySeeding = true
+					By("Running kismatic install apply")
 					err = installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())
 				})
@@ -56,58 +195,7 @@ var _ = Describe("disconnected install feature", func() {
 		})
 	})
 
-	Describe("using an existing private docker registry with images pre-seeded", func() {
-		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
-			WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
-				dockerRegistryPort := 8443
-				By("Configuring an insecure registry on the master")
-				cmds := []string{
-					"sudo mkdir /etc/docker/",
-					"sudo touch /etc/docker/daemon.json",
-					fmt.Sprintf("printf '{\n  \"insecure-registries\" : [\"%s:%d\"]\n}\n' | sudo tee --append /etc/docker/daemon.json", nodes.etcd[0].PrivateIP, dockerRegistryPort),
-				}
-				err := runViaSSH(cmds, []NodeDeets{nodes.master[0]}, sshKey, 10*time.Minute)
-				FailIfError(err, "Failed to allow insecure registries")
-
-				By("Installing the RPMs on the node")
-				InstallKismaticPackages(nodes, CentOS7, sshKey, true)
-
-				By("Installing an external Docker registry on one of the nodes")
-				caFile, err := deployDockerRegistry(nodes.etcd[0], dockerRegistryPort, sshKey)
-				Expect(err).ToNot(HaveOccurred())
-
-				By("Disabling internet access")
-				err = disableInternetAccess(nodes.allNodes(), sshKey)
-				FailIfError(err, "Failed to create iptable rule")
-
-				// disableRegistrySeeding = false, run step to seed
-				installOpts := installOptions{
-					disablePackageInstallation: true,
-					disconnectedInstallation:   true,
-					modifyHostsFiles:           true,
-					dockerRegistryCAPath:       caFile,
-					dockerRegistryIP:           nodes.etcd[0].PrivateIP,
-					dockerRegistryPort:         dockerRegistryPort,
-					dockerRegistryUsername:     "kismaticuser",
-					dockerRegistryPassword:     "kismaticpassword",
-				}
-				By("Seeding images")
-				writePlanFile(buildPlan(nodes, installOpts, sshKey))
-				c := exec.Command("./kismatic", "install", "step", "_docker-registry.yaml", "-f", "kismatic-testing.yaml")
-				c.Stdout = os.Stdout
-				c.Stderr = os.Stderr
-				err = c.Run()
-				Expect(err).ToNot(HaveOccurred())
-
-				installOpts.disableRegistrySeeding = true
-				By("Running kismatic install apply")
-				err = installKismatic(nodes, installOpts, sshKey)
-				Expect(err).ToNot(HaveOccurred())
-			})
-		})
-	})
-
-	Describe("installing on machines with no internet access but with a proxy", func() {
+	Context("when there is a proxy between the nodes and the internet", func() {
 		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 			WithInfrastructure(NodeCount{2, 1, 1, 1, 1}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
 				// setup cluster nodes, and a proxy node

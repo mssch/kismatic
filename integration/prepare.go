@@ -169,7 +169,7 @@ func getPrepForDistro(distro linuxDistro) nodePrep {
 	}
 }
 
-func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (string, error) {
+func deployAuthenticatedDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (string, error) {
 	// Install Docker on the node
 	installDockerCmds := []string{
 		"sudo curl -sSL https://get.docker.com/ | sh",

@@ -18,7 +18,7 @@ var _ = Describe("kismatic docker registry feature", func() {
 			WithInfrastructure(NodeCount{2, 1, 1, 0, 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
 				By("Installing an external Docker registry on one of the nodes")
 				dockerRegistryPort := 8443
-				caFile, err := deployDockerRegistry(nodes.etcd[1], dockerRegistryPort, sshKey)
+				caFile, err := deployAuthenticatedDockerRegistry(nodes.etcd[1], dockerRegistryPort, sshKey)
 				Expect(err).ToNot(HaveOccurred())
 				opts := installOptions{
 					dockerRegistryCAPath:   caFile,

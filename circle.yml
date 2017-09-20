@@ -37,6 +37,17 @@ jobs:
           name: Set permissions on SSH key
           command: chmod 0600 ~/.ssh/kismatic-integration-testing.pem
       - run:
+          name: Focused tests
+          command: |
+            if [[ -n "$FOCUS" ]]
+            then
+                make focus-integration-test
+            fi
+          no_output_timeout: 30m
+          environment:
+            ANSIBLE_SSH_CONTROL_PATH: "/run/user/1026/ssh-%%r-%%h-%%p"
+            ANSIBLE_SSH_ARGS: "-o ControlMaster=auto -o ControlPersist=1800s -o ControlPath=/run/user/1026/ssh-%r-%h-%p"    
+      - run:
           name: Integration tests
           command: make just-integration-test
           no_output_timeout: 30m
