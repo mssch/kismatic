@@ -108,7 +108,9 @@ master:
   nodes:{{range .Master}}
   - host: {{.Hostname}}
     ip: {{.PublicIP}}
-    internalip: {{.PrivateIP}}{{end}}
+    internalip: {{.PrivateIP}}
+    labels:
+      com.integrationtest/master: true{{end}}
   load_balanced_fqdn: {{.MasterNodeFQDN}}
   load_balanced_short_name: {{.MasterNodeShortName}}
 worker:
@@ -116,19 +118,25 @@ worker:
   nodes:{{range .Worker}}
   - host: {{.Hostname}}
     ip: {{.PublicIP}}
-    internalip: {{.PrivateIP}}{{end}}
+    internalip: {{.PrivateIP}}
+    labels:
+      com.integrationtest/worker: true{{end}}
 ingress:
   expected_count: {{len .Ingress}}
   nodes:{{range .Ingress}}
   - host: {{.Hostname}}
     ip: {{.PublicIP}}
-    internalip: {{.PrivateIP}}{{end}}
+    internalip: {{.PrivateIP}}
+    labels:
+      com.integrationtest/ingress: true{{end}}
 storage:
   expected_count: {{len .Storage}}
   nodes:{{range .Storage}}
   - host: {{.Hostname}}
     ip: {{.PublicIP}}
-    internalip: {{.PrivateIP}}{{end}}
+    internalip: {{.PrivateIP}}
+    labels:
+      com.integrationtest/storage: true{{end}}
 nfs:
   nfs_volume:{{range .NFSVolume}}
   - nfs_host: {{.Host}}
