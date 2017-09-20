@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apprenda/kismatic/pkg/validation"
+
 	"github.com/apprenda/kismatic/pkg/ssh"
 	"github.com/apprenda/kismatic/pkg/util"
 )
@@ -436,6 +438,20 @@ func (n *Node) validate() (bool, []error) {
 	}
 	if ip := net.ParseIP(n.InternalIP); n.InternalIP != "" && ip == nil {
 		v.addError(fmt.Errorf("Invalid InternalIP provided"))
+	}
+	// validate node labels don't start with 'kismatic/' as that is reserved
+	for key, val := range n.Labels {
+		if strings.HasPrefix(key, "kismatic/") {
+			v.addError(fmt.Errorf("Node label %q cannot start with 'kismatic/'", key))
+		}
+		errs := validation.IsQualifiedName(key)
+		for _, err := range errs {
+			v.addError(fmt.Errorf("Node label name %q is not valid %s", key, err))
+		}
+		errs = validation.IsValidLabelValue(val)
+		for _, err := range errs {
+			v.addError(fmt.Errorf("Node label %q is not valid %s", val, err))
+		}
 	}
 	return v.valid()
 }

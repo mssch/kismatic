@@ -133,6 +133,13 @@ func docForType(typeName string, allTypes []*godoc.Type, parentFieldName string)
 						if isStruct(typeName) {
 							docs = append(docs, docForType(typeName, allTypes, fieldName)...)
 						}
+					case *ast.MapType:
+						typeName = fmt.Sprintf("map[%s]%s", x.Key.(*ast.Ident).Name, x.Value.(*ast.Ident).Name)
+						d, err := parseDoc(fieldName, typeName, f.Doc.Text())
+						if err != nil {
+							panic(err)
+						}
+						docs = append(docs, d)
 					default:
 						panic(fmt.Sprintf("unhandled typespec type: %q", reflect.TypeOf(x).Name()))
 					}
@@ -198,7 +205,8 @@ func isStruct(s string) bool {
 
 // not a comprehensive list, but works for now...
 var basicTypes = map[string]bool{
-	"bool":   true,
-	"int":    true,
-	"string": true,
+	"bool":              true,
+	"int":               true,
+	"string":            true,
+	"map[string]string": true,
 }
