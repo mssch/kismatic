@@ -9,6 +9,7 @@
   - include: _docker.yaml
   - include: _kubelet.yaml
   - include: _kube-proxy.yaml
+  - include: _label-nodes.yaml
   - include: _cni.yaml
     when: cni.enabled|bool == true
   - include: _calico.yaml
