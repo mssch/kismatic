@@ -133,6 +133,7 @@ func (p *Plan) validate() (bool, []error) {
 	// on a disconnected_installation a registry must be provided
 	v.validate(disconnectedInstallation{cluster: p.Cluster, registry: p.DockerRegistry})
 	v.validate(&p.AddOns)
+	v.validate(nodeList{Nodes: p.GetUniqueNodes()})
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
@@ -323,6 +324,39 @@ func (s sshConnectionSet) validate() (bool, []error) {
 	return v.valid()
 }
 
+type nodeList struct {
+	Nodes []Node
+}
+
+func (nl nodeList) validate() (bool, []error) {
+	v := newValidator()
+	hostnames := map[string]int{}
+	ips := map[string]int{}
+	internalIPs := map[string]int{}
+	for i, n := range nl.Nodes {
+		// Validate all hostnames are unique
+		if _, ok := hostnames[n.Host]; ok && n.Host != "" {
+			v.addError(fmt.Errorf("Two different nodes cannot have the same hostname %q", n.Host))
+		} else if n.Host != "" {
+			hostnames[n.Host] = i + 1
+		}
+		// Validate all IPs are unique
+		if _, ok := ips[n.IP]; ok && n.IP != "" {
+			v.addError(fmt.Errorf("Two different nodes cannot have the same IP %q", n.IP))
+		} else if n.IP != "" {
+			ips[n.IP] = i + 1
+		}
+		// Validate all internal IPs are unique
+		if _, found := internalIPs[n.InternalIP]; found && n.InternalIP != "" {
+			v.addError(fmt.Errorf("Two different nodes cannot have the same internal IP %q", n.InternalIP))
+		} else if n.InternalIP != "" {
+			internalIPs[n.InternalIP] = i + 1
+		}
+	}
+
+	return v.valid()
+}
+
 func (ng *NodeGroup) validate() (bool, []error) {
 	v := newValidator()
 	if ng == nil || len(ng.Nodes) <= 0 {
@@ -334,29 +368,8 @@ func (ng *NodeGroup) validate() (bool, []error) {
 	if len(ng.Nodes) != ng.ExpectedCount && (len(ng.Nodes) > 0 && ng.ExpectedCount > 0) {
 		v.addError(fmt.Errorf("Expected node count (%d) does not match the number of nodes provided (%d)", ng.ExpectedCount, len(ng.Nodes)))
 	}
-	hostnames := map[string]int{}
-	ips := map[string]int{}
-	internalIPs := map[string]int{}
 	for i, n := range ng.Nodes {
 		v.validateWithErrPrefix(fmt.Sprintf("Node #%d", i+1), &n)
-		// Validate all hostnames are unique
-		if nodeID, ok := hostnames[n.Host]; ok && n.Host != "" {
-			v.addError(fmt.Errorf("Node #%d has the same hostname %q as node #%d", i+1, n.Host, nodeID))
-		} else if n.Host != "" {
-			hostnames[n.Host] = i + 1
-		}
-		// Validate all IPs are unique
-		if nodeID, ok := ips[n.IP]; ok && n.IP != "" {
-			v.addError(fmt.Errorf("Node #%d has the same IP %q as node #%d", i+1, n.IP, nodeID))
-		} else if n.IP != "" {
-			ips[n.IP] = i + 1
-		}
-		// Validate all internal IPs are unique
-		if nodeID, found := internalIPs[n.InternalIP]; found && n.InternalIP != "" {
-			v.addError(fmt.Errorf("Node #%d has the same internal IP %q as node #%d", i+1, n.InternalIP, nodeID))
-		} else if n.InternalIP != "" {
-			internalIPs[n.InternalIP] = i + 1
-		}
 	}
 
 	return v.valid()
