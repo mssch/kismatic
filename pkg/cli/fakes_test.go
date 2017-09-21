@@ -92,6 +92,10 @@ func (fe *fakeExecutor) AddVolume(*install.Plan, install.StorageVolume) error {
 	return nil
 }
 
+func (fe *fakeExecutor) DeleteVolume(*install.Plan, string) error {
+	return nil
+}
+
 type fakePKI struct {
 	called              bool
 	generateCACalled    bool
