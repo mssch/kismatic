@@ -24,8 +24,7 @@ type ClusterCatalog struct {
 	APIServerOptions map[string]string `yaml:"kubernetes_api_server_option_overrides"`
 
 	ConfigureDockerWithPrivateRegistry bool   `yaml:"configure_docker_with_private_registry"`
-	DeployInternalDockerRegistry       bool   `yaml:"deploy_internal_docker_registry"`
-	DockerCAPath                       string `yaml:"docker_certificates_ca_path"`
+	DockerRegistryCAPath               string `yaml:"docker_certificates_ca_path"`
 	DockerRegistryAddress              string `yaml:"docker_registry_address"`
 	DockerRegistryPort                 string `yaml:"docker_registry_port"`
 	DockerRegistryUsername             string `yaml:"docker_registry_username"`

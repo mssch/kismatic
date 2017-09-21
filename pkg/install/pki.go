@@ -19,7 +19,6 @@ const (
 	adminGroup                          = "system:masters"
 	adminCertFilename                   = "admin"
 	adminCertFilenameKETPre133          = "admin"
-	dockerRegistryCertFilename          = "docker-registry"
 	serviceAccountCertFilename          = "service-account"
 	serviceAccountCertCommonName        = "kube-service-account"
 	schedulerCertFilenamePrefix         = "kube-scheduler"
@@ -210,21 +209,6 @@ func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
 				m = append(m, s)
 			}
 		}
-	}
-
-	// Certificate for docker registry
-	if plan.DockerRegistry.SetupInternal {
-		dockerRegistryNode := plan.Master.Nodes[0]
-		san := []string{dockerRegistryNode.Host, dockerRegistryNode.IP}
-		if dockerRegistryNode.InternalIP != "" {
-			san = append(san, dockerRegistryNode.InternalIP)
-		}
-		m = append(m, certificateSpec{
-			description:           "internal private docker registry",
-			filename:              dockerRegistryCertFilename,
-			commonName:            dockerRegistryNode.Host,
-			subjectAlternateNames: san,
-		})
 	}
 
 	// Contiv certificates

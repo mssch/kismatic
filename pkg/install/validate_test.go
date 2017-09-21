@@ -641,19 +641,19 @@ func TestValidateNFSVolume(t *testing.T) {
 }
 
 func TestValidatePlanCerts(t *testing.T) {
-	p := &validPlan
+	p := validPlan
 
 	pki := getPKI(t)
 	defer cleanup(pki.GeneratedCertsDirectory, t)
-	ca, err := pki.GenerateClusterCA(p)
+	ca, err := pki.GenerateClusterCA(&p)
 	if err != nil {
 		t.Fatalf("error generating CA for test: %v", err)
 	}
-	if err := pki.GenerateClusterCertificates(p, ca); err != nil {
+	if err := pki.GenerateClusterCertificates(&p, ca); err != nil {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
 
-	valid, errs := ValidateCertificates(p, &pki)
+	valid, errs := ValidateCertificates(&p, &pki)
 	if !valid {
 		t.Errorf("expected valid, but got invalid")
 		fmt.Println(errs)
@@ -661,16 +661,16 @@ func TestValidatePlanCerts(t *testing.T) {
 }
 
 func TestValidatePlanBadCerts(t *testing.T) {
-	p := &validPlan
+	p := validPlan
 
 	pki := getPKI(t)
 	defer cleanup(pki.GeneratedCertsDirectory, t)
 
-	ca, err := pki.GenerateClusterCA(p)
+	ca, err := pki.GenerateClusterCA(&p)
 	if err != nil {
 		t.Fatalf("error generating CA for test: %v", err)
 	}
-	if err := pki.GenerateClusterCertificates(p, ca); err != nil {
+	if err := pki.GenerateClusterCertificates(&p, ca); err != nil {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
 	p.Master.Nodes[0] = Node{
@@ -679,7 +679,7 @@ func TestValidatePlanBadCerts(t *testing.T) {
 		InternalIP: "22.33.44.55",
 	}
 
-	valid, _ := ValidateCertificates(p, &pki)
+	valid, _ := ValidateCertificates(&p, &pki)
 	if valid {
 		t.Errorf("expected an error, but got valid")
 	}
@@ -699,16 +699,16 @@ func TestValidatePlanMissingCerts(t *testing.T) {
 }
 
 func TestValidatePlanMissingSomeCerts(t *testing.T) {
-	p := &validPlan
+	p := validPlan
 
 	pki := getPKI(t)
 	defer cleanup(pki.GeneratedCertsDirectory, t)
 
-	ca, err := pki.GenerateClusterCA(p)
+	ca, err := pki.GenerateClusterCA(&p)
 	if err != nil {
 		t.Fatalf("error generating CA for test: %v", err)
 	}
-	if err := pki.GenerateClusterCertificates(p, ca); err != nil {
+	if err := pki.GenerateClusterCertificates(&p, ca); err != nil {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
 
@@ -719,7 +719,7 @@ func TestValidatePlanMissingSomeCerts(t *testing.T) {
 	}
 	p.Master.Nodes = append(p.Master.Nodes, newNode)
 
-	valid, errs := ValidateCertificates(p, &pki)
+	valid, errs := ValidateCertificates(&p, &pki)
 	if !valid {
 		t.Errorf("expected valid, but got invalid")
 		fmt.Println(errs)
@@ -785,93 +785,32 @@ func TestValidateNodeGroupDuplicateInternalIPs(t *testing.T) {
 	}
 }
 
-func TestDisconnectedInstallationPrereq(t *testing.T) {
-	tests := []struct {
-		cluster  Cluster
-		registry DockerRegistry
-		valid    bool
-	}{
-		{
-			cluster: Cluster{
-				DisconnectedInstallation: true,
-			},
-			valid: false,
-		},
-		{
-			cluster: Cluster{
-				DisconnectedInstallation: true,
-			},
-			registry: DockerRegistry{
-				SetupInternal: true,
-				Address:       "",
-			},
-			valid: true,
-		},
-		{
-			cluster: Cluster{
-				DisconnectedInstallation: true,
-			},
-			registry: DockerRegistry{
-				SetupInternal: false,
-				Address:       "10.0.0.1",
-			},
-			valid: true,
-		},
-		{
-			registry: DockerRegistry{
-				SetupInternal: true,
-			},
-			valid: true,
-		},
-		{
-			registry: DockerRegistry{
-				Address: "10.0.0.1",
-			},
-			valid: true,
-		},
-		{
-			registry: DockerRegistry{},
-			valid:    true,
-		},
-		{
-			cluster: Cluster{
-				DisconnectedInstallation: true,
-				DisableRegistrySeeding:   true,
-			},
-			registry: DockerRegistry{
-				SetupInternal: true,
-				Address:       "",
-			},
-			valid: false,
-		},
-		{
-			cluster: Cluster{
-				DisconnectedInstallation: true,
-				DisableRegistrySeeding:   true,
-			},
-			registry: DockerRegistry{
-				SetupInternal: false,
-				Address:       "10.0.0.1",
-			},
-			valid: true,
-		},
-		{
-			cluster: Cluster{
-				DisconnectedInstallation: false,
-				DisableRegistrySeeding:   true,
-			},
-			registry: DockerRegistry{
-				SetupInternal: true,
-				Address:       "",
-			},
-			valid: true,
-		},
+func TestValidatePlanDisconnectedInstallationFailsDueToMissingRegistry(t *testing.T) {
+	plan := validPlan
+	plan.Cluster.DisconnectedInstallation = true
+	ok, errs := plan.validate()
+	if ok {
+		t.Errorf("expected validation to fail due to missing external registry information in plan")
 	}
-	for i, test := range tests {
-		ok, _ := disconnectedInstallation{cluster: test.cluster, registry: test.registry}.validate()
-		if ok != test.valid {
-			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+	var found bool
+	for _, err := range errs {
+		if err.Error() == "A container image registry is required when disconnected_installation is true" {
+			found = true
 		}
+	}
+	if !found {
+		t.Errorf("validation did not return the expected failure message")
+	}
+}
+
+func TestValidatePlanDisconnectedInstallationSucceeds(t *testing.T) {
+	plan := validPlan
+	plan.Cluster.DisconnectedInstallation = true
+	plan.DockerRegistry.Address = "localhost"
+	plan.DockerRegistry.Port = 5000
+	if ok, errs := plan.validate(); !ok {
+		t.Error("expected validation to succeed, but it failed")
+		t.Logf("errors were: %v\n", errs)
 	}
 }
 
@@ -964,7 +903,7 @@ func TestRepository(t *testing.T) {
 		},
 	}
 	for i, test := range tests {
-		p := &validPlan
+		p := validPlan
 		p.Cluster.PackageRepoURLs = test.config.PackageRepoURLs
 		ok, _ := p.Cluster.validate()
 		if ok != test.valid {

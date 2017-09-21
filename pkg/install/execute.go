@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"strings"
@@ -37,7 +38,6 @@ type Executor interface {
 	UpgradeEtcd2Nodes(plan Plan, nodesToUpgrade []ListableNode) error
 	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int) error
 	ValidateControlPlane(plan Plan) error
-	UpgradeDockerRegistry(plan Plan) error
 	UpgradeClusterServices(plan Plan) error
 	MigrateEtcdCluster(plan Plan) error
 }
@@ -601,23 +601,6 @@ func (ae *ansibleExecutor) ValidateControlPlane(plan Plan) error {
 	return ae.execute(t)
 }
 
-func (ae *ansibleExecutor) UpgradeDockerRegistry(plan Plan) error {
-	inventory := buildInventoryFromPlan(&plan)
-	cc, err := ae.buildClusterCatalog(&plan)
-	if err != nil {
-		return err
-	}
-	t := task{
-		name:           "upgrade-docker-registry",
-		playbook:       "upgrade-docker-registry.yaml",
-		inventory:      inventory,
-		clusterCatalog: *cc,
-		plan:           plan,
-		explainer:      ae.defaultExplainer(),
-	}
-	return ae.execute(t)
-}
-
 func (ae *ansibleExecutor) UpgradeClusterServices(plan Plan) error {
 	inventory := buildInventoryFromPlan(&plan)
 	cc, err := ae.buildClusterCatalog(&plan)
@@ -724,19 +707,14 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.LoadBalancedFQDN = p.Master.Nodes[0].InternalIP
 	}
 
-	if p.DockerRegistry.ConfigureDockerWithPrivateRegistry() {
+	if p.PrivateRegistryProvided() {
 		cc.ConfigureDockerWithPrivateRegistry = true
-		cc.DockerRegistryAddress = p.DockerRegistryAddress()
-		cc.DockerRegistryPort = p.DockerRegistryPort()
-		cc.DockerCAPath = filepath.Join(tlsDir, "ca.pem")
+		cc.DockerRegistryAddress = p.DockerRegistry.Address
+		cc.DockerRegistryPort = strconv.Itoa(p.DockerRegistry.Port)
+		cc.DockerRegistryCAPath = p.DockerRegistry.CAPath
 		cc.DockerRegistryUsername = p.DockerRegistry.Username
 		cc.DockerRegistryPassword = p.DockerRegistry.Password
 	}
-	if p.DockerRegistry.Address != "" { // Use external registry
-		cc.DockerCAPath = p.DockerRegistry.CAPath
-	} else if p.DockerRegistry.SetupInternal { // Use registry on master[0]
-		cc.DeployInternalDockerRegistry = true
-	} // Else just use DockerHub
 
 	// Setup docker options
 	cc.DockerDirectLVMEnabled = p.Docker.Storage.DirectLVM.Enabled

@@ -3,7 +3,6 @@ package install
 import (
 	"fmt"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/apprenda/kismatic/pkg/ssh"
@@ -210,10 +209,6 @@ type DockerStorageDirectLVM struct {
 
 // DockerRegistry details for docker registry, either confgiured by the cli or customer provided
 type DockerRegistry struct {
-	// Whether an internal docker registry should be installed on the cluster.
-	// When set to true, a registry will be deployed on the first master node.
-	// +default=false
-	SetupInternal bool `yaml:"setup_internal"`
 	// The hostname or IP address of a private container image registry.
 	// When performing a disconnected installation, this registry will be used
 	// to fetch all the required container images.
@@ -617,30 +612,10 @@ func hasIP(nodes *[]Node, ip string) bool {
 	return false
 }
 
-// ConfigureDockerWithPrivateRegistry returns true when confgiuring an external or on cluster registry is required
-func (r DockerRegistry) ConfigureDockerWithPrivateRegistry() bool {
-	return r.Address != "" || r.SetupInternal
-}
-
-func (p Plan) DockerRegistryAddress() string {
-	address := p.DockerRegistry.Address
-	// If external is not set use master[0]
-	if address == "" {
-		address = p.Master.Nodes[0].IP
-		// Use internal address if available
-		if p.Master.Nodes[0].InternalIP != "" {
-			address = p.Master.Nodes[0].InternalIP
-		}
-	}
-	return address
-}
-
-func (p Plan) DockerRegistryPort() string {
-	port := 8443
-	if p.DockerRegistry.Port != 0 {
-		port = p.DockerRegistry.Port
-	}
-	return strconv.Itoa(port)
+// PrivateRegistryProvided returns true when the details about a private
+// registry have been provided
+func (p Plan) PrivateRegistryProvided() bool {
+	return p.DockerRegistry.Address != ""
 }
 
 // NetworkConfigured returns true if pod validation/smoketest should run

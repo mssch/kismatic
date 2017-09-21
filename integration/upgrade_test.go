@@ -102,9 +102,8 @@ var _ = Describe("Upgrade", func() {
 					WithInfrastructure(NodeCount{Etcd: 3, Master: 1, Worker: 1}, distro, aws, func(nodes provisionedNodes, sshKey string) {
 						// Standup cluster with previous version
 						opts := installOptions{
-							disconnectedInstallation:    false, // we want KET to install the packages, so let it use the package repo
-							modifyHostsFiles:            true,
-							autoConfigureDockerRegistry: true,
+							disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
+							modifyHostsFiles:         true,
 						}
 						err := installKismatic(nodes, opts, sshKey)
 						FailIfError(err)
@@ -121,10 +120,9 @@ var _ = Describe("Upgrade", func() {
 						err = os.Remove("kismatic-testing.yaml")
 						FailIfError(err)
 						opts = installOptions{
-							disablePackageInstallation:  true,
-							disconnectedInstallation:    true,
-							modifyHostsFiles:            true,
-							autoConfigureDockerRegistry: true,
+							disablePackageInstallation: true,
+							disconnectedInstallation:   true,
+							modifyHostsFiles:           true,
 						}
 						writePlanFile(buildPlan(nodes, opts, sshKey))
 
@@ -288,9 +286,8 @@ var _ = Describe("Upgrade", func() {
 					WithInfrastructure(NodeCount{Etcd: 3, Master: 1, Worker: 1}, distro, aws, func(nodes provisionedNodes, sshKey string) {
 						// Standup cluster with previous version
 						opts := installOptions{
-							disconnectedInstallation:    false, // we want KET to install the packages, so let it use the package repo
-							modifyHostsFiles:            true,
-							autoConfigureDockerRegistry: true,
+							disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
+							modifyHostsFiles:         true,
 						}
 						err := installKismatic(nodes, opts, sshKey)
 						FailIfError(err)
@@ -307,10 +304,9 @@ var _ = Describe("Upgrade", func() {
 						err = os.Remove("kismatic-testing.yaml")
 						FailIfError(err)
 						opts = installOptions{
-							disablePackageInstallation:  true,
-							disconnectedInstallation:    true,
-							modifyHostsFiles:            true,
-							autoConfigureDockerRegistry: true,
+							disablePackageInstallation: true,
+							disconnectedInstallation:   true,
+							modifyHostsFiles:           true,
 						}
 						writePlanFile(buildPlan(nodes, opts, sshKey))
 
