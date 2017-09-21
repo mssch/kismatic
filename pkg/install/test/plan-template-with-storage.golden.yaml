@@ -105,6 +105,12 @@ docker_registry:
   # Absolute path to the CA that was used when starting your Docker registry.
   # The docker daemons on all nodes in the cluster will be configured with this CA.
   CA: ""
+
+  # Leave blank for unauthenticated access.
+  username: ""
+
+  # Leave blank for unauthenticated access.
+  password: ""
 add_ons:
   cni:
     disable: false

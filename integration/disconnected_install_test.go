@@ -89,6 +89,8 @@ var _ = Describe("disconnected install feature", func() {
 					dockerRegistryCAPath:       caFile,
 					dockerRegistryIP:           nodes.etcd[0].PrivateIP,
 					dockerRegistryPort:         dockerRegistryPort,
+					dockerRegistryUsername:     "kismaticuser",
+					dockerRegistryPassword:     "kismaticpassword",
 				}
 				By("Seeding images")
 				writePlanFile(buildPlan(nodes, installOpts, sshKey))

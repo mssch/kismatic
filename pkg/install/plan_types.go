@@ -225,6 +225,12 @@ type DockerRegistry struct {
 	// This is required to establish trust between the daemons and the private
 	// registry when the registry is using a self-signed certificate.
 	CAPath string `yaml:"CA"`
+	// The username that should be used when connecting to a registry that has authentication enabled.
+	// Otherwise leave blank for unauthenticated access.
+	Username string
+	// The password that should be used when connecting to a registry that has authentication enabled.
+	// Otherwise leave blank for unauthenticated access.
+	Password string
 }
 
 // AddOns are components that are deployed on the cluster that KET considers

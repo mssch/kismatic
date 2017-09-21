@@ -32,12 +32,14 @@ var _ = Describe("kismatic docker registry feature", func() {
 				dockerRegistryPort := 8443
 				caFile, err := deployDockerRegistry(nodes.etcd[0], dockerRegistryPort, sshKey)
 				Expect(err).ToNot(HaveOccurred())
-				installOpts := installOptions{
-					dockerRegistryCAPath: caFile,
-					dockerRegistryIP:     nodes.etcd[0].PrivateIP,
-					dockerRegistryPort:   dockerRegistryPort,
+				opts := installOptions{
+					dockerRegistryCAPath:   caFile,
+					dockerRegistryIP:       nodes.etcd[0].PrivateIP,
+					dockerRegistryPort:     dockerRegistryPort,
+					dockerRegistryUsername: "kismaticuser",
+					dockerRegistryPassword: "kismaticpassword",
 				}
-				err = installKismatic(nodes, installOpts, sshKey)
+				err = installKismatic(nodes, opts, sshKey)
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
