@@ -726,62 +726,90 @@ func TestValidatePlanMissingSomeCerts(t *testing.T) {
 	}
 }
 
-func TestValidateNodeGroupDuplicateIP(t *testing.T) {
-	ng := NodeGroup{
-		ExpectedCount: 2,
-		Nodes: []Node{
-			{
-				Host: "host1",
-				IP:   "10.0.0.1",
+func TestValidateNodeListDuplicate(t *testing.T) {
+	tests := []struct {
+		nl    nodeList
+		valid bool
+	}{
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+					},
+				},
 			},
-			{
-				Host: "host2",
-				IP:   "10.0.0.1",
+			valid: true,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+					},
+					{
+						Host: "host2",
+						IP:   "10.0.0.2",
+					},
+				},
 			},
+			valid: true,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+					},
+					{
+						Host: "host1",
+						IP:   "10.0.0.2",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.2",
+					},
+					{
+						Host: "host2",
+						IP:   "10.0.0.2",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host:       "host1",
+						IP:         "10.0.0.1",
+						InternalIP: "192.168.205.10",
+					},
+					{
+						Host:       "host2",
+						IP:         "10.0.0.2",
+						InternalIP: "192.168.205.10",
+					},
+				},
+			},
+			valid: false,
 		},
 	}
-	if ok, _ := ng.validate(); ok {
-		t.Errorf("validation passed with duplicate IP")
-	}
-}
-
-func TestValidateNodeGroupDuplicateHostname(t *testing.T) {
-	ng := NodeGroup{
-		ExpectedCount: 2,
-		Nodes: []Node{
-			{
-				Host: "host1",
-				IP:   "10.0.0.1",
-			},
-			{
-				Host: "host1",
-				IP:   "10.0.0.2",
-			},
-		},
-	}
-	if ok, _ := ng.validate(); ok {
-		t.Errorf("validation passed with duplicate hostname")
-	}
-}
-
-func TestValidateNodeGroupDuplicateInternalIPs(t *testing.T) {
-	ng := NodeGroup{
-		ExpectedCount: 2,
-		Nodes: []Node{
-			{
-				Host:       "host1",
-				IP:         "10.0.0.1",
-				InternalIP: "192.168.205.10",
-			},
-			{
-				Host:       "host2",
-				IP:         "10.0.0.2",
-				InternalIP: "192.168.205.10",
-			},
-		},
-	}
-	if ok, _ := ng.validate(); ok {
-		t.Errorf("validation passed with duplicate hostname")
+	for i, test := range tests {
+		ok, _ := test.nl.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
 	}
 }
 
