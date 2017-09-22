@@ -474,6 +474,7 @@ type SSHConnection struct {
 
 // GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.
 // That is, if a node has multiple roles, it will only appear once in the list.
+// Nodes are considered unique if the combination of 'host', 'IP' or 'internalIP' is unique to all other nodes.
 func (p *Plan) GetUniqueNodes() []Node {
 	seenNodes := map[string]bool{}
 	nodes := []Node{}

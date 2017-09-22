@@ -39,6 +39,14 @@ func ValidateNode(node *Node) (bool, []error) {
 	return v.valid()
 }
 
+// ValidateNodes runs validation against the given node.
+// Validates if the details of the nodes are unique.
+func ValidateNodes(nodes []Node) (bool, []error) {
+	v := newValidator()
+	v.validate(nodeList{Nodes: nodes})
+	return v.valid()
+}
+
 // ValidatePlanSSHConnections tries to establish SSH connections to all nodes in the cluster
 func ValidatePlanSSHConnections(p *Plan) (bool, []error) {
 	v := newValidator()
@@ -334,31 +342,36 @@ type nodeList struct {
 
 func (nl nodeList) validate() (bool, []error) {
 	v := newValidator()
+	v.addError(validateNoDuplicateNodeInfo(nl.Nodes)...)
+	return v.valid()
+}
+
+func validateNoDuplicateNodeInfo(nodes []Node) []error {
+	errs := []error{}
 	hostnames := map[string]int{}
 	ips := map[string]int{}
 	internalIPs := map[string]int{}
-	for i, n := range nl.Nodes {
+	for i, n := range nodes {
 		// Validate all hostnames are unique
 		if _, ok := hostnames[n.Host]; ok && n.Host != "" {
-			v.addError(fmt.Errorf("Two different nodes cannot have the same hostname %q", n.Host))
+			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same hostname %q", n.Host))
 		} else if n.Host != "" {
 			hostnames[n.Host] = i + 1
 		}
 		// Validate all IPs are unique
 		if _, ok := ips[n.IP]; ok && n.IP != "" {
-			v.addError(fmt.Errorf("Two different nodes cannot have the same IP %q", n.IP))
+			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same IP %q", n.IP))
 		} else if n.IP != "" {
 			ips[n.IP] = i + 1
 		}
 		// Validate all internal IPs are unique
 		if _, found := internalIPs[n.InternalIP]; found && n.InternalIP != "" {
-			v.addError(fmt.Errorf("Two different nodes cannot have the same internal IP %q", n.InternalIP))
+			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same internal IP %q", n.InternalIP))
 		} else if n.InternalIP != "" {
 			internalIPs[n.InternalIP] = i + 1
 		}
 	}
-
-	return v.valid()
+	return errs
 }
 
 func (ng *NodeGroup) validate() (bool, []error) {
