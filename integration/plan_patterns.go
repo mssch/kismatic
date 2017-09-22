@@ -5,38 +5,37 @@ type NFSVolume struct {
 }
 
 type PlanAWS struct {
-	Etcd                         []NodeDeets
-	Master                       []NodeDeets
-	Worker                       []NodeDeets
-	Ingress                      []NodeDeets
-	Storage                      []NodeDeets
-	NFSVolume                    []NFSVolume
-	MasterNodeFQDN               string
-	MasterNodeShortName          string
-	SSHUser                      string
-	SSHKeyFile                   string
-	HomeDirectory                string
-	DisablePackageInstallation   bool
-	DisconnectedInstallation     bool
-	DisableRegistrySeeding       bool
-	AutoConfiguredDockerRegistry bool
-	DockerRegistryIP             string
-	DockerRegistryPort           int
-	DockerRegistryCAPath         string
-	DockerRegistryUsername       string
-	DockerRegistryPassword       string
-	ModifyHostsFiles             bool
-	HTTPProxy                    string
-	HTTPSProxy                   string
-	NoProxy                      string
-	UseDirectLVM                 bool
-	ServiceCIDR                  string
-	DisableCNI                   bool
-	CNIProvider                  string
-	DisableHelm                  bool
-	HeapsterReplicas             int
-	HeapsterInfluxdbPVC          string
-	CloudProvider                string
+	Etcd                       []NodeDeets
+	Master                     []NodeDeets
+	Worker                     []NodeDeets
+	Ingress                    []NodeDeets
+	Storage                    []NodeDeets
+	NFSVolume                  []NFSVolume
+	MasterNodeFQDN             string
+	MasterNodeShortName        string
+	SSHUser                    string
+	SSHKeyFile                 string
+	HomeDirectory              string
+	DisablePackageInstallation bool
+	DisconnectedInstallation   bool
+	DisableRegistrySeeding     bool
+	DockerRegistryIP           string
+	DockerRegistryPort         int
+	DockerRegistryCAPath       string
+	DockerRegistryUsername     string
+	DockerRegistryPassword     string
+	ModifyHostsFiles           bool
+	HTTPProxy                  string
+	HTTPSProxy                 string
+	NoProxy                    string
+	UseDirectLVM               bool
+	ServiceCIDR                string
+	DisableCNI                 bool
+	CNIProvider                string
+	DisableHelm                bool
+	HeapsterReplicas           int
+	HeapsterInfluxdbPVC        string
+	CloudProvider              string
 }
 
 // Certain fields are still present for backwards compatabilty when testing upgrades
@@ -72,7 +71,6 @@ docker:
       block_device: "/dev/xvdb"
       enable_deferred_deletion: false{{end}}
 docker_registry:
-  setup_internal: {{.AutoConfiguredDockerRegistry}}
   address: {{.DockerRegistryIP}}
   port: {{.DockerRegistryPort}}
   CA: {{.DockerRegistryCAPath}}

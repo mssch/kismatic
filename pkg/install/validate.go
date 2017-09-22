@@ -129,9 +129,11 @@ func (p *Plan) validate() (bool, []error) {
 
 	v.validate(&p.Cluster)
 	v.validate(&p.DockerRegistry)
+	if p.Cluster.DisconnectedInstallation && !p.PrivateRegistryProvided() {
+		v.addError(fmt.Errorf("A container image registry is required when disconnected_installation is true"))
+	}
+
 	v.validateWithErrPrefix("Docker", p.Docker)
-	// on a disconnected_installation a registry must be provided
-	v.validate(disconnectedInstallation{cluster: p.Cluster, registry: p.DockerRegistry})
 	v.validate(&p.AddOns)
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
 	v.validateWithErrPrefix("Master nodes", &p.Master)
@@ -427,9 +429,6 @@ func (n *Node) validate() (bool, []error) {
 
 func (dr *DockerRegistry) validate() (bool, []error) {
 	v := newValidator()
-	if dr.SetupInternal == true && (dr.Address != "" || dr.CAPath != "") {
-		v.addError(fmt.Errorf("Cannot setup internal registry when DockerRegistry address or CA is provided"))
-	}
 	if dr.Address == "" && (dr.CAPath != "") {
 		v.addError(fmt.Errorf("Docker Registry address cannot be empty when CA is provided"))
 	}
@@ -556,23 +555,4 @@ func validateAllowedAddress(address string) bool {
 		}
 	}
 	return true
-}
-
-type disconnectedInstallation struct {
-	cluster  Cluster
-	registry DockerRegistry
-}
-
-func (l disconnectedInstallation) validate() (bool, []error) {
-	v := newValidator()
-	if l.cluster.DisconnectedInstallation {
-		if !l.registry.ConfigureDockerWithPrivateRegistry() {
-			v.addError(fmt.Errorf("A container image registry is required when disconnected_installation is true"))
-		}
-		// Internal registry must always be seeded, there is no other source of these images that are required for an install
-		if l.cluster.DisableRegistrySeeding && l.registry.SetupInternal {
-			v.addError(fmt.Errorf("Cannot set disable_registry_seeding true when docker_registry.setup_internal is true"))
-		}
-	}
-	return v.valid()
 }

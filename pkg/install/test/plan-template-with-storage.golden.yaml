@@ -90,12 +90,7 @@ docker:
 # access to the Docker Hub.
 docker_registry:
 
-  # When true, a Docker Registry will be installed on top of your cluster and
-  # used to host Docker images needed for its installation.
-  setup_internal: false
-
-  # IP or hostname for your Docker registry. An internal registry will NOT be
-  # setup when this field is provided. Must be accessible from all the nodes
+  # IP or hostname for your Docker registry. Must be accessible from all the nodes
   # in the cluster.
   address: ""
 

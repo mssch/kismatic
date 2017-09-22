@@ -34,7 +34,6 @@
       * [block_device](#dockerstoragedirect_lvmblock_device)
       * [enable_deferred_deletion](#dockerstoragedirect_lvmenable_deferred_deletion)
 * [docker_registry](#docker_registry)
-  * [setup_internal](#docker_registrysetup_internal)
   * [address](#docker_registryaddress)
   * [port](#docker_registryport)
   * [CA](#docker_registryCA)
@@ -388,16 +387,6 @@
 ##  docker_registry
 
  Docker registry configuration 
-
-###  docker_registry.setup_internal
-
- Whether an internal docker registry should be installed on the cluster. When set to true, a registry will be deployed on the first master node. 
-
-| | |
-|----------|-----------------|
-| **Kind** |  bool |
-| **Required** |  No |
-| **Default** | `false` | 
 
 ###  docker_registry.address
 

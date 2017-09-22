@@ -13,18 +13,6 @@ var _ = Describe("kismatic docker registry feature", func() {
 		os.Chdir(dir)
 	})
 
-	Describe("enabling the internal docker registry feature", func() {
-		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
-			WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
-				opts := installOptions{
-					autoConfigureDockerRegistry: true,
-				}
-				err := installKismatic(nodes, opts, sshKey)
-				Expect(err).ToNot(HaveOccurred())
-			})
-		})
-	})
-
 	Describe("using an existing private docker registry", func() {
 		ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 			WithInfrastructure(NodeCount{1, 1, 1, 0, 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {

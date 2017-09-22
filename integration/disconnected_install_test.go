@@ -45,10 +45,9 @@ var _ = Describe("disconnected install feature", func() {
 
 					By("Running kismatic install apply")
 					installOpts := installOptions{
-						disablePackageInstallation:  true,
-						disconnectedInstallation:    true,
-						modifyHostsFiles:            true,
-						autoConfigureDockerRegistry: true,
+						disablePackageInstallation: true,
+						disconnectedInstallation:   true,
+						modifyHostsFiles:           true,
 					}
 					err = installKismatic(nodes, installOpts, sshKey)
 					Expect(err).ToNot(HaveOccurred())
