@@ -6,30 +6,12 @@ After=docker.service
 
 [Service]
 ExecStart=/usr/bin/kubelet \
-  --allow-privileged=true \
-  --cloud-provider={{ cloud_provider }} \
-  --cloud-config={{ cloud_config }} \
-  --cluster-dns={{ kubernetes_dns_service_ip }} \
-  --cluster-domain=cluster.local \
-  --container-runtime=docker \
-{%   if cni.enabled|bool == true %}
-  --cni-bin-dir=/opt/cni/bin \
-  --cni-conf-dir={{ network_plugin_dir }} \
-  --network-plugin=cni \
-{%   endif %}
-  --docker=unix:///var/run/docker.sock \
-  --hostname-override={{ inventory_hostname }} \
-  --require-kubeconfig=true \
-  --kubeconfig={{ kubernetes_kubeconfig.kubelet }} \
-  --node-labels=kismatic/host={{ inventory_hostname }},kismatic/cni-provider={{ cni.provider|default("")}}{% if 'ingress' in group_names%},kismatic/ingress=true{% endif %}{% if 'storage' in group_names%},kismatic/storage=true{% endif %}{% if 'master' in group_names %},node-role.kubernetes.io/master={% endif %} \
-  --node-ip={{ internal_ipv4 }} \
-  --pod-infra-container-image={{ images.pause }} \
-  --pod-manifest-path={{ kubelet_pod_manifests_dir }} \
-  --register-schedulable={{ kubernetes_schedulable }} \
-  --serialize-image-pulls=false \
-  --tls-cert-file={{ kubernetes_certificates.kubelet}} \
-  --tls-private-key-file={{ kubernetes_certificates.kubelet_key }} \
-  --v=2
+{% set combined_options = kubelet_defaults | combine(kubelet_overrides) | combine(kubelet_node_overrides[inventory_hostname]) -%}
+{% for option in combined_options | dictsort %}
+{% if option[1] is defined and option[1] | string | length > 0 %}
+  --{{ option[0] }}={{ option[1] }} \
+{% endif %}
+{% endfor %}
 Restart=on-failure
 RestartSec=3
 WorkingDirectory=/root/

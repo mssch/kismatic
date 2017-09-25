@@ -18,11 +18,12 @@ spec:
     imagePullPolicy: IfNotPresent
     command:
       - kube-proxy
-      - --cluster-cidr={{ kubernetes_pods_cidr }}
-      - --hostname-override={{ inventory_hostname }}
-      - --kubeconfig={{ kubernetes_kubeconfig.kube_proxy }}
-      - --proxy-mode=iptables
-      - --v=2
+{% set combined_options = kube_proxy_option_defaults | combine(kube_proxy_option_overrides) -%}
+{% for option in combined_options | dictsort %}
+{% if option[1] is defined and option[1] | string | length > 0 %}
+      - --{{ option[0] }}={{ option[1] }}
+{% endif %}
+{% endfor %}
     securityContext:
       privileged: true
     volumeMounts:

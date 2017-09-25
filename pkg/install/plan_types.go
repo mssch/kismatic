@@ -98,12 +98,52 @@ type Cluster struct {
 	Certificates CertsConfig
 	// The SSH configuration for the cluster nodes.
 	SSH SSHConfig
+	// Kubernetes API Server configuration.
+	APIServerOptions APIServerOptions `yaml:"kube_apiserver"`
+	// Kubernetes Controller Manager configuration.
+	KubeControllerManagerOptions KubeControllerManagerOptions `yaml:"kube_controller_manager"`
+	// Kubernetes Scheduler configuration.
+	KubeSchedulerOptions KubeSchedulerOptions `yaml:"kube_scheduler"`
+	// Kubernetes Proxy configuration.
+	KubeProxyOptions KubeProxyOptions `yaml:"kube_proxy"`
+	// Kubelet configuration applied to all nodes.
+	KubeletOptions KubeletOptions `yaml:"kubelet"`
+	// The CloudProvider configuration for the cluster.
+	CloudProvider CloudProvider `yaml:"cloud_provider"`
+}
+
+type APIServerOptions struct {
 	// Listing of option overrides that are to be applied to the Kubernetes
 	// API server configuration. This is an advanced feature that can prevent
 	// the API server from starting up if invalid configuration is provided.
-	APIServerOptions APIServerOptions `yaml:"kube_apiserver"`
-	// The CloudProvider configuration for the cluster.
-	CloudProvider CloudProvider `yaml:"cloud_provider"`
+	Overrides map[string]string `yaml:"option_overrides"`
+}
+
+type KubeControllerManagerOptions struct {
+	// Listing of option overrides that are to be applied to the Kubernetes
+	// Controller Manager configuration. This is an advanced feature that can prevent
+	// the Controller Manager from starting up if invalid configuration is provided.
+	Overrides map[string]string `yaml:"option_overrides"`
+}
+
+type KubeProxyOptions struct {
+	// Listing of option overrides that are to be applied to the Kubernetes
+	// Proxy configuration. This is an advanced feature that can prevent
+	// the Proxy from starting up if invalid configuration is provided.
+	Overrides map[string]string `yaml:"option_overrides"`
+}
+
+type KubeSchedulerOptions struct {
+	// Listing of option overrides that are to be applied to the Kubernetes
+	// Scheduler configuration. This is an advanced feature that can prevent
+	// the Scheduler from starting up if invalid configuration is provided.
+	Overrides map[string]string `yaml:"option_overrides"`
+}
+
+type KubeletOptions struct {
+	// Listing of option overrides that are to be applied to the Kubelet configurations.
+	// This is an advanced feature that can prevent the Kubelet from starting up if invalid configuration is provided.
+	Overrides map[string]string `yaml:"option_overrides"`
 }
 
 // NetworkConfig describes the cluster's networking configuration
@@ -407,6 +447,9 @@ type Node struct {
 	// only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence.
 	// It is recommended to use reverse-DNS notation to avoid collision with other labels.
 	Labels map[string]string
+	// Kubelet configuration applied to this node.
+	// If a node is repeated for multiple roles, the overrides cannot be different.
+	KubeletOptions KubeletOptions `yaml:"kubelet,omitempty"`
 }
 
 // Equal returns true of 2 nodes have the same host, IP and InternalIP

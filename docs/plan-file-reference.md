@@ -22,6 +22,15 @@
     * [ssh_key](#clustersshssh_key)
     * [ssh_port](#clustersshssh_port)
   * [kube_apiserver](#clusterkube_apiserver)
+    * [option_overrides](#clusterkube_apiserveroption_overrides)
+  * [kube_controller_manager](#clusterkube_controller_manager)
+    * [option_overrides](#clusterkube_controller_manageroption_overrides)
+  * [kube_scheduler](#clusterkube_scheduler)
+    * [option_overrides](#clusterkube_scheduleroption_overrides)
+  * [kube_proxy](#clusterkube_proxy)
+    * [option_overrides](#clusterkube_proxyoption_overrides)
+  * [kubelet](#clusterkubelet)
+    * [option_overrides](#clusterkubeletoption_overrides)
   * [cloud_provider](#clustercloud_provider)
     * [provider](#clustercloud_providerprovider)
     * [config](#clustercloud_providerconfig)
@@ -75,6 +84,8 @@
     * [ip](#etcdnodesip)
     * [internalip](#etcdnodesinternalip)
     * [labels](#etcdnodeslabels)
+    * [kubelet](#etcdnodeskubelet)
+      * [option_overrides](#etcdnodeskubeletoption_overrides)
 * [master](#master)
   * [expected_count](#masterexpected_count)
   * [load_balanced_fqdn](#masterload_balanced_fqdn)
@@ -84,6 +95,8 @@
     * [ip](#masternodesip)
     * [internalip](#masternodesinternalip)
     * [labels](#masternodeslabels)
+    * [kubelet](#masternodeskubelet)
+      * [option_overrides](#masternodeskubeletoption_overrides)
 * [worker](#worker)
   * [expected_count](#workerexpected_count)
   * [nodes](#workernodes)
@@ -91,6 +104,8 @@
     * [ip](#workernodesip)
     * [internalip](#workernodesinternalip)
     * [labels](#workernodeslabels)
+    * [kubelet](#workernodeskubelet)
+      * [option_overrides](#workernodeskubeletoption_overrides)
 * [ingress](#ingress)
   * [expected_count](#ingressexpected_count)
   * [nodes](#ingressnodes)
@@ -98,6 +113,8 @@
     * [ip](#ingressnodesip)
     * [internalip](#ingressnodesinternalip)
     * [labels](#ingressnodeslabels)
+    * [kubelet](#ingressnodeskubelet)
+      * [option_overrides](#ingressnodeskubeletoption_overrides)
 * [storage](#storage)
   * [expected_count](#storageexpected_count)
   * [nodes](#storagenodes)
@@ -105,6 +122,8 @@
     * [ip](#storagenodesip)
     * [internalip](#storagenodesinternalip)
     * [labels](#storagenodeslabels)
+    * [kubelet](#storagenodeskubelet)
+      * [option_overrides](#storagenodeskubeletoption_overrides)
 * [nfs](#nfs)
   * [nfs_volume](#nfsnfs_volume)
     * [nfs_host](#nfsnfs_volumenfs_host)
@@ -298,7 +317,73 @@
 
 ###  cluster.kube_apiserver
 
+ Kubernetes API Server configuration. 
+
+###  cluster.kube_apiserver.option_overrides
+
  Listing of option overrides that are to be applied to the Kubernetes API server configuration. This is an advanced feature that can prevent the API server from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  cluster.kube_controller_manager
+
+ Kubernetes Controller Manager configuration. 
+
+###  cluster.kube_controller_manager.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubernetes Controller Manager configuration. This is an advanced feature that can prevent the Controller Manager from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  cluster.kube_scheduler
+
+ Kubernetes Scheduler configuration. 
+
+###  cluster.kube_scheduler.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubernetes Scheduler configuration. This is an advanced feature that can prevent the Scheduler from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  cluster.kube_proxy
+
+ Kubernetes Proxy configuration. 
+
+###  cluster.kube_proxy.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubernetes Proxy configuration. This is an advanced feature that can prevent the Proxy from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  cluster.kubelet
+
+ Kubelet configuration applied to all nodes. 
+
+###  cluster.kubelet.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubelet configurations. This is an advanced feature that can prevent the Kubelet from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
 
 ###  cluster.cloud_provider
 
@@ -710,6 +795,20 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  etcd.nodes.kubelet
+
+ Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
+
+###  etcd.nodes.kubelet.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubelet configurations. This is an advanced feature that can prevent the Kubelet from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
 ##  master
 
  Master nodes of the cluster 
@@ -788,6 +887,20 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  master.nodes.kubelet
+
+ Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
+
+###  master.nodes.kubelet.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubelet configurations. This is an advanced feature that can prevent the Kubelet from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
 ##  worker
 
  Worker nodes of the cluster 
@@ -839,6 +952,20 @@
 ###  worker.nodes.labels
 
  Labels to add when installing the node in the cluster. If a node is defined under multiple roles, the labels for that node will be merged. If a label is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. It is recommended to use reverse-DNS notation to avoid collision with other labels. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  worker.nodes.kubelet
+
+ Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
+
+###  worker.nodes.kubelet.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubelet configurations. This is an advanced feature that can prevent the Kubelet from starting up if invalid configuration is provided. 
 
 | | |
 |----------|-----------------|
@@ -904,6 +1031,20 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  ingress.nodes.kubelet
+
+ Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
+
+###  ingress.nodes.kubelet.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubelet configurations. This is an advanced feature that can prevent the Kubelet from starting up if invalid configuration is provided. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
 ##  storage
 
  Storage nodes of the cluster. 
@@ -955,6 +1096,20 @@
 ###  storage.nodes.labels
 
  Labels to add when installing the node in the cluster. If a node is defined under multiple roles, the labels for that node will be merged. If a label is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. It is recommended to use reverse-DNS notation to avoid collision with other labels. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  storage.nodes.kubelet
+
+ Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
+
+###  storage.nodes.kubelet.option_overrides
+
+ Listing of option overrides that are to be applied to the Kubelet configurations. This is an advanced feature that can prevent the Kubelet from starting up if invalid configuration is provided. 
 
 | | |
 |----------|-----------------|

@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -144,7 +145,7 @@ func (p *Plan) validate() (bool, []error) {
 
 	v.validateWithErrPrefix("Docker", p.Docker)
 	v.validate(&p.AddOns)
-	v.validate(nodeList{Nodes: p.GetUniqueNodes()})
+	v.validate(nodeList{Nodes: p.getAllNodes()})
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
@@ -167,6 +168,10 @@ func (c *Cluster) validate() (bool, []error) {
 	v.validate(&c.Certificates)
 	v.validate(&c.SSH)
 	v.validate(&c.APIServerOptions)
+	v.validate(&c.KubeControllerManagerOptions)
+	v.validate(&c.KubeProxyOptions)
+	v.validate(&c.KubeSchedulerOptions)
+	v.validate(&c.KubeletOptions)
 	v.validate(&c.CloudProvider)
 
 	return v.valid()
@@ -334,32 +339,46 @@ type nodeList struct {
 func (nl nodeList) validate() (bool, []error) {
 	v := newValidator()
 	v.addError(validateNoDuplicateNodeInfo(nl.Nodes)...)
+	v.addError(validateKubeletOptionsDefinedOnce(nl.Nodes)...)
 	return v.valid()
 }
 
 func validateNoDuplicateNodeInfo(nodes []Node) []error {
 	errs := []error{}
-	hostnames := map[string]int{}
-	ips := map[string]int{}
-	internalIPs := map[string]int{}
-	for i, n := range nodes {
+	hostnames := map[string]string{}
+	ips := map[string]string{}
+	internalIPs := map[string]string{}
+	for _, n := range nodes {
 		// Validate all hostnames are unique
-		if _, ok := hostnames[n.Host]; ok && n.Host != "" {
+		if val, ok := hostnames[n.Host]; n.Host != "" && ok && val != n.HashCode() {
 			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same hostname %q", n.Host))
 		} else if n.Host != "" {
-			hostnames[n.Host] = i + 1
+			hostnames[n.Host] = n.HashCode()
 		}
 		// Validate all IPs are unique
-		if _, ok := ips[n.IP]; ok && n.IP != "" {
+		if val, ok := ips[n.IP]; n.IP != "" && ok && val != n.HashCode() {
 			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same IP %q", n.IP))
 		} else if n.IP != "" {
-			ips[n.IP] = i + 1
+			ips[n.IP] = n.HashCode()
 		}
 		// Validate all internal IPs are unique
-		if _, found := internalIPs[n.InternalIP]; found && n.InternalIP != "" {
+		if val, ok := internalIPs[n.InternalIP]; n.InternalIP != "" && ok && val != n.HashCode() {
 			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same internal IP %q", n.InternalIP))
 		} else if n.InternalIP != "" {
-			internalIPs[n.InternalIP] = i + 1
+			internalIPs[n.InternalIP] = n.HashCode()
+		}
+	}
+	return errs
+}
+
+func validateKubeletOptionsDefinedOnce(nodes []Node) []error {
+	errs := []error{}
+	seenNodes := map[string]map[string]string{}
+	for _, n := range nodes {
+		if val, ok := seenNodes[n.HashCode()]; ok && !reflect.DeepEqual(val, n.KubeletOptions.Overrides) {
+			errs = append(errs, fmt.Errorf("Cannot redefine kubelet options for node %q", n.Host))
+		} else {
+			seenNodes[n.HashCode()] = n.KubeletOptions.Overrides
 		}
 	}
 	return errs

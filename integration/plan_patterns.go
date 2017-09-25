@@ -60,6 +60,14 @@ const planAWSOverlay = `cluster:
     ssh_port: 22
   kube_apiserver:
     option_overrides: {}
+  kube_controller_manager:
+    option_overrides: {}
+  kube_scheduler:
+    option_overrides: {}
+  kube_proxy:
+    option_overrides: {}
+  kubelet:
+    option_overrides: {}
   cloud_provider:
     provider: {{.CloudProvider}}{{if .UseDirectLVM}}
 docker:
