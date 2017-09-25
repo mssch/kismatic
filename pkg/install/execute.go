@@ -35,6 +35,7 @@ type Executor interface {
 	AddWorker(*Plan, Node) (*Plan, error)
 	RunPlay(string, *Plan) error
 	AddVolume(*Plan, StorageVolume) error
+	DeleteVolume(*Plan, string) error
 	UpgradeEtcd2Nodes(plan Plan, nodesToUpgrade []ListableNode) error
 	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int) error
 	ValidateControlPlane(plan Plan) error
@@ -451,6 +452,27 @@ func (ae *ansibleExecutor) AddVolume(plan *Plan, volume StorageVolume) error {
 		explainer:      ae.defaultExplainer(),
 	}
 	util.PrintHeader(ae.stdout, "Add Persistent Storage Volume", '=')
+	return ae.execute(t)
+}
+
+func (ae *ansibleExecutor) DeleteVolume(plan *Plan, name string) error {
+	cc, err := ae.buildClusterCatalog(plan)
+	if err != nil {
+		return err
+	}
+	// Add storage related vars
+	cc.VolumeName = name
+	cc.VolumeMount = "/"
+
+	t := task{
+		name:           "delete-volume",
+		playbook:       "volume-delete.yaml",
+		plan:           *plan,
+		inventory:      buildInventoryFromPlan(plan),
+		clusterCatalog: *cc,
+		explainer:      ae.defaultExplainer(),
+	}
+	util.PrintHeader(ae.stdout, "Delete Persistent Storage Volume", '=')
 	return ae.execute(t)
 }
 
