@@ -64,7 +64,17 @@ aptly snapshot create kubernetes from mirror kubernetes
 aptly publish snapshot --passphrase dummy kubernetes
 
 ### Create snapshost of the Ubuntu repository
-gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32
+### Retry loop: Adding this gpg fails with networking blips on occasion. 
+n=0
+while true
+do
+  gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32 && break || true
+  n=$((n+1))
+  if [ $n -ge 3 ]; then exit 1; fi
+  echo "Retrying..."
+  sleep 5
+done
+
 aptly mirror create \
   -architectures=amd64 \
   -filter="bridge-utils|nfs-common|socat|libltdl7|python2.7|python-apt|ebtables|libaio1|libibverbs1|libpython2.7|librdmacm1|liburcu4|attr" \

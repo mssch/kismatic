@@ -41,3 +41,5 @@ deb $1 xenial main
 deb $1 kubernetes-xenial main
 deb $1 ubuntu-xenial main
 EOF
+
+apt-get update -y
