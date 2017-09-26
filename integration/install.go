@@ -31,7 +31,6 @@ func GetSSHKeyFile() (string, error) {
 type installOptions struct {
 	disablePackageInstallation bool
 	disconnectedInstallation   bool
-	disableRegistrySeeding     bool
 	dockerRegistryIP           string
 	dockerRegistryPort         int
 	dockerRegistryCAPath       string
@@ -82,7 +81,6 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 	plan := PlanAWS{
 		DisablePackageInstallation: installOpts.disablePackageInstallation,
 		DisconnectedInstallation:   installOpts.disconnectedInstallation,
-		DisableRegistrySeeding:     installOpts.disableRegistrySeeding,
 		Etcd:                   nodes.etcd,
 		Master:                 nodes.master,
 		Worker:                 nodes.worker,

@@ -16,7 +16,6 @@ type ClusterCatalog struct {
 	EnableModifyHosts         bool   `yaml:"modify_hosts_file"`
 	EnablePackageInstallation bool   `yaml:"allow_package_installation"`
 	DisconnectedInstallation  bool   `yaml:"disconnected_installation"`
-	SeedRegistry              bool   `yaml:"seed_registry"`
 	KuberangPath              string `yaml:"kuberang_path"`
 	LoadBalancedFQDN          string `yaml:"kubernetes_load_balanced_fqdn"`
 

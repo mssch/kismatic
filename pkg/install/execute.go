@@ -653,7 +653,6 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		EnablePackageInstallation: !p.Cluster.DisablePackageInstallation,
 		KuberangPath:              filepath.Join("kuberang", "linux", "amd64", "kuberang"),
 		DisconnectedInstallation:  p.Cluster.DisconnectedInstallation,
-		SeedRegistry:              !p.Cluster.DisableRegistrySeeding,
 		HTTPProxy:                 p.Cluster.Networking.HTTPProxy,
 		HTTPSProxy:                p.Cluster.Networking.HTTPSProxy,
 		TargetVersion:             KismaticVersion.String(),
