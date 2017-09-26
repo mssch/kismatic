@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apprenda/kismatic/pkg/validation"
+
 	"github.com/apprenda/kismatic/pkg/ssh"
 	"github.com/apprenda/kismatic/pkg/util"
 )
@@ -34,6 +36,14 @@ func ValidatePlan(p *Plan) (bool, []error) {
 func ValidateNode(node *Node) (bool, []error) {
 	v := newValidator()
 	v.validate(node)
+	return v.valid()
+}
+
+// ValidateNodes runs validation against the given node.
+// Validates if the details of the nodes are unique.
+func ValidateNodes(nodes []Node) (bool, []error) {
+	v := newValidator()
+	v.validate(nodeList{Nodes: nodes})
 	return v.valid()
 }
 
@@ -332,31 +342,36 @@ type nodeList struct {
 
 func (nl nodeList) validate() (bool, []error) {
 	v := newValidator()
+	v.addError(validateNoDuplicateNodeInfo(nl.Nodes)...)
+	return v.valid()
+}
+
+func validateNoDuplicateNodeInfo(nodes []Node) []error {
+	errs := []error{}
 	hostnames := map[string]int{}
 	ips := map[string]int{}
 	internalIPs := map[string]int{}
-	for i, n := range nl.Nodes {
+	for i, n := range nodes {
 		// Validate all hostnames are unique
 		if _, ok := hostnames[n.Host]; ok && n.Host != "" {
-			v.addError(fmt.Errorf("Two different nodes cannot have the same hostname %q", n.Host))
+			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same hostname %q", n.Host))
 		} else if n.Host != "" {
 			hostnames[n.Host] = i + 1
 		}
 		// Validate all IPs are unique
 		if _, ok := ips[n.IP]; ok && n.IP != "" {
-			v.addError(fmt.Errorf("Two different nodes cannot have the same IP %q", n.IP))
+			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same IP %q", n.IP))
 		} else if n.IP != "" {
 			ips[n.IP] = i + 1
 		}
 		// Validate all internal IPs are unique
 		if _, found := internalIPs[n.InternalIP]; found && n.InternalIP != "" {
-			v.addError(fmt.Errorf("Two different nodes cannot have the same internal IP %q", n.InternalIP))
+			errs = append(errs, fmt.Errorf("Two different nodes cannot have the same internal IP %q", n.InternalIP))
 		} else if n.InternalIP != "" {
 			internalIPs[n.InternalIP] = i + 1
 		}
 	}
-
-	return v.valid()
+	return errs
 }
 
 func (ng *NodeGroup) validate() (bool, []error) {
@@ -436,6 +451,20 @@ func (n *Node) validate() (bool, []error) {
 	}
 	if ip := net.ParseIP(n.InternalIP); n.InternalIP != "" && ip == nil {
 		v.addError(fmt.Errorf("Invalid InternalIP provided"))
+	}
+	// validate node labels don't start with 'kismatic/' as that is reserved
+	for key, val := range n.Labels {
+		if strings.HasPrefix(key, "kismatic/") {
+			v.addError(fmt.Errorf("Node label %q cannot start with 'kismatic/'", key))
+		}
+		errs := validation.IsQualifiedName(key)
+		for _, err := range errs {
+			v.addError(fmt.Errorf("Node label name %q is not valid %s", key, err))
+		}
+		errs = validation.IsValidLabelValue(val)
+		for _, err := range errs {
+			v.addError(fmt.Errorf("Node label %q is not valid %s", val, err))
+		}
 	}
 	return v.valid()
 }

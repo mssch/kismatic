@@ -46,6 +46,12 @@ func list(out io.Writer, opts *infoOpts) error {
 		return fmt.Errorf("error reading plan file: %v", err)
 	}
 
+	// Validate just the nodes
+	if ok, errs := install.ValidateNodes(plan.GetUniqueNodes()); !ok {
+		util.PrintValidationErrors(out, errs)
+		return fmt.Errorf("error validating nodes")
+	}
+
 	// Validate SSH connections
 	if ok, errs := install.ValidatePlanSSHConnections(plan); !ok {
 		util.PrintValidationErrors(out, errs)

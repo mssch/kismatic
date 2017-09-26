@@ -121,6 +121,8 @@ type ClusterCatalog struct {
 	HTTPProxy  string `yaml:"http_proxy"`
 	HTTPSProxy string `yaml:"https_proxy"`
 	NoProxy    string `yaml:"no_proxy"`
+
+	NodeLabels map[string][]string `yaml:"node_labels"`
 }
 
 type NFSVolume struct {

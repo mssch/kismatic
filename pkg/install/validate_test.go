@@ -1265,3 +1265,112 @@ func TestCloudProvider(t *testing.T) {
 		}
 	}
 }
+
+func TestNodeLabels(t *testing.T) {
+	tests := []struct {
+		n     Node
+		valid bool
+	}{
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"com.foo/bar": ""},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"com.foo/bar": "foobar"},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"com.foo/bar": "foobar", "com.foo/xyz": "xyz"},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"kismatic/foo": "bar"},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"com.foo/kismatic-version": "v1.0.0"},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"": "com.foo/worker"},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"": ""},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"node-type:test": "test"},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"com.foo/invalid": ":test"},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Labels: map[string]string{"node-type:test": ":test"},
+			},
+			valid: false,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.n.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}

@@ -412,6 +412,22 @@ type Node struct {
 	// The internal (or private) IP address of the node.
 	// If set, this IP will be used when configuring cluster components.
 	InternalIP string
+	// Labels to add when installing the node in the cluster.
+	// If a node is defined under multiple roles, the labels for that node will be merged.
+	// If a label is repeated for the same node,
+	// only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence.
+	// It is recommended to use reverse-DNS notation to avoid collision with other labels.
+	Labels map[string]string
+}
+
+// Equal returns true of 2 nodes have the same host, IP and InternalIP
+func (node Node) Equal(other Node) bool {
+	return node.Host == other.Host && node.IP == other.IP && node.InternalIP == other.InternalIP
+}
+
+// HashCode is crude implementation for the Node struct
+func (node Node) HashCode() string {
+	return fmt.Sprint(node.Host, node.IP, node.InternalIP)
 }
 
 type NFS struct {
@@ -458,15 +474,18 @@ type SSHConnection struct {
 
 // GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.
 // That is, if a node has multiple roles, it will only appear once in the list.
+// Nodes are considered unique if the combination of 'host', 'IP' or 'internalIP' is unique to all other nodes.
 func (p *Plan) GetUniqueNodes() []Node {
-	seenNodes := map[Node]bool{}
+	seenNodes := map[string]bool{}
 	nodes := []Node{}
 	for _, node := range p.getAllNodes() {
-		if seenNodes[node] {
+		// Cannot use the Node struct directly as it contains a map
+		key := node.HashCode()
+		if seenNodes[key] {
 			continue
 		}
 		nodes = append(nodes, node)
-		seenNodes[node] = true
+		seenNodes[key] = true
 	}
 	return nodes
 }

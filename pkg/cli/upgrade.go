@@ -349,13 +349,13 @@ func upgradeNodes(in io.Reader, out io.Writer, plan install.Plan, opts upgradeOp
 		// upgrade unsafe nodes when --ignoreSafetyChecks
 		if !opts.ignoreSafetyChecks {
 			for _, unsafe := range unsafeNodes {
-				if unsafe.Node == n.Node {
+				if unsafe.Node.Equal(n.Node) {
 					upgrade = false
 				}
 			}
 		}
 		for _, unready := range unreadyNodes {
-			if unready.Node == n.Node {
+			if unready.Node.Equal(n.Node) {
 				upgrade = false
 			}
 		}

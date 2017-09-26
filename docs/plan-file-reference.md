@@ -76,6 +76,7 @@
     * [host](#etcdnodeshost)
     * [ip](#etcdnodesip)
     * [internalip](#etcdnodesinternalip)
+    * [labels](#etcdnodeslabels)
 * [master](#master)
   * [expected_count](#masterexpected_count)
   * [load_balanced_fqdn](#masterload_balanced_fqdn)
@@ -84,24 +85,28 @@
     * [host](#masternodeshost)
     * [ip](#masternodesip)
     * [internalip](#masternodesinternalip)
+    * [labels](#masternodeslabels)
 * [worker](#worker)
   * [expected_count](#workerexpected_count)
   * [nodes](#workernodes)
     * [host](#workernodeshost)
     * [ip](#workernodesip)
     * [internalip](#workernodesinternalip)
+    * [labels](#workernodeslabels)
 * [ingress](#ingress)
   * [expected_count](#ingressexpected_count)
   * [nodes](#ingressnodes)
     * [host](#ingressnodeshost)
     * [ip](#ingressnodesip)
     * [internalip](#ingressnodesinternalip)
+    * [labels](#ingressnodeslabels)
 * [storage](#storage)
   * [expected_count](#storageexpected_count)
   * [nodes](#storagenodes)
     * [host](#storagenodeshost)
     * [ip](#storagenodesip)
     * [internalip](#storagenodesinternalip)
+    * [labels](#storagenodeslabels)
 * [nfs](#nfs)
   * [nfs_volume](#nfsnfs_volume)
     * [nfs_host](#nfsnfs_volumenfs_host)
@@ -717,6 +722,16 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  etcd.nodes.labels
+
+ Labels to add when installing the node in the cluster. If a node is defined under multiple roles, the labels for that node will be merged. If a label is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. It is recommended to use reverse-DNS notation to avoid collision with other labels. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
 ##  master
 
  Master nodes of the cluster 
@@ -785,6 +800,16 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  master.nodes.labels
+
+ Labels to add when installing the node in the cluster. If a node is defined under multiple roles, the labels for that node will be merged. If a label is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. It is recommended to use reverse-DNS notation to avoid collision with other labels. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
 ##  worker
 
  Worker nodes of the cluster 
@@ -830,6 +855,16 @@
 | | |
 |----------|-----------------|
 | **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  worker.nodes.labels
+
+ Labels to add when installing the node in the cluster. If a node is defined under multiple roles, the labels for that node will be merged. If a label is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. It is recommended to use reverse-DNS notation to avoid collision with other labels. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
 | **Required** |  No |
 | **Default** | ` ` | 
 
@@ -881,6 +916,16 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  ingress.nodes.labels
+
+ Labels to add when installing the node in the cluster. If a node is defined under multiple roles, the labels for that node will be merged. If a label is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. It is recommended to use reverse-DNS notation to avoid collision with other labels. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
 ##  storage
 
  Storage nodes of the cluster. 
@@ -926,6 +971,16 @@
 | | |
 |----------|-----------------|
 | **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  storage.nodes.labels
+
+ Labels to add when installing the node in the cluster. If a node is defined under multiple roles, the labels for that node will be merged. If a label is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. It is recommended to use reverse-DNS notation to avoid collision with other labels. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
 | **Required** |  No |
 | **Default** | ` ` | 
 

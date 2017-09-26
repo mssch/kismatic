@@ -9,9 +9,12 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-func addWorkerToCluster(newWorker NodeDeets, sshKey string) error {
+func addWorkerToCluster(newWorker NodeDeets, sshKey string, labels []string) error {
 	By("Adding new worker")
 	cmd := exec.Command("./kismatic", "install", "add-worker", "-f", "kismatic-testing.yaml", newWorker.Hostname, newWorker.PublicIP, newWorker.PrivateIP)
+	if len(labels) > 0 {
+		cmd.Args = append(cmd.Args, "--labels", strings.Join(labels, ","))
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {

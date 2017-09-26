@@ -168,12 +168,15 @@ etcd:
     # If the node has an IP for internal traffic, enter it here.
     # Otherwise leave blank.
     internalip: ""
+    labels: {}
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
 
 # Here you will identify all of the nodes that should play the master role.
 master:
@@ -190,9 +193,11 @@ master:
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
 
 # Here you will identify all of the nodes that will be workers.
 worker:
@@ -201,30 +206,37 @@ worker:
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
 ingress:
   expected_count: 2
   nodes:
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
 storage:
   expected_count: 2
   nodes:
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
   - host: ""
     ip: ""
     internalip: ""
+    labels: {}
 
 # A set of NFS volumes for use by on-cluster persistent workloads
 nfs:

@@ -234,7 +234,7 @@ var _ = Describe("kismatic", func() {
 
 						sub.It("should allow adding a worker node", func() error {
 							newWorker := allWorkers[len(allWorkers)-1]
-							return addWorkerToCluster(newWorker, sshKey)
+							return addWorkerToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"})
 						})
 
 						sub.It("should be able to deploy a workload with ingress", func() error {
@@ -256,6 +256,10 @@ var _ = Describe("kismatic", func() {
 
 						sub.It("should have tiller running", func() error {
 							return verifyTiller(nodes.master[0], sshKey)
+						})
+
+						sub.It("nodes should contain expected labels", func() error {
+							return containsLabels(nodes, sshKey)
 						})
 					})
 				})
@@ -284,7 +288,7 @@ var _ = Describe("kismatic", func() {
 
 						sub.It("should allow adding a worker node", func() error {
 							newWorker := allWorkers[len(allWorkers)-1]
-							return addWorkerToCluster(newWorker, sshKey)
+							return addWorkerToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"})
 						})
 
 						sub.It("should be able to deploy a workload with ingress", func() error {
@@ -306,6 +310,10 @@ var _ = Describe("kismatic", func() {
 
 						sub.It("should have tiller running", func() error {
 							return verifyTiller(nodes.master[0], sshKey)
+						})
+
+						sub.It("nodes should contain expected labels", func() error {
+							return containsLabels(nodes, sshKey)
 						})
 					})
 				})
@@ -334,7 +342,7 @@ var _ = Describe("kismatic", func() {
 
 		// 				sub.It("should allow adding a worker node", func() error {
 		// 					newWorker := allWorkers[len(allWorkers)-1]
-		// 					return addWorkerToCluster(newWorker, sshKey)
+		// 					return addWorkerToCluster(newWorker, sshKey, []string{})
 		// 				})
 
 		// 				// This test is flaky with contiv

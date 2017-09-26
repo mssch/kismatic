@@ -64,7 +64,7 @@ var _ = Describe("Upgrade", func() {
 
 						sub.It("should allow adding a worker node", func() error {
 							newWorker := allWorkers[len(allWorkers)-1]
-							return addWorkerToCluster(newWorker, sshKey)
+							return addWorkerToCluster(newWorker, sshKey, []string{})
 						})
 
 						sub.It("should be able to deploy a workload with ingress", func() error {
@@ -248,7 +248,7 @@ var _ = Describe("Upgrade", func() {
 
 						sub.It("should allow adding a worker node", func() error {
 							newWorker := allWorkers[len(allWorkers)-1]
-							return addWorkerToCluster(newWorker, sshKey)
+							return addWorkerToCluster(newWorker, sshKey, []string{})
 						})
 
 						sub.It("should be able to deploy a workload with ingress", func() error {

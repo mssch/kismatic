@@ -809,6 +809,18 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		}
 	}
 
+	// merge node labels
+	// cannot use inventory file because nodes share roles
+	// set it to a map[host][]key=value
+	cc.NodeLabels = make(map[string][]string)
+	for _, n := range p.getAllNodes() {
+		if val, ok := cc.NodeLabels[n.Host]; ok {
+			cc.NodeLabels[n.Host] = append(val, keyValueList(n.Labels)...)
+		} else {
+			cc.NodeLabels[n.Host] = keyValueList(n.Labels)
+		}
+	}
+
 	return &cc, nil
 }
 
@@ -954,4 +966,13 @@ func timestampWriter(out io.Writer) io.Writer {
 		}
 	}(pr)
 	return pw
+}
+
+// key=value slice
+func keyValueList(in map[string]string) []string {
+	pairs := make([]string, 0, len(in))
+	for k, v := range in {
+		pairs = append(pairs, fmt.Sprintf("%s=%s", k, v))
+	}
+	return pairs
 }
