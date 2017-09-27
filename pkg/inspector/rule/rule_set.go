@@ -186,10 +186,6 @@ const defaultRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
 - kind: PackageDependency
-  when: ["master","ubuntu", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-00
-- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
@@ -244,10 +240,6 @@ const defaultRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
 - kind: PackageDependency
-  when: ["master","centos", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
-- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
@@ -301,10 +293,6 @@ const defaultRuleSet = `---
   when: ["master","rhel"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
-- kind: PackageDependency
-  when: ["master","rhel", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["worker","rhel"]
   packageName: docker-engine
@@ -427,10 +415,6 @@ const upgradeRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
 - kind: PackageDependency
-  when: ["master","ubuntu", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-00
-- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
@@ -484,10 +468,6 @@ const upgradeRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
 - kind: PackageDependency
-  when: ["master","centos", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
-- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
@@ -540,10 +520,6 @@ const upgradeRuleSet = `---
   when: ["master","rhel"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
-- kind: PackageDependency
-  when: ["master","rhel", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
