@@ -17,10 +17,21 @@ func testAWSCloudProvider(node NodeDeets, sshKey string) error {
 		return fmt.Errorf("error creating exposing nginx deployment with a LoadBalancer: %v", err)
 	}
 
-	if err := retry.WithBackoff(func() error {
+	testErr := retry.WithBackoff(func() error {
 		return runViaSSH([]string{"curl `sudo kubectl get svc cloud-provider-nginx -o jsonpath={.status.loadBalancer.ingress[0].hostname}`"}, []NodeDeets{node}, sshKey, 1*time.Minute)
-	}, 8); err != nil {
-		return fmt.Errorf("error curling LoadBalancer endpoint: %v", err)
+	}, 8)
+
+	if testErr != nil {
+		// get info for diagnosing failure
+		runViaSSH([]string{"sudo kubectl describe svc cloud-provider-nginx"}, []NodeDeets{node}, sshKey, 1*time.Minute)
+	}
+
+	if err := runViaSSH([]string{`sudo kubectl delete svc cloud-provider-nginx`}, []NodeDeets{node}, sshKey, 1*time.Minute); err != nil {
+		return fmt.Errorf("error deleting service: %v", err)
+	}
+
+	if testErr != nil {
+		return fmt.Errorf("error curling LoadBalancer endpoint: %v", testErr)
 	}
 
 	return nil
