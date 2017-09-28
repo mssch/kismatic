@@ -272,6 +272,9 @@ volume_replica_count: 2
 volume_distribution_count: 1
 
 proxy_env:
+  HTTPS_PROXY: "{{ https_proxy }}"
   https_proxy: "{{ https_proxy }}"
+  HTTP_PROXY: "{{ http_proxy }}"
   http_proxy: "{{ http_proxy }}"
+  NO_PROXY: "{{ no_proxy }}"
   no_proxy: "{{ no_proxy }}"
