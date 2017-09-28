@@ -223,8 +223,13 @@ var _ = Describe("kismatic", func() {
 
 						// install cluster
 						installOpts := installOptions{
-							heapsterReplicas:    3,
-							heapsterInfluxdbPVC: "influxdb",
+							heapsterReplicas:             3,
+							heapsterInfluxdbPVC:          "influxdb",
+							kubeAPIServerOptions:         map[string]string{"v": "3"},
+							kubeControllerManagerOptions: map[string]string{"v": "3"},
+							kubeSchedulerOptions:         map[string]string{"v": "3"},
+							kubeProxyOptions:             map[string]string{"v": "3"},
+							kubeletOptions:               map[string]string{"v": "3"},
 						}
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
@@ -260,6 +265,10 @@ var _ = Describe("kismatic", func() {
 
 						sub.It("nodes should contain expected labels", func() error {
 							return containsLabels(nodes, sshKey)
+						})
+
+						sub.It("nodes should contain expected component overrides", func() error {
+							return ContainsOverrides(nodes, sshKey)
 						})
 					})
 				})

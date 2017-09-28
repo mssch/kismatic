@@ -5,36 +5,41 @@ type NFSVolume struct {
 }
 
 type PlanAWS struct {
-	Etcd                       []NodeDeets
-	Master                     []NodeDeets
-	Worker                     []NodeDeets
-	Ingress                    []NodeDeets
-	Storage                    []NodeDeets
-	NFSVolume                  []NFSVolume
-	MasterNodeFQDN             string
-	MasterNodeShortName        string
-	SSHUser                    string
-	SSHKeyFile                 string
-	HomeDirectory              string
-	DisablePackageInstallation bool
-	DisconnectedInstallation   bool
-	DockerRegistryIP           string
-	DockerRegistryPort         int
-	DockerRegistryCAPath       string
-	DockerRegistryUsername     string
-	DockerRegistryPassword     string
-	ModifyHostsFiles           bool
-	HTTPProxy                  string
-	HTTPSProxy                 string
-	NoProxy                    string
-	UseDirectLVM               bool
-	ServiceCIDR                string
-	DisableCNI                 bool
-	CNIProvider                string
-	DisableHelm                bool
-	HeapsterReplicas           int
-	HeapsterInfluxdbPVC        string
-	CloudProvider              string
+	Etcd                         []NodeDeets
+	Master                       []NodeDeets
+	Worker                       []NodeDeets
+	Ingress                      []NodeDeets
+	Storage                      []NodeDeets
+	NFSVolume                    []NFSVolume
+	MasterNodeFQDN               string
+	MasterNodeShortName          string
+	SSHUser                      string
+	SSHKeyFile                   string
+	HomeDirectory                string
+	DisablePackageInstallation   bool
+	DisconnectedInstallation     bool
+	DockerRegistryIP             string
+	DockerRegistryPort           int
+	DockerRegistryCAPath         string
+	DockerRegistryUsername       string
+	DockerRegistryPassword       string
+	ModifyHostsFiles             bool
+	HTTPProxy                    string
+	HTTPSProxy                   string
+	NoProxy                      string
+	UseDirectLVM                 bool
+	ServiceCIDR                  string
+	DisableCNI                   bool
+	CNIProvider                  string
+	DisableHelm                  bool
+	HeapsterReplicas             int
+	HeapsterInfluxdbPVC          string
+	CloudProvider                string
+	KubeAPIServerOptions         map[string]string
+	KubeControllerManagerOptions map[string]string
+	KubeSchedulerOptions         map[string]string
+	KubeProxyOptions             map[string]string
+	KubeletOptions               map[string]string
 }
 
 // Certain fields are still present for backwards compatabilty when testing upgrades
@@ -59,15 +64,15 @@ const planAWSOverlay = `cluster:
     ssh_key: {{.SSHKeyFile}}
     ssh_port: 22
   kube_apiserver:
-    option_overrides: {}
+    option_overrides: { {{ if .KubeAPIServerOptions }}{{ range $k, $v := .KubeAPIServerOptions }}"{{ $k }}": "{{ $v }}"{{end}}{{end}} }
   kube_controller_manager:
-    option_overrides: {}
-  kube_scheduler:
-    option_overrides: {}
-  kube_proxy:
-    option_overrides: {}
-  kubelet:
-    option_overrides: {}
+    option_overrides: { {{if .KubeControllerManagerOptions}}{{ range $k, $v := .KubeControllerManagerOptions }}"{{ $k }}": "{{ $v }}"{{end}}{{end}} }
+  kube_scheduler: 
+    option_overrides: { {{if .KubeSchedulerOptions}}{{ range $k, $v := .KubeSchedulerOptions }}"{{ $k }}": "{{ $v }}"{{end}}{{end}} }
+  kube_proxy: 
+    option_overrides: { {{if .KubeProxyOptions}}{{ range $k, $v := .KubeProxyOptions }}"{{ $k }}": "{{ $v }}"{{end}}{{end}} }
+  kubelet: 
+    option_overrides: { {{if .KubeletOptions}}{{ range $k, $v := .KubeletOptions }}"{{ $k }}": "{{ $v }}"{{end}}{{end}} }
   cloud_provider:
     provider: {{.CloudProvider}}{{if .UseDirectLVM}}
 docker:
