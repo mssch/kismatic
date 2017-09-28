@@ -383,14 +383,13 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
-								disablePackageInstallation: true,
-								disconnectedInstallation:   true,
-								modifyHostsFiles:           true,
-								dockerRegistryCAPath:       caFile,
-								dockerRegistryIP:           repoNode.PrivateIP,
-								dockerRegistryPort:         dockerRegistryPort,
-								dockerRegistryUsername:     "kismaticuser",
-								dockerRegistryPassword:     "kismaticpassword",
+								disconnectedInstallation: true,
+								modifyHostsFiles:         true,
+								dockerRegistryCAPath:     caFile,
+								dockerRegistryIP:         repoNode.PrivateIP,
+								dockerRegistryPort:       dockerRegistryPort,
+								dockerRegistryUsername:   "kismaticuser",
+								dockerRegistryPassword:   "kismaticpassword",
 							}
 							writePlanFile(buildPlan(nodes, opts, sshKey))
 
@@ -452,14 +451,13 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
-								disablePackageInstallation: true,
-								disconnectedInstallation:   true,
-								modifyHostsFiles:           true,
-								dockerRegistryCAPath:       caFile,
-								dockerRegistryIP:           repoNode.PrivateIP,
-								dockerRegistryPort:         dockerRegistryPort,
-								dockerRegistryUsername:     "kismaticuser",
-								dockerRegistryPassword:     "kismaticpassword",
+								disconnectedInstallation: true,
+								modifyHostsFiles:         true,
+								dockerRegistryCAPath:     caFile,
+								dockerRegistryIP:         repoNode.PrivateIP,
+								dockerRegistryPort:       dockerRegistryPort,
+								dockerRegistryUsername:   "kismaticuser",
+								dockerRegistryPassword:   "kismaticpassword",
 							}
 							writePlanFile(buildPlan(nodes, opts, sshKey))
 
