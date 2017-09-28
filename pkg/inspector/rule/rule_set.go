@@ -179,6 +179,10 @@ const defaultRuleSet = `---
   packageVersion: 1.7.4-00
 - kind: PackageDependency
   when: ["master","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","ubuntu"]
   packageName: kubectl
   packageVersion: 1.7.4-00
 - kind: PackageDependency
@@ -186,10 +190,6 @@ const defaultRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
 - kind: PackageDependency
-  when: ["master","ubuntu", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-00
-- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
@@ -206,13 +206,25 @@ const defaultRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["worker","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["ingress","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
+- kind: PackageDependency
+  when: ["storage","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: kubectl
@@ -237,6 +249,10 @@ const defaultRuleSet = `---
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","centos"]
   packageName: kubectl
   packageVersion: 1.7.4-0
 - kind: PackageDependency
@@ -244,10 +260,6 @@ const defaultRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
 - kind: PackageDependency
-  when: ["master","centos", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
-- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
@@ -264,13 +276,25 @@ const defaultRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","centos"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","centos"]
   packageName: kubectl
@@ -295,6 +319,10 @@ const defaultRuleSet = `---
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","rhel"]
   packageName: kubectl
   packageVersion: 1.7.4-0
 - kind: PackageDependency
@@ -302,10 +330,6 @@ const defaultRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
 - kind: PackageDependency
-  when: ["master","rhel", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
-- kind: PackageDependency
   when: ["worker","rhel"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
@@ -322,13 +346,25 @@ const defaultRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","rhel"]
   packageName: kubectl
@@ -420,6 +456,10 @@ const upgradeRuleSet = `---
   packageVersion: 1.7.4-00
 - kind: PackageDependency
   when: ["master","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","ubuntu"]
   packageName: kubectl
   packageVersion: 1.7.4-00
 - kind: PackageDependency
@@ -427,10 +467,6 @@ const upgradeRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
 - kind: PackageDependency
-  when: ["master","ubuntu", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-00
-- kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: docker-engine
   packageVersion: 1.12.6-0~ubuntu-xenial
@@ -447,13 +483,25 @@ const upgradeRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["worker","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["ingress","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
+- kind: PackageDependency
+  when: ["storage","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: kubectl
@@ -477,6 +525,10 @@ const upgradeRuleSet = `---
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","centos"]
   packageName: kubectl
   packageVersion: 1.7.4-0
 - kind: PackageDependency
@@ -484,10 +536,6 @@ const upgradeRuleSet = `---
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
 - kind: PackageDependency
-  when: ["master","centos", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
-- kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
@@ -504,13 +552,25 @@ const upgradeRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","centos"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","centos"]
   packageName: kubectl
@@ -534,16 +594,16 @@ const upgradeRuleSet = `---
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","rhel"]
   packageName: kubectl
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","rhel"]
   packageName: docker-engine
   packageVersion: 1.12.6-1.el7.centos
-- kind: PackageDependency
-  when: ["master","rhel", "disconnected"]
-  packageName: kismatic-offline
-  packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["worker","centos"]
   packageName: docker-engine
@@ -561,13 +621,25 @@ const upgradeRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","rhel"]
   packageName: kubectl

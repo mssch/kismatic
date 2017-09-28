@@ -7,10 +7,11 @@
     vars_files:
       - group_vars/all.yaml
       - group_vars/etcd-k8s.yaml
+      - group_vars/container_images.yaml
       
     pre_tasks:
       - name: download etcd image
-        command: docker pull {{ etcd_img }}
+        command: docker pull {{ images.etcd }}
         register: result
         until: result|succeeded
         retries: 2

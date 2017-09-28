@@ -67,7 +67,7 @@ spec:
           optional: true
       containers:
       - name: kubedns
-        image: "{{ kubedns_img }}"
+        image: "{{ images.kubedns }}"
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -128,7 +128,7 @@ spec:
         - name: kube-dns-config
           mountPath: /kube-dns-config
       - name: dnsmasq
-        image: "{{ kube_dnsmasq_img }}"
+        image: "{{ images.kube_dnsmasq }}"
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -166,7 +166,7 @@ spec:
         - name: kube-dns-config
           mountPath: /etc/k8s/dns/dnsmasq-nanny
       - name: sidecar
-        image: "{{ kubedns_sidecar_img }}"
+        image: "{{ images.kubedns_sidecar }}"
         livenessProbe:
           httpGet:
             path: /metrics

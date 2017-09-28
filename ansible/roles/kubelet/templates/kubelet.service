@@ -23,7 +23,7 @@ ExecStart=/usr/bin/kubelet \
   --kubeconfig={{ kubernetes_kubeconfig.kubelet }} \
   --node-labels=kismatic/host={{ inventory_hostname }},kismatic/cni-provider={{ cni.provider|default("")}}{% if 'ingress' in group_names%},kismatic/ingress=true{% endif %}{% if 'storage' in group_names%},kismatic/storage=true{% endif %}{% if 'master' in group_names %},node-role.kubernetes.io/master={% endif %} \
   --node-ip={{ internal_ipv4 }} \
-  --pod-infra-container-image={{ pause_img }} \
+  --pod-infra-container-image={{ images.pause }} \
   --pod-manifest-path={{ kubelet_pod_manifests_dir }} \
   --register-schedulable={{ kubernetes_schedulable }} \
   --serialize-image-pulls=false \

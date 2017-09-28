@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -54,6 +53,7 @@ EOF`
 
 	installDockerYum          = `sudo yum -y install docker-engine-1.12.6-1.el7.centos`
 	installKubeletYum         = `sudo yum -y install kubelet-1.7.4-0`
+	installNFSUtilsYum        = `sudo yum -y install nfs-utils` // required for the kubelet
 	installKubectlYum         = `sudo yum -y install kubectl-1.7.4-0`
 	installGlusterfsServerYum = `sudo yum -y install --nogpgcheck glusterfs-server-3.8.15-2.el7`
 
@@ -66,6 +66,7 @@ EOF`
 	addKubernetesRepoApt    = `sudo add-apt-repository "deb https://packages.cloud.google.com/apt/ kubernetes-xenial main"`
 	installKubeletApt       = `sudo apt-get -y install kubelet=1.7.4-00`
 	stopKubeletService      = `sudo systemctl stop kubelet`
+	installNFSCommonApt     = `sudo apt-get -y install nfs-common`
 	installKubectlApt       = `sudo apt-get -y install kubectl=1.7.4-00`
 
 	addGlusterRepoApt         = `sudo add-apt-repository -y ppa:gluster/glusterfs-3.8`
@@ -85,7 +86,7 @@ var ubuntu1604Prep = nodePrep{
 	CommandsToPrepDockerRepo:     []string{addDockerRepoKeyApt, addDockerRepoApt, updateAptGet},
 	CommandsToInstallDocker:      []string{installDockerApt},
 	CommandsToPrepKubernetesRepo: []string{addKubernetesRepoKeyApt, addKubernetesRepoApt, updateAptGet},
-	CommandsToInstallKubelet:     []string{installKubeletApt, stopKubeletService},
+	CommandsToInstallKubelet:     []string{installKubeletApt, installNFSCommonApt, stopKubeletService},
 	CommandsToInstallKubectl:     []string{installKubectlApt},
 	CommandsToInstallGlusterfs:   []string{addGlusterRepoApt, updateAptGet, installGlusterfsServerApt},
 }
@@ -94,7 +95,7 @@ var rhel7FamilyPrep = nodePrep{
 	CommandsToPrepDockerRepo:     []string{createDockerRepoFileYum, moveDockerRepoFileYum},
 	CommandsToInstallDocker:      []string{installDockerYum},
 	CommandsToPrepKubernetesRepo: []string{createKubernetesRepoFileYum, moveKubernetesRepoFileYum},
-	CommandsToInstallKubelet:     []string{installKubeletYum},
+	CommandsToInstallKubelet:     []string{installKubeletYum, installNFSUtilsYum},
 	CommandsToInstallKubectl:     []string{installKubectlYum},
 	CommandsToInstallGlusterfs:   []string{createGlusterRepoFileYum, moveGlusterRepoFileYum, installGlusterfsServerYum},
 }
@@ -148,16 +149,6 @@ func InstallKismaticPackages(nodes provisionedNodes, distro linuxDistro, sshKey 
 	}
 }
 
-// RemoveKismaticPackages by running the _packages-cleanup.yaml play
-func RemoveKismaticPackages() {
-	// Reuse existing play to remove packages
-	cmd := exec.Command("./kismatic", "install", "step", "-f", "kismatic-testing.yaml", "_packages-cleanup.yaml")
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	FailIfError(err)
-}
-
 func getPrepForDistro(distro linuxDistro) nodePrep {
 	switch distro {
 	case Ubuntu1604LTS:
@@ -169,7 +160,7 @@ func getPrepForDistro(distro linuxDistro) nodePrep {
 	}
 }
 
-func deployDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (string, error) {
+func deployAuthenticatedDockerRegistry(node NodeDeets, listeningPort int, sshKey string) (string, error) {
 	// Install Docker on the node
 	installDockerCmds := []string{
 		"sudo curl -sSL https://get.docker.com/ | sh",

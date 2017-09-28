@@ -92,11 +92,6 @@ type Cluster struct {
 	// registry are required for installation.
 	// +default=false
 	DisconnectedInstallation bool `yaml:"disconnected_installation"`
-	// Whether KET should seed an internal container image registry during the installation.
-	// This is mainly used during a disconnected installation. When set to true,
-	// the internal container image registry must be manually seeded before the installation.
-	// +default=false
-	DisableRegistrySeeding bool `yaml:"disable_registry_seeding"`
 	// The Networking configuration for the cluster.
 	Networking NetworkConfig
 	// The Certificates configuration for the cluster.

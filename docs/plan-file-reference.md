@@ -6,7 +6,6 @@
   * [disable_package_installation](#clusterdisable_package_installation)
   * [allow_package_installation _(deprecated)_](#clusterallow_package_installation-deprecated)
   * [disconnected_installation](#clusterdisconnected_installation)
-  * [disable_registry_seeding](#clusterdisable_registry_seeding)
   * [networking](#clusternetworking)
     * [type _(deprecated)_](#clusternetworkingtype-deprecated)
     * [pod_cidr_block](#clusternetworkingpod_cidr_block)
@@ -157,16 +156,6 @@
 ###  cluster.disconnected_installation
 
  Whether the cluster nodes are disconnected from the internet. When set to `true`, internal package repositories and a container image registry are required for installation. 
-
-| | |
-|----------|-----------------|
-| **Kind** |  bool |
-| **Required** |  No |
-| **Default** | `false` | 
-
-###  cluster.disable_registry_seeding
-
- Whether KET should seed an internal container image registry during the installation. This is mainly used during a disconnected installation. When set to true, the internal container image registry must be manually seeded before the installation. 
 
 | | |
 |----------|-----------------|

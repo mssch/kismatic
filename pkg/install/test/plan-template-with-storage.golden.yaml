@@ -12,10 +12,6 @@ cluster:
 
   # Set to true if you are performing a disconnected installation.
   disconnected_installation: false
-
-  # Set to true if you have seeded your registry with the required images for
-  # the installation.
-  disable_registry_seeding: false
   networking:
 
     # Kubernetes will assign pods IPs in this range. Do not use a range that is

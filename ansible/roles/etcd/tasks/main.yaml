@@ -38,7 +38,7 @@
 
   # test etcd
   - name: verify {{ etcd_name }} cluster health
-    command: "docker run --net=host --volume=/etc/ssl/certs/:/etc/ssl/certs/:ro --volume={{etcd_install_dir}}:{{etcd_install_dir}}:ro {{ etcd_img }} /usr/local/bin/etcdctl --endpoint='https://127.0.0.1:{{ etcd_service_client_port }}/' --cert-file={{ etcd_certificates.etcd_client }} --key-file={{ etcd_certificates.etcd_client_key }} --ca-file={{ etcd_certificates.ca }} cluster-health"
+    command: "docker run --net=host --volume=/etc/ssl/certs/:/etc/ssl/certs/:ro --volume={{etcd_install_dir}}:{{etcd_install_dir}}:ro {{ images.etcd }} /usr/local/bin/etcdctl --endpoint='https://127.0.0.1:{{ etcd_service_client_port }}/' --cert-file={{ etcd_certificates.etcd_client }} --key-file={{ etcd_certificates.etcd_client_key }} --ca-file={{ etcd_certificates.ca }} cluster-health"
     register: result
     until: result|success
     retries: 3

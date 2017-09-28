@@ -6,14 +6,15 @@
     become: yes
     vars_files:
       - group_vars/all.yaml
+      - group_vars/container_images.yaml
 
     pre_tasks:
       - name: download networking images
         command: docker pull {{ item }}
         with_items:
-          - "{{ calico_node_img }}"
-          - "{{ calico_cni_img }}"
-          - "{{ calico_ctl_img }}"
+          - "{{ images.calico_node }}"
+          - "{{ images.calico_cni }}"
+          - "{{ images.calico_ctl }}"
         register: result
         until: result|succeeded
         retries: 2
