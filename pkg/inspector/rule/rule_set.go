@@ -179,6 +179,10 @@ const defaultRuleSet = `---
   packageVersion: 1.7.4-00
 - kind: PackageDependency
   when: ["master","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","ubuntu"]
   packageName: kubectl
   packageVersion: 1.7.4-00
 - kind: PackageDependency
@@ -202,13 +206,25 @@ const defaultRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["worker","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["ingress","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
+- kind: PackageDependency
+  when: ["storage","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: kubectl
@@ -233,6 +249,10 @@ const defaultRuleSet = `---
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","centos"]
   packageName: kubectl
   packageVersion: 1.7.4-0
 - kind: PackageDependency
@@ -256,13 +276,25 @@ const defaultRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","centos"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","centos"]
   packageName: kubectl
@@ -287,6 +319,10 @@ const defaultRuleSet = `---
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","rhel"]
   packageName: kubectl
   packageVersion: 1.7.4-0
 - kind: PackageDependency
@@ -310,13 +346,25 @@ const defaultRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","rhel"]
   packageName: kubectl
@@ -408,6 +456,10 @@ const upgradeRuleSet = `---
   packageVersion: 1.7.4-00
 - kind: PackageDependency
   when: ["master","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","ubuntu"]
   packageName: kubectl
   packageVersion: 1.7.4-00
 - kind: PackageDependency
@@ -431,13 +483,25 @@ const upgradeRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["worker","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
 - kind: PackageDependency
+  when: ["ingress","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","ubuntu"]
   packageName: kubelet
   packageVersion: 1.7.4-00
+- kind: PackageDependency
+  when: ["storage","ubuntu"]
+  packageName: nfs-common
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","ubuntu"]
   packageName: kubectl
@@ -461,6 +525,10 @@ const upgradeRuleSet = `---
   packageVersion: 1.7.4-0
 - kind: PackageDependency
   when: ["master","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
+  when: ["master","centos"]
   packageName: kubectl
   packageVersion: 1.7.4-0
 - kind: PackageDependency
@@ -484,13 +552,25 @@ const upgradeRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","centos"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","centos"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","centos"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","centos"]
   packageName: kubectl
@@ -512,6 +592,10 @@ const upgradeRuleSet = `---
   when: ["master","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["master","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["master","rhel"]
   packageName: kubectl
@@ -537,13 +621,25 @@ const upgradeRuleSet = `---
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["worker","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["ingress","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
 - kind: PackageDependency
+  when: ["ingress","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
+- kind: PackageDependency
   when: ["storage","rhel"]
   packageName: kubelet
   packageVersion: 1.7.4-0
+- kind: PackageDependency
+  when: ["storage","rhel"]
+  packageName: nfs-utils
+  anyVersion: true
 - kind: PackageDependency
   when: ["worker","rhel"]
   packageName: kubectl

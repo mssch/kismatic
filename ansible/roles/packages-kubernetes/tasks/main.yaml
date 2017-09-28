@@ -1,5 +1,16 @@
 ---
   # YUM
+  - name: install nfs-utils yum package
+    yum:
+      name: nfs-utils
+      state: present
+    register: nfs_utils_installation_rpm
+    until: nfs_utils_installation_rpm|success
+    retries: 3
+    delay: 3
+    when: ansible_os_family == 'RedHat'
+    environment: "{{proxy_env}}"
+
   - name: install kubelet yum package
     yum:
       name: kubelet-{{ kubernetes_yum_version }}
@@ -24,6 +35,17 @@
     environment: "{{proxy_env}}"
 
   # DEB
+  - name: install nfs-common deb package
+    apt:
+      name: nfs-common
+      state: present
+    register: nfs_common_installation_deb
+    until: nfs_common_installation_deb|success
+    retries: 3
+    delay: 3
+    when: ansible_os_family == 'Debian'
+    environment: "{{proxy_env}}"
+
   - name: install kubelet deb package
     apt:
       name: kubelet={{ kubernetes_deb_version }}
