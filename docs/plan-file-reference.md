@@ -5,9 +5,7 @@
   * [admin_password](#clusteradmin_password)
   * [disable_package_installation](#clusterdisable_package_installation)
   * [allow_package_installation _(deprecated)_](#clusterallow_package_installation-deprecated)
-  * [package_repository_urls](#clusterpackage_repository_urls)
   * [disconnected_installation](#clusterdisconnected_installation)
-  * [disable_registry_seeding](#clusterdisable_registry_seeding)
   * [networking](#clusternetworking)
     * [type _(deprecated)_](#clusternetworkingtype-deprecated)
     * [pod_cidr_block](#clusternetworkingpod_cidr_block)
@@ -155,29 +153,9 @@
 | **Required** |  No |
 | **Default** | `false` | 
 
-###  cluster.package_repository_urls
-
- Comma-separated list of URLs of repositories that will be used for fetching the required packages. This is mainly used during a disconnected installation. In this scenario, internal package repositories that contain the KET packages and all their transitive dependencies should be listed here. Example: `http://rpm.apprenda.local:8080` 
-
-| | |
-|----------|-----------------|
-| **Kind** |  string |
-| **Required** |  No |
-| **Default** | ` ` | 
-
 ###  cluster.disconnected_installation
 
  Whether the cluster nodes are disconnected from the internet. When set to `true`, internal package repositories and a container image registry are required for installation. 
-
-| | |
-|----------|-----------------|
-| **Kind** |  bool |
-| **Required** |  No |
-| **Default** | `false` | 
-
-###  cluster.disable_registry_seeding
-
- Whether KET should seed an internal container image registry during the installation. This is mainly used during a disconnected installation. When set to true, the internal container image registry must be manually seeded before the installation. 
 
 | | |
 |----------|-----------------|

@@ -36,7 +36,7 @@ spec:
             path: "{{ kubernetes_certificates.etcd_client_key }}"
       containers:
         - name: calico-policy-controller
-          image: "{{ calico_kube_policy_controller_img }}"
+          image: "{{ images.calico_kube_policy_controller }}"
           volumeMounts:
             - mountPath: "{{ kubernetes_certificates.ca }}"
               name: "ca"

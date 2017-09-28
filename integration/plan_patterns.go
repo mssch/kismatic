@@ -18,7 +18,6 @@ type PlanAWS struct {
 	HomeDirectory              string
 	DisablePackageInstallation bool
 	DisconnectedInstallation   bool
-	DisableRegistrySeeding     bool
 	DockerRegistryIP           string
 	DockerRegistryPort         int
 	DockerRegistryCAPath       string
@@ -44,7 +43,6 @@ const planAWSOverlay = `cluster:
   admin_password: abbazabba
   disable_package_installation: {{.DisablePackageInstallation}}
   disconnected_installation: {{.DisconnectedInstallation}}
-  disable_registry_seeding: {{.DisableRegistrySeeding}}
   networking:
     type: overlay                                                 # Required for KET <= v1.4.1
     pod_cidr_block: 172.16.0.0/16

@@ -7,10 +7,17 @@
     vars_files:
       - group_vars/all.yaml
       - group_vars/etcd-k8s.yaml
+      - group_vars/container_images.yaml
       
+    pre_tasks:
+      - name: download etcd image
+        command: docker pull {{ images.etcd }}
+        register: result
+        until: result|succeeded
+        retries: 2
+        delay: 1
+
     roles:
-      - role: packages-etcd
-        when: allow_package_installation|bool == true
       - role: etcd-backup
         when: upgrading is defined and upgrading|bool == true
       - etcd

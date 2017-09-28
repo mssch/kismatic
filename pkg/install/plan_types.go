@@ -87,22 +87,11 @@ type Cluster struct {
 	// Use DisablePackageInstallation instead.
 	// +deprecated
 	AllowPackageInstallation *bool `yaml:"allow_package_installation,omitempty"`
-	// Comma-separated list of URLs of repositories that will
-	// be used for fetching the required packages. This is mainly used during a
-	// disconnected installation. In this scenario, internal package repositories
-	// that contain the KET packages and all their transitive dependencies should
-	// be listed here. Example: `http://rpm.apprenda.local:8080`
-	PackageRepoURLs string `yaml:"package_repository_urls"`
 	// Whether the cluster nodes are disconnected from the internet.
 	// When set to `true`, internal package repositories and a container image
 	// registry are required for installation.
 	// +default=false
 	DisconnectedInstallation bool `yaml:"disconnected_installation"`
-	// Whether KET should seed an internal container image registry during the installation.
-	// This is mainly used during a disconnected installation. When set to true,
-	// the internal container image registry must be manually seeded before the installation.
-	// +default=false
-	DisableRegistrySeeding bool `yaml:"disable_registry_seeding"`
 	// The Networking configuration for the cluster.
 	Networking NetworkConfig
 	// The Certificates configuration for the cluster.

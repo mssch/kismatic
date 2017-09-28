@@ -185,7 +185,7 @@ serial-integration-test: integration/vendor
 	ginkgo -v integration
 
 focus-integration-test: integration/vendor
-	ginkgo --focus $(FOCUS) -v integration
+	ginkgo --focus $(FOCUS) $(GINKGO_OPTS) -v integration
 
 docs/generate-kismatic-cli:
 	mkdir -p docs/kismatic-cli
@@ -215,6 +215,11 @@ trigger-ci-slow-tests:
 	@echo Triggering build with slow tests
 	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"     \
 		-d '{"build_parameters": {"RUN_SLOW_TESTS": "true"}}'                         \
+		$(CIRCLE_ENDPOINT)
+trigger-ci-focused-tests:
+	@echo Triggering focused test
+	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"     \
+		-d "{\"build_parameters\": {\"FOCUS\": \"$(FOCUS)\"}}"                         \
 		$(CIRCLE_ENDPOINT)
 
 FORCE:
