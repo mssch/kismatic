@@ -20,10 +20,7 @@ KET operational tools include:
    * Cluster health and validation utility for assuring that software and network configurations of cluster nodes are correct when installing Kubernetes.
 3. [`Kuberang`](https://github.com/apprenda/kuberang)
    * Cluster build verification to ensure networking and scaling work as intended. This tool is used to smoke-test a newly built cluster.
-4. [Kismatic RPM & DEB Packages](docs/packages.md)
-   * Packages for installing Kubernetes and its dependencies, focused on specific roles in an HA cluster.
-   * With these packages installed on a local repo, it is possible to use Kismatic to install Kubernetes on nodes that do not have access to the public internet.
-5. [`Kismatic Provision`](https://github.com/apprenda/kismatic-provision)
+4. [`Kismatic Provision`](https://github.com/apprenda/kismatic-provision)
    * Quickly provision infrastructure on public clouds such as AWS and Packet. Makes building demo and development clusters a 2-step process.
 
 ## Components
@@ -47,9 +44,11 @@ KET operational tools include:
 
 # Usage Documentation
 
+[Full Documentation](docs/README.md) -- Index of all the documentation
+
 [Installation Overview](docs/install.md) -- Instructions on using KET to install a Kubernetes cluster.
 
-[Upgrade a Kubernetes cluster](docs/upgrade.md) -- Instructions on using KET to upgrade your Kubernetes cluster.
+[Upgrading Your Cluster](docs/upgrade.md) -- Instructions on using KET to upgrade your Kubernetes cluster.
 
 [Plan File Reference](docs/plan-file-reference.md) -- Reference documentaion for the KET plan file.
 
@@ -58,8 +57,6 @@ KET operational tools include:
 [CNI Providers](docs/networking.md) -- Information about the supported CNI providers by KET.
 
 [Add Ons](docs/add_ons.md) -- Information about the Add-Ons supported by KET.
-
-[Cert Generation](docs/certificates.md) -- Information on how KET handles certificates.
 
 [Kismatic CLI](https://github.com/apprenda/kismatic/tree/master/docs/kismatic-cli) -- Dynamically generated documentation for the Kismatic CLI.
 

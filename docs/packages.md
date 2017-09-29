@@ -1,4 +1,4 @@
-# Kismatic packages
+# Software Packages
 
 Starting with KET v1.6, the tool installs the "official" packages from Kubernetes and Docker. For any cluster built with a previous version of KET, the packages will be upgraded to use the new repos during the regular upgrade process and should have no impact on the users. 
 

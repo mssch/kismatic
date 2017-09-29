@@ -1,4 +1,4 @@
-## Plan
+## Planning Your Cluster
 
 To get started with Kubernetes quickly, you can use Kismatic to stand up a small cluster in AWS or virtualized on a personal computer.
 

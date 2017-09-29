@@ -1,4 +1,4 @@
-# Provision
+# Provisioning Machines
 
 ## <a name="get"></a>Get the installer
 
