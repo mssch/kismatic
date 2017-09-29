@@ -29,24 +29,29 @@ func GetSSHKeyFile() (string, error) {
 }
 
 type installOptions struct {
-	disablePackageInstallation bool
-	disconnectedInstallation   bool
-	dockerRegistryIP           string
-	dockerRegistryPort         int
-	dockerRegistryCAPath       string
-	dockerRegistryUsername     string
-	dockerRegistryPassword     string
-	modifyHostsFiles           bool
-	httpProxy                  string
-	httpsProxy                 string
-	noProxy                    string
-	useDirectLVM               bool
-	serviceCIDR                string
-	disableCNI                 bool
-	cniProvider                string
-	heapsterReplicas           int
-	heapsterInfluxdbPVC        string
-	cloudProvider              string
+	disablePackageInstallation   bool
+	disconnectedInstallation     bool
+	dockerRegistryIP             string
+	dockerRegistryPort           int
+	dockerRegistryCAPath         string
+	dockerRegistryUsername       string
+	dockerRegistryPassword       string
+	modifyHostsFiles             bool
+	httpProxy                    string
+	httpsProxy                   string
+	noProxy                      string
+	useDirectLVM                 bool
+	serviceCIDR                  string
+	disableCNI                   bool
+	cniProvider                  string
+	heapsterReplicas             int
+	heapsterInfluxdbPVC          string
+	cloudProvider                string
+	kubeAPIServerOptions         map[string]string
+	kubeControllerManagerOptions map[string]string
+	kubeSchedulerOptions         map[string]string
+	kubeProxyOptions             map[string]string
+	kubeletOptions               map[string]string
 }
 
 func installKismaticMini(node NodeDeets, sshKey string) error {
@@ -81,32 +86,37 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 	plan := PlanAWS{
 		DisablePackageInstallation: installOpts.disablePackageInstallation,
 		DisconnectedInstallation:   installOpts.disconnectedInstallation,
-		Etcd:                   nodes.etcd,
-		Master:                 nodes.master,
-		Worker:                 nodes.worker,
-		Ingress:                nodes.ingress,
-		Storage:                nodes.storage,
-		MasterNodeFQDN:         masterDNS,
-		MasterNodeShortName:    masterDNS,
-		SSHKeyFile:             sshKey,
-		SSHUser:                sshUser,
-		DockerRegistryCAPath:   installOpts.dockerRegistryCAPath,
-		DockerRegistryIP:       installOpts.dockerRegistryIP,
-		DockerRegistryPort:     installOpts.dockerRegistryPort,
-		DockerRegistryUsername: installOpts.dockerRegistryUsername,
-		DockerRegistryPassword: installOpts.dockerRegistryPassword,
-		ModifyHostsFiles:       installOpts.modifyHostsFiles,
-		HTTPProxy:              installOpts.httpProxy,
-		HTTPSProxy:             installOpts.httpsProxy,
-		NoProxy:                installOpts.noProxy,
-		UseDirectLVM:           installOpts.useDirectLVM,
-		ServiceCIDR:            installOpts.serviceCIDR,
-		DisableCNI:             installOpts.disableCNI,
-		CNIProvider:            installOpts.cniProvider,
-		DisableHelm:            disableHelm,
-		HeapsterReplicas:       installOpts.heapsterReplicas,
-		HeapsterInfluxdbPVC:    installOpts.heapsterInfluxdbPVC,
-		CloudProvider:          installOpts.cloudProvider,
+		Etcd:                         nodes.etcd,
+		Master:                       nodes.master,
+		Worker:                       nodes.worker,
+		Ingress:                      nodes.ingress,
+		Storage:                      nodes.storage,
+		MasterNodeFQDN:               masterDNS,
+		MasterNodeShortName:          masterDNS,
+		SSHKeyFile:                   sshKey,
+		SSHUser:                      sshUser,
+		DockerRegistryCAPath:         installOpts.dockerRegistryCAPath,
+		DockerRegistryIP:             installOpts.dockerRegistryIP,
+		DockerRegistryPort:           installOpts.dockerRegistryPort,
+		DockerRegistryUsername:       installOpts.dockerRegistryUsername,
+		DockerRegistryPassword:       installOpts.dockerRegistryPassword,
+		ModifyHostsFiles:             installOpts.modifyHostsFiles,
+		HTTPProxy:                    installOpts.httpProxy,
+		HTTPSProxy:                   installOpts.httpsProxy,
+		NoProxy:                      installOpts.noProxy,
+		UseDirectLVM:                 installOpts.useDirectLVM,
+		ServiceCIDR:                  installOpts.serviceCIDR,
+		DisableCNI:                   installOpts.disableCNI,
+		CNIProvider:                  installOpts.cniProvider,
+		DisableHelm:                  disableHelm,
+		HeapsterReplicas:             installOpts.heapsterReplicas,
+		HeapsterInfluxdbPVC:          installOpts.heapsterInfluxdbPVC,
+		CloudProvider:                installOpts.cloudProvider,
+		KubeAPIServerOptions:         installOpts.kubeAPIServerOptions,
+		KubeControllerManagerOptions: installOpts.kubeControllerManagerOptions,
+		KubeSchedulerOptions:         installOpts.kubeSchedulerOptions,
+		KubeProxyOptions:             installOpts.kubeProxyOptions,
+		KubeletOptions:               installOpts.kubeletOptions,
 	}
 	return plan
 }

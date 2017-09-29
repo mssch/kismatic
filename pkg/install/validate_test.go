@@ -750,6 +750,21 @@ func TestValidateNodeListDuplicate(t *testing.T) {
 						IP:   "10.0.0.1",
 					},
 					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+					},
+					{
 						Host: "host2",
 						IP:   "10.0.0.2",
 					},
@@ -1311,6 +1326,146 @@ func TestNodeLabels(t *testing.T) {
 	}
 	for i, test := range tests {
 		ok, _ := test.n.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}
+
+func TestNodeKubeletOptions(t *testing.T) {
+	tests := []struct {
+		nl    nodeList
+		valid bool
+	}{
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "2",
+							},
+						},
+					},
+					{
+						Host: "host2",
+						IP:   "10.0.0.2",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "2",
+							},
+						},
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "2",
+							},
+						},
+					},
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "2",
+							},
+						},
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "2",
+							},
+						},
+					},
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"foo": "bar",
+							},
+						},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "2",
+							},
+						},
+					},
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "3",
+							},
+						},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			nl: nodeList{
+				[]Node{
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v": "2",
+							},
+						},
+					},
+					{
+						Host: "host1",
+						IP:   "10.0.0.1",
+						KubeletOptions: KubeletOptions{
+							Overrides: map[string]string{
+								"v":   "2",
+								"foo": "bar",
+							},
+						},
+					},
+				},
+			},
+			valid: false,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.nl.validate()
 		if ok != test.valid {
 			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
 		}

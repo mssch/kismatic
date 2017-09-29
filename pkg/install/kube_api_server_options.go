@@ -5,14 +5,12 @@ import (
 	"strings"
 )
 
-type APIServerOptions struct {
-	Overrides map[string]string `yaml:"option_overrides"`
-}
-
-var protectedOptions = []string{
+var kubeAPIServerProtectedOptions = []string{
 	"advertise-address",
 	"apiserver-count",
 	"client-ca-file",
+	"cloud-provider",
+	"cloud-config",
 	"etcd-cafile",
 	"etcd-certfile",
 	"etcd-keyfile",
@@ -28,7 +26,7 @@ var protectedOptions = []string{
 func (options *APIServerOptions) validate() (bool, []error) {
 	v := newValidator()
 	overrides := make([]string, 0)
-	for _, protectedOption := range protectedOptions {
+	for _, protectedOption := range kubeAPIServerProtectedOptions {
 		_, found := options.Overrides[protectedOption]
 		if found {
 			overrides = append(overrides, protectedOption)
@@ -36,7 +34,7 @@ func (options *APIServerOptions) validate() (bool, []error) {
 	}
 
 	if len(overrides) > 0 {
-		v.addError(fmt.Errorf("Kube ApiServer Option(s) [%v] should not be overridden", strings.Join(overrides, ", ")))
+		v.addError(fmt.Errorf("Kube ApiServer Option(s) [%v] cannot be overridden", strings.Join(overrides, ", ")))
 	}
 
 	return v.valid()

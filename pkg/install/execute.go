@@ -643,20 +643,24 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	}
 
 	cc := ansible.ClusterCatalog{
-		ClusterName:               p.Cluster.Name,
-		AdminPassword:             p.Cluster.AdminPassword,
-		TLSDirectory:              tlsDir,
-		ServicesCIDR:              p.Cluster.Networking.ServiceCIDRBlock,
-		PodCIDR:                   p.Cluster.Networking.PodCIDRBlock,
-		DNSServiceIP:              dnsIP,
-		EnableModifyHosts:         p.Cluster.Networking.UpdateHostsFiles,
-		EnablePackageInstallation: !p.Cluster.DisablePackageInstallation,
-		KuberangPath:              filepath.Join("kuberang", "linux", "amd64", "kuberang"),
-		DisconnectedInstallation:  p.Cluster.DisconnectedInstallation,
-		HTTPProxy:                 p.Cluster.Networking.HTTPProxy,
-		HTTPSProxy:                p.Cluster.Networking.HTTPSProxy,
-		TargetVersion:             KismaticVersion.String(),
-		APIServerOptions:          p.Cluster.APIServerOptions.Overrides,
+		ClusterName:                  p.Cluster.Name,
+		AdminPassword:                p.Cluster.AdminPassword,
+		TLSDirectory:                 tlsDir,
+		ServicesCIDR:                 p.Cluster.Networking.ServiceCIDRBlock,
+		PodCIDR:                      p.Cluster.Networking.PodCIDRBlock,
+		DNSServiceIP:                 dnsIP,
+		EnableModifyHosts:            p.Cluster.Networking.UpdateHostsFiles,
+		EnablePackageInstallation:    !p.Cluster.DisablePackageInstallation,
+		KuberangPath:                 filepath.Join("kuberang", "linux", "amd64", "kuberang"),
+		DisconnectedInstallation:     p.Cluster.DisconnectedInstallation,
+		HTTPProxy:                    p.Cluster.Networking.HTTPProxy,
+		HTTPSProxy:                   p.Cluster.Networking.HTTPSProxy,
+		TargetVersion:                KismaticVersion.String(),
+		APIServerOptions:             p.Cluster.APIServerOptions.Overrides,
+		KubeControllerManagerOptions: p.Cluster.KubeControllerManagerOptions.Overrides,
+		KubeSchedulerOptions:         p.Cluster.KubeSchedulerOptions.Overrides,
+		KubeProxyOptions:             p.Cluster.KubeProxyOptions.Overrides,
+		KubeletOptions:               p.Cluster.KubeletOptions.Overrides,
 	}
 
 	cc.NoProxy = p.AllAddresses()
@@ -769,6 +773,12 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		} else {
 			cc.NodeLabels[n.Host] = keyValueList(n.Labels)
 		}
+	}
+
+	// setup kubelet node overrides
+	cc.KubeletNodeOptions = make(map[string]map[string]string)
+	for _, n := range p.GetUniqueNodes() {
+		cc.KubeletNodeOptions[n.Host] = n.KubeletOptions.Overrides
 	}
 
 	return &cc, nil

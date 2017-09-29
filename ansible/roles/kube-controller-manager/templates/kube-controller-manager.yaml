@@ -18,18 +18,12 @@ spec:
     imagePullPolicy: IfNotPresent
     command:
       - kube-controller-manager
-      - --allocate-node-cidrs=true
-      - --cloud-provider={{ cloud_provider }}
-      - --cloud-config={{ cloud_config }}
-      - --cluster-cidr={{ kubernetes_pods_cidr }}
-      - --cluster-name={{ kubernetes_cluster_name }}
-      - --kubeconfig={{ kubernetes_kubeconfig.controller_manager }}
-      - --leader-elect=true
-      - --root-ca-file={{ kubernetes_certificates.ca }}
-      - --service-account-private-key-file={{ kubernetes_certificates.service_account_key }}
-      - --service-cluster-ip-range={{ kubernetes_services_cidr }}
-      - --use-service-account-credentials=true
-      - --v=2
+{% set combined_options = kube_controller_manager_option_defaults | combine(kube_controller_manager_option_overrides) -%}
+{% for option in combined_options | dictsort %}
+{% if option[1] is defined and option[1] | string | length > 0 %}
+      - --{{ option[0] }}={{ option[1] }}
+{% endif %}
+{% endfor %}
     livenessProbe:
       httpGet:
         host: 127.0.0.1

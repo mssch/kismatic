@@ -19,7 +19,11 @@ type ClusterCatalog struct {
 	KuberangPath              string `yaml:"kuberang_path"`
 	LoadBalancedFQDN          string `yaml:"kubernetes_load_balanced_fqdn"`
 
-	APIServerOptions map[string]string `yaml:"kubernetes_api_server_option_overrides"`
+	APIServerOptions             map[string]string `yaml:"kubernetes_api_server_option_overrides"`
+	KubeControllerManagerOptions map[string]string `yaml:"kube_controller_manager_option_overrides"`
+	KubeSchedulerOptions         map[string]string `yaml:"kube_scheduler_option_overrides"`
+	KubeProxyOptions             map[string]string `yaml:"kube_proxy_option_overrides"`
+	KubeletOptions               map[string]string `yaml:"kubelet_overrides"`
 
 	ConfigureDockerWithPrivateRegistry bool   `yaml:"configure_docker_with_private_registry"`
 	DockerRegistryCAPath               string `yaml:"docker_certificates_ca_path"`
@@ -120,7 +124,8 @@ type ClusterCatalog struct {
 	HTTPSProxy string `yaml:"https_proxy"`
 	NoProxy    string `yaml:"no_proxy"`
 
-	NodeLabels map[string][]string `yaml:"node_labels"`
+	NodeLabels         map[string][]string          `yaml:"node_labels"`
+	KubeletNodeOptions map[string]map[string]string `yaml:"kubelet_node_overrides"`
 }
 
 type NFSVolume struct {
