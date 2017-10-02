@@ -160,15 +160,25 @@ func (fp *FilePlanner) Write(p *Plan) error {
 
 	// the stack keeps track of the object we are in
 	// for example, when we are inside cluster.networking, looking at the key 'foo'
-	//  the stack will have [cluster, networking, foo]
+	// the stack will have [cluster, networking, foo]
 	s := newStack()
 	scanner := bufio.NewScanner(bytes.NewReader(bytez))
 	prevIndent := -1
+	addNewLineBeforeComment := true
 	for scanner.Scan() {
 		text := scanner.Text()
 		matched := yamlKeyRE.FindStringSubmatch(text)
 		if matched != nil && len(matched) > 1 {
 			indent := strings.Count(matched[0], " ") / 2
+
+			// Add a new line if we are leaving a major indentation block
+			// (leaving a struct)..
+			if indent < prevIndent {
+				f.WriteString("\n")
+				// suppress the new line that would be added if this
+				// field has a comment
+				addNewLineBeforeComment = false
+			}
 			if indent <= prevIndent {
 				for i := 0; i <= (prevIndent - indent); i++ {
 					// Pop from the stack when we have left an object
@@ -183,10 +193,11 @@ func (fp *FilePlanner) Write(p *Plan) error {
 
 			// Full key match (e.g. "cluster.networking.pod_cidr")
 			if thiscomment, ok := oneTimeComments[strings.Join(s.s, ".")]; ok {
-				if _, err := f.WriteString(getCommentedLine(text, thiscomment)); err != nil {
+				if _, err := f.WriteString(getCommentedLine(text, thiscomment, addNewLineBeforeComment)); err != nil {
 					return err
 				}
 				delete(oneTimeComments, matched[1])
+				addNewLineBeforeComment = true
 				continue
 			}
 		}
@@ -194,15 +205,18 @@ func (fp *FilePlanner) Write(p *Plan) error {
 		if _, err := f.WriteString(text + "\n"); err != nil {
 			return err
 		}
+		addNewLineBeforeComment = true
 	}
 
 	return nil
 }
 
-func getCommentedLine(line string, commentLines []string) string {
+func getCommentedLine(line string, commentLines []string, addNewLine bool) string {
 	var b bytes.Buffer
 	// Print out a new line before each comment block
-	b.WriteString("\n")
+	if addNewLine {
+		b.WriteString("\n")
+	}
 	// Print out the comment lines
 	for _, c := range commentLines {
 		// Indent the comment to the same level as the field we are commenting

@@ -59,12 +59,16 @@ cluster:
   # Override configuration of Kubernetes components.
   kube_apiserver:
     option_overrides: {}
+
   kube_controller_manager:
     option_overrides: {}
+
   kube_scheduler:
     option_overrides: {}
+
   kube_proxy:
     option_overrides: {}
+
   kubelet:
     option_overrides: {}
 
@@ -134,8 +138,10 @@ add_ons:
 
         # Options: 'warning','info','debug'.
         log_level: info
+
   dns:
     disable: false
+
   heapster:
     disable: false
     options:
@@ -149,14 +155,17 @@ add_ons:
         # Specify the sink to store heapster data. Defaults to an influxdb pod
         # running on the cluster.
         sink: influxdb:http://heapster-influxdb.kube-system.svc:8086
+
       influxdb:
 
         # Provide the name of the persistent volume claim that you will create
         # after installation. If not specified, the data will be stored in
         # ephemeral storage.
         pvc_name: ""
+
   dashboard:
     disable: false
+
   package_manager:
     disable: false
 
@@ -175,10 +184,12 @@ etcd:
     ip: ""
     internalip: ""
     labels: {}
+
   - host: ""
     ip: ""
     internalip: ""
     labels: {}
+
   - host: ""
     ip: ""
     internalip: ""
@@ -200,6 +211,7 @@ master:
     ip: ""
     internalip: ""
     labels: {}
+
   - host: ""
     ip: ""
     internalip: ""
@@ -213,10 +225,12 @@ worker:
     ip: ""
     internalip: ""
     labels: {}
+
   - host: ""
     ip: ""
     internalip: ""
     labels: {}
+
   - host: ""
     ip: ""
     internalip: ""
@@ -230,6 +244,7 @@ ingress:
     ip: ""
     internalip: ""
     labels: {}
+
   - host: ""
     ip: ""
     internalip: ""
