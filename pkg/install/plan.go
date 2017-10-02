@@ -189,14 +189,6 @@ func (fp *FilePlanner) Write(p *Plan) error {
 				delete(oneTimeComments, matched[1])
 				continue
 			}
-			// Partial key match (e.g. "pod_cidr")
-			if thiscomment, ok := oneTimeComments[matched[1]]; ok {
-				if _, err := f.WriteString(getCommentedLine(text, thiscomment)); err != nil {
-					return err
-				}
-				delete(oneTimeComments, matched[1])
-				continue
-			}
 		}
 		// we don't want to comment this line... just print it out
 		if _, err := f.WriteString(text + "\n"); err != nil {
@@ -385,47 +377,55 @@ func generateAlphaNumericPassword() (string, error) {
 // in the plan file. The value of the map contains the comment, split into
 // separate lines.
 var commentMap = map[string][]string{
-	"cluster.admin_password":                []string{"This password is used to login to the Kubernetes Dashboard and can also be", "used for administration without a security certificate."},
-	"cluster.disable_package_installation":  []string{"When true, installation will not occur if any node is missing the correct", "deb/rpm packages. When false, the installer will attempt to install missing", "packages for you."},
-	"cluster.disconnected_installation":     []string{"Set to true if you are performing a disconnected installation."},
-	"cluster.networking.pod_cidr_block":     []string{"Kubernetes will assign pods IPs in this range. Do not use a range that is", "already in use on your local network!"},
-	"cluster.networking.service_cidr_block": []string{"Kubernetes will assign services IPs in this range. Do not use a range", "that is already in use by your local network or pod network!"},
-	"cluster.networking.update_hosts_files": []string{"When true, the installer will add entries for all nodes to other nodes'", "hosts files. Use when you don't have access to DNS."},
-	"cluster.networking.http_proxy":         []string{"Set the proxy server to use for HTTP connections."},
-	"cluster.networking.https_proxy":        []string{"Set the proxy server to use for HTTPs connections."},
-	"cluster.networking.no_proxy":           []string{"List of host names and/or IPs that shouldn't go through any proxy.", "If set to an asterisk '*' only, it matches all hosts.", "All nodes' 'host' and 'IPs' are always set."},
-	"cluster.certificates.expiry":           []string{"Self-signed certificate expiration period in hours; default is 2 years."},
-	"cluster.certificates.ca_expiry":        []string{"CA certificate expiration period in hours; default is 2 years."},
-	"cluster.ssh.ssh_key":                   []string{"Absolute path to the ssh private key we should use to manage nodes."},
-	"cluster.cloud_provider.provider":       []string{"Options: 'aws','azure','cloudstack','fake','gce','mesos','openstack',", "'ovirt','photon','rackspace','vsphere'.", "Leave empty for bare metal setups or other unsupported providers."},
-	"cluster.cloud_provider.config":         []string{"Path to the config file, leave empty if provider does not require it."},
-	"etcd":                                               []string{"Here you will identify all of the nodes that should play the etcd role", "on your cluster."},
-	"master":                                             []string{"Here you will identify all of the nodes that should play the master role."},
-	"worker":                                             []string{"Here you will identify all of the nodes that will be workers."},
-	"host":                                               []string{"The (short) hostname of a node, e.g. etcd01."},
-	"ip":                                                 []string{"The ip address the installer should use to manage this node, e.g. 8.8.8.8."},
-	"internalip":                                         []string{"If the node has an IP for internal traffic, enter it here.", "Otherwise leave blank."},
+	"cluster.admin_password":                             []string{"This password is used to login to the Kubernetes Dashboard and can also be", "used for administration without a security certificate."},
+	"cluster.disable_package_installation":               []string{"When true, installation will not occur if any node is missing the correct", "deb/rpm packages."},
+	"cluster.disconnected_installation":                  []string{"Set to true if you are performing a disconnected installation."},
+	"cluster.networking":                                 []string{"Networking configuration of your cluster."},
+	"cluster.networking.pod_cidr_block":                  []string{"Kubernetes will assign pods IPs in this range. Do not use a range that is", "already in use on your local network!"},
+	"cluster.networking.service_cidr_block":              []string{"Kubernetes will assign services IPs in this range. Do not use a range", "that is already in use by your local network or pod network!"},
+	"cluster.networking.update_hosts_files":              []string{"When true, the installer will add entries for all nodes to other nodes'", "hosts files. Use when you don't have access to DNS."},
+	"cluster.networking.http_proxy":                      []string{"Set the proxy server to use for HTTP connections."},
+	"cluster.networking.https_proxy":                     []string{"Set the proxy server to use for HTTPs connections."},
+	"cluster.networking.no_proxy":                        []string{"List of host names and/or IPs that shouldn't go through any proxy.", "All nodes' 'host' and 'IPs' are always set."},
+	"cluster.certificates":                               []string{"Generated certs configuration."},
+	"cluster.certificates.expiry":                        []string{"Self-signed certificate expiration period in hours; default is 2 years."},
+	"cluster.certificates.ca_expiry":                     []string{"CA certificate expiration period in hours; default is 2 years."},
+	"cluster.ssh":                                        []string{"SSH configuration for cluster nodes."},
+	"cluster.ssh.user":                                   []string{"This user must be able to sudo without password."},
+	"cluster.ssh.ssh_key":                                []string{"Absolute path to the ssh private key we should use to manage nodes."},
+	"cluster.kube_apiserver":                             []string{"Override configuration of Kubernetes components."},
+	"cluster.cloud_provider":                             []string{"Kubernetes cloud provider integration"},
+	"cluster.cloud_provider.provider":                    []string{"Options: 'aws','azure','cloudstack','fake','gce','mesos','openstack',", "'ovirt','photon','rackspace','vsphere'.", "Leave empty for bare metal setups or other unsupported providers."},
+	"cluster.cloud_provider.config":                      []string{"Path to the config file, leave empty if provider does not require it."},
+	"docker":                                             []string{"Docker daemon configuration of all cluster nodes"},
+	"etcd":                                               []string{"Etcd nodes are the ones that run the etcd distributed key-value database."},
+	"etcd.nodes":                                         []string{"Provide the hostname and IP of each node. If the node has an IP for internal", "traffic, provide it in the internalip field. Otherwise, that field can be", "left blank."},
+	"master":                                             []string{"Master nodes are the ones that run the Kubernetes control plane components."},
+	"worker":                                             []string{"Worker nodes are the ones that will run your workloads on the cluster."},
+	"ingress":                                            []string{"Ingress nodes will run the ingress controllers."},
+	"storage":                                            []string{"Storage nodes will be used to create a distributed storage cluster that can", "be consumed by your workloads."},
 	"master.load_balanced_fqdn":                          []string{"If you have set up load balancing for master nodes, enter the FQDN name here.", "Otherwise, use the IP address of a single master node."},
 	"master.load_balanced_short_name":                    []string{"If you have set up load balancing for master nodes, enter the short name here.", "Otherwise, use the IP address of a single master node."},
 	"docker.storage.direct_lvm":                          []string{"Configure devicemapper in direct-lvm mode (RHEL/CentOS only)."},
 	"docker.storage.direct_lvm.block_device":             []string{"Path to the block device that will be used for direct-lvm mode. This", "device will be wiped and used exclusively by docker."},
 	"docker.storage.direct_lvm.enable_deferred_deletion": []string{"Set to true if you want to enable deferred deletion when using", "direct-lvm mode."},
-	"docker_registry":                                    []string{"Here you will provide the details of your Docker registry or setup an internal", "one to run in the cluster. This is optional and the cluster will always have", "access to the Docker Hub."},
-	"docker_registry.address":                            []string{"IP or hostname for your Docker registry. Must be accessible from all the nodes", "in the cluster."},
-	"docker_registry.port":                               []string{"Port for your Docker registry."},
-	"docker_registry.CA":                                 []string{"Absolute path to the CA that was used when starting your Docker registry.", "The docker daemons on all nodes in the cluster will be configured with this CA."},
+	"docker_registry":                                    []string{"If you want to use an internal registry for the installation or upgrade, you", "must provide its information here. You must seed this registry before the", "installation or upgrade of your cluster. This registry must be accessible from", "all nodes on the cluster."},
+	"docker_registry.address":                            []string{"IP or hostname for your registry."},
+	"docker_registry.port":                               []string{"Port for your registry."},
+	"docker_registry.CA":                                 []string{"Absolute path to the certificate authority that should be trusted when", "connecting to your registry."},
 	"docker_registry.username":                           []string{"Leave blank for unauthenticated access."},
 	"docker_registry.password":                           []string{"Leave blank for unauthenticated access."},
-	"nfs":                                            []string{"A set of NFS volumes for use by on-cluster persistent workloads"},
-	"nfs.nfs_host":                                   []string{"The host name or ip address of an NFS server."},
-	"nfs.mount_path":                                 []string{"The mount path of an NFS share. Must start with /"},
-	"add_ons.cni.provider":                           []string{"Selecting 'custom' will result in a CNI ready cluster, however it is up to", "you to configure a plugin after the install.", "Options: 'calico','weave','contiv','custom'."},
-	"add_ons.cni.options.calico.mode":                []string{"Routed pods can be addressed from outside the Kubernetes cluster", "Overlay pods can only address each other.", "Options: 'overlay','routed'."},
-	"add_ons.cni.options.calico.log_level":           []string{"Options: 'warning','info','debug'."},
-	"add_ons.heapster.options.influxdb.pvc_name":     []string{"Provide the name of the persistent volume claim that you will create", "after installation. If not specified, the data will be stored in", "ephemeral storage."},
-	"add_ons.heapster.options.heapster.service_type": []string{"Specify kubernetes ServiceType; default 'ClusterIP'", "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'."},
-	"add_ons.heapster.options.heapster.sink":         []string{"Specify the sink to store heapster data. Defaults to a pod running", "on the cluster."},
-	"add_ons.package_manager.provider":               []string{"Options: 'helm'"},
+	"add_ons":                                            []string{"Add-ons are additional components that KET installs on the cluster."},
+	"nfs":                                                []string{"A set of NFS volumes for use by on-cluster persistent workloads"},
+	"nfs.nfs_host":                                       []string{"The host name or ip address of an NFS server."},
+	"nfs.mount_path":                                     []string{"The mount path of an NFS share. Must start with /"},
+	"add_ons.cni.provider":                               []string{"Selecting 'custom' will result in a CNI ready cluster, however it is up to", "you to configure a plugin after the install.", "Options: 'calico','weave','contiv','custom'."},
+	"add_ons.cni.options.calico.mode":                    []string{"Options: 'overlay','routed'."},
+	"add_ons.cni.options.calico.log_level":               []string{"Options: 'warning','info','debug'."},
+	"add_ons.heapster.options.influxdb.pvc_name":         []string{"Provide the name of the persistent volume claim that you will create", "after installation. If not specified, the data will be stored in", "ephemeral storage."},
+	"add_ons.heapster.options.heapster.service_type":     []string{"Specify kubernetes ServiceType. Defaults to 'ClusterIP'.", "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'."},
+	"add_ons.heapster.options.heapster.sink":             []string{"Specify the sink to store heapster data. Defaults to an influxdb pod", "running on the cluster."},
+	"add_ons.package_manager.provider":                   []string{"Options: 'helm'"},
 }
 
 type stack struct {

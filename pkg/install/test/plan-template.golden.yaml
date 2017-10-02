@@ -6,12 +6,13 @@ cluster:
   admin_password: password
 
   # When true, installation will not occur if any node is missing the correct
-  # deb/rpm packages. When false, the installer will attempt to install missing
-  # packages for you.
+  # deb/rpm packages.
   disable_package_installation: false
 
   # Set to true if you are performing a disconnected installation.
   disconnected_installation: false
+
+  # Networking configuration of your cluster.
   networking:
 
     # Kubernetes will assign pods IPs in this range. Do not use a range that is
@@ -33,9 +34,10 @@ cluster:
     https_proxy: ""
 
     # List of host names and/or IPs that shouldn't go through any proxy.
-    # If set to an asterisk '*' only, it matches all hosts.
     # All nodes' 'host' and 'IPs' are always set.
     no_proxy: ""
+
+  # Generated certs configuration.
   certificates:
 
     # Self-signed certificate expiration period in hours; default is 2 years.
@@ -43,12 +45,18 @@ cluster:
 
     # CA certificate expiration period in hours; default is 2 years.
     ca_expiry: 17520h
+
+  # SSH configuration for cluster nodes.
   ssh:
+
+    # This user must be able to sudo without password.
     user: kismaticuser
 
     # Absolute path to the ssh private key we should use to manage nodes.
     ssh_key: kismaticuser.key
     ssh_port: 22
+
+  # Override configuration of Kubernetes components.
   kube_apiserver:
     option_overrides: {}
   kube_controller_manager:
@@ -59,6 +67,8 @@ cluster:
     option_overrides: {}
   kubelet:
     option_overrides: {}
+
+  # Kubernetes cloud provider integration
   cloud_provider:
 
     # Options: 'aws','azure','cloudstack','fake','gce','mesos','openstack',
@@ -68,6 +78,8 @@ cluster:
 
     # Path to the config file, leave empty if provider does not require it.
     config: ""
+
+# Docker daemon configuration of all cluster nodes
 docker:
   storage:
 
@@ -83,20 +95,20 @@ docker:
       # direct-lvm mode.
       enable_deferred_deletion: false
 
-# Here you will provide the details of your Docker registry or setup an internal
-# one to run in the cluster. This is optional and the cluster will always have
-# access to the Docker Hub.
+# If you want to use an internal registry for the installation or upgrade, you
+# must provide its information here. You must seed this registry before the
+# installation or upgrade of your cluster. This registry must be accessible from
+# all nodes on the cluster.
 docker_registry:
 
-  # IP or hostname for your Docker registry. Must be accessible from all the nodes
-  # in the cluster.
+  # IP or hostname for your registry.
   address: ""
 
-  # Port for your Docker registry.
+  # Port for your registry.
   port: 8443
 
-  # Absolute path to the CA that was used when starting your Docker registry.
-  # The docker daemons on all nodes in the cluster will be configured with this CA.
+  # Absolute path to the certificate authority that should be trusted when
+  # connecting to your registry.
   CA: ""
 
   # Leave blank for unauthenticated access.
@@ -104,6 +116,8 @@ docker_registry:
 
   # Leave blank for unauthenticated access.
   password: ""
+
+# Add-ons are additional components that KET installs on the cluster.
 add_ons:
   cni:
     disable: false
@@ -115,8 +129,6 @@ add_ons:
     options:
       calico:
 
-        # Routed pods can be addressed from outside the Kubernetes cluster
-        # Overlay pods can only address each other.
         # Options: 'overlay','routed'.
         mode: overlay
 
@@ -130,12 +142,12 @@ add_ons:
       heapster:
         replicas: 2
 
-        # Specify kubernetes ServiceType; default 'ClusterIP'
+        # Specify kubernetes ServiceType. Defaults to 'ClusterIP'.
         # Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'.
         service_type: ClusterIP
 
-        # Specify the sink to store heapster data. Defaults to a pod running
-        # on the cluster.
+        # Specify the sink to store heapster data. Defaults to an influxdb pod
+        # running on the cluster.
         sink: influxdb:http://heapster-influxdb.kube-system.svc:8086
       influxdb:
 
@@ -151,20 +163,16 @@ add_ons:
     # Options: 'helm'
     provider: helm
 
-# Here you will identify all of the nodes that should play the etcd role
-# on your cluster.
+# Etcd nodes are the ones that run the etcd distributed key-value database.
 etcd:
   expected_count: 3
+
+  # Provide the hostname and IP of each node. If the node has an IP for internal
+  # traffic, provide it in the internalip field. Otherwise, that field can be
+  # left blank.
   nodes:
-
-  # The (short) hostname of a node, e.g. etcd01.
   - host: ""
-
-    # The ip address the installer should use to manage this node, e.g. 8.8.8.8.
     ip: ""
-
-    # If the node has an IP for internal traffic, enter it here.
-    # Otherwise leave blank.
     internalip: ""
     labels: {}
   - host: ""
@@ -176,7 +184,7 @@ etcd:
     internalip: ""
     labels: {}
 
-# Here you will identify all of the nodes that should play the master role.
+# Master nodes are the ones that run the Kubernetes control plane components.
 master:
   expected_count: 2
 
@@ -197,7 +205,7 @@ master:
     internalip: ""
     labels: {}
 
-# Here you will identify all of the nodes that will be workers.
+# Worker nodes are the ones that will run your workloads on the cluster.
 worker:
   expected_count: 3
   nodes:
@@ -213,6 +221,8 @@ worker:
     ip: ""
     internalip: ""
     labels: {}
+
+# Ingress nodes will run the ingress controllers.
 ingress:
   expected_count: 2
   nodes:
@@ -224,6 +234,9 @@ ingress:
     ip: ""
     internalip: ""
     labels: {}
+
+# Storage nodes will be used to create a distributed storage cluster that can
+# be consumed by your workloads.
 storage:
   expected_count: 0
   nodes: []
