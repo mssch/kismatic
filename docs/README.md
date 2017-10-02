@@ -25,6 +25,10 @@
 
 ## Upgrade Notes
 
+### v1.6.0
+- [Disconnected Upgrade](upgrade/v1.6.0/disconnected-upgrade.md)
+- [Etcd Nodes](upgrade/v1.6.0/etcd-nodes.md)
+
 ### v1.4.0
 - [Certificate Generation Changes](upgrade/v1.4.0/certificates.md)
 
