@@ -1,7 +1,7 @@
 #===============================================================================
 # VERSIONS
-kubernetes_yum_version: 1.7.4-0
-kubernetes_deb_version: 1.7.4-00
+kubernetes_yum_version: 1.8.0-0
+kubernetes_deb_version: 1.8.0-00
 docker_engine_yum_version: 1.12.6-1.el7.centos
 docker_engine_apt_version: 1.12.6-0~ubuntu-xenial
 glusterfs_server_version_rhel: "3.8.15-2.el7"
@@ -151,17 +151,17 @@ kubernetes_certificates:
   service_account_key: "{{ kubernetes_certificates_dir }}/service-account-key.pem"
 
 kubernetes_api_server_option_defaults:
-  "admission-control": "NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota"
+  "admission-control": "NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,NodeRestriction"
   "advertise-address": "{{ internal_ipv4 }}"
   "allow-privileged": "true"
   "apiserver-count": "{{ kubernetes_master_apiserver_count }}"
   "anonymous-auth": "false"
-  "authorization-mode": "RBAC,ABAC"
+  "authorization-mode": "Node,RBAC,ABAC"
   "authorization-policy-file": "{{ kubernetes_authorization_policy_path }}"
   "basic-auth-file": "{{ kubernetes_basic_auth_path }}"
   "bind-address": "0.0.0.0"
   "client-ca-file": "{{ kubernetes_certificates.ca }}"
-  "cloud-provider": "{{ cloud_provider | quote }}"
+  "cloud-provider": "{{ cloud_provider }}"
   "cloud-config": "{{ cloud_config }}"
   "enable-swagger-ui": "true"
   "etcd-cafile": "{{ kubernetes_certificates.ca }}"
