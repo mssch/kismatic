@@ -16,16 +16,16 @@ official_images:
     version: v1.8.0
   calico_node:
     name: calico/node
-    version: v1.3.0
+    version: v2.6.0
   calico_ctl:
     name: calico/ctl
-    version: v1.3.0
+    version: v1.6.1
   calico_cni:
     name: calico/cni
-    version: v1.9.1
-  calico_kube_policy_controller:
-    name: calico/kube-policy-controller
-    version: v0.6.0
+    version: v1.11.0
+  calico_kube_controller:
+    name: calico/kube-controllers
+    version: v1.0.0
   cni_bin:
     name: apprenda/cni-bin
     version: v0.5.2
@@ -80,4 +80,3 @@ official_images:
   influxdb: 
     name: gcr.io/google_containers/heapster-influxdb-amd64
     version: v1.1.1  
-  
