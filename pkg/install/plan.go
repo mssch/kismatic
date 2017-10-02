@@ -392,12 +392,12 @@ func generateAlphaNumericPassword() (string, error) {
 // separate lines.
 var commentMap = map[string][]string{
 	"cluster.admin_password":                             []string{"This password is used to login to the Kubernetes Dashboard and can also be", "used for administration without a security certificate."},
-	"cluster.disable_package_installation":               []string{"When true, installation will not occur if any node is missing the correct", "deb/rpm packages."},
+	"cluster.disable_package_installation":               []string{"Set to true if the nodes have the required packages installed."},
 	"cluster.disconnected_installation":                  []string{"Set to true if you are performing a disconnected installation."},
 	"cluster.networking":                                 []string{"Networking configuration of your cluster."},
 	"cluster.networking.pod_cidr_block":                  []string{"Kubernetes will assign pods IPs in this range. Do not use a range that is", "already in use on your local network!"},
 	"cluster.networking.service_cidr_block":              []string{"Kubernetes will assign services IPs in this range. Do not use a range", "that is already in use by your local network or pod network!"},
-	"cluster.networking.update_hosts_files":              []string{"When true, the installer will add entries for all nodes to other nodes'", "hosts files. Use when you don't have access to DNS."},
+	"cluster.networking.update_hosts_files":              []string{"Set to true if your nodes cannot resolve each others' names using DNS."},
 	"cluster.networking.http_proxy":                      []string{"Set the proxy server to use for HTTP connections."},
 	"cluster.networking.https_proxy":                     []string{"Set the proxy server to use for HTTPs connections."},
 	"cluster.networking.no_proxy":                        []string{"List of host names and/or IPs that shouldn't go through any proxy.", "All nodes' 'host' and 'IPs' are always set."},
