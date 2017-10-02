@@ -4,6 +4,16 @@ Certain organizations need to run Kubernetes clusters in air-gapped environments
 
 Being disconnected means that you will not use public repositories or registries to get binaries to your nodes. Instead, before performing the installation, you will sync a local package repository and container image registry with the packages and images required to operate a Kubernetes cluster.
 
+- [Prerequisites](#prerequisites)
+- [Planning the installation](#planning-the-installation)
+- [Installing the cluster](#installing-the-cluster)
+- [Upgrading your cluster](#upgrading-your-cluster)
+- [Creating a local package repository](#creating-a-local-package-repository)
+  - [CentOS](#centos-7)
+  - [RHEL 7](#rhel-7)
+  - [Ubuntu 16.04](#ubuntu-1604)
+- [Seeding a local container registry](#seeding-a-local-container-registry)
+
 ## Prerequisites
 
 * Local package repository that is accessible from all nodes. This repository must include the Kubernetes software packages and their transitive dependencies.
@@ -15,7 +25,7 @@ Otherwise, the package manager will attempt to download metadata from these
 inaccessible repositories, and the installation wil fail.
 
 * Local docker registry that is accessible from all nodes. 
-This registry must be seeded with the images required for the installation.
+This registry must be seeded with the images required for the installation. See [Seeding a local container registry](#seeding-a-local-container-registry).
 
 ## Planning the installation
 Before executing the validation or installation stages, you must let KET know that
@@ -31,11 +41,16 @@ Docker Hub, GCR, or other public registries.
 
 **disable_package_installation**: In most cases, KET is responsible for installing the required packages onto the cluster nodes. If, however, you want to control the installation of the packages, you can set this flag to `true` to prevent KET from installing the packages. More importantly, disabling package installation will enable a set of preflight checks that will ensure the packages have been installed on all nodes.
 
-## Performing the installation
+## Installing the cluster
 
 Once the relevant options in the plan file have been set, and the local repository and local registry have been stood up, you are ready to perform the disconnected installation. 
 
 At this point, you can run `kismatic install apply` to initiate the installation.
+
+## Upgrading your cluster
+Before performing a cluster upgrade, you must:
+- Update your local package repository to include the new packages.
+- Seed your local registry using the new version of KET.
 
 # Creating a local package repository
 
@@ -238,3 +253,12 @@ deb http://mirror.example.com xenial main
 deb http://mirror.example.com kubernetes-xenial main
 deb http://mirror.example.com ubuntu-xenial main
 ```
+
+## Seeding a local container registry
+
+The local registry must contain all the required images before installing the cluster.
+The `seed-registry` command can be used to seed the registry with the images, or to
+obtain a list of all the required images.
+
+For more information about using a local registry, see the [Container Image Registry](./container-registry.md)
+documentation.

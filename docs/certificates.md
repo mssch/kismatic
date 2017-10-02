@@ -1,4 +1,4 @@
-# Certificates
+# Certificates and Certificate Generation
 
 ## Overview
 Certificates (and their corresponding private keys) are used to secure all communication endpoints

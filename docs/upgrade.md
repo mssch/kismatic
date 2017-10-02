@@ -1,4 +1,4 @@
-# Upgrade
+# Upgrading Your Cluster
 
 In order to keep your Kubernetes cluster up to date, and to take advantage of new
 features in Kismatic, you may upgrade an existing cluster that was previously
