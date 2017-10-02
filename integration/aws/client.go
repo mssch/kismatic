@@ -106,7 +106,7 @@ func (c *Client) prepareSession() error {
 
 // CreateNode is for creating a machine on AWS using the given AMI and InstanceType.
 // Returns the ID of the newly created machine.
-func (c Client) CreateNode(ami AMI, instanceType InstanceType, addBlockDevice bool) (string, error) {
+func (c Client) CreateNode(ami AMI, instanceType InstanceType, addBlockDevice bool, customTags map[string]string) (string, error) {
 	api, err := c.getEC2APIClient()
 	if err != nil {
 		return "", err
@@ -180,6 +180,11 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType, addBlockDevice bo
 				Value: aws.String(thisHost),
 			},
 		},
+	}
+	if customTags != nil {
+		for k, v := range customTags {
+			tagReq.Tags = append(tagReq.Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(v)})
+		}
 	}
 	err = retry.WithBackoff(func() error {
 		var err2 error
