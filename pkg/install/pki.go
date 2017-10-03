@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/apprenda/kismatic/pkg/tls"
@@ -169,7 +170,7 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 		m = append(m, certificateSpec{
 			description:   fmt.Sprintf("%s kubelet", node.Host),
 			filename:      fmt.Sprintf("%s-kubelet", node.Host),
-			commonName:    fmt.Sprintf("%s:%s", kubeletUserPrefix, node.Host),
+			commonName:    fmt.Sprintf("%s:%s", kubeletUserPrefix, strings.ToLower(node.Host)),
 			organizations: []string{kubeletGroup},
 		})
 
