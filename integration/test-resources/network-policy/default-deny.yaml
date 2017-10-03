@@ -5,3 +5,4 @@ metadata:
   namespace: policy-tester
 spec:
   podSelector:
+    matchLabels: {}
