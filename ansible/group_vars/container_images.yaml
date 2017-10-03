@@ -16,7 +16,7 @@ official_images:
     version: v1.8.0
   calico_node:
     name: calico/node
-    version: v2.6.0
+    version: v2.6.1
   calico_ctl:
     name: calico/ctl
     version: v1.6.1
