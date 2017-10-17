@@ -39,7 +39,7 @@ spec:
       httpGet:
         host: 127.0.0.1
         path: /healthz
-        port: 10249
+        port: 10256
       initialDelaySeconds: 15
       timeoutSeconds: 15
       failureThreshold: 8
