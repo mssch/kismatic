@@ -63,8 +63,7 @@ var _ = Describe("disconnected installation", func() {
 						disconnectedInstallation:   true,
 						modifyHostsFiles:           true,
 						dockerRegistryCAPath:       caFile,
-						dockerRegistryIP:           repoNode.PrivateIP,
-						dockerRegistryPort:         dockerRegistryPort,
+						dockerRegistryServer:       fmt.Sprintf("%s:%d", repoNode.PrivateIP, dockerRegistryPort),
 						dockerRegistryUsername:     "kismaticuser",
 						dockerRegistryPassword:     "kismaticpassword",
 					}
@@ -120,8 +119,7 @@ var _ = Describe("disconnected installation", func() {
 						disconnectedInstallation:   true,
 						modifyHostsFiles:           true,
 						dockerRegistryCAPath:       caFile,
-						dockerRegistryIP:           repoNode.PrivateIP,
-						dockerRegistryPort:         dockerRegistryPort,
+						dockerRegistryServer:       fmt.Sprintf("%s:%d", repoNode.PrivateIP, dockerRegistryPort),
 						dockerRegistryUsername:     "kismaticuser",
 						dockerRegistryPassword:     "kismaticpassword",
 					}

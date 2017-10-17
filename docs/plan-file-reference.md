@@ -41,8 +41,9 @@
       * [block_device](#dockerstoragedirect_lvmblock_device)
       * [enable_deferred_deletion](#dockerstoragedirect_lvmenable_deferred_deletion)
 * [docker_registry](#docker_registry)
-  * [address](#docker_registryaddress)
-  * [port](#docker_registryport)
+  * [server](#docker_registryserver)
+  * [address _(deprecated)_](#docker_registryaddress-deprecated)
+  * [port _(deprecated)_](#docker_registryport-deprecated)
   * [CA](#docker_registryCA)
   * [username](#docker_registryusername)
   * [password](#docker_registrypassword)
@@ -456,7 +457,17 @@
 
  Docker registry configuration 
 
-###  docker_registry.address
+###  docker_registry.server
+
+ The hostname or IP address and port of a private container image registry. Do not include http or https. When performing a disconnected installation, this registry will be used to fetch all the required container images. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  docker_registry.address _(deprecated)_
 
  The hostname or IP address of a private container image registry. When performing a disconnected installation, this registry will be used to fetch all the required container images. 
 
@@ -466,7 +477,7 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
-###  docker_registry.port
+###  docker_registry.port _(deprecated)_
 
  The port on which the private container image registry is listening on. 
 

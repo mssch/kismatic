@@ -139,15 +139,6 @@ const defaultRuleSet = `---
   port: 10250
   timeout: 5s
 
-# Port used by Docker registry
-- kind: TCPPortAvailable
-  when: ["master"]
-  port: 8443
-- kind: TCPPortAccessible
-  when: ["master"]
-  port: 8443
-  timeout: 5s
-
 # Port used by Ingress
 - kind: TCPPortAvailable
   when: ["ingress"]

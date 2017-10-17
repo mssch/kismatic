@@ -849,8 +849,7 @@ func TestValidatePlanDisconnectedInstallationFailsDueToMissingRegistry(t *testin
 func TestValidatePlanDisconnectedInstallationSucceeds(t *testing.T) {
 	plan := validPlan
 	plan.Cluster.DisconnectedInstallation = true
-	plan.DockerRegistry.Address = "localhost"
-	plan.DockerRegistry.Port = 5000
+	plan.DockerRegistry.Server = "localhost:5000"
 	if ok, errs := plan.validate(); !ok {
 		t.Error("expected validation to succeed, but it failed")
 		t.Logf("errors were: %v\n", errs)

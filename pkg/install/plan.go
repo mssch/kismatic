@@ -92,6 +92,10 @@ func readDeprecatedFields(p *Plan) {
 			Disable: p.AddOns.DashboardDeprecated.Disable,
 		}
 	}
+
+	if p.DockerRegistry.Server == "" && p.DockerRegistry.Address != "" && p.DockerRegistry.Port != 0 {
+		p.DockerRegistry.Server = fmt.Sprintf("%s:%d", p.DockerRegistry.Address, p.DockerRegistry.Port)
+	}
 }
 
 func setDefaults(p *Plan) {
@@ -285,9 +289,6 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 	p.Cluster.Certificates.Expiry = "17520h"
 	p.Cluster.Certificates.CAExpiry = defaultCAExpiry
 
-	// Set DockerRegistry defaults
-	p.DockerRegistry.Port = 8443
-
 	// Add-Ons
 	// CNI
 	p.AddOns.CNI = &CNI{}
@@ -424,8 +425,7 @@ var commentMap = map[string][]string{
 	"docker.storage.direct_lvm.block_device":             []string{"Path to the block device that will be used for direct-lvm mode. This", "device will be wiped and used exclusively by docker."},
 	"docker.storage.direct_lvm.enable_deferred_deletion": []string{"Set to true if you want to enable deferred deletion when using", "direct-lvm mode."},
 	"docker_registry":                                    []string{"If you want to use an internal registry for the installation or upgrade, you", "must provide its information here. You must seed this registry before the", "installation or upgrade of your cluster. This registry must be accessible from", "all nodes on the cluster."},
-	"docker_registry.address":                            []string{"IP or hostname for your registry."},
-	"docker_registry.port":                               []string{"Port for your registry."},
+	"docker_registry.server":                             []string{"IP or hostname and port for your registry."},
 	"docker_registry.CA":                                 []string{"Absolute path to the certificate authority that should be trusted when", "connecting to your registry."},
 	"docker_registry.username":                           []string{"Leave blank for unauthenticated access."},
 	"docker_registry.password":                           []string{"Leave blank for unauthenticated access."},

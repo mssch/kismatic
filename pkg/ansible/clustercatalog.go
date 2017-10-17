@@ -27,8 +27,7 @@ type ClusterCatalog struct {
 
 	ConfigureDockerWithPrivateRegistry bool   `yaml:"configure_docker_with_private_registry"`
 	DockerRegistryCAPath               string `yaml:"docker_certificates_ca_path"`
-	DockerRegistryAddress              string `yaml:"docker_registry_address"`
-	DockerRegistryPort                 string `yaml:"docker_registry_port"`
+	DockerRegistryServer               string `yaml:"docker_registry_full_url"`
 	DockerRegistryUsername             string `yaml:"docker_registry_username"`
 	DockerRegistryPassword             string `yaml:"docker_registry_password"`
 

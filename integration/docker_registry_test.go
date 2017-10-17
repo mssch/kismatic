@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"fmt"
 	"os"
 
 	. "github.com/onsi/ginkgo"
@@ -22,8 +23,7 @@ var _ = Describe("kismatic docker registry feature", func() {
 				Expect(err).ToNot(HaveOccurred())
 				opts := installOptions{
 					dockerRegistryCAPath:   caFile,
-					dockerRegistryIP:       nodes.etcd[1].PrivateIP,
-					dockerRegistryPort:     dockerRegistryPort,
+					dockerRegistryServer:   fmt.Sprintf("%s:%d", nodes.etcd[1].PrivateIP, dockerRegistryPort),
 					dockerRegistryUsername: "kismaticuser",
 					dockerRegistryPassword: "kismaticpassword",
 				}
