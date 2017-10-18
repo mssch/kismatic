@@ -118,6 +118,10 @@ type ClusterCatalog struct {
 		Enabled bool
 	}
 
+	Rescheduler struct {
+		Enabled bool
+	}
+
 	InsecureNetworkingEtcd bool `yaml:"insecure_networking_etcd"`
 
 	HTTPProxy  string `yaml:"http_proxy"`

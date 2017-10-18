@@ -80,3 +80,6 @@ official_images:
   influxdb: 
     name: gcr.io/google_containers/heapster-influxdb-amd64
     version: v1.1.1  
+  rescheduler: 
+    name: gcr.io/google-containers/rescheduler
+    version: v0.3.1

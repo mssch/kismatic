@@ -67,9 +67,6 @@ items:
             k8s-app: weave-net
           annotations:
             scheduler.alpha.kubernetes.io/critical-pod: ''
-            scheduler.alpha.kubernetes.io/tolerations: |
-              [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
-              {"key":"CriticalAddonsOnly", "operator":"Exists"}]
         spec:
           containers:
             - name: weave
