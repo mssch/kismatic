@@ -10,10 +10,11 @@ import (
 )
 
 var _ = Describe("Upgrade", func() {
-	Describe("Upgrading a cluster using offline mode", func() {
-		Context("From KET version v1.5.3", func() {
+
+	Describe("Upgrading a cluster using online mode", func() {
+		Context("From KET version v1.6.0", func() {
 			BeforeEach(func() {
-				dir := setupTestWorkingDirWithVersion("v1.5.3")
+				dir := setupTestWorkingDirWithVersion("v1.6.0")
 				os.Chdir(dir)
 			})
 
@@ -21,7 +22,7 @@ var _ = Describe("Upgrade", func() {
 				Context("Using CentOS 7", func() {
 					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
 						WithMiniInfrastructure(CentOS7, aws, func(node NodeDeets, sshKey string) {
-							installAndUpgradeMinikube(node, sshKey, false)
+							installAndUpgradeMinikube(node, sshKey, true)
 						})
 					})
 				})
@@ -29,7 +30,7 @@ var _ = Describe("Upgrade", func() {
 				Context("Using RedHat 7", func() {
 					ItOnAWS("should be upgraded [slow] [upgrade]", func(aws infrastructureProvisioner) {
 						WithMiniInfrastructure(RedHat7, aws, func(node NodeDeets, sshKey string) {
-							installAndUpgradeMinikube(node, sshKey, false)
+							installAndUpgradeMinikube(node, sshKey, true)
 						})
 					})
 				})
@@ -54,7 +55,7 @@ var _ = Describe("Upgrade", func() {
 						extractCurrentKismaticInstaller()
 
 						// Perform upgrade
-						upgradeCluster(false)
+						upgradeCluster(true)
 
 						sub := SubDescribe("Using an upgraded cluster")
 						defer sub.Check()
@@ -105,7 +106,6 @@ var _ = Describe("Upgrade", func() {
 							// One of the nodes will function as a repo mirror and image registry
 							repoNode := nodes.worker[1]
 							nodes.worker = nodes.worker[0:1]
-
 							// Standup cluster with previous version
 							opts := installOptions{
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
@@ -114,6 +114,7 @@ var _ = Describe("Upgrade", func() {
 							err := installKismatic(nodes, opts, sshKey)
 							FailIfError(err)
 
+							// Extract current version of kismatic
 							extractCurrentKismaticInstaller()
 
 							By("Creating a package repository")
@@ -127,22 +128,6 @@ var _ = Describe("Upgrade", func() {
 							By("Seeding the local registry")
 							err = seedRegistry(repoNode, caFile, dockerRegistryPort, sshKey)
 							FailIfError(err, "Error seeding local registry")
-
-							// Cleanup old cluster file and create a new one
-							By("Recreating kismatic-testing.yaml file")
-							err = os.Remove("kismatic-testing.yaml")
-							FailIfError(err)
-							opts = installOptions{
-								disconnectedInstallation: true,
-								modifyHostsFiles:         true,
-								dockerRegistryCAPath:     caFile,
-								dockerRegistryIP:         repoNode.PrivateIP,
-								dockerRegistryPort:       dockerRegistryPort,
-								dockerRegistryUsername:   "kismaticuser",
-								dockerRegistryPassword:   "kismaticpassword",
-							}
-							p := buildPlan(nodes, opts, sshKey)
-							writePlanFile(p)
 
 							err = disableInternetAccess(nodes.allNodes(), sshKey)
 							FailIfError(err)
@@ -163,7 +148,22 @@ var _ = Describe("Upgrade", func() {
 								Fail("was able to ping google with outgoing connections blocked")
 							}
 
-							upgradeCluster(false)
+							// Cleanup old cluster file and create a new one
+							By("Recreating kismatic-testing.yaml file")
+							err = os.Remove("kismatic-testing.yaml")
+							FailIfError(err)
+							opts = installOptions{
+								disconnectedInstallation: true,
+								modifyHostsFiles:         true,
+								dockerRegistryCAPath:     caFile,
+								dockerRegistryIP:         repoNode.PrivateIP,
+								dockerRegistryPort:       dockerRegistryPort,
+								dockerRegistryUsername:   "kismaticuser",
+								dockerRegistryPassword:   "kismaticpassword",
+							}
+							writePlanFile(buildPlan(nodes, opts, sshKey))
+
+							upgradeCluster(true)
 						})
 					})
 				})
@@ -175,7 +175,6 @@ var _ = Describe("Upgrade", func() {
 							// One of the nodes will function as a repo mirror and image registry
 							repoNode := nodes.worker[1]
 							nodes.worker = nodes.worker[0:1]
-
 							// Standup cluster with previous version
 							opts := installOptions{
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
@@ -198,22 +197,6 @@ var _ = Describe("Upgrade", func() {
 							err = seedRegistry(repoNode, caFile, dockerRegistryPort, sshKey)
 							FailIfError(err, "Error seeding local registry")
 
-							// Cleanup old cluster file and create a new one
-							By("Recreating kismatic-testing.yaml file")
-							err = os.Remove("kismatic-testing.yaml")
-							FailIfError(err)
-							opts = installOptions{
-								disconnectedInstallation: true,
-								modifyHostsFiles:         true,
-								dockerRegistryCAPath:     caFile,
-								dockerRegistryIP:         repoNode.PrivateIP,
-								dockerRegistryPort:       dockerRegistryPort,
-								dockerRegistryUsername:   "kismaticuser",
-								dockerRegistryPassword:   "kismaticpassword",
-							}
-							p := buildPlan(nodes, opts, sshKey)
-							writePlanFile(p)
-
 							err = disableInternetAccess(nodes.allNodes(), sshKey)
 							FailIfError(err)
 
@@ -233,15 +216,28 @@ var _ = Describe("Upgrade", func() {
 								Fail("was able to ping google with outgoing connections blocked")
 							}
 
-							upgradeCluster(false)
+							// Cleanup old cluster file and create a new one
+							By("Recreating kismatic-testing.yaml file")
+							err = os.Remove("kismatic-testing.yaml")
+							FailIfError(err)
+							opts = installOptions{
+								disconnectedInstallation: true,
+								modifyHostsFiles:         true,
+								dockerRegistryCAPath:     caFile,
+								dockerRegistryIP:         repoNode.PrivateIP,
+								dockerRegistryPort:       dockerRegistryPort,
+								dockerRegistryUsername:   "kismaticuser",
+								dockerRegistryPassword:   "kismaticpassword",
+							}
+							writePlanFile(buildPlan(nodes, opts, sshKey))
+
+							upgradeCluster(true)
 						})
 					})
 				})
 			})
 		})
-	})
 
-	Describe("Upgrading a cluster using online mode", func() {
 		Context("From KET version v1.5.3", func() {
 			BeforeEach(func() {
 				dir := setupTestWorkingDirWithVersion("v1.5.3")
