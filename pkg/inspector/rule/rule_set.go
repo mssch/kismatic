@@ -105,10 +105,14 @@ const defaultRuleSet = `---
 - kind: TCPPortAvailable
   when: ["master","worker","ingress","storage"]
   port: 10248
-# kube-proxy
+# kube-proxy metrics
 - kind: TCPPortAvailable
   when: ["master","worker","ingress","storage"]
   port: 10249
+# kube-proxy health
+- kind: TCPPortAvailable
+  when: ["master","worker","ingress","storage"]
+  port: 10256
 # kubelet
 - kind: TCPPortAvailable
   when: ["master","worker","ingress","storage"]
@@ -127,7 +131,7 @@ const defaultRuleSet = `---
 # kube-proxy
 - kind: TCPPortAccessible
   when: ["master","worker","ingress","storage"]
-  port: 10249
+  port: 10256
   timeout: 5s
 # kubelet
 - kind: TCPPortAccessible
