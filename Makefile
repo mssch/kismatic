@@ -13,11 +13,11 @@ HOST_GOOS = $(shell go env GOOS)
 HOST_GOARCH = $(shell go env GOARCH)
 
 # Versions of external dependencies
-GLIDE_VERSION = v0.11.1
+GLIDE_VERSION = v0.13.0
 ANSIBLE_VERSION = 2.3.0.0
 PROVISIONER_VERSION = v1.6.1
 KUBERANG_VERSION = v1.2.2
-GO_VERSION = 1.8.0
+GO_VERSION = 1.8.4
 KUBECTL_VERSION = v1.8.0
 HELM_VERSION = v2.6.1
 
@@ -36,7 +36,7 @@ build: vendor # vendor on host because of some permission issues with glide insi
 	    -e GLIDE_GOOS="linux"                  \
 	    -e VERSION="$(VERSION)"                \
 	    -e BUILD_DATE="$(BUILD_DATE)"          \
-	    -u $$(id -u):$$(id -g)                 \
+	    -u root:root                 \
 	    -v "$(shell pwd)":"/go/src/$(PKG)"      \
 	    -w /go/src/$(PKG)                      \
 	    circleci/golang:$(GO_VERSION)          \
@@ -52,7 +52,7 @@ build-inspector: vendor
 	    -e GLIDE_GOOS="linux"                  \
 	    -e VERSION="$(VERSION)"                \
 	    -e BUILD_DATE="$(BUILD_DATE)"          \
-	    -u $$(id -u):$$(id -g)                 \
+	    -u root:root                 \
 	    -v "$(shell pwd)":"/go/src/$(PKG)"     \
 	    -w /go/src/$(PKG)                      \
 	    circleci/golang:$(GO_VERSION)          \
@@ -78,18 +78,19 @@ clean:
 	rm -rf bin
 	rm -rf out
 	rm -rf vendor
-	rm -rf vendor-ansible/out
+	rm -rf vendor-ansible
 	rm -rf vendor-provision
 	rm -rf integration/vendor
 	rm -rf vendor-kuberang
 	rm -rf vendor-helm
 	rm -rf vendor-kubectl
+	rm -rf tools
 
 test: vendor
 	@docker run                             \
 	    --rm                                \
 	    -e GLIDE_GOOS="linux"               \
-	    -u $$(id -u):$$(id -g)              \
+	    -u root:root              \
 	    -v "$(shell pwd)":/go/src/$(PKG)    \
 	    -v /tmp:/tmp                        \
 	    -w /go/src/$(PKG)                   \
@@ -147,7 +148,7 @@ dist: vendor
 	    -e GLIDE_GOOS="linux"                  \
 	    -e VERSION="$(VERSION)"                \
 	    -e BUILD_DATE="$(BUILD_DATE)"          \
-	    -u $$(id -u):$$(id -g)                 \
+	    -u root:root                 \
 	    -v "$(shell pwd)":"/go/src/$(PKG)"     \
 	    -w "/go/src/$(PKG)"                    \
 	    circleci/golang:$(GO_VERSION)          \
