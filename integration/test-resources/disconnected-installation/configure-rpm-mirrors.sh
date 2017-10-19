@@ -174,3 +174,6 @@ enabled=1
 gpgcheck=1
 gpgkey=file:///tmp/gluster.gpg
 EOF
+
+# Need to clean cache to download metadata again
+yum clean all
