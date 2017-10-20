@@ -101,6 +101,9 @@ gpgcheck=1
 repo_gpgcheck=0
 gpgkey=https://download.gluster.org/pub/gluster/glusterfs/3.8/3.8.7/rsa.pub
 EOF'
+
+# Clean yum cache
+yum clean all
 ```
 
 ### Download the RPMs using reposync

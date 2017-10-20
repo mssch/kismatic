@@ -30,6 +30,11 @@
     environment: "{{proxy_env}}"
 
   - name: clean yum cache
+    command: 'yum --disablerepo="*" --enablerepo="docker,kubernetes,gluster" clean all'
+    when: ansible_os_family == 'RedHat'
+    environment: "{{proxy_env}}"
+
+  - name: yum makecache
     command: 'yum --disablerepo="*" --enablerepo="docker,kubernetes,gluster" makecache'
     when: ansible_os_family == 'RedHat'
     environment: "{{proxy_env}}"
