@@ -238,12 +238,19 @@ type DockerStorageDirectLVM struct {
 
 // DockerRegistry details for docker registry, either confgiured by the cli or customer provided
 type DockerRegistry struct {
+	// The hostname or IP address and port of a private container image registry.
+	// Do not include http or https.
+	// When performing a disconnected installation, this registry will be used
+	// to fetch all the required container images.
+	Server string
 	// The hostname or IP address of a private container image registry.
 	// When performing a disconnected installation, this registry will be used
 	// to fetch all the required container images.
-	Address string
+	// +deprecated
+	Address string `yaml:"address,omitempty"`
 	// The port on which the private container image registry is listening on.
-	Port int
+	// +deprecated
+	Port int `yaml:"port,omitempty"`
 	// The absolute path of the Certificate Authority that should be installed on
 	// all cluster nodes that have a docker daemon.
 	// This is required to establish trust between the daemons and the private
@@ -666,7 +673,7 @@ func hasIP(nodes *[]Node, ip string) bool {
 // PrivateRegistryProvided returns true when the details about a private
 // registry have been provided
 func (p Plan) PrivateRegistryProvided() bool {
-	return p.DockerRegistry.Address != ""
+	return p.DockerRegistry.Server != ""
 }
 
 // NetworkConfigured returns true if pod validation/smoketest should run

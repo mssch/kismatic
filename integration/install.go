@@ -31,8 +31,7 @@ func GetSSHKeyFile() (string, error) {
 type installOptions struct {
 	disablePackageInstallation   bool
 	disconnectedInstallation     bool
-	dockerRegistryIP             string
-	dockerRegistryPort           int
+	dockerRegistryServer         string
 	dockerRegistryCAPath         string
 	dockerRegistryUsername       string
 	dockerRegistryPassword       string
@@ -96,8 +95,7 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		SSHKeyFile:                   sshKey,
 		SSHUser:                      sshUser,
 		DockerRegistryCAPath:         installOpts.dockerRegistryCAPath,
-		DockerRegistryIP:             installOpts.dockerRegistryIP,
-		DockerRegistryPort:           installOpts.dockerRegistryPort,
+		DockerRegistryServer:         installOpts.dockerRegistryServer,
 		DockerRegistryUsername:       installOpts.dockerRegistryUsername,
 		DockerRegistryPassword:       installOpts.dockerRegistryPassword,
 		ModifyHostsFiles:             installOpts.modifyHostsFiles,

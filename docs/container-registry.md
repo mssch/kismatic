@@ -9,9 +9,8 @@ in the plan file.
 ## Configuring KET
 The following information must be provided in the plan file to use an internal
 image registry:
-* `address`: The hostname or IP address of the registry. This must be reachable from
+* `server`: The hostname or IP address of the registry and the port. This must be reachable from
 all the nodes in the cluster.
-* `port`: The port number on which the registry is listening.
 * `CA`: The absolute path to the certificate that should be trusted when connecting
 to the registry. This is optional. When set, KET will configure the docker daemon
 on all nodes to trust this certificate.
@@ -20,8 +19,7 @@ Sample:
 ```
 # plan file
 docker_registry:                         
-    address: registry.example.com
-    port: 8443              
+    server: registry.example.com:8443        
     CA: /certs/ca.rt    
 ```
 

@@ -18,8 +18,7 @@ type PlanAWS struct {
 	HomeDirectory                string
 	DisablePackageInstallation   bool
 	DisconnectedInstallation     bool
-	DockerRegistryIP             string
-	DockerRegistryPort           int
+	DockerRegistryServer         string
 	DockerRegistryCAPath         string
 	DockerRegistryUsername       string
 	DockerRegistryPassword       string
@@ -82,8 +81,7 @@ docker:
       block_device: "/dev/xvdb"
       enable_deferred_deletion: false{{end}}
 docker_registry:
-  address: {{.DockerRegistryIP}}
-  port: {{.DockerRegistryPort}}
+  server: {{.DockerRegistryServer}}
   CA: {{.DockerRegistryCAPath}}
   username: {{.DockerRegistryUsername}}
   password: {{.DockerRegistryPassword}}

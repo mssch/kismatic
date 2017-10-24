@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"strings"
@@ -685,8 +684,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 
 	if p.PrivateRegistryProvided() {
 		cc.ConfigureDockerWithPrivateRegistry = true
-		cc.DockerRegistryAddress = p.DockerRegistry.Address
-		cc.DockerRegistryPort = strconv.Itoa(p.DockerRegistry.Port)
+		cc.DockerRegistryServer = p.DockerRegistry.Server
 		cc.DockerRegistryCAPath = p.DockerRegistry.CAPath
 		cc.DockerRegistryUsername = p.DockerRegistry.Username
 		cc.DockerRegistryPassword = p.DockerRegistry.Password
