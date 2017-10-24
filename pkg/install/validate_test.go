@@ -856,6 +856,72 @@ func TestValidatePlanDisconnectedInstallationSucceeds(t *testing.T) {
 	}
 }
 
+func TestDockerRegistry(t *testing.T) {
+	tests := []struct {
+		d     DockerRegistry
+		valid bool
+	}{
+		{
+			d:     DockerRegistry{},
+			valid: true,
+		},
+		{
+			d: DockerRegistry{
+				Server: "172.0.0.1",
+				CAPath: "/bin/sh",
+			},
+			valid: true,
+		},
+		{
+			d: DockerRegistry{
+				Server:   "172.0.0.1",
+				Username: "user",
+				Password: "password",
+			},
+			valid: true,
+		},
+		{
+			d: DockerRegistry{
+				Address: "172.0.0.1",
+				CAPath:  "/bin/sh",
+			},
+			valid: true,
+		},
+		{
+			d: DockerRegistry{
+				Address:  "172.0.0.1",
+				Username: "user",
+				Password: "password",
+			},
+			valid: true,
+		},
+		{
+			d: DockerRegistry{
+				CAPath: "user",
+			},
+			valid: false,
+		},
+		{
+			d: DockerRegistry{
+				Username: "user",
+			},
+			valid: false,
+		},
+		{
+			d: DockerRegistry{
+				Password: "password",
+			},
+			valid: false,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.d.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}
+
 func TestValidateDockerStorageDirectLVM(t *testing.T) {
 	tests := []struct {
 		config DockerStorageDirectLVM

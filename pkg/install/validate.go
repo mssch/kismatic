@@ -481,8 +481,11 @@ func (n *Node) validate() (bool, []error) {
 
 func (dr *DockerRegistry) validate() (bool, []error) {
 	v := newValidator()
-	if dr.Address == "" && (dr.CAPath != "") {
-		v.addError(fmt.Errorf("Docker Registry address cannot be empty when CA is provided"))
+	if (dr.Server == "" && dr.Address == "") && (dr.CAPath != "") {
+		v.addError(fmt.Errorf("Docker Registry server cannot be empty when CA is provided"))
+	}
+	if (dr.Server == "" && dr.Address == "") && (dr.Username != "") {
+		v.addError(fmt.Errorf("Docker Registry server cannot be empty when a username is provided"))
 	}
 	if _, err := os.Stat(dr.CAPath); dr.CAPath != "" && os.IsNotExist(err) {
 		v.addError(fmt.Errorf("Docker Registry CA file was not found at %q", dr.CAPath))
