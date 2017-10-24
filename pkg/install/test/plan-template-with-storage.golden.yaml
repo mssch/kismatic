@@ -167,6 +167,10 @@ add_ons:
     # Options: 'helm'
     provider: helm
 
+  # The rescheduler ensures that critical add-ons remain running on the cluster.
+  rescheduler:
+    disable: false
+
 # Etcd nodes are the ones that run the etcd distributed key-value database.
 etcd:
   expected_count: 3

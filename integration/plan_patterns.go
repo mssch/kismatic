@@ -106,6 +106,8 @@ add_ons:
   package_manager:
     disable: {{.DisableHelm}}
     provider: helm
+  rescheduler:
+    disable: false
 etcd:
   expected_count: {{len .Etcd}}
   nodes:{{range .Etcd}}

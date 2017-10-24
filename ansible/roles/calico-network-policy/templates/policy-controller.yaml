@@ -13,9 +13,6 @@ metadata:
     kismatic/version: "{{ kismatic_short_version }}"
   annotations:
     scheduler.alpha.kubernetes.io/critical-pod: ''
-    scheduler.alpha.kubernetes.io/tolerations: |
-      [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
-      {"key":"CriticalAddonsOnly", "operator":"Exists"}]
 spec:
   # The controllers can only have a single active instance.
   replicas: 1
@@ -33,6 +30,9 @@ spec:
       # it isn't governed by policy that would prevent it from working.
       hostNetwork: true
       serviceAccountName: calico-kube-controllers
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
       volumes:
         - name: "ca"
           hostPath:

@@ -440,6 +440,7 @@ var commentMap = map[string][]string{
 	"add_ons.heapster.options.heapster.service_type":     []string{"Specify kubernetes ServiceType. Defaults to 'ClusterIP'.", "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'."},
 	"add_ons.heapster.options.heapster.sink":             []string{"Specify the sink to store heapster data. Defaults to an influxdb pod", "running on the cluster."},
 	"add_ons.package_manager.provider":                   []string{"Options: 'helm'"},
+	"add_ons.rescheduler":                                []string{"The rescheduler ensures that critical add-ons remain running on the cluster."},
 }
 
 type stack struct {

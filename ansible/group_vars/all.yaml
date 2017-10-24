@@ -264,6 +264,7 @@ official_versioned_images:
   helm: "{{official_images.helm.name}}:{{official_images.helm.version}}"
   heapster: "{{official_images.heapster.name}}:{{official_images.heapster.version}}"
   influxdb: "{{official_images.influxdb.name}}:{{official_images.influxdb.version}}"
+  rescheduler: "{{official_images.rescheduler.name}}:{{official_images.rescheduler.version}}"
 
 images:
   etcd: "{{ official_versioned_images.etcd | final_image(docker_registry_full_url, load_private_images) }}"
@@ -293,6 +294,7 @@ images:
   helm: "{{ official_versioned_images.helm | final_image(docker_registry_full_url, load_private_images) }}"
   heapster: "{{ official_versioned_images.heapster | final_image(docker_registry_full_url, load_private_images) }}"
   influxdb: "{{ official_versioned_images.influxdb | final_image(docker_registry_full_url, load_private_images) }}"
+  rescheduler: "{{ official_versioned_images.rescheduler | final_image(docker_registry_full_url, load_private_images) }}"
 
 #===============================================================================
 # docker packages

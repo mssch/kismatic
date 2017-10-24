@@ -30,7 +30,7 @@
     failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
 
   - name: get docker container ID for pod '{{ name }}'
-    command: docker ps -a -f name={{ item }} --format {%raw%}"{{.ID}}"{%endraw%} -l
+    command: docker ps -a -f name={{ name }} --format {%raw%}"{{.ID}}"{%endraw%} -l
     register: containerID
     when: phase|failure or "Running" not in phase.stdout
 
