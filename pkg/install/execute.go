@@ -318,10 +318,6 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	if err != nil {
 		return err
 	}
-	cc, err = setPreflightOptions(*p, *cc)
-	if err != nil {
-		return err
-	}
 	t := task{
 		name:           "preflight",
 		playbook:       "preflight.yaml",
@@ -336,10 +332,6 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 // RunNewNodePreFlightCheck runs the preflight checks against a new node
 func (ae *ansibleExecutor) RunNewNodePreFlightCheck(p Plan, node Node) error {
 	cc, err := ae.buildClusterCatalog(&p)
-	if err != nil {
-		return err
-	}
-	cc, err = setPreflightOptions(p, *cc)
 	if err != nil {
 		return err
 	}
@@ -374,10 +366,6 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 	if err != nil {
 		return err
 	}
-	cc, err = setPreflightOptions(*p, *cc)
-	if err != nil {
-		return err
-	}
 	t := task{
 		name:           "copy-inspector",
 		playbook:       "copy-inspector.yaml",
@@ -399,12 +387,6 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 		limit:          []string{node.Node.Host},
 	}
 	return ae.execute(t)
-}
-
-func setPreflightOptions(p Plan, cc ansible.ClusterCatalog) (*ansible.ClusterCatalog, error) {
-	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
-	cc.EnablePackageInstallation = !p.Cluster.DisablePackageInstallation
-	return &cc, nil
 }
 
 func (ae *ansibleExecutor) RunPlay(playName string, p *Plan) error {
@@ -664,24 +646,25 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	}
 
 	cc := ansible.ClusterCatalog{
-		ClusterName:                  p.Cluster.Name,
-		AdminPassword:                p.Cluster.AdminPassword,
-		TLSDirectory:                 tlsDir,
-		ServicesCIDR:                 p.Cluster.Networking.ServiceCIDRBlock,
-		PodCIDR:                      p.Cluster.Networking.PodCIDRBlock,
-		DNSServiceIP:                 dnsIP,
-		EnableModifyHosts:            p.Cluster.Networking.UpdateHostsFiles,
-		EnablePackageInstallation:    !p.Cluster.DisablePackageInstallation,
-		KuberangPath:                 filepath.Join("kuberang", "linux", "amd64", "kuberang"),
-		DisconnectedInstallation:     p.Cluster.DisconnectedInstallation,
-		HTTPProxy:                    p.Cluster.Networking.HTTPProxy,
-		HTTPSProxy:                   p.Cluster.Networking.HTTPSProxy,
-		TargetVersion:                KismaticVersion.String(),
-		APIServerOptions:             p.Cluster.APIServerOptions.Overrides,
-		KubeControllerManagerOptions: p.Cluster.KubeControllerManagerOptions.Overrides,
-		KubeSchedulerOptions:         p.Cluster.KubeSchedulerOptions.Overrides,
-		KubeProxyOptions:             p.Cluster.KubeProxyOptions.Overrides,
-		KubeletOptions:               p.Cluster.KubeletOptions.Overrides,
+		ClusterName:                   p.Cluster.Name,
+		AdminPassword:                 p.Cluster.AdminPassword,
+		TLSDirectory:                  tlsDir,
+		ServicesCIDR:                  p.Cluster.Networking.ServiceCIDRBlock,
+		PodCIDR:                       p.Cluster.Networking.PodCIDRBlock,
+		DNSServiceIP:                  dnsIP,
+		EnableModifyHosts:             p.Cluster.Networking.UpdateHostsFiles,
+		EnablePackageInstallation:     !p.Cluster.DisablePackageInstallation,
+		KismaticPreflightCheckerLinux: filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
+		KuberangPath:                  filepath.Join("kuberang", "linux", "amd64", "kuberang"),
+		DisconnectedInstallation:      p.Cluster.DisconnectedInstallation,
+		HTTPProxy:                     p.Cluster.Networking.HTTPProxy,
+		HTTPSProxy:                    p.Cluster.Networking.HTTPSProxy,
+		TargetVersion:                 KismaticVersion.String(),
+		APIServerOptions:              p.Cluster.APIServerOptions.Overrides,
+		KubeControllerManagerOptions:  p.Cluster.KubeControllerManagerOptions.Overrides,
+		KubeSchedulerOptions:          p.Cluster.KubeSchedulerOptions.Overrides,
+		KubeProxyOptions:              p.Cluster.KubeProxyOptions.Overrides,
+		KubeletOptions:                p.Cluster.KubeletOptions.Overrides,
 	}
 
 	// set versions
