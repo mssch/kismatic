@@ -270,6 +270,10 @@ var _ = Describe("kismatic", func() {
 						sub.It("nodes should contain expected component overrides", func() error {
 							return ContainsOverrides(nodes, sshKey)
 						})
+
+						sub.It("should allow for running preflight checks idempotently", func() error {
+							return runValidate("kismatic-testing.yaml")
+						})
 					})
 				})
 			})
@@ -323,6 +327,10 @@ var _ = Describe("kismatic", func() {
 
 						sub.It("nodes should contain expected labels", func() error {
 							return containsLabels(nodes, sshKey)
+						})
+
+						sub.It("should allow for running preflight checks idempotently", func() error {
+							return runValidate("kismatic-testing.yaml")
 						})
 					})
 				})
