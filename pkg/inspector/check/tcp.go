@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -96,29 +97,53 @@ func (c *TCPPortServerCheck) Close() error {
 
 // Returns true if the port is taken by a process with the given name.
 func portTakenByProc(port int, procName string) (bool, error) {
-	// Use lsof to find the process that is bound to the tcp port in listen
-	// mode.
-	// ~# lsof -i TCP:2379 -s TCP:LISTEN -Pn +c 0
-	// COMMAND       PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-	// docker-proxy 7294 root    4u  IPv6  43407      0t0  TCP *:2379 (LISTEN)
-	portArg := fmt.Sprintf("TCP:%d", port)
-	cmd := exec.Command("lsof", "-i", portArg, "-s", "TCP:LISTEN", "-Pn", "+c", "0")
+	// Use `ss` (sockstat) to find the process listening on the given port.
+	// Sample output:
+	// ~# ss -tpln state listening src :6443  | strings
+	// Recv-Q Send-Q Local Address:Port               Peer Address:Port
+	// 0      128              :::6443                         :::*                   users:(("kube-apiserver",pid=21199,fd=59))
+	//
+	// ~# ss -tpln state listening src :80  | strings
+	// Recv-Q Send-Q Local Address:Port               Peer Address:Port
+	// 0      128               *:80                            *:*                   users:(("nginx",pid=30729,fd=10),("nginx",pid=30728,fd=10),("nginx",pid=30721,fd=10))
+	//
+	cmd := exec.Command("ss", "-tpln", "state", "listening", "src", fmt.Sprintf(":%d", port))
 	out, err := cmd.Output()
 	if err != nil {
-		return false, fmt.Errorf("error running lsof: %v", err)
+		return false, fmt.Errorf("error running ss: %v", err)
 	}
 	lines := strings.Split(string(out), "\n")
 	if len(lines) < 2 {
-		return false, fmt.Errorf("expected lsof to return at least 2 lines, but returned %d", len(lines))
+		return false, fmt.Errorf("expected ss to return at least 2 lines, but returned %d", len(lines))
 	}
-	// There are cases where lsof will return multiple lines for the same port. For example:
-	// ~# lsof -i TCP:$port -s TCP:LISTEN -Pn +c 0
-	// COMMAND   PID   USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-	// nginx   18611   root   10u  IPv4  82841      0t0  TCP *:80 (LISTEN)
-	// nginx   18628 nobody   10u  IPv4  82841      0t0  TCP *:80 (LISTEN)
-	// nginx   18629 nobody   10u  IPv4  82841      0t0  TCP *:80 (LISTEN)
-	//
-	// Use the first line after the header for verifying the proc name.
-	lsofFields := strings.Fields(lines[1])
-	return lsofFields[0] == procName, nil
+	boundProc, err := getProcNameFromTCPSockStatLine(lines[1])
+	if err != nil {
+		return false, err
+	}
+	return boundProc == procName, nil
+}
+
+// given an entry returned by sockstat (ss), return the name of the process using the port.
+// assumes ss was run with flags: -tpln
+func getProcNameFromTCPSockStatLine(line string) (string, error) {
+	ssFields := strings.Fields(line)
+	// The fifth field includes information about the process using the port
+	if len(ssFields) != 5 {
+		return "", fmt.Errorf("unexpected output returned from ss command. output was: %s", line)
+	}
+	// users:(("nginx",pid=30729,fd=10),("nginx",pid=30728,fd=10),("nginx",pid=30721,fd=10))
+	usersField := ssFields[4]
+
+	// This regular expression contains a single capturing group that will fish
+	// out the process name from the `ss` output. In the case that `ss` returns
+	// a list with multiple users, the left-most user will be matched.
+	re := regexp.MustCompile(`^users:\(\("([^"]+)",pid=\d+,fd=\d+\)`)
+	matched := re.FindSubmatch([]byte(usersField))
+	if len(matched) < 2 {
+		return "", fmt.Errorf("unable to determine the process from ss line %q", usersField)
+	}
+	// We are interested in the subexpression (capturing group). The first item
+	// in the matched list is the match of the full regexp, not the capturing
+	// group.
+	return string(matched[1]), nil
 }
