@@ -111,6 +111,9 @@ spec:
         - containerPort: 10053
           name: dns-tcp-local
           protocol: TCP
+        - containerPort: 10055
+          name: metrics
+          protocol: TCP
         # setting these vars to use with serviceaccount
         # --kube-master-url does not work with error:
         #  x509: failed to load system roots and no roots provided
@@ -122,9 +125,6 @@ spec:
           value: "{{ kubernetes_master_secure_port }}"
         - name: PROMETHEUS_PORT
           value: "10055"
-        # - containerPort: 10055
-        #   name: metrics
-        #   protocol: TCP
         volumeMounts:
         - name: kube-dns-config
           mountPath: /kube-dns-config
