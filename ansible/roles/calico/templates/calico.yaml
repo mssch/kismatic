@@ -1,9 +1,9 @@
-# Calico Version v2.6.0
-# https://docs.projectcalico.org/v2.6/releases#v2.6.0
+# Calico Version v2.6.3
+# https://docs.projectcalico.org/v2.6/releases#v2.6.3
 # This manifest includes the following component versions:
-#   calico/node:v2.6.0
-#   calico/cni:v1.11.0
-#   calico/kube-controllers:v1.0.0
+#   calico/node:v2.6.3
+#   calico/cni:v1.11.1
+#   calico/kube-controllers:v1.0.1
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -77,6 +77,9 @@ spec:
     spec:
       hostNetwork: true
       serviceAccountName: calico-node
+      # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
+      # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
+      terminationGracePeriodSeconds: 0
       tolerations:
         - effect: NoSchedule
           operator: Exists
@@ -100,6 +103,9 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: calico_backend
+            # Cluster type to identify the deployment type
+            - name: CLUSTER_TYPE
+              value: "k8s,bgp"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
