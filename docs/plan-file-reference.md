@@ -55,6 +55,8 @@
       * [calico](#add_onscnioptionscalico)
         * [mode](#add_onscnioptionscalicomode)
         * [log_level](#add_onscnioptionscalicolog_level)
+        * [workload_mtu](#add_onscnioptionscalicoworkload_mtu)
+        * [felix_input_mtu](#add_onscnioptionscalicofelix_input_mtu)
   * [dns](#add_onsdns)
     * [disable](#add_onsdnsdisable)
   * [heapster](#add_onsheapster)
@@ -577,6 +579,26 @@
 | **Required** |  No |
 | **Default** | `info` | 
 | **Options** |  `warning`, `info`, `debug`
+
+###  add_ons.cni.options.calico.workload_mtu
+
+ MTU for the workload interface, configures the CNI config 
+
+| | |
+|----------|-----------------|
+| **Kind** |  int |
+| **Required** |  No |
+| **Default** | `1500` | 
+
+###  add_ons.cni.options.calico.felix_input_mtu
+
+ MTU for the tunnel device used if IPIP is enabled 
+
+| | |
+|----------|-----------------|
+| **Kind** |  int |
+| **Required** |  No |
+| **Default** | `1440` | 
 
 ###  add_ons.dns
 
