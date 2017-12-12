@@ -112,6 +112,13 @@ func setDefaults(p *Plan) {
 	if p.AddOns.CNI.Options.Calico.LogLevel == "" {
 		p.AddOns.CNI.Options.Calico.LogLevel = "info"
 	}
+	if p.AddOns.CNI.Options.Calico.FelixInputMTU == 0 {
+		p.AddOns.CNI.Options.Calico.FelixInputMTU = 1440
+	}
+
+	if p.AddOns.CNI.Options.Calico.WorkloadMTU == 0 {
+		p.AddOns.CNI.Options.Calico.WorkloadMTU = 1500
+	}
 
 	if p.AddOns.HeapsterMonitoring == nil {
 		p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
@@ -295,6 +302,8 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 	p.AddOns.CNI.Provider = cniProviderCalico
 	p.AddOns.CNI.Options.Calico.Mode = "overlay"
 	p.AddOns.CNI.Options.Calico.LogLevel = "info"
+	p.AddOns.CNI.Options.Calico.WorkloadMTU = 1500
+	p.AddOns.CNI.Options.Calico.FelixInputMTU = 1440
 	// Heapster
 	p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 	p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas = 2
@@ -436,6 +445,8 @@ var commentMap = map[string][]string{
 	"add_ons.cni.provider":                               []string{"Selecting 'custom' will result in a CNI ready cluster, however it is up to", "you to configure a plugin after the install.", "Options: 'calico','weave','contiv','custom'."},
 	"add_ons.cni.options.calico.mode":                    []string{"Options: 'overlay','routed'."},
 	"add_ons.cni.options.calico.log_level":               []string{"Options: 'warning','info','debug'."},
+	"add_ons.cni.options.calico.workload_mtu":            []string{"MTU for the workload interface, configures the CNI config."},
+	"add_ons.cni.options.calico.felix_input_mtu":         []string{"MTU for the tunnel device used if IPIP is enabled."},
 	"add_ons.heapster.options.influxdb.pvc_name":         []string{"Provide the name of the persistent volume claim that you will create", "after installation. If not specified, the data will be stored in", "ephemeral storage."},
 	"add_ons.heapster.options.heapster.service_type":     []string{"Specify kubernetes ServiceType. Defaults to 'ClusterIP'.", "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'."},
 	"add_ons.heapster.options.heapster.sink":             []string{"Specify the sink to store heapster data. Defaults to an influxdb pod", "running on the cluster."},

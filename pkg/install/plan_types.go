@@ -325,6 +325,12 @@ type CalicoOptions struct {
 	// +default=info
 	// +options=warning,info,debug
 	LogLevel string `yaml:"log_level"`
+	// MTU for the workload interface, configures the CNI config
+	// +default=1500
+	WorkloadMTU int `yaml:"workload_mtu"`
+	// MTU for the tunnel device used if IPIP is enabled
+	// +default=1440
+	FelixInputMTU int `yaml:"felix_input_mtu"`
 }
 
 // The DNS add-on configuration
