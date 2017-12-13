@@ -83,6 +83,12 @@ cluster:
 
 # Docker daemon configuration of all cluster nodes
 docker:
+  logs:
+    driver: json-file
+    opts:
+      max-file: "1"
+      max-size: 50m
+
   storage:
 
     # Configure devicemapper in direct-lvm mode (RHEL/CentOS only).
