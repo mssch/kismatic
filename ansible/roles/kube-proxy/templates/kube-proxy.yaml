@@ -35,6 +35,9 @@ spec:
       - mountPath: /etc/kubernetes
         name: "etc-kube-ssl"
         readOnly: true
+      - mountPath: /lib/modules
+        name: "lib-modules"
+        readOnly: true
     livenessProbe:
       httpGet:
         host: 127.0.0.1
@@ -44,6 +47,9 @@ spec:
       timeoutSeconds: 15
       failureThreshold: 8
   volumes:
+    - name: "lib-modules"
+      hostPath:
+        path: "/lib/modules"
     - name: "ssl-certs"
       hostPath:
         path: "/usr/share/ca-certificates"
