@@ -37,22 +37,20 @@ func TestValidateKubeProxyOptions(t *testing.T) {
 			opts: KubeProxyOptions{
 				Overrides: map[string]string{
 					"cluster-cidr": "1.2.3.4",
-					"kubeconfig":   "/foo/.kube/config",
 				},
 			},
 			valid:           false,
-			protectedFields: []string{"cluster-cidr", "kubeconfig"},
+			protectedFields: []string{"cluster-cidr"},
 		},
 		{
 			opts: KubeProxyOptions{
 				Overrides: map[string]string{
 					"cluster-cidr": "1.2.3.4",
-					"kubeconfig":   "/foo/.kube/config",
 					"v":            "3",
 				},
 			},
 			valid:           false,
-			protectedFields: []string{"cluster-cidr", "kubeconfig"},
+			protectedFields: []string{"cluster-cidr"},
 		},
 	}
 	for _, test := range tests {

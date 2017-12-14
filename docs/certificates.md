@@ -37,7 +37,6 @@ as a cluster admin.
 | Scheduler Client Cert | Used by scheduler to talk to API Server | kube-scheduler.pem |
 | Service Account Signing Cert | Used by controller mgr to sign service accounts | service-account.pem |
 | Kubelet Client Cert | Used by Kubelet to talk to API Server | $nodeName-kubelet.pem |
-| Kube Proxy Client Cert | Used by Kube-proxy to talk to API Server | kube-proxy.pem | 
 | Etcd Client Cert | Used by calico to talk to etcd | etcd-client.pem |
 | Admin Client Cert | Used by admin to authenticate with the cluster using kubectl | admin.pem | 
 

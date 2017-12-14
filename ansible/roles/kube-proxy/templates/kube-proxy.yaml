@@ -71,6 +71,10 @@ spec:
 {% endif %}
 {% endfor %}
         env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ kubernetes_load_balanced_fqdn }}"
+        - name: KUBERNETES_SERVICE_PORT
+          value: "{{ kubernetes_master_secure_port }}"
         securityContext:
           privileged: true
         livenessProbe:
@@ -91,12 +95,6 @@ spec:
         - mountPath: /lib/modules
           name: lib-modules
           readOnly: true
-        - mountPath: "{{ kubernetes_kubeconfig.kube_proxy }}"
-          name: "kubeconfig"
-          readOnly: true
-        - mountPath: /etc/kubernetes
-          name: "etc-kube-ssl"
-          readOnly: true
       volumes:
       - name: varlog
         hostPath:
@@ -108,10 +106,4 @@ spec:
       - name: lib-modules
         hostPath:
           path: /lib/modules
-      - name: "kubeconfig"
-        hostPath:
-          path: "{{ kubernetes_kubeconfig.kube_proxy }}"
-      - name: "etc-kube-ssl"
-        hostPath:
-          path: "/etc/kubernetes"
       serviceAccountName: kube-proxy

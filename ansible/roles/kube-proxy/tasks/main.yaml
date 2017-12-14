@@ -1,12 +1,4 @@
 ---
-  - name: copy kube-proxy kubeconfig
-    template:
-      src: kubeconfig.j2
-      dest: "{{ kubernetes_kubeconfig.kube_proxy }}"
-      owner: "{{ kubernetes_owner }}"
-      group: "{{ kubernetes_group }}"
-      mode: "{{ kubernetes_service_mode }}"
-
   - name: create /etc/kubernetes/specs directory
     file:
       path: "{{ kubernetes_spec_dir }}"

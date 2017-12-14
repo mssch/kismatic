@@ -45,7 +45,7 @@
       - src: "service-account-key.pem"
         dest: "{{ kubernetes_certificates.service_account_key }}"
 
-  # copy kubelet and kube-proxy certificates
+  # copy kubelet and etcd certificates
   - name: copy kubernetes node client certificates
     copy:
       src: "{{ tls_directory }}/{{ item.src }}"
@@ -59,10 +59,6 @@
         dest: "{{ kubernetes_certificates.kubelet }}"
       - src: "{{ inventory_hostname }}-kubelet-key.pem"
         dest: "{{ kubernetes_certificates.kubelet_key }}"
-      - src: "kube-proxy.pem"
-        dest: "{{ kubernetes_certificates.kube_proxy }}"
-      - src: "kube-proxy-key.pem"
-        dest: "{{ kubernetes_certificates.kube_proxy_key }}"
       - src: "etcd-client.pem"
         dest: "{{ kubernetes_certificates.etcd_client }}"
       - src: "etcd-client-key.pem"
