@@ -26,7 +26,7 @@ KET operational tools include:
 ## Components
 | Component | Version |
 | --- | --- |
-| Kubernetes | v1.8.4 |
+| Kubernetes | v1.9.0 |
 | Docker | v1.12.6 |
 | Etcd (for Kubernetes) | v3.1.10 |
 | Etcd (for Calico & Contiv) | v3.1.10 |
