@@ -35,6 +35,9 @@
     * [provider](#clustercloud_providerprovider)
     * [config](#clustercloud_providerconfig)
 * [docker](#docker)
+  * [logs](#dockerlogs)
+    * [driver](#dockerlogsdriver)
+    * [opts](#dockerlogsopts)
   * [storage](#dockerstorage)
     * [direct_lvm](#dockerstoragedirect_lvm)
       * [enabled](#dockerstoragedirect_lvmenabled)
@@ -418,6 +421,30 @@
 ##  docker
 
  Configuration for the docker engine installed by KET 
+
+###  docker.logs
+
+ Log configuration for the docker engine 
+
+###  docker.logs.driver
+
+ Docker logging driver, more details https://docs.docker.com/engine/admin/logging/overview/ 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | `json-file` | 
+
+###  docker.logs.opts
+
+ Driver specific options 
+
+| | |
+|----------|-----------------|
+| **Kind** |  map[string]string |
+| **Required** |  No |
+| **Default** | ` ` | 
 
 ###  docker.storage
 

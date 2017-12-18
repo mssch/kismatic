@@ -5,7 +5,7 @@
       state: present
   - name: create docker volume group
     lvg:
-      pvs: "{{ docker_direct_lvm_block_device_path }}"
+      pvs: "{{ docker.storage.directlvm.block_device }}"
       state: present
       vg: docker
   - name: create thinpool logical volume

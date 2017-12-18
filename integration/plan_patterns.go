@@ -80,6 +80,11 @@ docker:
       enabled: true
       block_device: "/dev/xvdb"
       enable_deferred_deletion: false{{end}}
+  logs:
+    driver: "json-file"
+    opts: 
+      "max-size": "50m"
+      "max-file": "1"
 docker_registry:
   server: {{.DockerRegistryServer}}
   CA: {{.DockerRegistryCAPath}}

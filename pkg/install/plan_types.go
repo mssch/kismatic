@@ -212,8 +212,19 @@ type CloudProvider struct {
 
 // Docker includes the configuration for the docker installation owned by KET.
 type Docker struct {
+	// Log configuration for the docker engine
+	Logs DockerLogs
 	// Storage configuration for the docker engine
 	Storage DockerStorage
+}
+
+// DockerLogs includes the log-specific configuration for docker.
+type DockerLogs struct {
+	// Docker logging driver, more details https://docs.docker.com/engine/admin/logging/overview/
+	// +default=json-file
+	Driver string
+	// Driver specific options
+	Opts map[string]string
 }
 
 // DockerStorage includes the storage-specific configuration for docker.

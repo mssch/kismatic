@@ -99,6 +99,14 @@ func readDeprecatedFields(p *Plan) {
 }
 
 func setDefaults(p *Plan) {
+	if p.Docker.Logs.Driver == "" {
+		p.Docker.Logs.Driver = "json-file"
+		p.Docker.Logs.Opts = map[string]string{
+			"max-size": "50m",
+			"max-file": "1",
+		}
+	}
+
 	if p.AddOns.CNI == nil {
 		p.AddOns.CNI = &CNI{}
 		p.AddOns.CNI.Provider = cniProviderCalico
@@ -295,6 +303,15 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 	// Set Certificate defaults
 	p.Cluster.Certificates.Expiry = "17520h"
 	p.Cluster.Certificates.CAExpiry = defaultCAExpiry
+
+	// Docker
+	p.Docker.Logs = DockerLogs{
+		Driver: "json-file",
+		Opts: map[string]string{
+			"max-size": "50m",
+			"max-file": "1",
+		},
+	}
 
 	// Add-Ons
 	// CNI

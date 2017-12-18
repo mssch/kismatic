@@ -691,10 +691,13 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	}
 
 	// Setup docker options
-	cc.DockerDirectLVMEnabled = p.Docker.Storage.DirectLVM.Enabled
-	if cc.DockerDirectLVMEnabled {
-		cc.DockerDirectLVMBlockDevicePath = p.Docker.Storage.DirectLVM.BlockDevice
-		cc.DockerDirectLVMDeferredDeletionEnabled = p.Docker.Storage.DirectLVM.EnableDeferredDeletion
+	cc.Docker.Logs.Driver = p.Docker.Logs.Driver
+	cc.Docker.Logs.Opts = p.Docker.Logs.Opts
+
+	cc.Docker.Storage.DirectLVM.Enabled = p.Docker.Storage.DirectLVM.Enabled
+	if cc.Docker.Storage.DirectLVM.Enabled {
+		cc.Docker.Storage.DirectLVM.BlockDevice = p.Docker.Storage.DirectLVM.BlockDevice
+		cc.Docker.Storage.DirectLVM.EnableDeferredDeletion = p.Docker.Storage.DirectLVM.EnableDeferredDeletion
 	}
 	if ae.options.RestartServices {
 		cc.EnableRestart()
