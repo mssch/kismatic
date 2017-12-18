@@ -7,16 +7,36 @@
     template:
       src: default-backend.yaml
       dest: "{{ kubernetes_spec_dir }}/default-backend.yaml"
+
+  - name: get the name of the default-backend pod running on this node
+    command: kubectl get pods -l=name=default-http-backend --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname|lower }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system
+    register: pod_name
+    when: upgrading is defined and upgrading|bool == true
+
   - name: start default-backend serivce
     command: kubectl apply -f {{ kubernetes_spec_dir }}/default-backend.yaml
+
+  - name: delete default-backend pod running on this node
+    command: kubectl delete pod {{ pod_name.stdout }} -n kube-system --now
+    when: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
 
   - name: copy nginx-ingress-controller.yaml to remote
     template:
       src: nginx-ingress-controller.yaml
       dest: "{{ kubernetes_spec_dir }}/nginx-ingress-controller.yaml"
+
+  - name: get the name of the ingress pod running on this node
+    command: kubectl get pods -l=name=ingress --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname|lower }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system
+    register: pod_name
+    when: upgrading is defined and upgrading|bool == true
+
   - name: start nginx-ingress-controller serivce
     command: kubectl apply -f {{ kubernetes_spec_dir }}/nginx-ingress-controller.yaml
     register: out
+
+  - name: delete ingress pod running on this node
+    command: kubectl delete pod {{ pod_name.stdout }} -n kube-system --now
+    when: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
 
   - block:
     - name: get desired number of ingress pods

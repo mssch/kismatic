@@ -12,6 +12,10 @@
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
 
+  # Used during upgrades:
+  # 1) figure out the pod name running on the node with --template (find the pod with nodeName == inventory_hostname)
+  # 2) apply the new DS
+  # 3) shutdown the existing pod and wait
   - name: get the name of the kube-proxy pod running on this node
     command: kubectl get pods -l=k8s-app=kube-proxy --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname|lower }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system
     register: pod_name
