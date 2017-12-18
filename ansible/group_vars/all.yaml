@@ -106,7 +106,6 @@ kubernetes_kubeconfig:
   controller_manager: "{{kubernetes_install_dir}}/controller-manager.conf"
   scheduler: "{{kubernetes_install_dir}}/scheduler.conf"
   kubelet: "{{kubernetes_install_dir}}/kubelet.conf"
-  kube_proxy: "{{kubernetes_install_dir}}/kube-proxy.conf"
 
 # file modes
 kubernetes_executable_mode: 0775
@@ -145,8 +144,6 @@ kubernetes_certificates:
   scheduler_key: "{{ kubernetes_certificates_dir }}/scheduler-key.pem"
   kubelet: "{{ kubernetes_certificates_dir }}/kubelet.pem"
   kubelet_key: "{{ kubernetes_certificates_dir }}/kubelet-key.pem"
-  kube_proxy: "{{ kubernetes_certificates_dir }}/kube-proxy.pem"
-  kube_proxy_key: "{{ kubernetes_certificates_dir }}/kube-proxy-key.pem"
   service_account: "{{ kubernetes_certificates_dir }}/service-account.pem"
   service_account_key: "{{ kubernetes_certificates_dir }}/service-account-key.pem"
 
@@ -201,7 +198,6 @@ kube_scheduler_option_defaults:
 kube_proxy_option_defaults:
   "cluster-cidr": "{{ kubernetes_pods_cidr }}"
   "hostname-override": "{{ inventory_hostname }}"
-  "kubeconfig": "{{ kubernetes_kubeconfig.kube_proxy }}"
   "proxy-mode": "iptables"
   "v": "2"
 
@@ -219,7 +215,7 @@ kubelet_defaults:
   "hostname-override": "{{ inventory_hostname }}"
   "require-kubeconfig": "true"
   "kubeconfig": "{{ kubernetes_kubeconfig.kubelet }}"
-  "node-labels": "kismatic/host={{ inventory_hostname }},kismatic/cni-provider={{ cni.provider| quote }}{% if 'ingress' in group_names%},kismatic/ingress=true{% endif %}{% if 'storage' in group_names%},kismatic/storage=true{% endif %}{% if 'master' in group_names %},node-role.kubernetes.io/master={% endif %}"
+  "node-labels": "{% if 'master' in group_names %},node-role.kubernetes.io/master={% endif %}"
   "node-ip": "{{ internal_ipv4 }}"
   "pod-infra-container-image": "{{ images.pause }}"
   "pod-manifest-path": "{{ kubelet_pod_manifests_dir }}"

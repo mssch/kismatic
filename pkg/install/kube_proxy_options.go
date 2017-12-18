@@ -8,7 +8,6 @@ import (
 var kubeProxyProtectedOptions = []string{
 	"cluster-cidr",
 	"hostname-override",
-	"kubeconfig",
 }
 
 func (options *KubeProxyOptions) validate() (bool, []error) {

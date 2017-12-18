@@ -466,11 +466,6 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 			expectedCommonName: "system:kube-controller-manager",
 		},
 		{
-			name:               "kube-proxy certificate",
-			certFilename:       "kube-proxy.pem",
-			expectedCommonName: "system:kube-proxy",
-		},
-		{
 			name:                  "master node/kubelet certificate",
 			certFilename:          fmt.Sprintf("%s-kubelet.pem", masterNode.Host),
 			expectedCommonName:    fmt.Sprintf("system:node:%s", masterNode.Host),

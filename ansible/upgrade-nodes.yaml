@@ -31,7 +31,6 @@
   - include: _kube-scheduler.yaml play_name="Upgrade Kubernetes Scheduler" upgrading=true
   - include: _kube-controller-manager.yaml play_name="Upgrade Kubernetes Controller Manager" upgrading=true
   - include: _validate-control-plane-node.yaml serial_count="1" upgrading=true
-  - include: _kube-proxy-stop.yaml play_name="Upgrade Kubernetes Proxy" upgrading=true
   - include: _kube-proxy.yaml play_name="Upgrade Kubernetes Proxy" upgrading=true
   - include: _label-nodes.yaml
   - include: _calico.yaml play_name="Upgrade Calico Cluster Network" upgrading=true

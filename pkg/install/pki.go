@@ -26,8 +26,6 @@ const (
 	schedulerUser                       = "system:kube-scheduler"
 	controllerManagerCertFilenamePrefix = "kube-controller-manager"
 	controllerManagerUser               = "system:kube-controller-manager"
-	kubeProxyCertFilenamePrefix         = "kube-proxy"
-	kubeProxyUser                       = "system:kube-proxy"
 	kubeletUserPrefix                   = "system:node"
 	kubeletGroup                        = "system:nodes"
 	contivProxyServerCertFilename       = "contiv-proxy-server"
@@ -165,7 +163,7 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 		})
 	}
 
-	// Kubelet and kube-proxy client certificate
+	// Kubelet and etcd client certificate
 	if containsAny([]string{"master", "worker", "ingress", "storage"}, roles) {
 		m = append(m, certificateSpec{
 			description:   fmt.Sprintf("%s kubelet", node.Host),
@@ -174,11 +172,6 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 			organizations: []string{kubeletGroup},
 		})
 
-		m = append(m, certificateSpec{
-			description: "kube-proxy",
-			filename:    kubeProxyCertFilenamePrefix,
-			commonName:  kubeProxyUser,
-		})
 		// etcd client certificate
 		// all nodes need to be able to talk to etcd b/c of calico
 		m = append(m, certificateSpec{
