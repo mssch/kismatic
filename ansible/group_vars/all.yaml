@@ -1,7 +1,7 @@
 #===============================================================================
 # VERSIONS
-kubernetes_yum_version: 1.8.4-0
-kubernetes_deb_version: 1.8.4-00
+kubernetes_yum_version: 1.9.0-0
+kubernetes_deb_version: 1.9.0-00
 docker_engine_yum_version: 1.12.6-1.el7.centos
 docker_engine_apt_version: 1.12.6-0~ubuntu-xenial
 glusterfs_server_version_rhel: "3.8.15-2.el7"
@@ -79,7 +79,7 @@ contiv:
   certs:
     proxy_server_key_filename: "contiv-proxy-server-key.pem"
     proxy_server_cert_filename: "contiv-proxy-server.pem"
-  dir: 
+  dir:
     config: /etc/contiv
     var: /var/contiv
   proxy_server_certs_secret_name: "contiv-proxy-server-certs"
@@ -99,7 +99,7 @@ kubernetes_kubectl_config_dir: /root/.kube
 kubernetes_basic_auth_path: "{{kubernetes_auth_dir}}/basicauth.csv"
 kubernetes_authorization_policy_path: "{{kubernetes_auth_dir}}/authorization-policy.json"
 kubernetes_services_kubeconfig_path: "{{kubelet_lib_dir}}/kubeconfig"
-kubernetes_kubeconfig_path: "{{kubernetes_kubectl_config_dir}}/config" 
+kubernetes_kubeconfig_path: "{{kubernetes_kubectl_config_dir}}/config"
 
 kubernetes_kubeconfig:
   kubectl: "{{kubernetes_kubectl_config_dir}}/config"
@@ -132,7 +132,7 @@ cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' 
 
 # kubernetes certificate config
 # TODO: Do we want to change this?
-kubernetes_certificates_dir: "{{ kubernetes_install_dir }}/pki" 
+kubernetes_certificates_dir: "{{ kubernetes_install_dir }}/pki"
 kubernetes_certificates:
   ca: "{{ kubernetes_certificates_dir }}/ca.pem"
   api_server: "{{ kubernetes_certificates_dir }}/api-server.pem"

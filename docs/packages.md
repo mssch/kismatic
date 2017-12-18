@@ -1,6 +1,6 @@
 # Software Packages
 
-Starting with KET v1.6, the tool installs the "official" packages from Kubernetes and Docker. For any cluster built with a previous version of KET, the packages will be upgraded to use the new repos during the regular upgrade process and should have no impact on the users. 
+Starting with KET v1.6, the tool installs the "official" packages from Kubernetes and Docker. For any cluster built with a previous version of KET, the packages will be upgraded to use the new repos during the regular upgrade process and should have no impact on the users.
 
 
 By default, Kismatic will install the required repos onto machines and use them to install the packages. This may not be acceptable, for example, if you want to adopt a "golden image" prior to rolling out a many-node cluster, if you need to install a cluster in a lab where most machines are disconnected from the internet, or if you simply want to save bandwidth. If this is your use case, please view the [instructions below](#synclocal).
@@ -39,7 +39,7 @@ EOF'
 | Component | Install Command |
 | ---- | ---- |
 | Etcd Node | `sudo yum -y install docker-engine-1.12.6-1.el7.centos` |
-| Kubernetes Node | `sudo yum -y install docker-engine-1.12.6-1.el7.centos nfs-utils kubelet-1.8.4-0 kubectl-1.8.4-0` |
+| Kubernetes Node | `sudo yum -y install docker-engine-1.12.6-1.el7.centos nfs-utils kubelet-1.9.0-0 kubectl-1.9.0-0` |
 
 ## Installing via DEB (Ubuntu Xenial)
 
@@ -90,7 +90,7 @@ sudo apt-get update
 | Component | Install Command |
 | ---- | ---- |
 | Etcd Node | `sudo apt-get install -y docker-engine=1.12.6-0~ubuntu-xenial` |
-| Kubernetes Node | `sudo apt-get install -y docker-engine=1.12.6-0~ubuntu-xenial nfs-common kubelet=1.8.4-00 kubectl=1.8.4-00` |
+| Kubernetes Node | `sudo apt-get install -y docker-engine=1.12.6-0~ubuntu-xenial nfs-common kubelet=1.9.0-00 kubectl=1.9.0-00` |
 
 #### Stop the kubelet
 When the Ubuntu kubelet package is installed the service will be started and will bind to ports. This will cause some preflight port checks to fail.
