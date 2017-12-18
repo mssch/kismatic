@@ -38,9 +38,9 @@ KET operational tools include:
 [Download KET here](https://github.com/apprenda/kismatic/releases)
 
 ## Supported Operating Systems
-- RHEL 7
-- CentOS 7
-- Ubuntu 16.04
+- RHEL 7.4
+- CentOS 7.3
+- Ubuntu 16.04.3
 
 # Usage Documentation
 
