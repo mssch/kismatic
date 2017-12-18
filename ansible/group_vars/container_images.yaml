@@ -28,7 +28,7 @@ official_images:
     version: v1.0.1
   cni_bin:
     name: apprenda/cni-bin
-    version: v0.5.2
+    version: v0.6.0
   contiv_netplugin:
     name: contiv/netplugin
     version: 1.1.1
@@ -37,10 +37,10 @@ official_images:
     version: 1.1.1
   weave:
     name: weaveworks/weave-kube
-    version: 2.0.5
+    version: 2.1.3
   weave_npc:
     name: weaveworks/weave-npc
-    version: 2.0.5
+    version: 2.1.3
   defaultbackend:
     name: gcr.io/google_containers/defaultbackend
     version: 1.4

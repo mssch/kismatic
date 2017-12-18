@@ -261,7 +261,7 @@ var _ = Describe("kismatic", func() {
 						})
 
 						sub.It("should respect network policies", func() error {
-							return verifyNetworkPolicy(nodes.master[0], sshKey, false)
+							return verifyNetworkPolicy(nodes.master[0], sshKey)
 						})
 
 						sub.It("should support heapster with persistent storage", func() error {
@@ -323,7 +323,7 @@ var _ = Describe("kismatic", func() {
 						})
 
 						sub.It("should respect network policies", func() error {
-							return verifyNetworkPolicy(nodes.master[0], sshKey, true)
+							return verifyNetworkPolicy(nodes.master[0], sshKey)
 						})
 
 						sub.It("should support heapster with persistent storage", func() error {
@@ -384,7 +384,7 @@ var _ = Describe("kismatic", func() {
 
 		// 				// Contiv does not support the Kubernetes network policy API
 		// 				// sub.It("should respect network policies", func() error {
-		// 				// 	return verifyNetworkPolicy(nodes.master[0], sshKey, true)
+		// 				// 	return verifyNetworkPolicy(nodes.master[0], sshKey)
 		// 				// })
 
 		// 				sub.It("should support heapster with persistent storage", func() error {
