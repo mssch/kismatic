@@ -27,3 +27,17 @@ space allows for auto-extending the logical volumes when they start to fill up a
 The threshold for auto-extension is set to 80% of the size of the volume.
 
 For more information on `devicemapper` see https://docs.docker.com/engine/userguide/storagedriver/device-mapper-driver/#configure-direct-lvm-mode-for-production
+
+## Log Driver (KET v1.7.0+)
+```
+docker
+  logs:
+    driver: json-file
+    opts:
+      max-file: "1"
+      max-size: 50m
+```
+
+In the plan file the `docker.logs` field allows to set the docker daemon log driver [options](https://docs.docker.com/engine/admin/logging/overview/). The specified options from the plan file get set in `/etc/docker/daemon.json`. 
+
+This is an advanced feature and the values provided will not be validated, please refer to the documentation for your specific driver for the valid options.
