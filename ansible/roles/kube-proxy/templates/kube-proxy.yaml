@@ -45,7 +45,9 @@ spec:
         version: "{{ official_images.kube_apiserver.version }}"
         kismatic/version: "{{ kismatic_short_version }}"
         k8s-app: kube-proxy
-        scheduler.alpha.kubernetes.io/critical-pod: ''        
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+        prometheus.io/port: "10249"
+        prometheus.io/scrape: "true"
     spec:
       hostNetwork: true
       nodeSelector:
