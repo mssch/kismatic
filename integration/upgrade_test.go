@@ -79,7 +79,7 @@ var _ = Describe("Upgrade", func() {
 						})
 
 						sub.It("should respect network policies", func() error {
-							return verifyNetworkPolicy(nodes.master[0], sshKey, false)
+							return verifyNetworkPolicy(nodes.master[0], sshKey)
 						})
 
 						// This test should always be last
@@ -303,7 +303,7 @@ var _ = Describe("Upgrade", func() {
 						})
 
 						sub.It("should respect network policies", func() error {
-							return verifyNetworkPolicy(nodes.master[0], sshKey, false)
+							return verifyNetworkPolicy(nodes.master[0], sshKey)
 						})
 
 						// This test should always be last
@@ -527,7 +527,7 @@ var _ = Describe("Upgrade", func() {
 						})
 
 						sub.It("should respect network policies", func() error {
-							return verifyNetworkPolicy(nodes.master[0], sshKey, false)
+							return verifyNetworkPolicy(nodes.master[0], sshKey)
 						})
 
 						// This test should always be last
@@ -751,7 +751,7 @@ var _ = Describe("Upgrade", func() {
 						})
 
 						sub.It("should respect network policies", func() error {
-							return verifyNetworkPolicy(nodes.master[0], sshKey, false)
+							return verifyNetworkPolicy(nodes.master[0], sshKey)
 						})
 
 						// This test should always be last
