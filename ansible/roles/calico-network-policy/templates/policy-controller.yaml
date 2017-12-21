@@ -84,6 +84,9 @@ spec:
               value: "{{ kubernetes_master_ip }}"
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
+            # Choose which controllers to run.
+            - name: ENABLED_CONTROLLERS
+              value: policy,profile,workloadendpoint,node
 
 ---
 
