@@ -11,6 +11,7 @@ type PlanAWS struct {
 	Ingress                      []NodeDeets
 	Storage                      []NodeDeets
 	NFSVolume                    []NFSVolume
+	AdminPassword                string
 	MasterNodeFQDN               string
 	MasterNodeShortName          string
 	SSHUser                      string
@@ -44,7 +45,7 @@ type PlanAWS struct {
 // Certain fields are still present for backwards compatabilty when testing upgrades
 const planAWSOverlay = `cluster:
   name: kubernetes
-  admin_password: abbazabba
+  admin_password: {{.AdminPassword}}
   disable_package_installation: {{.DisablePackageInstallation}}
   disconnected_installation: {{.DisconnectedInstallation}}
   networking:
