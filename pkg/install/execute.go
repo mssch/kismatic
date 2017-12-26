@@ -21,6 +21,7 @@ import (
 // environment defined in the plan file
 type PreFlightExecutor interface {
 	RunPreFlightCheck(*Plan) error
+	CopyInspector(*Plan) error
 	RunNewWorkerPreFlightCheck(Plan, Node) error
 	RunUpgradePreFlightCheck(*Plan, ListableNode) error
 }
@@ -325,6 +326,27 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	t := task{
 		name:           "preflight",
 		playbook:       "preflight.yaml",
+		inventory:      buildInventoryFromPlan(p),
+		clusterCatalog: *cc,
+		explainer:      ae.preflightExplainer(),
+		plan:           *p,
+	}
+	return ae.execute(t)
+}
+
+// RunInspector against the nodes defined in the plan
+func (ae *ansibleExecutor) CopyInspector(p *Plan) error {
+	cc, err := ae.buildClusterCatalog(p)
+	if err != nil {
+		return err
+	}
+	cc, err = setPreflightOptions(*p, *cc)
+	if err != nil {
+		return err
+	}
+	t := task{
+		name:           "copy-inspector",
+		playbook:       "copy-inspector.yaml",
 		inventory:      buildInventoryFromPlan(p),
 		clusterCatalog: *cc,
 		explainer:      ae.preflightExplainer(),

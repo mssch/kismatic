@@ -1,0 +1,14 @@
+---
+  - name: "Copy Kismatic Inspector"
+    hosts: all
+    any_errors_fatal: true
+    become: yes
+    vars_files:
+      - group_vars/all.yaml
+
+    tasks:
+      - name: copy Kismatic Inspector to node
+        copy:
+          src: "{{ kismatic_preflight_checker }}"
+          dest: "{{ bin_dir }}/kismatic-inspector"
+          mode: 0744
