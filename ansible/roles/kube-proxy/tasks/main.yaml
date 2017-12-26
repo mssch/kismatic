@@ -39,7 +39,7 @@
     when: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
 
   - name: label nodes for kube-proxy
-    command: kubectl label --overwrite nodes --selector kubernetes.io/hostname={{ inventory_hostname }} --kubeconfig {{ kubernetes_kubeconfig.kubectl }} kismatic/kube-proxy=true
+    command: kubectl label --overwrite nodes --selector kubernetes.io/hostname={{ inventory_hostname|lower }} --kubeconfig {{ kubernetes_kubeconfig.kubectl }} kismatic/kube-proxy=true
     
   - name: get desired number of kube-proxy pods
     command: kubectl get ds kube-proxy -o=jsonpath='{.status.desiredNumberScheduled}' --namespace=kube-system --kubeconfig {{ kubernetes_kubeconfig.kubectl }}
