@@ -25,7 +25,7 @@ func createPackageRepositoryMirror(repoNode NodeDeets, distro linuxDistro, sshKe
 		return fmt.Errorf("failed to copy script to remote node: %v", err)
 	}
 	cmds := []string{"chmod +x /tmp/" + mirrorScript, "sudo /tmp/" + mirrorScript}
-	err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 45*time.Minute)
+	err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 60*time.Minute)
 	if err != nil {
 		return fmt.Errorf("error running mirroring script: %v", err)
 	}
