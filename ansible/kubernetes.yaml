@@ -47,7 +47,7 @@
     when: dashboard.enabled|bool == true
   - include: _helm.yaml
     when: helm.enabled|bool == true
-  - include: _kube-ingress.yaml
+  - include: _nginx-ingress.yaml
     when: configure_ingress|bool == true
   - include: _storage.yaml
     when: configure_storage|bool == true

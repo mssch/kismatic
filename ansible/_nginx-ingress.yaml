@@ -9,4 +9,4 @@
       - group_vars/container_images.yaml
 
     roles:
-      - kube-ingress
+      - nginx-ingress
