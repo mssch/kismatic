@@ -88,7 +88,7 @@ func (m rpmManager) isPackageListed(p PackageQuery, list []byte) bool {
 		}
 		maybeName := strings.Split(f[0], ".")[0]
 		maybeVersion := f[1]
-		if p.Name == maybeName && (p.AnyVersion || p.Version == maybeVersion) {
+		if p.Name == maybeName && (p.Version == "" || p.Version == maybeVersion) {
 			return true
 		}
 	}
@@ -139,9 +139,15 @@ func (m debManager) isPackageListed(p PackageQuery) (bool, error) {
 			// Ignore lines with unexpected format
 			continue
 		}
+		if f[0] == "un" {
+			// skip if we see "un"
+			// The "u" means that the "Desired Action" for the package is "Unknown".
+			// The "n" means that the "Status" of the package is "Not installed"
+			continue
+		}
 		maybeName := strings.Split(f[1], ".")[0]
 		maybeVersion := f[2]
-		if p.Name == maybeName && (p.AnyVersion || p.Version == maybeVersion) {
+		if p.Name == maybeName && (p.Version == "" || p.Version == maybeVersion) {
 			return true, nil
 		}
 	}
@@ -149,7 +155,7 @@ func (m debManager) isPackageListed(p PackageQuery) (bool, error) {
 }
 
 func packageName(p PackageQuery, delimeter string) string {
-	if p.AnyVersion {
+	if p.Version == "" {
 		return p.Name
 	}
 

@@ -1,15 +1,13 @@
 package check
 
 import (
-	"errors"
 	"fmt"
 )
 
 // PackageQuery is a query for finding a package
 type PackageQuery struct {
-	Name       string
-	Version    string
-	AnyVersion bool
+	Name    string
+	Version string
 }
 
 func (p PackageQuery) String() string {
@@ -45,7 +43,7 @@ func (c PackageCheck) Check() (bool, error) {
 		return false, fmt.Errorf("failed to determine if package is available for install: %v", err)
 	}
 	if !available {
-		return false, errors.New("package is not installed, and is not available in known package repositories")
+		return false, fmt.Errorf("package is not installed, and is not available in known package repositories")
 	}
-	return false, errors.New("package is not installed, but is available in a package repository")
+	return false, fmt.Errorf("package is not installed, but is available in a package repository")
 }

@@ -47,7 +47,7 @@ var _ = Describe("Upgrade", func() {
 						nodes.worker = allWorkers[0 : len(nodes.worker)-1]
 
 						// Standup cluster with previous version
-						opts := installOptions{}
+						opts := installOptions{adminPassword: "abbazabba"}
 						err := installKismatic(nodes, opts, sshKey)
 						FailIfError(err)
 
@@ -108,6 +108,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -153,6 +154,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -176,6 +178,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -220,6 +223,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -271,7 +275,7 @@ var _ = Describe("Upgrade", func() {
 						nodes.worker = allWorkers[0 : len(nodes.worker)-1]
 
 						// Standup cluster with previous version
-						opts := installOptions{}
+						opts := installOptions{adminPassword: "abbazabba"}
 						err := installKismatic(nodes, opts, sshKey)
 						FailIfError(err)
 
@@ -298,9 +302,9 @@ var _ = Describe("Upgrade", func() {
 						})
 
 						// Use master[0] public IP
-						sub.It("should have an accessible dashboard", func() error {
-							return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
-						})
+						// sub.It("should have an accessible dashboard", func() error {
+						// 	return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
+						// })
 
 						sub.It("should respect network policies", func() error {
 							return verifyNetworkPolicy(nodes.master[0], sshKey)
@@ -332,6 +336,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -377,6 +382,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -400,6 +406,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -444,6 +451,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -495,7 +503,7 @@ var _ = Describe("Upgrade", func() {
 						nodes.worker = allWorkers[0 : len(nodes.worker)-1]
 
 						// Standup cluster with previous version
-						opts := installOptions{}
+						opts := installOptions{adminPassword: "abbazabba"}
 						err := installKismatic(nodes, opts, sshKey)
 						FailIfError(err)
 
@@ -522,9 +530,9 @@ var _ = Describe("Upgrade", func() {
 						})
 
 						// Use master[0] public IP
-						sub.It("should have an accessible dashboard", func() error {
-							return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
-						})
+						// sub.It("should have an accessible dashboard", func() error {
+						// 	return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
+						// })
 
 						sub.It("should respect network policies", func() error {
 							return verifyNetworkPolicy(nodes.master[0], sshKey)
@@ -556,6 +564,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -601,6 +610,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -624,6 +634,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -668,6 +679,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -719,7 +731,7 @@ var _ = Describe("Upgrade", func() {
 						nodes.worker = allWorkers[0 : len(nodes.worker)-1]
 
 						// Standup cluster with previous version
-						opts := installOptions{}
+						opts := installOptions{adminPassword: "abbazabba"}
 						err := installKismatic(nodes, opts, sshKey)
 						FailIfError(err)
 
@@ -746,9 +758,9 @@ var _ = Describe("Upgrade", func() {
 						})
 
 						// Use master[0] public IP
-						sub.It("should have an accessible dashboard", func() error {
-							return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
-						})
+						// sub.It("should have an accessible dashboard", func() error {
+						// 	return canAccessDashboard(fmt.Sprintf("https://admin:abbazabba@%s:6443/ui", nodes.master[0].PublicIP))
+						// })
 
 						sub.It("should respect network policies", func() error {
 							return verifyNetworkPolicy(nodes.master[0], sshKey)
@@ -780,6 +792,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -825,6 +838,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -848,6 +862,7 @@ var _ = Describe("Upgrade", func() {
 							nodes.worker = nodes.worker[0:1]
 							// Standup cluster with previous version
 							opts := installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: false, // we want KET to install the packages, so let it use the package repo
 								modifyHostsFiles:         true,
 							}
@@ -892,6 +907,7 @@ var _ = Describe("Upgrade", func() {
 							err = os.Remove("kismatic-testing.yaml")
 							FailIfError(err)
 							opts = installOptions{
+								adminPassword:            "abbazabba",
 								disconnectedInstallation: true,
 								modifyHostsFiles:         true,
 								dockerRegistryCAPath:     caFile,
@@ -912,7 +928,7 @@ var _ = Describe("Upgrade", func() {
 
 func installAndUpgradeMinikube(node NodeDeets, sshKey string, online bool) {
 	// Install previous version cluster
-	err := installKismaticMini(node, sshKey)
+	err := installKismaticMini(node, sshKey, "abbazabba")
 	FailIfError(err)
 	extractCurrentKismaticInstaller()
 	upgradeCluster(online)
