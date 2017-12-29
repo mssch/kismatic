@@ -63,15 +63,15 @@ KET operational tools include:
 
 # Development Documentation
 
-[How to Build KET](BUILDING.md)
+[How to Build KET](docs/development/BUILDING.md)
 
-[How to Contribute to KET](CONTRIBUTING.md)
+[How to Contribute to KET](docs/development/CONTRIBUTING.md)
 
-[Running Integration Tests](INTEGRATION_TESTING.md)
+[Running Integration Tests](docs/development/INTEGRATION_TESTING.md)
 
-[KET Code of Conduct](code-of-conduct.md)
+[KET Code of Conduct](docs/development/code-of-conduct.md)
 
-[KET Release Process](RELEASE.md)
+[KET Release Process](docs/development/RELEASE.md)
 
 # Basic Installation Instructions
 Use the `kismatic install` command to work through installation of a cluster. The installer expects the underlying infrastructure to be accessible via SSH using Public Key Authentication.
