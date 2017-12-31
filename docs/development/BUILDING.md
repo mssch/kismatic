@@ -19,13 +19,17 @@ In order to clean:
 make clean
 ```
 
-In order to produce the distribution package:
+### Package using make
+
+In order to produce the distribution package execute:
 ```
 make dist
 ```
-This will produce an `./out` directory, which contains the bits, and a tarball.
 
-You may pass build options as necessary:
+To create a package to run on Linux, execute:
+
 ```
-GOOS=linux make build
+GLIDE_GOOS=darwin GOOS=linux make dist
 ```
+
+This will produce an `./out` directory, which contains the bits, and a tarball.
