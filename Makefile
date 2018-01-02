@@ -83,7 +83,7 @@ clean:
 	rm -rf vendor
 	rm -rf vendor-ansible
 	rm -rf vendor-provision
-	rm -rf integration/vendor
+	rm -rf integration-tests/vendor
 	rm -rf vendor-kuberang
 	rm -rf vendor-helm
 	rm -rf vendor-kubectl
@@ -177,19 +177,19 @@ bare-dist: vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VE
 
 integration/vendor: tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH)
 	go get github.com/onsi/ginkgo/ginkgo
-	cd integration && ../tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH) install
+	cd integration-tests && ../tools/glide-$(GLIDE_GOOS)-$(HOST_GOARCH) install
 
 just-integration-test: integration/vendor
-	ginkgo --skip "\[slow\]" -p $(GINKGO_OPTS) -v integration
+	ginkgo --skip "\[slow\]" -p $(GINKGO_OPTS) -v integration-tests
 
 slow-integration-test: integration/vendor
-	ginkgo --focus "\[slow\]" -p $(GINKGO_OPTS) -v integration
+	ginkgo --focus "\[slow\]" -p $(GINKGO_OPTS) -v integration-tests
 
 serial-integration-test: integration/vendor
-	ginkgo -v integration
+	ginkgo -v integration-tests
 
 focus-integration-test: integration/vendor
-	ginkgo --focus $(FOCUS) $(GINKGO_OPTS) -v integration
+	ginkgo --focus $(FOCUS) $(GINKGO_OPTS) -v integration-tests
 
 docs/generate-kismatic-cli:
 	mkdir -p docs/kismatic-cli
