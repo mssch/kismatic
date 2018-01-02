@@ -49,7 +49,7 @@ kismatic-cluster.yaml
 vendor/*
 package/source
 package/out
-integration/vendor
+integration-tests/vendor
 vendor-provision/*
 vendor-kuberang/*
 vendor-helm

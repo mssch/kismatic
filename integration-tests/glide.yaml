@@ -1,4 +1,4 @@
-package: github.com/apprenda/kismatic/integration
+package: github.com/apprenda/kismatic/integration-tests
 ignore:
 - github.com/apprenda/kismatic
 import:
