@@ -4,6 +4,7 @@ metadata:
   labels:
     tier: control-plane
     component: kube-scheduler
+    k8s-app: kube-scheduler
     kismatic/host: {{ inventory_hostname }}
   annotations:
     version: "{{ official_images.kube_apiserver.version }}"
