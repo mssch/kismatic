@@ -4,6 +4,7 @@ metadata:
   labels:
     tier: control-plane
     component: kube-controller-manager
+    k8s-app: kube-controller-manager
     kismatic/host: {{ inventory_hostname }}
   annotations:
     version: "{{ official_images.kube_apiserver.version }}"
