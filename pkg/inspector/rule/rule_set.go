@@ -299,7 +299,7 @@ const defaultRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   - ["ubuntu"]
   packageName: kubelet
-  packageVersion: 1.9.0-00
+  packageVersion: 1.9.1-00
 - kind: PackageDependency
   when: 
   - ["master", "worker", "ingress", "storage"]
@@ -310,7 +310,7 @@ const defaultRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   - ["ubuntu"]
   packageName: kubectl
-  packageVersion: 1.9.0-00
+  packageVersion: 1.9.1-00
 # https://docs.docker.com/engine/installation/linux/docker-ee/ubuntu/#uninstall-old-versions
 # - kind: PackageNotInstalled
 #   when: 
@@ -345,7 +345,7 @@ const defaultRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   - ["centos"]
   packageName: kubelet
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 - kind: PackageDependency
   when: 
   - ["master", "worker", "ingress", "storage"]
@@ -356,7 +356,7 @@ const defaultRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   - ["centos"]
   packageName: kubectl
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 # https://docs.docker.com/engine/installation/linux/docker-ee/centos/
 # - kind: PackageNotInstalled
 #   when: 
@@ -406,7 +406,7 @@ const defaultRuleSet = `---
   - [master", "worker", "ingress", "storage"]
   - ["rhel"]
   packageName: kubelet
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 - kind: PackageDependency
   when: 
   - [master", "worker", "ingress", "storage"]
@@ -417,7 +417,7 @@ const defaultRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   - ["rhel"]
   packageName: kubectl
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 # https://docs.docker.com/engine/installation/linux/docker-ee/rhel/#os-requirements
 # - kind: PackageNotInstalled
 #   when: 
@@ -493,7 +493,7 @@ const upgradeRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   - ["ubuntu"]
   packageName: kubelet
-  packageVersion: 1.9.0-00
+  packageVersion: 1.9.1-00
 - kind: PackageDependency
   when: 
   - ["master", "worker", "ingress", "storage"]
@@ -504,7 +504,7 @@ const upgradeRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   - ["ubuntu"]
   packageName: kubectl
-  packageVersion: 1.9.0-00
+  packageVersion: 1.9.1-00
 
 - kind: PackageDependency
   when: 
@@ -517,7 +517,7 @@ const upgradeRuleSet = `---
   - ["master", "worker", "ingress, storage"]
   - ["centos"]
   packageName: kubelet
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 - kind: PackageDependency
   when: 
   - ["master", "worker", "ingress, storage"]
@@ -528,7 +528,7 @@ const upgradeRuleSet = `---
   - ["master", "worker", "ingress, storage"]
   - ["centos"]
   packageName: kubectl
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 
 - kind: PackageDependency
   when: 
@@ -541,7 +541,7 @@ const upgradeRuleSet = `---
   - ["master", "worker", "ingress, storage"]
   - ["rhel"]
   packageName: kubelet
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 - kind: PackageDependency
   when: 
   - ["master", "worker", "ingress, storage"]
@@ -552,7 +552,7 @@ const upgradeRuleSet = `---
   - ["master", "worker", "ingress, storage"]
   - ["rhel"]
   packageName: kubectl
-  packageVersion: 1.9.0-0
+  packageVersion: 1.9.1-0
 
 # Gluster packages
 - kind: PackageDependency
