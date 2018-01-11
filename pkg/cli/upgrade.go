@@ -316,10 +316,6 @@ func upgradeNodes(in io.Reader, out io.Writer, plan install.Plan, opts upgradeOp
 	// Run upgrade preflight on the nodes that are to be upgraded
 	unreadyNodes := []install.ListableNode{}
 	if !opts.skipPreflight {
-		util.PrintHeader(out, fmt.Sprintf("Copy Kismatic Inspector to Nodes"), '=')
-		if err := preflightExec.CopyInspector(&plan); err != nil {
-			return errors.New("Error copying kismatic inspector")
-		}
 		for _, node := range nodesNeedUpgrade {
 			util.PrintHeader(out, fmt.Sprintf("Preflight Checks: %s %s", node.Node.Host, node.Roles), '=')
 			if err := preflightExec.RunUpgradePreFlightCheck(&plan, node); err != nil {

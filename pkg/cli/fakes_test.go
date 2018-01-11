@@ -48,10 +48,6 @@ func (fe *fakeExecutor) RunPreFlightCheck(p *install.Plan) error {
 	return nil
 }
 
-func (fe *fakeExecutor) CopyInspector(p *install.Plan) error {
-	return nil
-}
-
 func (fe *fakeExecutor) RunNewWorkerPreFlightCheck(install.Plan, install.Node) error {
 	return nil
 }

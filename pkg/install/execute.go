@@ -21,7 +21,6 @@ import (
 // environment defined in the plan file
 type PreFlightExecutor interface {
 	RunPreFlightCheck(*Plan) error
-	CopyInspector(*Plan) error
 	RunNewWorkerPreFlightCheck(Plan, Node) error
 	RunUpgradePreFlightCheck(*Plan, ListableNode) error
 }
@@ -334,27 +333,6 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	return ae.execute(t)
 }
 
-// RunInspector against the nodes defined in the plan
-func (ae *ansibleExecutor) CopyInspector(p *Plan) error {
-	cc, err := ae.buildClusterCatalog(p)
-	if err != nil {
-		return err
-	}
-	cc, err = setPreflightOptions(*p, *cc)
-	if err != nil {
-		return err
-	}
-	t := task{
-		name:           "copy-inspector",
-		playbook:       "copy-inspector.yaml",
-		inventory:      buildInventoryFromPlan(p),
-		clusterCatalog: *cc,
-		explainer:      ae.preflightExplainer(),
-		plan:           *p,
-	}
-	return ae.execute(t)
-}
-
 // RunNewWorkerPreFlightCheck runs the preflight checks against a new worker node
 func (ae *ansibleExecutor) RunNewWorkerPreFlightCheck(p Plan, node Node) error {
 	cc, err := ae.buildClusterCatalog(&p)
@@ -365,9 +343,20 @@ func (ae *ansibleExecutor) RunNewWorkerPreFlightCheck(p Plan, node Node) error {
 	if err != nil {
 		return err
 	}
+	t := task{
+		name:           "copy-inspector",
+		playbook:       "copy-inspector.yaml",
+		inventory:      buildInventoryFromPlan(&p),
+		clusterCatalog: *cc,
+		explainer:      ae.preflightExplainer(),
+		plan:           p,
+	}
+	if err := ae.execute(t); err != nil {
+		return err
+	}
 	p.Worker.ExpectedCount++
 	p.Worker.Nodes = append(p.Worker.Nodes, node)
-	t := task{
+	t = task{
 		name:           "add-worker-preflight",
 		playbook:       "preflight.yaml",
 		inventory:      buildInventoryFromPlan(&p),
@@ -390,6 +379,17 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 		return err
 	}
 	t := task{
+		name:           "copy-inspector",
+		playbook:       "copy-inspector.yaml",
+		inventory:      buildInventoryFromPlan(p),
+		clusterCatalog: *cc,
+		explainer:      ae.preflightExplainer(),
+		plan:           *p,
+	}
+	if err := ae.execute(t); err != nil {
+		return err
+	}
+	t = task{
 		name:           "upgrade-preflight",
 		playbook:       "upgrade-preflight.yaml",
 		explainer:      ae.preflightExplainer(),
