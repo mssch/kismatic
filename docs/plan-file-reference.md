@@ -35,6 +35,7 @@
     * [provider](#clustercloud_providerprovider)
     * [config](#clustercloud_providerconfig)
 * [docker](#docker)
+  * [disable](#dockerdisable)
   * [logs](#dockerlogs)
     * [driver](#dockerlogsdriver)
     * [opts](#dockerlogsopts)
@@ -422,6 +423,16 @@
 ##  docker
 
  Configuration for the docker engine installed by KET 
+
+###  docker.disable
+
+ Set to true to disable the installation of docker container runtime on the nodes. The installer will validate that docker is installed and running prior to proceeding. Use this option if a different version of docker from the included one is required. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  bool |
+| **Required** |  No |
+| **Default** | `false` | 
 
 ###  docker.logs
 

@@ -70,7 +70,7 @@ cluster:
   kubelet:
     option_overrides: {}
 
-  # Kubernetes cloud provider integration
+  # Kubernetes cloud provider integration.
   cloud_provider:
 
     # Options: 'aws','azure','cloudstack','fake','gce','mesos','openstack',
@@ -81,8 +81,11 @@ cluster:
     # Path to the config file, leave empty if provider does not require it.
     config: ""
 
-# Docker daemon configuration of all cluster nodes
+# Docker daemon configuration of all cluster nodes.
 docker:
+
+  # Set to true if docker is already installed and configured.
+  disable: false
   logs:
     driver: json-file
     opts:
@@ -179,7 +182,7 @@ add_ons:
   package_manager:
     disable: false
 
-    # Options: 'helm'
+    # Options: 'helm'.
     provider: helm
 
   # The rescheduler ensures that critical add-ons remain running on the cluster.
@@ -276,7 +279,7 @@ storage:
     internalip: ""
     labels: {}
 
-# A set of NFS volumes for use by on-cluster persistent workloads
+# A set of NFS volumes for use by on-cluster persistent workloads.
 nfs:
   nfs_volume:
 

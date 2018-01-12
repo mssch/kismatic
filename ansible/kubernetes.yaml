@@ -10,6 +10,7 @@
     when: allow_package_installation|bool == true
   # docker
   - include: _docker.yaml
+    when: docker.enabled|bool == true
   # etcd
   - include: _etcd-k8s.yaml
   - include: _etcd-networking.yaml

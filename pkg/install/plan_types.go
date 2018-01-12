@@ -223,6 +223,10 @@ type CloudProvider struct {
 
 // Docker includes the configuration for the docker installation owned by KET.
 type Docker struct {
+	// Set to true to disable the installation of docker container runtime on the nodes.
+	// The installer will validate that docker is installed and running prior to proceeding.
+	// Use this option if a different version of docker from the included one is required.
+	Disable bool
 	// Log configuration for the docker engine
 	Logs DockerLogs
 	// Storage configuration for the docker engine

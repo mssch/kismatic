@@ -713,6 +713,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	}
 
 	// Setup docker options
+	cc.Docker.Enabled = !p.Docker.Disable
 	cc.Docker.Logs.Driver = p.Docker.Logs.Driver
 	cc.Docker.Logs.Opts = p.Docker.Logs.Opts
 

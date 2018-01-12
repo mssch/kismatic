@@ -70,7 +70,8 @@ type ClusterCatalog struct {
 	DiagnosticsDateTime  string `yaml:"diagnostics_date_time"`
 
 	Docker struct {
-		Logs struct {
+		Enabled bool
+		Logs    struct {
 			Driver string            `yaml:"driver"`
 			Opts   map[string]string `yaml:"opts"`
 		}
