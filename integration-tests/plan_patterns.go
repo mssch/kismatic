@@ -18,6 +18,7 @@ type PlanAWS struct {
 	SSHKeyFile                   string
 	HomeDirectory                string
 	DisablePackageInstallation   bool
+	DisableDockerInstallation    bool
 	DisconnectedInstallation     bool
 	DockerRegistryServer         string
 	DockerRegistryCAPath         string
@@ -75,8 +76,9 @@ const planAWSOverlay = `cluster:
   kubelet: 
     option_overrides: { {{if .KubeletOptions}}{{ range $k, $v := .KubeletOptions }}"{{ $k }}": "{{ $v }}"{{end}}{{end}} }
   cloud_provider:
-    provider: {{.CloudProvider}}{{if .UseDirectLVM}}
+    provider: {{.CloudProvider}}
 docker:
+  disable: {{.DisableDockerInstallation}}{{if .UseDirectLVM}}
   storage:
     direct_lvm:
       enabled: true

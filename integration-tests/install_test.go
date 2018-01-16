@@ -89,6 +89,21 @@ var _ = Describe("kismatic", func() {
 			})
 		})
 
+		Context("when deploying a cluster with all node roles and docker already installed", func() {
+			installOpts := installOptions{disableDockerInstallation: true}
+			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
+				WithInfrastructure(NodeCount{1, 1, 1, 1, 1}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+					err := validateKismatic(nodes, installOpts, sshKey)
+					if err == nil {
+						Fail("Validation should fail when docker.disable = true and docker is not yet installed.")
+					}
+					InstallDockerPackage(nodes, Ubuntu1604LTS, sshKey)
+					err = installKismatic(nodes, installOpts, sshKey)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+		})
+
 		Context("when deploying a cluster with all node roles and cloud-provider on CentOS", func() {
 			ItOnAWS("should install successfully [slow]", func(aws infrastructureProvisioner) {
 				WithInfrastructure(NodeCount{1, 1, 2, 1, 1}, CentOS7, aws, func(nodes provisionedNodes, sshKey string) {
