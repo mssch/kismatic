@@ -45,6 +45,11 @@ const defaultRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   executable: iptables-restore
 
+# Docker should be installed when installation is disabled
+- kind: DockerInPath
+  when:
+  - ["etcd", "master", "worker", "ingress", "storage"]
+  
 # Ports used by etcd are available
 - kind: TCPPortAvailable
   when: 
