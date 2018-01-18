@@ -150,6 +150,18 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: k8s-app
+                  operator: In
+                  values:
+                  - kubernetes-dashboard
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: kubernetes-dashboard
         image: {{ images.kubernetes_dashboard }}
