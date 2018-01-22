@@ -23,12 +23,6 @@
         become: no
         environment: "{{ proxy_env|combine({'KUBECONFIG': local_kubeconfig_directory}) }}"
           
-      - name: "add kismatic helm repo"
-        local_action: command ../../helm repo add kismatic https://apprenda.github.io/kismatic-charts/
-        become: no
-        environment: "{{ proxy_env|combine({'KUBECONFIG': local_kubeconfig_directory}) }}"
-        when: disconnected_installation|bool != true
-
       - block:
         - name: wait until the tiller pod is ready
           command: kubectl get deployment tiller-deploy -n kube-system -o jsonpath='{.status.availableReplicas}'

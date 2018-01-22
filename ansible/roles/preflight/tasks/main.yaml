@@ -97,14 +97,6 @@
     run_once: true
     when: helm.enabled|bool == true and disconnected_installation|bool != true
 
-  - name: verify install node can reach Kismatic helm chart repo
-    uri:
-      url: https://apprenda.github.io/kismatic-charts
-    delegate_to: 127.0.0.1
-    become: no
-    run_once: true
-    when: helm.enabled|bool == true and disconnected_installation|bool != true
-
   # setup Kismatic Inspector
   - name: copy Kismatic Inspector to node
     copy:
