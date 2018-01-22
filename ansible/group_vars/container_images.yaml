@@ -16,7 +16,7 @@ official_images:
     version: v1.9.2
   calico_node:
     name: calico/node
-    version: v2.6.5
+    version: v2.6.6
   calico_ctl:
     name: calico/ctl
     version: v1.6.3
@@ -25,7 +25,7 @@ official_images:
     version: v1.11.2
   calico_kube_controller:
     name: calico/kube-controllers
-    version: v1.0.2
+    version: v1.0.3
   cni_bin:
     name: apprenda/cni-bin
     version: v0.6.0
