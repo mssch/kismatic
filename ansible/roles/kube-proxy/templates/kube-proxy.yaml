@@ -77,6 +77,10 @@ spec:
           value: "{{ kubernetes_load_balanced_fqdn }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "{{ kubernetes_master_secure_port }}"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         securityContext:
           privileged: true
         livenessProbe:
