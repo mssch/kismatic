@@ -198,7 +198,7 @@ kube_scheduler_option_defaults:
 
 kube_proxy_option_defaults:
   "cluster-cidr": "{{ kubernetes_pods_cidr }}"
-  "hostname-override": "{{ inventory_hostname }}"
+  "hostname-override": "$(NODE_NAME)"
   "proxy-mode": "iptables"
   "v": "2"
 
