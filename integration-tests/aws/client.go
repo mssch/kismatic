@@ -118,7 +118,7 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType, addBlockDevice bo
 				DeviceName: aws.String("/dev/sda1"),
 				Ebs: &ec2.EbsBlockDevice{
 					DeleteOnTermination: aws.Bool(true),
-					VolumeSize:          aws.Int64(20),
+					VolumeSize:          aws.Int64(25),
 				},
 			},
 		},
@@ -137,7 +137,7 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType, addBlockDevice bo
 			DeviceName: aws.String("/dev/sdb"),
 			Ebs: &ec2.EbsBlockDevice{
 				DeleteOnTermination: aws.Bool(true),
-				VolumeSize:          aws.Int64(10),
+				VolumeSize:          aws.Int64(15),
 			},
 		}
 		req.BlockDeviceMappings = append(req.BlockDeviceMappings, &ebs)
