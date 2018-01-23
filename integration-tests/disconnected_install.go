@@ -64,7 +64,7 @@ func seedRegistry(repoNode NodeDeets, registryCAFile string, registryPort int, s
 		"sudo tar -xf /tmp/kismatic.tar.gz",
 		fmt.Sprintf("sudo ./kismatic seed-registry --server %s", registry),
 	}
-	err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 30*time.Minute)
+	err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 60*time.Minute)
 	if err != nil {
 		return fmt.Errorf("failed to seed the registry: %v", err)
 	}
