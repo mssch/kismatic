@@ -23,7 +23,7 @@ const (
 	AWSSubnetID        = "subnet-25e13d08"
 	AWSKeyName         = "kismatic-integration-testing"
 	AWSSecurityGroupID = "sg-d1dc4dab"
-	AWSHostedZoneID    = "Z1LNBHSE28OF08"
+	AWSHostedZoneID    = "Z1U99XHRIRLO81"
 )
 
 type infrastructureProvisioner interface {
