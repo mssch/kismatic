@@ -5,7 +5,6 @@
 - name: detect SSH pipelining support
   shell: grep --extended-regexp "^\w+\s+requiretty" /etc/sudoers || echo "string not found"
   register: requiretty
-  changed_when: False
 
 - name: enable SSH pipelining
   set_fact:
