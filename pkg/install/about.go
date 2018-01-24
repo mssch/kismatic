@@ -51,19 +51,6 @@ func IsLessThanVersion(this semver.Version, that string) bool {
 	return this.LT(thatVersion)
 }
 
-func parseVersion(versionString string) (semver.Version, error) {
-	// Support a 'v' prefix
-	verString := versionString
-	if versionString[0] == 'v' {
-		verString = versionString[1:len(versionString)]
-	}
-	v, err := semver.Make(verString)
-	if err != nil {
-		return semver.Version{}, fmt.Errorf("Unable to parse version %q: %v", verString, err)
-	}
-	return v, nil
-}
-
 // ListVersions connects to the cluster described in the plan file and
 // gathers version information about it.
 func ListVersions(plan *Plan) (ClusterVersion, error) {
