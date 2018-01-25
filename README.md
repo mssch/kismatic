@@ -34,6 +34,7 @@ KET operational tools include:
 | Weave | v2.1.3 |
 | Contiv | v1.1.1 |
 | NGINX Ingress Controller | 0.10.2 |
+| CoreDNS | v1.0.5 |
 
 
 [Download KET here](https://github.com/apprenda/kismatic/releases)
