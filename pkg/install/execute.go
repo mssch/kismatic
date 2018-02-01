@@ -343,9 +343,20 @@ func (ae *ansibleExecutor) RunNewNodePreFlightCheck(p Plan, node Node) error {
 	if err != nil {
 		return err
 	}
+	t := task{
+		name:           "copy-inspector",
+		playbook:       "copy-inspector.yaml",
+		inventory:      buildInventoryFromPlan(&p),
+		clusterCatalog: *cc,
+		explainer:      ae.preflightExplainer(),
+		plan:           p,
+	}
+	if err := ae.execute(t); err != nil {
+		return err
+	}
 	p.Worker.ExpectedCount++
 	p.Worker.Nodes = append(p.Worker.Nodes, node)
-	t := task{
+	t = task{
 		name:           "add-node-preflight",
 		playbook:       "preflight.yaml",
 		inventory:      buildInventoryFromPlan(&p),
