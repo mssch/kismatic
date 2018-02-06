@@ -12,7 +12,7 @@ var errMissingClusterCA = errors.New("The Certificate Authority's private key an
 
 // AddNode adds a worker node to the original cluster described in the plan.
 // If successful, the updated plan is returned.
-func (ae *ansibleExecutor) AddNode(originalPlan *Plan, newNode Node, roles []string) (*Plan, error) {
+func (ae *ansibleExecutor) AddNode(originalPlan *Plan, newNode Node, roles []string, restartServices bool) (*Plan, error) {
 	if err := checkAddNodePrereqs(ae.pki, newNode); err != nil {
 		return nil, err
 	}
@@ -51,6 +51,9 @@ func (ae *ansibleExecutor) AddNode(originalPlan *Plan, newNode Node, roles []str
 		}
 	}
 
+	if restartServices {
+		cc.EnableRestart()
+	}
 	util.PrintHeader(ae.stdout, "Adding New Node to Cluster", '=')
 	t := task{
 		name:           "add-node",

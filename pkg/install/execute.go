@@ -28,14 +28,14 @@ type PreFlightExecutor interface {
 // The Executor will carry out the installation plan
 type Executor interface {
 	PreFlightExecutor
-	Install(p *Plan) error
+	Install(plan *Plan, restartServices bool) error
 	GenerateCertificates(p *Plan, useExistingCA bool) error
 	RunSmokeTest(*Plan) error
-	AddNode(*Plan, Node, []string) (*Plan, error)
-	RunPlay(string, *Plan) error
+	AddNode(Plan *Plan, node Node, roles []string, restartServices bool) (*Plan, error)
+	RunPlay(name string, plan *Plan, restartServices bool) error
 	AddVolume(*Plan, StorageVolume) error
 	DeleteVolume(*Plan, string) error
-	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int) error
+	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int, restartServices bool) error
 	ValidateControlPlane(plan Plan) error
 	UpgradeClusterServices(plan Plan) error
 }
@@ -50,9 +50,6 @@ type ExecutorOptions struct {
 	// GeneratedAssetsDirectory is the location where generated assets
 	// are to be stored
 	GeneratedAssetsDirectory string
-	// RestartServices determines whether the cluster services should be
-	// restarted during the installation.
-	RestartServices bool
 	// OutputFormat sets the format of the executor
 	OutputFormat string
 	// Verbose output from the executor
@@ -277,11 +274,14 @@ func (ae *ansibleExecutor) GenerateCertificates(p *Plan, useExistingCA bool) err
 }
 
 // Install the cluster according to the installation plan
-func (ae *ansibleExecutor) Install(p *Plan) error {
+func (ae *ansibleExecutor) Install(p *Plan, restartServices bool) error {
 	// Build the ansible inventory
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
+	}
+	if restartServices {
+		cc.EnableRestart()
 	}
 	t := task{
 		name:           "apply",
@@ -318,10 +318,6 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 	if err != nil {
 		return err
 	}
-	cc, err = setPreflightOptions(*p, *cc)
-	if err != nil {
-		return err
-	}
 	t := task{
 		name:           "preflight",
 		playbook:       "preflight.yaml",
@@ -339,10 +335,6 @@ func (ae *ansibleExecutor) RunNewNodePreFlightCheck(p Plan, node Node) error {
 	if err != nil {
 		return err
 	}
-	cc, err = setPreflightOptions(p, *cc)
-	if err != nil {
-		return err
-	}
 	t := task{
 		name:           "copy-inspector",
 		playbook:       "copy-inspector.yaml",
@@ -354,6 +346,7 @@ func (ae *ansibleExecutor) RunNewNodePreFlightCheck(p Plan, node Node) error {
 	if err := ae.execute(t); err != nil {
 		return err
 	}
+
 	p.Worker.ExpectedCount++
 	p.Worker.Nodes = append(p.Worker.Nodes, node)
 	t = task{
@@ -371,10 +364,6 @@ func (ae *ansibleExecutor) RunNewNodePreFlightCheck(p Plan, node Node) error {
 func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) error {
 	inventory := buildInventoryFromPlan(p)
 	cc, err := ae.buildClusterCatalog(p)
-	if err != nil {
-		return err
-	}
-	cc, err = setPreflightOptions(*p, *cc)
 	if err != nil {
 		return err
 	}
@@ -401,16 +390,13 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 	return ae.execute(t)
 }
 
-func setPreflightOptions(p Plan, cc ansible.ClusterCatalog) (*ansible.ClusterCatalog, error) {
-	cc.KismaticPreflightCheckerLinux = filepath.Join("inspector", "linux", "amd64", "kismatic-inspector")
-	cc.EnablePackageInstallation = !p.Cluster.DisablePackageInstallation
-	return &cc, nil
-}
-
-func (ae *ansibleExecutor) RunPlay(playName string, p *Plan) error {
+func (ae *ansibleExecutor) RunPlay(playName string, p *Plan, restartServices bool) error {
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
+	}
+	if restartServices {
+		cc.EnableRestart()
 	}
 	t := task{
 		name:           "step",
@@ -504,7 +490,7 @@ func (ae *ansibleExecutor) DeleteVolume(plan *Plan, name string) error {
 // which phase of the upgrade we are in. For example, when upgrading a node that is both an etcd and master,
 // the etcd components and the master components will be upgraded when we are in the upgrade etcd nodes
 // phase.
-func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int) error {
+func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int, restartServices bool) error {
 	// Nodes can have multiple roles. For this reason, we need to keep track of which nodes
 	// have been upgraded to avoid re-upgrading them.
 	upgradedNodes := map[string]bool{}
@@ -513,7 +499,7 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 		for _, role := range nodeToUpgrade.Roles {
 			if role == "etcd" {
 				node := nodeToUpgrade
-				if err := ae.upgradeNodes(plan, onlineUpgrade, node); err != nil {
+				if err := ae.upgradeNodes(plan, onlineUpgrade, restartServices, node); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Node.Host, err)
 				}
 				upgradedNodes[node.Node.IP] = true
@@ -530,7 +516,7 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 		for _, role := range nodeToUpgrade.Roles {
 			if role == "master" {
 				node := nodeToUpgrade
-				if err := ae.upgradeNodes(plan, onlineUpgrade, node); err != nil {
+				if err := ae.upgradeNodes(plan, onlineUpgrade, restartServices, node); err != nil {
 					return fmt.Errorf("error upgrading node %q: %v", node.Node.Host, err)
 				}
 				upgradedNodes[node.Node.IP] = true
@@ -551,7 +537,7 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 				limitNodes = append(limitNodes, node)
 				// don't forget to run the remaining nodes if its < maxParallelWorkers
 				if len(limitNodes) == maxParallelWorkers || n == len(nodesToUpgrade)-1 {
-					if err := ae.upgradeNodes(plan, onlineUpgrade, limitNodes...); err != nil {
+					if err := ae.upgradeNodes(plan, onlineUpgrade, restartServices, limitNodes...); err != nil {
 						return fmt.Errorf("error upgrading node %q: %v", node.Node.Host, err)
 					}
 					// empty the slice
@@ -565,13 +551,16 @@ func (ae *ansibleExecutor) UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode
 	return nil
 }
 
-func (ae *ansibleExecutor) upgradeNodes(plan Plan, onlineUpgrade bool, nodes ...ListableNode) error {
+func (ae *ansibleExecutor) upgradeNodes(plan Plan, onlineUpgrade bool, restartServices bool, nodes ...ListableNode) error {
 	inventory := buildInventoryFromPlan(&plan)
 	cc, err := ae.buildClusterCatalog(&plan)
 	if err != nil {
 		return err
 	}
 	cc.OnlineUpgrade = onlineUpgrade
+	if restartServices {
+		cc.EnableRestart()
+	}
 	var limit []string
 	nodeRoles := make(map[string][]string)
 	for _, node := range nodes {
@@ -664,24 +653,25 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	}
 
 	cc := ansible.ClusterCatalog{
-		ClusterName:                  p.Cluster.Name,
-		AdminPassword:                p.Cluster.AdminPassword,
-		TLSDirectory:                 tlsDir,
-		ServicesCIDR:                 p.Cluster.Networking.ServiceCIDRBlock,
-		PodCIDR:                      p.Cluster.Networking.PodCIDRBlock,
-		DNSServiceIP:                 dnsIP,
-		EnableModifyHosts:            p.Cluster.Networking.UpdateHostsFiles,
-		EnablePackageInstallation:    !p.Cluster.DisablePackageInstallation,
-		KuberangPath:                 filepath.Join("kuberang", "linux", "amd64", "kuberang"),
-		DisconnectedInstallation:     p.Cluster.DisconnectedInstallation,
-		HTTPProxy:                    p.Cluster.Networking.HTTPProxy,
-		HTTPSProxy:                   p.Cluster.Networking.HTTPSProxy,
-		TargetVersion:                KismaticVersion.String(),
-		APIServerOptions:             p.Cluster.APIServerOptions.Overrides,
-		KubeControllerManagerOptions: p.Cluster.KubeControllerManagerOptions.Overrides,
-		KubeSchedulerOptions:         p.Cluster.KubeSchedulerOptions.Overrides,
-		KubeProxyOptions:             p.Cluster.KubeProxyOptions.Overrides,
-		KubeletOptions:               p.Cluster.KubeletOptions.Overrides,
+		ClusterName:                   p.Cluster.Name,
+		AdminPassword:                 p.Cluster.AdminPassword,
+		TLSDirectory:                  tlsDir,
+		ServicesCIDR:                  p.Cluster.Networking.ServiceCIDRBlock,
+		PodCIDR:                       p.Cluster.Networking.PodCIDRBlock,
+		DNSServiceIP:                  dnsIP,
+		EnableModifyHosts:             p.Cluster.Networking.UpdateHostsFiles,
+		EnablePackageInstallation:     !p.Cluster.DisablePackageInstallation,
+		KismaticPreflightCheckerLinux: filepath.Join("inspector", "linux", "amd64", "kismatic-inspector"),
+		KuberangPath:                  filepath.Join("kuberang", "linux", "amd64", "kuberang"),
+		DisconnectedInstallation:      p.Cluster.DisconnectedInstallation,
+		HTTPProxy:                     p.Cluster.Networking.HTTPProxy,
+		HTTPSProxy:                    p.Cluster.Networking.HTTPSProxy,
+		TargetVersion:                 KismaticVersion.String(),
+		APIServerOptions:              p.Cluster.APIServerOptions.Overrides,
+		KubeControllerManagerOptions:  p.Cluster.KubeControllerManagerOptions.Overrides,
+		KubeSchedulerOptions:          p.Cluster.KubeSchedulerOptions.Overrides,
+		KubeProxyOptions:              p.Cluster.KubeProxyOptions.Overrides,
+		KubeletOptions:                p.Cluster.KubeletOptions.Overrides,
 	}
 
 	// set versions
@@ -734,10 +724,6 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		ThinpoolMetaPercent:         p.Docker.Storage.DirectLVMBlockDevice.ThinpoolMetaPercent,
 		ThinpoolAutoextendThreshold: p.Docker.Storage.DirectLVMBlockDevice.ThinpoolAutoextendThreshold,
 		ThinpoolAutoextendPercent:   p.Docker.Storage.DirectLVMBlockDevice.ThinpoolAutoextendPercent,
-	}
-
-	if ae.options.RestartServices {
-		cc.EnableRestart()
 	}
 
 	if p.Ingress.Nodes != nil && len(p.Ingress.Nodes) > 0 {

@@ -81,7 +81,6 @@ func doAddNode(out io.Writer, planFile string, opts *addNodeOpts, newNode instal
 	}
 	execOpts := install.ExecutorOptions{
 		GeneratedAssetsDirectory: opts.GeneratedAssetsDirectory,
-		RestartServices:          opts.RestartServices,
 		OutputFormat:             opts.OutputFormat,
 		Verbose:                  opts.Verbose,
 	}
@@ -118,7 +117,7 @@ func doAddNode(out io.Writer, planFile string, opts *addNodeOpts, newNode instal
 			return err
 		}
 	}
-	updatedPlan, err := executor.AddNode(plan, newNode, opts.Roles)
+	updatedPlan, err := executor.AddNode(plan, newNode, opts.Roles, opts.RestartServices)
 	if err != nil {
 		return err
 	}
