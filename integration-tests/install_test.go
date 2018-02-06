@@ -282,18 +282,18 @@ var _ = Describe("kismatic", func() {
 						defer sub.Check()
 
 						sub.It("should allow adding a worker node", func() error {
-							newWorker := allWorkers[len(allWorkers)-1]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{})
+							newNode := allWorkers[len(allWorkers)-1]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{})
 						})
 
 						sub.It("should allow adding a ingress node", func() error {
-							newWorker := allWorkers[len(allWorkers)-2]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{"ingress"})
+							newNode := allWorkers[len(allWorkers)-2]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{"ingress"})
 						})
 
 						sub.It("should allow adding a storage node", func() error {
-							newWorker := allWorkers[len(allWorkers)-3]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{"storage"})
+							newNode := allWorkers[len(allWorkers)-3]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{"storage"})
 						})
 
 						sub.It("should be able to deploy a workload with ingress", func() error {
@@ -354,18 +354,18 @@ var _ = Describe("kismatic", func() {
 						defer sub.Check()
 
 						sub.It("should allow adding a worker node", func() error {
-							newWorker := allWorkers[len(allWorkers)-1]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{})
+							newNode := allWorkers[len(allWorkers)-1]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{})
 						})
 
 						sub.It("should allow adding a ingress node", func() error {
-							newWorker := allWorkers[len(allWorkers)-2]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{"ingress"})
+							newNode := allWorkers[len(allWorkers)-2]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{"ingress"})
 						})
 
 						sub.It("should allow adding a storage node", func() error {
-							newWorker := allWorkers[len(allWorkers)-3]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{"storage"})
+							newNode := allWorkers[len(allWorkers)-3]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{"storage"})
 						})
 
 						sub.It("should be able to deploy a workload with ingress", func() error {
@@ -422,8 +422,8 @@ var _ = Describe("kismatic", func() {
 		// 				defer sub.Check()
 
 		// 				sub.It("should allow adding a worker node", func() error {
-		// 					newWorker := allWorkers[len(allWorkers)-1]
-		// 					return addNodeToCluster(newWorker, sshKey, []string{})
+		// 					newNode := allWorkers[len(allWorkers)-1]
+		// 					return addNodeToCluster(newNode, sshKey, []string{})
 		// 				})
 
 		// 				// This test is flaky with contiv
@@ -475,18 +475,18 @@ var _ = Describe("kismatic", func() {
 						defer sub.Check()
 
 						sub.It("should allow adding a worker node", func() error {
-							newWorker := allWorkers[len(allWorkers)-1]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{})
+							newNode := allWorkers[len(allWorkers)-1]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{})
 						})
 
 						sub.It("should allow adding a ingress node", func() error {
-							newWorker := allWorkers[len(allWorkers)-2]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{"ingress"})
+							newNode := allWorkers[len(allWorkers)-2]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{"ingress"})
 						})
 
 						sub.It("should allow adding a storage node", func() error {
-							newWorker := allWorkers[len(allWorkers)-3]
-							return addNodeToCluster(newWorker, sshKey, []string{"com.integrationtest/worker=true"}, []string{"storage"})
+							newNode := allWorkers[len(allWorkers)-3]
+							return addNodeToCluster(newNode, sshKey, []string{"com.integrationtest/worker=true"}, []string{"storage"})
 						})
 
 						sub.It("should be able to deploy a workload with ingress", func() error {

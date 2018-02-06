@@ -19,7 +19,7 @@ func mustGetTempDir(t *testing.T) string {
 	return dir
 }
 
-func TestAddWorkerCertMissingCAMissing(t *testing.T) {
+func TestAddNodeCertMissingCAMissing(t *testing.T) {
 	e := ansibleExecutor{
 		options:             ExecutorOptions{RunsDirectory: mustGetTempDir(t)},
 		stdout:              ioutil.Discard,
@@ -32,18 +32,18 @@ func TestAddWorkerCertMissingCAMissing(t *testing.T) {
 			Nodes: []Node{},
 		},
 	}
-	newWorker := Node{}
-	newPlan, err := e.AddNode(originalPlan, newWorker, []string{"worker"}, true)
+	newNode := Node{}
+	newPlan, err := e.AddNode(originalPlan, newNode, []string{"worker"}, true)
 	if newPlan != nil {
 		t.Errorf("add worker returned an updated plan")
 	}
 	if err != errMissingClusterCA {
-		t.Errorf("AddWorker did not return the expected error. Instead returned: %v", err)
+		t.Errorf("AddNode did not return the expected error. Instead returned: %v", err)
 	}
 }
 
 // Verify that cert gets generated
-func TestAddWorkerCertMissingCAExists(t *testing.T) {
+func TestAddNodeCertMissingCAExists(t *testing.T) {
 	pki := &fakePKI{
 		caExists: true,
 	}
@@ -69,8 +69,8 @@ func TestAddWorkerCertMissingCAExists(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{}
-	_, err := e.AddNode(originalPlan, newWorker, []string{"worker"}, true)
+	newNode := Node{}
+	_, err := e.AddNode(originalPlan, newNode, []string{"worker"}, true)
 	if err != nil {
 		t.Errorf("unexpected error while adding worker: %v", err)
 	}
@@ -82,7 +82,7 @@ func TestAddWorkerCertMissingCAExists(t *testing.T) {
 	}
 }
 
-func TestAddWorkerPlanIsUpdated(t *testing.T) {
+func TestAddNodePlanIsUpdated(t *testing.T) {
 	e := ansibleExecutor{
 		options:             ExecutorOptions{RunsDirectory: mustGetTempDir(t)},
 		stdout:              ioutil.Discard,
@@ -112,10 +112,10 @@ func TestAddWorkerPlanIsUpdated(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{
+	newNode := Node{
 		Host: "test",
 	}
-	updatedPlan, err := e.AddNode(originalPlan, newWorker, []string{"worker"}, true)
+	updatedPlan, err := e.AddNode(originalPlan, newNode, []string{"worker"}, true)
 	if err != nil {
 		t.Errorf("unexpected error while adding worker: %v", err)
 	}
@@ -130,7 +130,7 @@ func TestAddWorkerPlanIsUpdated(t *testing.T) {
 	}
 	found := false
 	for _, w := range updatedPlan.Worker.Nodes {
-		if w.Equal(newWorker) {
+		if w.Equal(newNode) {
 			found = true
 		}
 	}
@@ -169,10 +169,10 @@ func TestAddIngressPlanIsUpdated(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{
+	newNode := Node{
 		Host: "test",
 	}
-	updatedPlan, err := e.AddNode(originalPlan, newWorker, []string{"ingress"}, true)
+	updatedPlan, err := e.AddNode(originalPlan, newNode, []string{"ingress"}, true)
 	if err != nil {
 		t.Errorf("unexpected error while adding worker: %v", err)
 	}
@@ -187,7 +187,7 @@ func TestAddIngressPlanIsUpdated(t *testing.T) {
 	}
 	found := false
 	for _, w := range updatedPlan.Ingress.Nodes {
-		if w.Equal(newWorker) {
+		if w.Equal(newNode) {
 			found = true
 		}
 	}
@@ -226,10 +226,10 @@ func TestAddStoragePlanIsUpdated(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{
+	newNode := Node{
 		Host: "test",
 	}
-	updatedPlan, err := e.AddNode(originalPlan, newWorker, []string{"storage"}, true)
+	updatedPlan, err := e.AddNode(originalPlan, newNode, []string{"storage"}, true)
 	if err != nil {
 		t.Errorf("unexpected error while adding worker: %v", err)
 	}
@@ -244,7 +244,7 @@ func TestAddStoragePlanIsUpdated(t *testing.T) {
 	}
 	found := false
 	for _, w := range updatedPlan.Storage.Nodes {
-		if w.Equal(newWorker) {
+		if w.Equal(newNode) {
 			found = true
 		}
 	}
@@ -299,10 +299,10 @@ func TestAddAllRolesPlanIsUpdated(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{
+	newNode := Node{
 		Host: "test",
 	}
-	updatedPlan, err := e.AddNode(originalPlan, newWorker, []string{"worker", "ingress", "storage"}, true)
+	updatedPlan, err := e.AddNode(originalPlan, newNode, []string{"worker", "ingress", "storage"}, true)
 	if err != nil {
 		t.Errorf("unexpected error while adding worker: %v", err)
 	}
@@ -317,7 +317,7 @@ func TestAddAllRolesPlanIsUpdated(t *testing.T) {
 	}
 	found := false
 	for _, w := range updatedPlan.Worker.Nodes {
-		if w.Equal(newWorker) {
+		if w.Equal(newNode) {
 			found = true
 		}
 	}
@@ -326,7 +326,7 @@ func TestAddAllRolesPlanIsUpdated(t *testing.T) {
 	}
 	found = false
 	for _, w := range updatedPlan.Ingress.Nodes {
-		if w.Equal(newWorker) {
+		if w.Equal(newNode) {
 			found = true
 		}
 	}
@@ -335,7 +335,7 @@ func TestAddAllRolesPlanIsUpdated(t *testing.T) {
 	}
 	found = false
 	for _, w := range updatedPlan.Storage.Nodes {
-		if w.Equal(newWorker) {
+		if w.Equal(newNode) {
 			found = true
 		}
 	}
@@ -344,7 +344,7 @@ func TestAddAllRolesPlanIsUpdated(t *testing.T) {
 	}
 }
 
-func TestAddWorkerPlanNotUpdatedAfterFailure(t *testing.T) {
+func TestAddNodePlanNotUpdatedAfterFailure(t *testing.T) {
 	e := ansibleExecutor{
 		options:             ExecutorOptions{RunsDirectory: mustGetTempDir(t)},
 		stdout:              ioutil.Discard,
@@ -374,10 +374,10 @@ func TestAddWorkerPlanNotUpdatedAfterFailure(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{
+	newNode := Node{
 		Host: "test",
 	}
-	updatedPlan, err := e.AddNode(originalPlan, newWorker, []string{"worker"}, true)
+	updatedPlan, err := e.AddNode(originalPlan, newNode, []string{"worker"}, true)
 	if err == nil {
 		t.Errorf("expected an error, but didn't get one")
 	}
@@ -386,7 +386,7 @@ func TestAddWorkerPlanNotUpdatedAfterFailure(t *testing.T) {
 	}
 }
 
-func TestAddWorkerRestartServicesEnabled(t *testing.T) {
+func TestAddNodeRestartServicesEnabled(t *testing.T) {
 	fakeRunner := fakeRunner{}
 	e := ansibleExecutor{
 		certsDir:            mustGetTempDir(t),
@@ -419,10 +419,10 @@ func TestAddWorkerRestartServicesEnabled(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{
+	newNode := Node{
 		Host: "test",
 	}
-	_, err := e.AddNode(originalPlan, newWorker, []string{"worker"}, true)
+	_, err := e.AddNode(originalPlan, newNode, []string{"worker"}, true)
 	if err != nil {
 		t.Errorf("unexpected error")
 	}
@@ -444,7 +444,7 @@ func TestAddWorkerRestartServicesEnabled(t *testing.T) {
 	}
 }
 
-func TestAddWorkerHostsFilesDNSEnabled(t *testing.T) {
+func TestAddNodeHostsFilesDNSEnabled(t *testing.T) {
 	fakeRunner := fakeRunner{}
 	e := ansibleExecutor{
 		options:             ExecutorOptions{RunsDirectory: mustGetTempDir(t)},
@@ -478,10 +478,10 @@ func TestAddWorkerHostsFilesDNSEnabled(t *testing.T) {
 			},
 		},
 	}
-	newWorker := Node{
+	newNode := Node{
 		Host: "test",
 	}
-	_, err := e.AddNode(originalPlan, newWorker, []string{"worker"}, false)
+	_, err := e.AddNode(originalPlan, newNode, []string{"worker"}, false)
 	if err != nil {
 		t.Errorf("unexpected error")
 	}

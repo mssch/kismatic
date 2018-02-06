@@ -31,7 +31,7 @@ type fakeExecutor struct {
 	err           error
 }
 
-func (fe *fakeExecutor) AddNode(p *install.Plan, newWorker install.Node, roles []string, restartServices bool) (*install.Plan, error) {
+func (fe *fakeExecutor) AddNode(p *install.Plan, newNode install.Node, roles []string, restartServices bool) (*install.Plan, error) {
 	return nil, nil
 }
 
