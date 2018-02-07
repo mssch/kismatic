@@ -209,7 +209,7 @@ func setDefaults(p *Plan) {
 	}
 }
 
-var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z.]+)[ ]*:`)
+var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z.\d]+)[ ]*:`)
 
 // Write the plan to the file system
 func (fp *FilePlanner) Write(p *Plan) error {
