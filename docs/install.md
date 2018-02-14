@@ -82,7 +82,7 @@ The installer automatically configures and deploys [Kubernetes Dashboard](http:/
 
 Use the `kismatic dashboard` command to open the dashboard in your browser.
 
-You may be prompted for credentials, use `admin` for the **User Name** and `%admin_password%` (from your `kismatic-cluster.yaml` file) for the **Password**.
+During installation Kismatic generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) in `generated/dashboard-admin-kubeconfig` with admin access, use that file or [create your own](https://github.com/kubernetes/dashboard/wiki/Creating-sample-user) RBAC backed users to access the dashboard.
 
 The installer also generates a [kubeconfig file](http://kubernetes.io/docs/user-guide/kubeconfig-file/) required for [kubectl](http://kubernetes.io/docs/user-guide/kubectl-overview/).
 If you want `kubectl` to automatically use this configuration file for all commands,
