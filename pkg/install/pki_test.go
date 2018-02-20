@@ -495,6 +495,12 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 			expectedCommonName:    "admin",
 			expectedOrganizations: []string{"system:masters"},
 		},
+		{
+			name:                  "proxy client certificate",
+			certFilename:          "proxy-client.pem",
+			expectedCommonName:    "aggregator",
+			expectedOrganizations: []string{"system:masters"},
+		},
 	}
 
 	for _, test := range tests {

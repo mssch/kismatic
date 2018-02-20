@@ -331,6 +331,10 @@ type AddOns struct {
 	DNS DNS `yaml:"dns"`
 	// The Heapster Monitoring add-on configuration.
 	HeapsterMonitoring *HeapsterMonitoring `yaml:"heapster"`
+	// Metrics Server add-on configuration.
+	// A cluster-wide aggregator of resource usage data.
+	// Required for Horizontal Pod Autoscaler to function properly.
+	MetricsServer MetricsServer `yaml:"metrics_server"`
 	// The Dashboard add-on configuration.
 	Dashboard *Dashboard `yaml:"dashboard"`
 	// The Dashboard add-on configuration.
@@ -445,6 +449,14 @@ type Heapster struct {
 	// URL of the backend store that will be used as the Heapster sink.
 	// +default=influxdb:http://heapster-influxdb.kube-system.svc:8086
 	Sink string `yaml:"sink"`
+}
+
+// The MetricsServer add-on configuration.
+type MetricsServer struct {
+	// Whether the metrics-server add-on should be disabled.
+	// When set to true, metrics-server will not be deployed on the cluster.
+	// +default=false
+	Disable bool
 }
 
 // InfluxDB configuration options for the Heapster add-on

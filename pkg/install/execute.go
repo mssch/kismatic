@@ -774,6 +774,9 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.Heapster.Options.InfluxDB.PVCName = p.AddOns.HeapsterMonitoring.Options.InfluxDB.PVCName
 	}
 
+	// metrics-server
+	cc.MetricsServer.Enabled = !p.AddOns.MetricsServer.Disable
+
 	// dashboard
 	cc.Dashboard.Enabled = true
 	if p.AddOns.Dashboard != nil && p.AddOns.Dashboard.Disable {

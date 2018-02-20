@@ -29,6 +29,8 @@ const (
 	kubeletUserPrefix                   = "system:node"
 	kubeletGroup                        = "system:nodes"
 	contivProxyServerCertFilename       = "contiv-proxy-server"
+	proxyClientCertFilename             = "proxy-client"
+	proxyClientCertCommonName           = "aggregator"
 )
 
 // The PKI provides a way for generating certificates for the cluster described by the Plan
@@ -204,6 +206,14 @@ func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
 			}
 		}
 	}
+
+	// Proxy Client certificate
+	m = append(m, certificateSpec{
+		description:   "proxy client",
+		filename:      proxyClientCertFilename,
+		commonName:    proxyClientCertCommonName,
+		organizations: []string{adminGroup},
+	})
 
 	// Contiv certificates
 	if plan.AddOns.CNI.Provider == cniProviderContiv {
