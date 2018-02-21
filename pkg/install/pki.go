@@ -29,6 +29,7 @@ const (
 	kubeletUserPrefix                   = "system:node"
 	kubeletGroup                        = "system:nodes"
 	contivProxyServerCertFilename       = "contiv-proxy-server"
+	proxyClientCACommonName             = "proxyClientCA"
 	proxyClientCertFilename             = "proxy-client"
 	proxyClientCertCommonName           = "aggregator"
 )
@@ -36,11 +37,13 @@ const (
 // The PKI provides a way for generating certificates for the cluster described by the Plan
 type PKI interface {
 	CertificateAuthorityExists() (bool, error)
+	GenerateClusterCA(p *Plan) (*tls.CA, error)
+	GetClusterCA() (*tls.CA, error)
+	GenerateProxyClientCA(p *Plan) (*tls.CA, error)
+	GetProxyClientCA() (*tls.CA, error)
+	GenerateClusterCertificates(p *Plan, clusterCA *tls.CA, proxyClientCA *tls.CA) error
 	NodeCertificateExists(node Node) (bool, error)
 	GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) error
-	GetClusterCA() (*tls.CA, error)
-	GenerateClusterCA(p *Plan) (*tls.CA, error)
-	GenerateClusterCertificates(p *Plan, ca *tls.CA) error
 	GenerateCertificate(name string, validityPeriod string, commonName string, subjectAlternateNames []string, organizations []string, ca *tls.CA, overwrite bool) (bool, error)
 }
 
@@ -57,6 +60,7 @@ type certificateSpec struct {
 	commonName            string
 	subjectAlternateNames []string
 	organizations         []string
+	ca                    *tls.CA
 }
 
 func (s certificateSpec) equal(other certificateSpec) bool {
@@ -104,7 +108,7 @@ func (s certificateSpec) equal(other certificateSpec) bool {
 }
 
 // returns a list of specs for all the certs that are required for the node
-func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
+func certManifestForNode(plan Plan, node Node, ca *tls.CA) ([]certificateSpec, error) {
 	m := []certificateSpec{}
 	roles := plan.GetRolesForIP(node.IP)
 
@@ -119,6 +123,7 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 			filename:              fmt.Sprintf("%s-etcd", node.Host),
 			commonName:            node.Host,
 			subjectAlternateNames: san,
+			ca: ca,
 		})
 	}
 
@@ -144,24 +149,28 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 			filename:              fmt.Sprintf("%s-apiserver", node.Host),
 			commonName:            node.Host,
 			subjectAlternateNames: san,
+			ca: ca,
 		})
 		// Controller manager certificate
 		m = append(m, certificateSpec{
 			description: "kubernetes controller manager",
 			filename:    controllerManagerCertFilenamePrefix,
 			commonName:  controllerManagerUser,
+			ca:          ca,
 		})
 		// Scheduler client certificate
 		m = append(m, certificateSpec{
 			description: "kubernetes scheduler",
 			filename:    schedulerCertFilenamePrefix,
 			commonName:  schedulerUser,
+			ca:          ca,
 		})
 		// Certificate for signing service account tokens
 		m = append(m, certificateSpec{
 			description: "service account signing",
 			filename:    serviceAccountCertFilename,
 			commonName:  serviceAccountCertCommonName,
+			ca:          ca,
 		})
 	}
 
@@ -172,6 +181,7 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 			filename:      fmt.Sprintf("%s-kubelet", node.Host),
 			commonName:    fmt.Sprintf("%s:%s", kubeletUserPrefix, strings.ToLower(node.Host)),
 			organizations: []string{kubeletGroup},
+			ca:            ca,
 		})
 
 		// etcd client certificate
@@ -180,6 +190,7 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 			description: "etcd client",
 			filename:    "etcd-client",
 			commonName:  "etcd-client",
+			ca:          ca,
 		})
 	}
 
@@ -187,13 +198,13 @@ func certManifestForNode(plan Plan, node Node) ([]certificateSpec, error) {
 }
 
 // returns a list of cert specs for the cluster described in the plan file
-func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
+func certManifestForCluster(plan Plan, clusterCA *tls.CA, proxyClientCA *tls.CA) ([]certificateSpec, error) {
 	m := []certificateSpec{}
 
 	// Certificate for nodes
 	nodes := plan.GetUniqueNodes()
 	for _, n := range nodes {
-		nodeManifest, err := certManifestForNode(plan, n)
+		nodeManifest, err := certManifestForNode(plan, n, clusterCA)
 		if err != nil {
 			return nil, err
 		}
@@ -213,6 +224,7 @@ func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
 		filename:      proxyClientCertFilename,
 		commonName:    proxyClientCertCommonName,
 		organizations: []string{adminGroup},
+		ca:            proxyClientCA,
 	})
 
 	// Contiv certificates
@@ -221,6 +233,7 @@ func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
 			description: "contiv proxy server",
 			filename:    contivProxyServerCertFilename,
 			commonName:  "auth-local.cisco.com", // using the same as contiv install script
+			ca:          clusterCA,
 		})
 	}
 
@@ -230,6 +243,7 @@ func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
 		filename:      adminCertFilename,
 		commonName:    adminUser,
 		organizations: []string{adminGroup},
+		ca:            clusterCA,
 	})
 
 	return m, nil
@@ -238,23 +252,6 @@ func certManifestForCluster(plan Plan) ([]certificateSpec, error) {
 // CertificateAuthorityExists returns true if the CA for the cluster exists
 func (lp *LocalPKI) CertificateAuthorityExists() (bool, error) {
 	return tls.CertKeyPairExists("ca", lp.GeneratedCertsDirectory)
-}
-
-// NodeCertificateExists returns true if the node's key and certificate exist
-func (lp *LocalPKI) NodeCertificateExists(node Node) (bool, error) {
-	return tls.CertKeyPairExists(node.Host, lp.GeneratedCertsDirectory)
-}
-
-// GetClusterCA returns the cluster CA
-func (lp *LocalPKI) GetClusterCA() (*tls.CA, error) {
-	key, cert, err := tls.ReadCACert("ca", lp.GeneratedCertsDirectory)
-	if err != nil {
-		return nil, fmt.Errorf("error reading CA certificate/key: %v", err)
-	}
-	return &tls.CA{
-		Cert: cert,
-		Key:  key,
-	}, nil
 }
 
 // GenerateClusterCA creates a Certificate Authority for the cluster
@@ -282,14 +279,63 @@ func (lp *LocalPKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 	}, nil
 }
 
+// GetClusterCA returns the cluster CA
+func (lp *LocalPKI) GetClusterCA() (*tls.CA, error) {
+	key, cert, err := tls.ReadCACert("ca", lp.GeneratedCertsDirectory)
+	if err != nil {
+		return nil, fmt.Errorf("error reading CA certificate/key: %v", err)
+	}
+	return &tls.CA{
+		Cert: cert,
+		Key:  key,
+	}, nil
+}
+
+// GenerateProxyClientCA creates a Certificate Authority for the cluster
+func (lp *LocalPKI) GenerateProxyClientCA(p *Plan) (*tls.CA, error) {
+	exists, err := tls.CertKeyPairExists("proxy-client-ca", lp.GeneratedCertsDirectory)
+	if err != nil {
+		return nil, fmt.Errorf("error verifying proxy-client CA certificate/key: %v", err)
+	}
+	if exists {
+		return lp.GetProxyClientCA()
+	}
+
+	// CA keypair doesn't exist, generate one
+	util.PrettyPrintOk(lp.Log, "Generating proxy-client Certificate Authority")
+	key, cert, err := tls.NewCACert(lp.CACsr, proxyClientCACommonName, p.Cluster.Certificates.CAExpiry)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create proxy-client CA Cert: %v", err)
+	}
+	if err = tls.WriteCert(key, cert, "proxy-client-ca", lp.GeneratedCertsDirectory); err != nil {
+		return nil, fmt.Errorf("error writing proxy-client CA files: %v", err)
+	}
+	return &tls.CA{
+		Cert: cert,
+		Key:  key,
+	}, nil
+}
+
+// GetProxyClientCA returns the cluster CA
+func (lp *LocalPKI) GetProxyClientCA() (*tls.CA, error) {
+	key, cert, err := tls.ReadCACert("proxy-client-ca", lp.GeneratedCertsDirectory)
+	if err != nil {
+		return nil, fmt.Errorf("error reading proxy-client CA certificate/key: %v", err)
+	}
+	return &tls.CA{
+		Cert: cert,
+		Key:  key,
+	}, nil
+}
+
 // GenerateClusterCertificates creates all certificates required for the cluster
 // described in the plan file.
-func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA) error {
+func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, clusterCA *tls.CA, proxyClientCA *tls.CA) error {
 	if lp.Log == nil {
 		lp.Log = ioutil.Discard
 	}
 
-	manifest, err := certManifestForCluster(*p)
+	manifest, err := certManifestForCluster(*p, clusterCA, proxyClientCA)
 	if err != nil {
 		return err
 	}
@@ -330,7 +376,7 @@ func (lp *LocalPKI) GenerateClusterCertificates(p *Plan, ca *tls.CA) error {
 		}
 
 		// Cert doesn't exist. Generate it
-		if err := generateCert(ca, lp.GeneratedCertsDirectory, s, p.Cluster.Certificates.Expiry); err != nil {
+		if err := generateCert(lp.GeneratedCertsDirectory, s, p.Cluster.Certificates.Expiry); err != nil {
 			return err
 		}
 		util.PrettyPrintOk(lp.Log, "Generated certificate for %s", s.description)
@@ -368,7 +414,7 @@ func (lp *LocalPKI) ValidateClusterCertificates(p *Plan) (warns []error, errs []
 	if lp.Log == nil {
 		lp.Log = ioutil.Discard
 	}
-	manifest, err := certManifestForCluster(*p)
+	manifest, err := certManifestForCluster(*p, nil, nil)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -392,9 +438,14 @@ func (lp *LocalPKI) ValidateClusterCertificates(p *Plan) (warns []error, errs []
 	return warns, errs
 }
 
+// NodeCertificateExists returns true if the node's key and certificate exist
+func (lp *LocalPKI) NodeCertificateExists(node Node) (bool, error) {
+	return tls.CertKeyPairExists(node.Host, lp.GeneratedCertsDirectory)
+}
+
 // GenerateNodeCertificate creates a private key and certificate for the given node
 func (lp *LocalPKI) GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) error {
-	m, err := certManifestForNode(*plan, node)
+	m, err := certManifestForNode(*plan, node, ca)
 	if err != nil {
 		return err
 	}
@@ -418,7 +469,7 @@ func (lp *LocalPKI) GenerateNodeCertificate(plan *Plan, node Node, ca *tls.CA) e
 			continue
 		}
 		// Cert doesn't exist. Generate it
-		if err := generateCert(ca, lp.GeneratedCertsDirectory, s, plan.Cluster.Certificates.Expiry); err != nil {
+		if err := generateCert(lp.GeneratedCertsDirectory, s, plan.Cluster.Certificates.Expiry); err != nil {
 			return err
 		}
 		util.PrettyPrintOk(lp.Log, "Generated certificate for %s", s.description)
@@ -455,16 +506,17 @@ func (lp *LocalPKI) GenerateCertificate(name string, validityPeriod string, comm
 		commonName:            commonName,
 		subjectAlternateNames: subjectAlternateNames,
 		organizations:         organizations,
+		ca:                    ca,
 	}
 
-	if err := generateCert(ca, lp.GeneratedCertsDirectory, spec, validityPeriod); err != nil {
+	if err := generateCert(lp.GeneratedCertsDirectory, spec, validityPeriod); err != nil {
 		return exists, fmt.Errorf("could not generate certificate %s: %v", name, err)
 	}
 
 	return exists, nil
 }
 
-func generateCert(ca *tls.CA, certDir string, spec certificateSpec, expiryStr string) error {
+func generateCert(certDir string, spec certificateSpec, expiryStr string) error {
 	expiry, err := time.ParseDuration(expiryStr)
 	if err != nil {
 		return fmt.Errorf("%q is not a valid duration for certificate expiry", expiryStr)
@@ -486,7 +538,7 @@ func generateCert(ca *tls.CA, certDir string, spec certificateSpec, expiryStr st
 		req.Names = append(req.Names, name)
 	}
 
-	key, cert, err := tls.NewCert(ca, req, expiry)
+	key, cert, err := tls.NewCert(spec.ca, req, expiry)
 	if err != nil {
 		return fmt.Errorf("error generating certs for %q: %v", spec.description, err)
 	}

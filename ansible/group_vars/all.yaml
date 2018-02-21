@@ -128,6 +128,7 @@ cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' 
 kubernetes_certificates_dir: "{{ kubernetes_install_dir }}/pki"
 kubernetes_certificates:
   ca: "{{ kubernetes_certificates_dir }}/ca.pem"
+  proxy_client_ca: "{{ kubernetes_certificates_dir }}/proxy-client-ca.pem"
   admin: "{{ kubernetes_certificates_dir }}/admin.pem"
   admin_key: "{{ kubernetes_certificates_dir }}/admin-key.pem"
   api_server: "{{ kubernetes_certificates_dir }}/api-server.pem"
@@ -156,7 +157,7 @@ kubernetes_api_server_option_defaults:
   "basic-auth-file": "{% if kubernetes_admin_password is defined and kubernetes_admin_password != '' %}{{ kubernetes_basic_auth_path }}{% endif %}"
   "bind-address": "0.0.0.0"
   "client-ca-file": "{{ kubernetes_certificates.ca }}"
-  "requestheader-client-ca-file": "{{ kubernetes_certificates.ca }}"
+  "requestheader-client-ca-file": "{{ kubernetes_certificates.proxy_client_ca }}"
   "proxy-client-cert-file": "{{ kubernetes_certificates.proxy_client }}"
   "proxy-client-key-file": "{{ kubernetes_certificates.proxy_client_key }}"
   "requestheader-allowed-names": ""

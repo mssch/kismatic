@@ -499,11 +499,12 @@ func TestAddNodeHostsFilesDNSEnabled(t *testing.T) {
 
 //// Fakes for testing
 type fakePKI struct {
-	caExists               bool
-	nodeCertExists         bool
-	err                    error
-	generateCACalled       bool
-	generateNodeCertCalled bool
+	caExists                    bool
+	nodeCertExists              bool
+	err                         error
+	generateCACalled            bool
+	generateProxyClientCACalled bool
+	generateNodeCertCalled      bool
 }
 
 func (f *fakePKI) CertificateAuthorityExists() (bool, error)     { return f.caExists, f.err }
@@ -517,7 +518,14 @@ func (f *fakePKI) GenerateClusterCA(p *Plan) (*tls.CA, error) {
 	f.generateCACalled = true
 	return nil, f.err
 }
-func (f *fakePKI) GenerateClusterCertificates(p *Plan, ca *tls.CA) error { return f.err }
+func (f *fakePKI) GetProxyClientCA() (*tls.CA, error) { return nil, f.err }
+func (f *fakePKI) GenerateProxyClientCA(p *Plan) (*tls.CA, error) {
+	f.generateProxyClientCACalled = true
+	return nil, f.err
+}
+func (f *fakePKI) GenerateClusterCertificates(p *Plan, clusterCA *tls.CA, proxyClientCA *tls.CA) error {
+	return f.err
+}
 func (f *fakePKI) GenerateCertificate(name string, validityPeriod string, commonName string, subjectAlternateNames []string, organizations []string, ca *tls.CA, overwrite bool) (bool, error) {
 	return false, f.err
 }

@@ -833,7 +833,11 @@ func TestValidatePlanCerts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error generating CA for test: %v", err)
 	}
-	if err := pki.GenerateClusterCertificates(&p, ca); err != nil {
+	proxyClientCA, err := pki.GenerateProxyClientCA(&p)
+	if err != nil {
+		t.Fatalf("error generating proxy-client CA for test: %v", err)
+	}
+	if err := pki.GenerateClusterCertificates(&p, ca, proxyClientCA); err != nil {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
 
@@ -854,7 +858,11 @@ func TestValidatePlanBadCerts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error generating CA for test: %v", err)
 	}
-	if err := pki.GenerateClusterCertificates(&p, ca); err != nil {
+	proxyClientCA, err := pki.GenerateProxyClientCA(&p)
+	if err != nil {
+		t.Fatalf("error generating proxy-client CA for test: %v", err)
+	}
+	if err := pki.GenerateClusterCertificates(&p, ca, proxyClientCA); err != nil {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
 	p.Master.Nodes[0] = Node{
@@ -892,7 +900,11 @@ func TestValidatePlanMissingSomeCerts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error generating CA for test: %v", err)
 	}
-	if err := pki.GenerateClusterCertificates(&p, ca); err != nil {
+	proxyClientCA, err := pki.GenerateProxyClientCA(&p)
+	if err != nil {
+		t.Fatalf("error generating proxy-client CA for test: %v", err)
+	}
+	if err := pki.GenerateClusterCertificates(&p, ca, proxyClientCA); err != nil {
 		t.Fatalf("failed to generate certs: %v", err)
 	}
 

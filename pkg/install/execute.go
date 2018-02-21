@@ -241,7 +241,7 @@ func (ae *ansibleExecutor) GenerateCertificates(p *Plan, useExistingCA bool) err
 	// Generate cluster Certificate Authority
 	util.PrintHeader(ae.stdout, "Configuring Certificates", '=')
 
-	var caCert *tls.CA
+	var clusterCACert *tls.CA
 	var err error
 	if useExistingCA {
 		exists, err := ae.pki.CertificateAuthorityExists()
@@ -251,20 +251,25 @@ func (ae *ansibleExecutor) GenerateCertificates(p *Plan, useExistingCA bool) err
 		if !exists {
 			return errors.New("The Certificate Authority is required, but it was not found.")
 		}
-		caCert, err = ae.pki.GetClusterCA()
+		clusterCACert, err = ae.pki.GetClusterCA()
 		if err != nil {
 			return fmt.Errorf("error reading CA certificate: %v", err)
 		}
 
 	} else {
-		caCert, err = ae.pki.GenerateClusterCA(p)
+		clusterCACert, err = ae.pki.GenerateClusterCA(p)
 		if err != nil {
 			return fmt.Errorf("error generating CA for the cluster: %v", err)
 		}
 	}
 
+	proxyClientCACert, err := ae.pki.GenerateProxyClientCA(p)
+	if err != nil {
+		return fmt.Errorf("error generating CA for the proxy client: %v", err)
+	}
+
 	// Generate node and user certificates
-	err = ae.pki.GenerateClusterCertificates(p, caCert)
+	err = ae.pki.GenerateClusterCertificates(p, clusterCACert, proxyClientCACert)
 	if err != nil {
 		return fmt.Errorf("error generating certificates for the cluster: %v", err)
 	}
