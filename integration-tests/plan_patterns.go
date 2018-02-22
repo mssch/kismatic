@@ -106,6 +106,9 @@ add_ons:
       calico:
         mode: overlay
         log_level: info
+        workload_mtu: 1500
+        felix_input_mtu: 1440
+        ip_autodetection_method: first-found
   dns:
     disable: false
     provider: {{if .DNSProvider}}{{.DNSProvider}}{{else}}kubedns{{end}}

@@ -383,12 +383,16 @@ type CalicoOptions struct {
 	// +default=info
 	// +options=warning,info,debug
 	LogLevel string `yaml:"log_level"`
-	// MTU for the workload interface, configures the CNI config
+	// MTU for the workload interface, configures the CNI config.
 	// +default=1500
 	WorkloadMTU int `yaml:"workload_mtu"`
-	// MTU for the tunnel device used if IPIP is enabled
+	// MTU for the tunnel device used if IPIP is enabled.
 	// +default=1440
 	FelixInputMTU int `yaml:"felix_input_mtu"`
+	// IPAutodetectionMethod is used to detect the IPv4 address of the host.
+	// The value gets set in IP_AUTODETECTION_METHOD variable in the pod.
+	// +default=first-found
+	IPAutodetectionMethod string `yaml:"ip_autodetection_method"`
 }
 
 // The DNS add-on configuration
