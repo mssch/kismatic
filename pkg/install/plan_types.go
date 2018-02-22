@@ -88,7 +88,7 @@ type Cluster struct {
 	// The Kubernetes version to install.
 	// If left blank will be set to the latest tested version.
 	// Only a single Minor version is supported with.
-	// +default=v1.9.2
+	// +default=v1.9.3
 	Version string
 	// The password for the admin user.
 	// If provided, ABAC will be enabled in the cluster.

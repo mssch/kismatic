@@ -173,7 +173,7 @@
 |----------|-----------------|
 | **Kind** |  string |
 | **Required** |  No |
-| **Default** | `v1.9.2` | 
+| **Default** | `v1.9.3` | 
 
 ###  cluster.admin_password _(deprecated)_
 
