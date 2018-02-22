@@ -34,6 +34,7 @@ KET operational tools include:
 | KubeDNS | 1.14.8 |
 | CoreDNS | 1.0.5 |
 | Nginx Ingress Controller | 0.10.2 |
+| Helm | v2.8.1 |
 
 
 [Download KET here](https://github.com/apprenda/kismatic/releases)
