@@ -122,6 +122,8 @@ add_ons:
         sink: influxdb:http://heapster-influxdb.kube-system.svc:8086
       influxdb:
         pvc_name: {{.HeapsterInfluxdbPVC}}
+  metrics_server:
+    disable: false
   package_manager:
     disable: {{.DisableHelm}}
     provider: helm

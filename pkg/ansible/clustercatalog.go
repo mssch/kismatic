@@ -129,6 +129,10 @@ type ClusterCatalog struct {
 		}
 	}
 
+	MetricsServer struct {
+		Enabled bool
+	}
+
 	Dashboard struct {
 		Enabled bool
 	}

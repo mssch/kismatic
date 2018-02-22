@@ -128,6 +128,7 @@ cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' 
 kubernetes_certificates_dir: "{{ kubernetes_install_dir }}/pki"
 kubernetes_certificates:
   ca: "{{ kubernetes_certificates_dir }}/ca.pem"
+  proxy_client_ca: "{{ kubernetes_certificates_dir }}/proxy-client-ca.pem"
   admin: "{{ kubernetes_certificates_dir }}/admin.pem"
   admin_key: "{{ kubernetes_certificates_dir }}/admin-key.pem"
   api_server: "{{ kubernetes_certificates_dir }}/api-server.pem"
@@ -140,6 +141,8 @@ kubernetes_certificates:
   scheduler_key: "{{ kubernetes_certificates_dir }}/scheduler-key.pem"
   kubelet: "{{ kubernetes_certificates_dir }}/kubelet.pem"
   kubelet_key: "{{ kubernetes_certificates_dir }}/kubelet-key.pem"
+  proxy_client: "{{ kubernetes_certificates_dir }}/proxy-client.pem"
+  proxy_client_key: "{{ kubernetes_certificates_dir }}/proxy-client-key.pem"
   service_account: "{{ kubernetes_certificates_dir }}/service-account.pem"
   service_account_key: "{{ kubernetes_certificates_dir }}/service-account-key.pem"
 
@@ -154,6 +157,13 @@ kubernetes_api_server_option_defaults:
   "basic-auth-file": "{% if kubernetes_admin_password is defined and kubernetes_admin_password != '' %}{{ kubernetes_basic_auth_path }}{% endif %}"
   "bind-address": "0.0.0.0"
   "client-ca-file": "{{ kubernetes_certificates.ca }}"
+  "requestheader-client-ca-file": "{{ kubernetes_certificates.proxy_client_ca }}"
+  "proxy-client-cert-file": "{{ kubernetes_certificates.proxy_client }}"
+  "proxy-client-key-file": "{{ kubernetes_certificates.proxy_client_key }}"
+  "requestheader-allowed-names": ""
+  "requestheader-extra-headers-prefix": "X-Remote-Extra-"
+  "requestheader-group-headers": "X-Remote-Group"
+  "requestheader-username-headers": "X-Remote-User"
   "cloud-provider": "{{ cloud_provider }}"
   "cloud-config": "{{ cloud_config }}"
   "enable-swagger-ui": "true"
@@ -258,6 +268,7 @@ official_versioned_images:
   heapster: "{{official_images.heapster.name}}:{{official_images.heapster.version}}"
   influxdb: "{{official_images.influxdb.name}}:{{official_images.influxdb.version}}"
   rescheduler: "{{official_images.rescheduler.name}}:{{official_images.rescheduler.version}}"
+  metrics_server: "{{official_images.metrics_server.name}}:{{official_images.metrics_server.version}}"
 
 images:
   etcd: "{{ official_versioned_images.etcd | final_image(docker_registry_full_url, load_private_images) }}"
@@ -289,6 +300,7 @@ images:
   heapster: "{{ official_versioned_images.heapster | final_image(docker_registry_full_url, load_private_images) }}"
   influxdb: "{{ official_versioned_images.influxdb | final_image(docker_registry_full_url, load_private_images) }}"
   rescheduler: "{{ official_versioned_images.rescheduler | final_image(docker_registry_full_url, load_private_images) }}"
+  metrics_server: "{{ official_versioned_images.metrics_server | final_image(docker_registry_full_url, load_private_images) }}"
 
 #===============================================================================
 # docker packages

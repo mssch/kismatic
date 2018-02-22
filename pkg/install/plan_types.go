@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/apprenda/kismatic/pkg/ssh"
+	"github.com/apprenda/kismatic/pkg/tls"
 )
 
 const (
@@ -331,6 +332,10 @@ type AddOns struct {
 	DNS DNS `yaml:"dns"`
 	// The Heapster Monitoring add-on configuration.
 	HeapsterMonitoring *HeapsterMonitoring `yaml:"heapster"`
+	// Metrics Server add-on configuration.
+	// A cluster-wide aggregator of resource usage data.
+	// Required for Horizontal Pod Autoscaler to function properly.
+	MetricsServer MetricsServer `yaml:"metrics_server"`
 	// The Dashboard add-on configuration.
 	Dashboard *Dashboard `yaml:"dashboard"`
 	// The Dashboard add-on configuration.
@@ -445,6 +450,14 @@ type Heapster struct {
 	// URL of the backend store that will be used as the Heapster sink.
 	// +default=influxdb:http://heapster-influxdb.kube-system.svc:8086
 	Sink string `yaml:"sink"`
+}
+
+// The MetricsServer add-on configuration.
+type MetricsServer struct {
+	// Whether the metrics-server add-on should be disabled.
+	// When set to true, metrics-server will not be deployed on the cluster.
+	// +default=false
+	Disable bool
 }
 
 // InfluxDB configuration options for the Heapster add-on
@@ -794,4 +807,146 @@ func (p Plan) Versions() map[string]string {
 	versions["kube_apiserver"] = kubernetesVersion
 
 	return versions
+}
+
+// returns a list of specs for all the certs that are required for the node
+func (node Node) certSpecs(plan Plan, ca *tls.CA) ([]certificateSpec, error) {
+	m := []certificateSpec{}
+	roles := plan.GetRolesForIP(node.IP)
+
+	// Certificates for etcd
+	if contains("etcd", roles) {
+		san := []string{node.Host, node.IP, "127.0.0.1"}
+		if node.InternalIP != "" {
+			san = append(san, node.InternalIP)
+		}
+		m = append(m, certificateSpec{
+			description:           fmt.Sprintf("%s etcd server", node.Host),
+			filename:              fmt.Sprintf("%s-etcd", node.Host),
+			commonName:            node.Host,
+			subjectAlternateNames: san,
+			ca: ca,
+		})
+	}
+
+	// Certificates for master
+	if contains("master", roles) {
+		// API Server certificate
+		san, err := clusterCertsSubjectAlternateNames(plan)
+		if err != nil {
+			return nil, err
+		}
+		san = append(san, node.Host, node.IP, "127.0.0.1")
+		if node.InternalIP != "" {
+			san = append(san, node.InternalIP)
+		}
+		if !contains(plan.Master.LoadBalancedFQDN, san) {
+			san = append(san, plan.Master.LoadBalancedFQDN)
+		}
+		if !contains(plan.Master.LoadBalancedShortName, san) {
+			san = append(san, plan.Master.LoadBalancedShortName)
+		}
+		m = append(m, certificateSpec{
+			description:           fmt.Sprintf("%s API server", node.Host),
+			filename:              fmt.Sprintf("%s-apiserver", node.Host),
+			commonName:            node.Host,
+			subjectAlternateNames: san,
+			ca: ca,
+		})
+		// Controller manager certificate
+		m = append(m, certificateSpec{
+			description: "kubernetes controller manager",
+			filename:    controllerManagerCertFilenamePrefix,
+			commonName:  controllerManagerUser,
+			ca:          ca,
+		})
+		// Scheduler client certificate
+		m = append(m, certificateSpec{
+			description: "kubernetes scheduler",
+			filename:    schedulerCertFilenamePrefix,
+			commonName:  schedulerUser,
+			ca:          ca,
+		})
+		// Certificate for signing service account tokens
+		m = append(m, certificateSpec{
+			description: "service account signing",
+			filename:    serviceAccountCertFilename,
+			commonName:  serviceAccountCertCommonName,
+			ca:          ca,
+		})
+	}
+
+	// Kubelet and etcd client certificate
+	if containsAny([]string{"master", "worker", "ingress", "storage"}, roles) {
+		m = append(m, certificateSpec{
+			description:   fmt.Sprintf("%s kubelet", node.Host),
+			filename:      fmt.Sprintf("%s-kubelet", node.Host),
+			commonName:    fmt.Sprintf("%s:%s", kubeletUserPrefix, strings.ToLower(node.Host)),
+			organizations: []string{kubeletGroup},
+			ca:            ca,
+		})
+
+		// etcd client certificate
+		// all nodes need to be able to talk to etcd b/c of calico
+		m = append(m, certificateSpec{
+			description: "etcd client",
+			filename:    "etcd-client",
+			commonName:  "etcd-client",
+			ca:          ca,
+		})
+	}
+
+	return m, nil
+}
+
+// returns a list of cert specs for the cluster described in the plan file
+func (plan Plan) certSpecs(clusterCA *tls.CA, proxyClientCA *tls.CA) ([]certificateSpec, error) {
+	m := []certificateSpec{}
+
+	// Certificate for nodes
+	nodes := plan.GetUniqueNodes()
+	for _, n := range nodes {
+		nodeManifest, err := n.certSpecs(plan, clusterCA)
+		if err != nil {
+			return nil, err
+		}
+
+		// Some nodes share common certificates between them. E.g. the kube-proxy client cert.
+		// Before appending to the manifest, we ensure that this cert is not already in it.
+		for _, s := range nodeManifest {
+			if !certSpecInManifest(s, m) {
+				m = append(m, s)
+			}
+		}
+	}
+
+	// Proxy Client certificate
+	m = append(m, certificateSpec{
+		description:   "proxy client",
+		filename:      proxyClientCertFilename,
+		commonName:    proxyClientCertCommonName,
+		organizations: []string{adminGroup},
+		ca:            proxyClientCA,
+	})
+
+	// Contiv certificates
+	if plan.AddOns.CNI.Provider == cniProviderContiv {
+		m = append(m, certificateSpec{
+			description: "contiv proxy server",
+			filename:    contivProxyServerCertFilename,
+			commonName:  "auth-local.cisco.com", // using the same as contiv install script
+			ca:          clusterCA,
+		})
+	}
+
+	// Admin certificate
+	m = append(m, certificateSpec{
+		description:   "admin client",
+		filename:      adminCertFilename,
+		commonName:    adminUser,
+		organizations: []string{adminGroup},
+		ca:            clusterCA,
+	})
+
+	return m, nil
 }

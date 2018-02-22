@@ -503,6 +503,7 @@ var commentMap = map[string][]string{
 	"add_ons.heapster.options.influxdb.pvc_name":         []string{"Provide the name of the persistent volume claim that you will create", "after installation. If not specified, the data will be stored in", "ephemeral storage."},
 	"add_ons.heapster.options.heapster.service_type":     []string{"Specify kubernetes ServiceType. Defaults to 'ClusterIP'.", "Options: 'ClusterIP','NodePort','LoadBalancer','ExternalName'."},
 	"add_ons.heapster.options.heapster.sink":             []string{"Specify the sink to store heapster data. Defaults to an influxdb pod", "running on the cluster."},
+	"add_ons.metrics_server":                             []string{"Metrics Server is a cluster-wide aggregator of resource usage data."},
 	"add_ons.package_manager.provider":                   []string{"Options: 'helm'."},
 	"add_ons.rescheduler":                                []string{"The rescheduler ensures that critical add-ons remain running on the cluster."},
 	"etcd":                                               []string{"Etcd nodes are the ones that run the etcd distributed key-value database."},
