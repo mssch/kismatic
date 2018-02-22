@@ -70,6 +70,7 @@
         * [log_level](#add_onscnioptionscalicolog_level)
         * [workload_mtu](#add_onscnioptionscalicoworkload_mtu)
         * [felix_input_mtu](#add_onscnioptionscalicofelix_input_mtu)
+        * [ip_autodetection_method](#add_onscnioptionscalicoip_autodetection_method)
   * [dns](#add_onsdns)
     * [disable](#add_onsdnsdisable)
     * [provider](#add_onsdnsprovider)
@@ -717,7 +718,7 @@
 
 ###  add_ons.cni.options.calico.workload_mtu
 
- MTU for the workload interface, configures the CNI config 
+ MTU for the workload interface, configures the CNI config. 
 
 | | |
 |----------|-----------------|
@@ -727,13 +728,23 @@
 
 ###  add_ons.cni.options.calico.felix_input_mtu
 
- MTU for the tunnel device used if IPIP is enabled 
+ MTU for the tunnel device used if IPIP is enabled. 
 
 | | |
 |----------|-----------------|
 | **Kind** |  int |
 | **Required** |  No |
 | **Default** | `1440` | 
+
+###  add_ons.cni.options.calico.ip_autodetection_method
+
+ IPAutodetectionMethod is used to detect the IPv4 address of the host. The value gets set in IP_AUTODETECTION_METHOD variable in the pod. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | `first-found` | 
 
 ###  add_ons.dns
 
