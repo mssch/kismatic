@@ -215,6 +215,7 @@ kube_proxy_option_defaults:
 kubelet_defaults:
   "allow-privileged": "true"
   "event-qps": "0"
+  "cadvisor-port" : "0"
   "cloud-provider": "{{ cloud_provider }}"
   "cloud-config": "{{ cloud_config }}"
   "cluster-dns": "{{ kubernetes_dns_service_ip }}"
