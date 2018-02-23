@@ -32,14 +32,14 @@ etcd_certificates:
   etcd_client_key: "{{ etcd_install_dir }}/etcd-client-key.pem"
   owner: root
   group: root
-  mode: 0660
+  mode: "0660"
 # etcd-install
-etcd_install_executable_owner: 1000
-etcd_install_executable_group: 1000
-etcd_install_executable_mode: 0775
+etcd_install_executable_owner: "1000"
+etcd_install_executable_group: "1000"
+etcd_install_executable_mode: "0775"
 etcd_service_owner: root
 etcd_service_group: root
-etcd_service_mode: 0664
+etcd_service_mode: "0664"
 # etcd cluster setup
 etcd_service_cluster_string: "{% for host in groups['etcd'] %}{{ host }}=https://{{ hostvars[host]['internal_ipv4'] }}:{{ etcd_service_peer_port }}{% if not loop.last %},{% endif %}{% endfor %}"
 #===============================================================================
@@ -63,7 +63,7 @@ calico_dir: /etc/calico
 # paths
 calicoctl_conf_path: "{{ calico_dir }}/calicoctl.cfg"
 #file modes
-calico_executable_mode: 0775
+calico_executable_mode: "0775"
 # weave
 weave_dir: /etc/weave
 #networking
@@ -102,11 +102,11 @@ kubernetes_kubeconfig:
   kubelet: "{{kubernetes_install_dir}}/kubelet.conf"
 
 # file modes
-kubernetes_executable_mode: 0775
-kubernetes_service_mode: 0664
-kubernetes_certificates_mode: 0660
-docker_certificate_mode: 0660
-network_environment_mode: 0660
+kubernetes_executable_mode: "0775"
+kubernetes_service_mode: "0664"
+kubernetes_certificates_mode: "0660"
+docker_certificate_mode: "0660"
+network_environment_mode: "0660"
 # owner/group
 kubernetes_owner: root
 kubernetes_group: root
@@ -332,7 +332,7 @@ preflight_check_tcp_ports: "{{etcd_k8s_client_port}},{{etcd_networking_client_po
 # Gluster
 volume_mount: /
 volume_base_dir: data/
-volume_mode: 0777
+volume_mode: "0777"
 volume_replica_count: 2
 volume_distribution_count: 1
 
