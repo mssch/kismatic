@@ -214,6 +214,7 @@ kube_proxy_option_defaults:
 
 kubelet_defaults:
   "allow-privileged": "true"
+  "event-qps": "0"
   "cloud-provider": "{{ cloud_provider }}"
   "cloud-config": "{{ cloud_config }}"
   "cluster-dns": "{{ kubernetes_dns_service_ip }}"
@@ -221,6 +222,7 @@ kubelet_defaults:
   "container-runtime": "docker"
   "cni-bin-dir": "{% if cni.enabled|bool == true %}/opt/cni/bin{% endif %}"
   "cni-conf-dir": "{% if cni.enabled|bool == true %}{{ network_plugin_dir }}{% endif %}"
+  "make-iptables-util-chains": "true"
   "network-plugin": "{% if cni.enabled|bool == true %}cni{% endif %}"
   "docker": "unix:///var/run/docker.sock"
   "hostname-override": "{{ inventory_hostname }}"
@@ -232,6 +234,7 @@ kubelet_defaults:
   "pod-manifest-path": "{{ kubelet_pod_manifests_dir }}"
   "register-schedulable": "{{ kubernetes_schedulable }}"
   "serialize-image-pulls": "false"
+  "streaming-connection-idle-timeout": "0"
   "tls-cert-file": "{{ kubernetes_certificates.kubelet}}"
   "tls-private-key-file": "{{ kubernetes_certificates.kubelet_key }}"
   "v": "2"
