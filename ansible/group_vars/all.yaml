@@ -160,6 +160,8 @@ kubernetes_api_server_option_defaults:
   "requestheader-client-ca-file": "{{ kubernetes_certificates.proxy_client_ca }}"
   "proxy-client-cert-file": "{{ kubernetes_certificates.proxy_client }}"
   "proxy-client-key-file": "{{ kubernetes_certificates.proxy_client_key }}"
+  "profiling": "false"
+  "repair-malformed-updates" : "false"
   "requestheader-allowed-names": ""
   "requestheader-extra-headers-prefix": "X-Remote-Extra-"
   "requestheader-group-headers": "X-Remote-Group"
@@ -190,6 +192,7 @@ kube_controller_manager_option_defaults:
   "cluster-name": "{{ kubernetes_cluster_name }}"
   "kubeconfig": "{{ kubernetes_kubeconfig.controller_manager }}"
   "leader-elect": "true"
+  "profiling": "false"
   "root-ca-file": "{{ kubernetes_certificates.ca }}"
   "service-account-private-key-file": "{{ kubernetes_certificates.service_account_key }}"
   "service-cluster-ip-range": "{{ kubernetes_services_cidr }}"
@@ -199,11 +202,13 @@ kube_controller_manager_option_defaults:
 kube_scheduler_option_defaults:
   "kubeconfig": "{{ kubernetes_kubeconfig.scheduler }}"
   "leader-elect": "true"
+  "profiling": "false"
   "v": "2"
 
 kube_proxy_option_defaults:
   "cluster-cidr": "{{ kubernetes_pods_cidr }}"
   "hostname-override": "$(NODE_NAME)"
+  "profiling": "false"
   "proxy-mode": "iptables"
   "v": "2"
 
