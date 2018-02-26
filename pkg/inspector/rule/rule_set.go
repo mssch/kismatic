@@ -142,12 +142,6 @@ const defaultRuleSet = `---
   timeout: 5s
 
 # Ports used by K8s worker are available
-# cAdvisor
-- kind: TCPPortAvailable
-  when: 
-  - ["master", "worker", "ingress", "storage"]
-  port: 4194
-  procName: kubelet
 # kubelet localhost healthz
 - kind: TCPPortAvailable
   when: 
@@ -180,12 +174,6 @@ const defaultRuleSet = `---
   procName: kubelet
 
 # Ports used by K8s worker are accessible
-# cAdvisor
-- kind: TCPPortAccessible
-  when: 
-  - ["master", "worker", "ingress", "storage"]
-  port: 4194
-  timeout: 5s
 # kube-proxy
 - kind: TCPPortAccessible
   when: 
