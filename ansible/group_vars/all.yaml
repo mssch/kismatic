@@ -17,7 +17,6 @@ bin_dir: /usr/bin
 etcd_k8s_client_port: 2379
 etcd_networking_client_port: 6666
 kubernetes_master_secure_port: 6443
-kubernetes_master_insecure_port: 8080
 kubernetes_proxy_insecure_port: 10256
 kubernetes_scheduler_insecure_port: 10251
 kubernetes_controller_mgr_insecure_port: 10252
@@ -151,7 +150,6 @@ kubernetes_api_server_option_defaults:
   "advertise-address": "{{ internal_ipv4 }}"
   "allow-privileged": "true"
   "apiserver-count": "{{ kubernetes_master_apiserver_count }}"
-  "anonymous-auth": "false"
   "authorization-mode": "Node,RBAC{% if kubernetes_admin_password is defined and kubernetes_admin_password != '' %},ABAC{% endif %}" #TODO remove ABAC
   "authorization-policy-file": "{% if kubernetes_admin_password is defined and kubernetes_admin_password != '' %}{{ kubernetes_authorization_policy_path }}{% endif %}"
   "basic-auth-file": "{% if kubernetes_admin_password is defined and kubernetes_admin_password != '' %}{{ kubernetes_basic_auth_path }}{% endif %}"
@@ -173,8 +171,7 @@ kubernetes_api_server_option_defaults:
   "etcd-certfile": "{{ kubernetes_certificates.etcd_client }}"
   "etcd-keyfile": "{{ kubernetes_certificates.etcd_client_key }}"
   "etcd-servers": "{{ etcd_k8s_cluster_ip_list }}"
-  "insecure-bind-address": "127.0.0.1"
-  "insecure-port": "{{ kubernetes_master_insecure_port }}"
+  "insecure-port": "0"
   "kubelet-preferred-address-types": "{% if modify_hosts_file is defined and modify_hosts_file|bool == true %}InternalIP,ExternalIP,Hostname{% endif %}"
   "runtime-config": "extensions/v1beta1=true,extensions/v1beta1/networkpolicies=true"
   "secure-port": "{{ kubernetes_master_secure_port }}"
@@ -325,9 +322,6 @@ kubernetes_deb_repository_url: "https://packages.cloud.google.com/apt/"
 kubernetes_deb_gpg_key_url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
 
 #===============================================================================
-
-# Preflight check variables
-preflight_check_tcp_ports: "{{etcd_k8s_client_port}},{{etcd_networking_client_port}},{{kubernetes_master_secure_port}},{{kubernetes_master_insecure_port}}"
 
 # Gluster
 volume_mount: /
