@@ -101,7 +101,7 @@ var _ = Describe("Upgrade", func() {
 									return fmt.Errorf("could not remove node: %v", err)
 								}
 								By("Re-running Kuberang")
-								if err = runViaSSH([]string{"sudo kuberang"}, []NodeDeets{nodes.master[1]}, sshKey, 5*time.Minute); err != nil {
+								if err = runViaSSH([]string{"sudo kuberang --kubeconfig /root/.kube/config"}, []NodeDeets{nodes.master[1]}, sshKey, 5*time.Minute); err != nil {
 									return err
 								}
 								return nil
