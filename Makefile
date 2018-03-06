@@ -32,6 +32,10 @@ endif
 ifeq ($(origin HOST_GOARCH), undefined)
 	HOST_GOARCH := $(shell go env GOARCH)
 endif
+# Used by the integration tests to tag nodes
+ifeq ($(origin CREATED_BY), undefined)
+	CREATED_BY := $(shell hostname)
+endif
 
 # Versions of external dependencies
 GLIDE_VERSION = v0.13.1
@@ -129,7 +133,7 @@ focus-integration-test:
 	    -v "$(shell pwd)/tmp":"/tmp/kismatic"                   \
 	    -w "/go/src/$(PKG)"                                     \
 	    circleci/golang:$(GO_VERSION)                           \
-	     make focus-integration-test-host
+	    make focus-integration-test-host
 
 slow-integration-test: 
 	mkdir -p tmp
@@ -287,7 +291,7 @@ glide-update-host:
 vendor: vendor-tools vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-$(GOARCH) vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-$(GOARCH)
 
 vendor-tools: tools/glide-$(HOST_GOOS)-$(HOST_GOARCH)
-	
+
 tools/glide-$(HOST_GOOS)-$(HOST_GOARCH):
 	mkdir -p tools
 	curl -L https://github.com/Masterminds/glide/releases/download/$(GLIDE_VERSION)/glide-$(GLIDE_VERSION)-$(HOST_GOOS)-$(HOST_GOARCH).tar.gz | tar -xz -C tools
@@ -362,11 +366,11 @@ endif
 
 trigger-ci-slow-tests:
 	@echo Triggering build with slow tests
-	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"     \
-		-d '{"build_parameters": {"RUN_SLOW_TESTS": "true"}}'                         \
-		$(CIRCLE_ENDPOINT)
+	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"    \
+	  -d '{"build_parameters": {"RUN_SLOW_TESTS": "true"}}'                          \
+	  $(CIRCLE_ENDPOINT)
 trigger-ci-focused-tests:
 	@echo Triggering focused test
-	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"     \
-		-d "{\"build_parameters\": {\"FOCUS\": \"$(FOCUS)\"}}"                        \
-		$(CIRCLE_ENDPOINT)
+	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"    \
+	  -d "{\"build_parameters\": {\"FOCUS\": \"$(FOCUS)\"}}"                         \
+	  $(CIRCLE_ENDPOINT)
