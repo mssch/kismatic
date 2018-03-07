@@ -52,7 +52,7 @@ func seedRegistry(repoNode NodeDeets, registryCAFile string, registryPort int, s
 	}
 
 	By("Copying KET to the registry node for seeding")
-	err = copyFileToRemote(filepath.Join(currentKismaticDir, "kismatic.tar.gz"), "/tmp/kismatic.tar.gz", repoNode, sshKey, 5*time.Minute)
+	err = copyFileToRemote(filepath.Join(currentKismaticDir, "kismatic-linux.tar.gz"), "/tmp/kismatic-linux.tar.gz", repoNode, sshKey, 5*time.Minute)
 	if err != nil {
 		return fmt.Errorf("Error copying KET to the registry node: %v", err)
 	}
@@ -62,7 +62,7 @@ func seedRegistry(repoNode NodeDeets, registryCAFile string, registryPort int, s
 	cmds = []string{
 		fmt.Sprintf("sudo docker login -u kismaticuser -p kismaticpassword %s", registry),
 		"sudo mkdir kismatic",
-		"sudo tar -xf /tmp/kismatic.tar.gz -C kismatic",
+		"sudo tar -xf /tmp/kismatic-linux.tar.gz -C kismatic",
 		fmt.Sprintf("sudo ./kismatic/kismatic seed-registry --server %s", registry),
 	}
 	err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 60*time.Minute)

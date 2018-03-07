@@ -157,7 +157,7 @@ func extractCurrentKismatic(dest string) error {
 // gets the given kismatic release tarball from the local filesystem if available.
 // otherwise, it will attempt to download it from github.
 func getKismaticReleaseTarball(version string) (string, error) {
-	tarFile := filepath.Join(releasesDir, version, "kismatic.tar.gz")
+	tarFile := filepath.Join(releasesDir, version, "kismatic-linux.tar.gz")
 	_, err := os.Stat(tarFile)
 	if err == nil {
 		// we have already downloaded this release
