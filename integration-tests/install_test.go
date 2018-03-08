@@ -236,7 +236,7 @@ var _ = Describe("kismatic", func() {
 
 		Context("when deploying an HA cluster", func() {
 			ItOnAWS("should still be a highly available cluster after removing a master node [slow]", func(aws infrastructureProvisioner) {
-				WithInfrastructureAndDNS(NodeCount{1, 2, 1, 0, 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
+				WithInfrastructureAndDNS(NodeCount{1, 2, 1, 1, 0}, Ubuntu1604LTS, aws, func(nodes provisionedNodes, sshKey string) {
 					// install cluster
 					installOpts := installOptions{}
 					err := installKismatic(nodes, installOpts, sshKey)

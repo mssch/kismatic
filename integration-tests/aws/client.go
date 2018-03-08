@@ -283,7 +283,7 @@ func (c Client) CreateDNSRecords(nodeIPs []string) (*DNSRecord, error) {
 		return nil, err
 	}
 	// Setup variables to modify hosted zone
-	name := strconv.FormatInt(time.Now().Unix(), 10) + ".kismatic.integration-tests."
+	name := strconv.FormatInt(time.Now().Unix(), 10) + ".kismatic.integration-tests"
 	dnsRecord := &DNSRecord{Name: name, Values: nodeIPs}
 	err = modifyHostedZone(dnsRecord, route53.ChangeActionUpsert, c.Config.HostedZoneID, api)
 	if err != nil {
