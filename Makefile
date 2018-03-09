@@ -246,7 +246,7 @@ copy-vendors: # omit kismatic, inspector, terraform since we provide configs for
 	cp -r vendor-ansible/out/ansible/* $(BUILD_OUTPUT)/ansible
 	cp vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-$(GOARCH) $(BUILD_OUTPUT)/kubectl
 	cp vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-$(GOARCH) $(BUILD_OUTPUT)/helm
-	cp vendor-provision/out/provision $(BUILD_OUTPUT)/provision
+	cp vendor-provision/out/provision-$(PROVISIONER_VERSION)-$(GOOS)-$(GOARCH) $(BUILD_OUTPUT)/provision
 	mkdir -p $(BUILD_OUTPUT)/ansible/playbooks/kuberang/linux/$(GOARCH)/
 	cp vendor-kuberang/$(KUBERANG_VERSION)/kuberang-linux-$(GOARCH) $(BUILD_OUTPUT)/ansible/playbooks/kuberang/linux/$(GOARCH)/kuberang
 
@@ -288,7 +288,7 @@ glide-install-host:
 glide-update-host:
 	tools/glide-$(HOST_GOOS)-$(HOST_GOARCH) update
 
-vendor: vendor-tools vendor-ansible/out vendor-provision/out vendor-kuberang/$(KUBERANG_VERSION) vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-$(GOARCH) vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-$(GOARCH)
+vendor: vendor-tools vendor-ansible/out vendor-provision/out/provision-$(PROVISIONER_VERSION)-$(GOOS)-$(GOARCH) vendor-kuberang/$(KUBERANG_VERSION) vendor-kubectl/out/kubectl-$(KUBECTL_VERSION)-$(GOOS)-$(GOARCH) vendor-helm/out/helm-$(HELM_VERSION)-$(GOOS)-$(GOARCH)
 
 vendor-tools: tools/glide-$(HOST_GOOS)-$(HOST_GOARCH)
 
@@ -304,10 +304,10 @@ vendor-ansible/out:
 	tar -zxf vendor-ansible/out/ansible.tar.gz -C vendor-ansible/out
 	rm vendor-ansible/out/ansible.tar.gz
 
-vendor-provision/out:
+vendor-provision/out/provision-$(PROVISIONER_VERSION)-$(GOOS)-$(GOARCH):
 	mkdir -p vendor-provision/out/
-	curl -L https://github.com/apprenda/kismatic-provision/releases/download/$(PROVISIONER_VERSION)/provision-$(GOOS)-$(GOARCH) -o vendor-provision/out/provision
-	chmod +x vendor-provision/out/*
+	curl -L https://github.com/apprenda/kismatic-provision/releases/download/$(PROVISIONER_VERSION)/provision-$(GOOS)-$(GOARCH) -o vendor-provision/out/provision-$(PROVISIONER_VERSION)-$(GOOS)-$(GOARCH)
+	chmod +x vendor-provision/out/provision-$(PROVISIONER_VERSION)-$(GOOS)-$(GOARCH)
 
 vendor-kuberang/$(KUBERANG_VERSION):
 	mkdir -p vendor-kuberang/$(KUBERANG_VERSION)
