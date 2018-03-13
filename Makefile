@@ -345,6 +345,11 @@ focus-integration-test-host: get-ginkgo
 	@$(MAKE) GOOS=linux tarball
 	ginkgo --focus $(FOCUS) $(GINKGO_OPTS) -v integration-tests
 
+docs/generate-kismatic-cli:
+	mkdir -p docs/kismatic-cli
+	go run cmd/kismatic-docs/main.go
+	cp docs/kismatic-cli/kismatic.md docs/kismatic-cli/README.md
+
 docs/update-plan-file-reference.md:
 	@$(MAKE) docs/generate-plan-file-reference.md > docs/plan-file-reference.md
 
