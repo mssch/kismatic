@@ -679,6 +679,15 @@ func (p *Plan) AllAddresses() string {
 	return strings.Join(addr, ",")
 }
 
+func (p *Plan) HostExists(host string) bool {
+	for _, n := range p.GetUniqueNodes() {
+		if host == n.Host {
+			return true
+		}
+	}
+	return false
+}
+
 // GetSSHConnection returns the SSHConnection struct containing the node and SSHConfig details
 func (p *Plan) GetSSHConnection(host string) (*SSHConnection, error) {
 	nodes := p.getAllNodes()

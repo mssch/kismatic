@@ -20,7 +20,7 @@ import (
 // The PreFlightExecutor will run pre-flight checks against the
 // environment defined in the plan file
 type PreFlightExecutor interface {
-	RunPreFlightCheck(*Plan) error
+	RunPreFlightCheck(plan *Plan, nodes ...string) error
 	RunNewNodePreFlightCheck(Plan, Node) error
 	RunUpgradePreFlightCheck(*Plan, ListableNode) error
 }
@@ -28,11 +28,11 @@ type PreFlightExecutor interface {
 // The Executor will carry out the installation plan
 type Executor interface {
 	PreFlightExecutor
-	Install(plan *Plan, restartServices bool) error
+	Install(plan *Plan, restartServices bool, nodes ...string) error
 	GenerateCertificates(p *Plan, useExistingCA bool) error
 	RunSmokeTest(*Plan) error
-	AddNode(Plan *Plan, node Node, roles []string, restartServices bool) (*Plan, error)
-	RunPlay(name string, plan *Plan, restartServices bool) error
+	AddNode(plan *Plan, node Node, roles []string, restartServices bool) (*Plan, error)
+	RunPlay(name string, plan *Plan, restartServices bool, nodes ...string) error
 	AddVolume(*Plan, StorageVolume) error
 	DeleteVolume(*Plan, string) error
 	UpgradeNodes(plan Plan, nodesToUpgrade []ListableNode, onlineUpgrade bool, maxParallelWorkers int, restartServices bool) error
@@ -279,7 +279,7 @@ func (ae *ansibleExecutor) GenerateCertificates(p *Plan, useExistingCA bool) err
 }
 
 // Install the cluster according to the installation plan
-func (ae *ansibleExecutor) Install(p *Plan, restartServices bool) error {
+func (ae *ansibleExecutor) Install(p *Plan, restartServices bool, nodes ...string) error {
 	// Build the ansible inventory
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
@@ -295,6 +295,7 @@ func (ae *ansibleExecutor) Install(p *Plan, restartServices bool) error {
 		inventory:      buildInventoryFromPlan(p),
 		clusterCatalog: *cc,
 		explainer:      ae.defaultExplainer(),
+		limit:          nodes,
 	}
 	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
 	return ae.execute(t)
@@ -318,7 +319,7 @@ func (ae *ansibleExecutor) RunSmokeTest(p *Plan) error {
 }
 
 // RunPreflightCheck against the nodes defined in the plan
-func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
+func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan, nodes ...string) error {
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
@@ -330,6 +331,7 @@ func (ae *ansibleExecutor) RunPreFlightCheck(p *Plan) error {
 		clusterCatalog: *cc,
 		explainer:      ae.preflightExplainer(),
 		plan:           *p,
+		limit:          nodes,
 	}
 	return ae.execute(t)
 }
@@ -395,7 +397,7 @@ func (ae *ansibleExecutor) RunUpgradePreFlightCheck(p *Plan, node ListableNode) 
 	return ae.execute(t)
 }
 
-func (ae *ansibleExecutor) RunPlay(playName string, p *Plan, restartServices bool) error {
+func (ae *ansibleExecutor) RunPlay(playName string, p *Plan, restartServices bool, nodes ...string) error {
 	cc, err := ae.buildClusterCatalog(p)
 	if err != nil {
 		return err
@@ -410,6 +412,7 @@ func (ae *ansibleExecutor) RunPlay(playName string, p *Plan, restartServices boo
 		clusterCatalog: *cc,
 		explainer:      ae.defaultExplainer(),
 		plan:           *p,
+		limit:          nodes,
 	}
 	return ae.execute(t)
 }
