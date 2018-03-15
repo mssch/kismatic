@@ -31,6 +31,8 @@ type ClusterCatalog struct {
 	KubeProxyOptions             map[string]string `yaml:"kube_proxy_option_overrides"`
 	KubeletOptions               map[string]string `yaml:"kubelet_overrides"`
 
+	AdditionalFiles []AdditionalFile `yaml:"additional_files"`
+
 	ConfigureDockerWithPrivateRegistry bool   `yaml:"configure_docker_with_private_registry"`
 	DockerRegistryCAPath               string `yaml:"docker_certificates_ca_path"`
 	DockerRegistryServer               string `yaml:"docker_registry_full_url"`
@@ -166,6 +168,12 @@ type DirectLVMBlockDevice struct {
 type NFSVolume struct {
 	Host string
 	Path string
+}
+
+type AdditionalFile struct {
+	Source      string
+	Destination string
+	Hosts       []string
 }
 
 func (c *ClusterCatalog) EnableRestart() {

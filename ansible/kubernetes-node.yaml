@@ -1,5 +1,6 @@
 ---
   - include: _all.yaml
+  - include: _additional-files.yaml
   - include: _certs.yaml
   - include: _kubeconfig.yaml
   - include: _packages-repo.yaml

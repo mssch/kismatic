@@ -60,6 +60,11 @@
   * [CA](#docker_registryCA)
   * [username](#docker_registryusername)
   * [password](#docker_registrypassword)
+* [additional_files](#additional_files)
+  * [hosts](#additional_fileshosts)
+  * [source](#additional_filessource)
+  * [destination](#additional_filesdestination)
+  * [skip_validation](#additional_filesskip_validation)
 * [add_ons](#add_ons)
   * [cni](#add_onscni)
     * [disable](#add_onscnidisable)
@@ -658,6 +663,44 @@
 | **Kind** |  string |
 | **Required** |  No |
 | **Default** | ` ` | 
+
+##  additional_files
+
+ A set of files or directories to copy from the local machine to any of the nodes in the cluster. 
+
+###  additional_files.hosts
+
+ Hostname or role where additional files or directories will be copied. 
+
+###  additional_files.source
+
+ Path to the file or directory on local machine. Must be an absolute path. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  Yes |
+| **Default** | ` ` | 
+
+###  additional_files.destination
+
+ Path to the file or directory on remote machine, where file will be copied. Must be an absolute path. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  Yes |
+| **Default** | ` ` | 
+
+###  additional_files.skip_validation
+
+ Set to true if validation will be run before the file exists on the local machine. Useful for files generated at install time, ie. assets in generated/ directory. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  bool |
+| **Required** |  No |
+| **Default** | `false` | 
 
 ##  add_ons
 

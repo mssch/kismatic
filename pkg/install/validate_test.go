@@ -23,6 +23,13 @@ var validPlan = Plan{
 			Port: 22,
 		},
 	},
+	AdditionalFiles: []AdditionalFile{
+		{
+			Source:      "/bin/sh",
+			Destination: "/bin/sh",
+			Hosts:       []string{"master01"},
+		},
+	},
 	AddOns: AddOns{
 		CNI: &CNI{
 			Provider: "calico",
@@ -1836,6 +1843,131 @@ func TestNodeKubeletOptions(t *testing.T) {
 		ok, _ := test.nl.validate()
 		if ok != test.valid {
 			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}
+
+func TestValidateFile(t *testing.T) {
+	tests := []struct {
+		srcPath        string
+		destPath       string
+		hosts          []string
+		skipValidation bool
+		valid          bool
+	}{
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"master01"},
+			valid:    true,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"worker01"},
+			valid:    true,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"etcd01"},
+			valid:    true,
+		},
+		{
+			srcPath:        "/tmp/xa.yaml",
+			destPath:       "/tmp/copy_xa.yaml",
+			hosts:          []string{"master01"},
+			skipValidation: true,
+			valid:          true,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"worker"},
+			valid:    true,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"all"},
+			valid:    true,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"master", "worker"},
+			valid:    true,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"master", "worker", "worker100"},
+			valid:    false,
+		},
+		{
+			srcPath:  "",
+			destPath: "",
+			hosts:    []string{"master01"},
+			valid:    false,
+		},
+		{
+			srcPath:  "",
+			destPath: "/tmp/copy_xa.yaml",
+			hosts:    []string{"master01"},
+			valid:    false,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "",
+			hosts:    []string{"master01"},
+			valid:    false,
+		},
+		{
+			srcPath:  "../someRelativePath",
+			destPath: "../someRelativePath",
+			hosts:    []string{"master01"},
+			valid:    false,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "../someRelativePath",
+			hosts:    []string{"master01"},
+			valid:    false,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/bin/sh",
+			hosts:    []string{},
+			valid:    false,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/bin/sh",
+			hosts:    []string{"master02"},
+			valid:    false,
+		},
+		{
+			srcPath:  "/bin/sh",
+			destPath: "/bin/sh",
+			hosts:    []string{"foo"},
+			valid:    false,
+		},
+	}
+	for n, test := range tests {
+		v := []AdditionalFile{
+			AdditionalFile{
+				Source:         test.srcPath,
+				Destination:    test.destPath,
+				Hosts:          test.hosts,
+				SkipValidation: test.skipValidation,
+			},
+		}
+		fg := additionalFilesGroup{AdditionalFiles: v, Plan: &validPlan}
+		if valid, errs := fg.validate(); valid != test.valid {
+			t.Errorf("test %d: expect valid = %t, but got %t", n, test.valid, valid)
+			if !valid {
+				t.Errorf("error %v", errs)
+			}
 		}
 	}
 }

@@ -49,6 +49,10 @@ func cloudProviders() []string {
 	return []string{"aws", "azure", "cloudstack", "fake", "gce", "mesos", "openstack", "ovirt", "photon", "rackspace", "vsphere"}
 }
 
+func roles() []string {
+	return []string{"etcd", "master", "worker", "ingress", "storage"}
+}
+
 // Plan is the installation plan that the user intends to execute
 type Plan struct {
 	// Kubernetes cluster configuration
@@ -58,6 +62,8 @@ type Plan struct {
 	Docker Docker
 	// Docker registry configuration
 	DockerRegistry DockerRegistry `yaml:"docker_registry"`
+	// A set of files or directories to copy from the local machine to any of the nodes in the cluster.
+	AdditionalFiles []AdditionalFile `yaml:"additional_files"`
 	// Add on configuration
 	AddOns AddOns `yaml:"add_ons"`
 	// Feature configuration
@@ -293,6 +299,24 @@ type DockerStorageDirectLVMDeprecated struct {
 	// Whether deferred deletion should be enabled when using devicemapper in direct_lvm mode.
 	// +default=false
 	EnableDeferredDeletion bool `yaml:"enable_deferred_deletion"`
+}
+
+// AdditionalFile is a file or directory to copy to remote host(s) from the local host
+type AdditionalFile struct {
+	// Hostname or role where additional files or directories will be copied.
+	// +required
+	Hosts []string
+	// Path to the file or directory on local machine.
+	// Must be an absolute path.
+	// +required
+	Source string
+	// Path to the file or directory on remote machine, where file will be copied.
+	// Must be an absolute path.
+	// +required
+	Destination string
+	// Set to true if validation will be run before the file exists on the local machine.
+	// Useful for files generated at install time, ie. assets in generated/ directory.
+	SkipValidation bool `yaml:"skip_validation"`
 }
 
 // DockerRegistry details for docker registry, either confgiured by the cli or customer provided
@@ -677,6 +701,15 @@ func (p *Plan) AllAddresses() string {
 		}
 	}
 	return strings.Join(addr, ",")
+}
+
+func (p *Plan) ValidRole(role string) bool {
+	for _, r := range roles() {
+		if r == role {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Plan) HostExists(host string) bool {

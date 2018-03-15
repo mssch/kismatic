@@ -752,6 +752,15 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	cc.CloudProvider = p.Cluster.CloudProvider.Provider
 	cc.CloudConfig = p.Cluster.CloudProvider.Config
 
+	// additional files
+	for _, n := range p.AdditionalFiles {
+		cc.AdditionalFiles = append(cc.AdditionalFiles, ansible.AdditionalFile{
+			Source:      n.Source,
+			Destination: n.Destination,
+			Hosts:       n.Hosts,
+		})
+	}
+
 	// add_ons
 	cc.RunPodValidation = p.NetworkConfigured()
 	// CNI

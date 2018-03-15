@@ -131,6 +131,13 @@ docker_registry:
   # Leave blank for unauthenticated access.
   password: ""
 
+# A set of files or directories to copy from the local machine to any of the nodes in the cluster.
+additional_files:
+- hosts: []
+  source: ""
+  destination: ""
+  skip_validation: false
+
 # Add-ons are additional components that KET installs on the cluster.
 add_ons:
   cni:
