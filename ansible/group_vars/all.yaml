@@ -99,6 +99,7 @@ kubernetes_kubeconfig:
   controller_manager: "{{kubernetes_install_dir}}/controller-manager.conf"
   scheduler: "{{kubernetes_install_dir}}/scheduler.conf"
   kubelet: "{{kubernetes_install_dir}}/kubelet.conf"
+  rescheduler: "{{kubernetes_install_dir}}/rescheduler.conf"
 
 # file modes
 kubernetes_executable_mode: "0775"

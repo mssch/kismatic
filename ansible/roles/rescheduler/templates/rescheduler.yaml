@@ -22,5 +22,20 @@ spec:
         cpu: 10m
         memory: 100Mi
     command:
+    command:
     - /rescheduler 
     - --running-in-cluster=false
+    volumeMounts:
+      - mountPath: "/root/.kube/config"
+        name: "kubeconfig"
+        readOnly: true
+      - mountPath: /etc/kubernetes
+        name: ssl-certs-kubernetes
+        readOnly: true
+  volumes:
+    - name: "kubeconfig"
+      hostPath:
+        path: "{{ kubernetes_kubeconfig.rescheduler }}"
+    - hostPath:
+        path: /etc/kubernetes
+      name: ssl-certs-kubernetes
