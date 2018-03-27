@@ -8,7 +8,7 @@ import (
 var validPlan = Plan{
 	Cluster: Cluster{
 		Name:    "test",
-		Version: "v1.9.3",
+		Version: "v1.9.6",
 		Networking: NetworkConfig{
 			Type:             "overlay",
 			PodCIDRBlock:     "172.16.0.0/16",
@@ -128,7 +128,7 @@ func TestClusterVersion(t *testing.T) {
 	}{
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.9.3",
+			Version: "v1.9.6",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -147,7 +147,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.9.3",
+			Version: "v1.9.6",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -185,7 +185,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.9.300",
+			Version: "v1.9.600",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -242,7 +242,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:                     "test",
-			Version:                  "v1.9.300",
+			Version:                  "v1.9.600",
 			DisconnectedInstallation: true,
 			Networking: NetworkConfig{
 				Type:             "overlay",

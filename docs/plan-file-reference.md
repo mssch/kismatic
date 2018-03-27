@@ -180,7 +180,7 @@
 |----------|-----------------|
 | **Kind** |  string |
 | **Required** |  No |
-| **Default** | `v1.9.3` | 
+| **Default** | `v1.9.6` | 
 
 ###  cluster.admin_password _(deprecated)_
 
