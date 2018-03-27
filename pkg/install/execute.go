@@ -767,12 +767,14 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	if p.AddOns.CNI != nil && !p.AddOns.CNI.Disable {
 		cc.CNI.Enabled = true
 		cc.CNI.Provider = p.AddOns.CNI.Provider
+		// Calico
 		cc.CNI.Options.Calico.Mode = p.AddOns.CNI.Options.Calico.Mode
 		cc.CNI.Options.Calico.LogLevel = p.AddOns.CNI.Options.Calico.LogLevel
 		cc.CNI.Options.Calico.WorkloadMTU = p.AddOns.CNI.Options.Calico.WorkloadMTU
 		cc.CNI.Options.Calico.FelixInputMTU = p.AddOns.CNI.Options.Calico.FelixInputMTU
 		cc.CNI.Options.Calico.IPAutodetectionMethod = p.AddOns.CNI.Options.Calico.IPAutodetectionMethod
-
+		// Weave
+		cc.CNI.Options.Weave.Password = p.AddOns.CNI.Options.Weave.Password
 		if cc.CNI.Provider == cniProviderContiv {
 			cc.InsecureNetworkingEtcd = true
 		}

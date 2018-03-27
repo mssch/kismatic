@@ -400,6 +400,8 @@ type CNI struct {
 type CNIOptions struct {
 	// The options that can be configured for the Calico CNI provider.
 	Calico CalicoOptions
+	// The options that can be configured for the Weave CNI provider.
+	Weave WeaveOptions
 }
 
 // The CalicoOptions that can be configured for the Calico CNI provider.
@@ -422,6 +424,12 @@ type CalicoOptions struct {
 	// The value gets set in IP_AUTODETECTION_METHOD variable in the pod.
 	// +default=first-found
 	IPAutodetectionMethod string `yaml:"ip_autodetection_method"`
+}
+
+// The WeaveOptions that can be configured for the Weave CNI provider.
+type WeaveOptions struct {
+	// The password to use for network traffic encryption.
+	Password string
 }
 
 // The DNS add-on configuration

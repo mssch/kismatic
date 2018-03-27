@@ -120,6 +120,8 @@ items:
                       fieldPath: spec.nodeName
                 - name: IPALLOC_RANGE
                   value: "{{ kubernetes_pods_cidr }}"
+                - name: WEAVE_PASSWORD
+                  value: "{{ cni.options.weave.password }}"
               image: '{{ images.weave }}'
               imagePullPolicy: IfNotPresent
               livenessProbe:

@@ -114,6 +114,9 @@ type ClusterCatalog struct {
 				FelixInputMTU         int    `yaml:"felix_input_mtu"`
 				IPAutodetectionMethod string `yaml:"ip_autodetection_method"`
 			}
+			Weave struct {
+				Password string
+			}
 		}
 	}
 
