@@ -37,16 +37,16 @@ official_images:
     version: 1.1.1
   weave:
     name: weaveworks/weave-kube
-    version: 2.2.0
+    version: 2.2.1
   weave_npc:
     name: weaveworks/weave-npc
-    version: 2.2.0
+    version: 2.2.1
   defaultbackend:
     name: gcr.io/google_containers/defaultbackend
     version: 1.4
   nginx_ingress_controller:
     name: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
-    version: 0.11.0
+    version: 0.12.0
   nginx:
     name: nginx
     version: stable-alpine
@@ -67,7 +67,7 @@ official_images:
     version: 1.14.8
   coredns:
     name: coredns/coredns
-    version: 1.0.6
+    version: 1.10.1
   kubernetes_dashboard:
     name: gcr.io/google_containers/kubernetes-dashboard-amd64
     version: v1.8.3
@@ -76,10 +76,10 @@ official_images:
     version: v1.0.0
   helm:
     name: gcr.io/kubernetes-helm/tiller
-    version: v2.8.1
+    version: v2.8.2
   heapster:
     name: gcr.io/google_containers/heapster-amd64
-    version: v1.5.1
+    version: v1.5.2
   influxdb:
     name: gcr.io/google_containers/heapster-influxdb-amd64
     version: v1.3.3
