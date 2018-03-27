@@ -79,7 +79,7 @@ official_images:
     version: v2.8.1
   heapster:
     name: gcr.io/google_containers/heapster-amd64
-    version: v1.5.1
+    version: v1.5.2
   influxdb:
     name: gcr.io/google_containers/heapster-influxdb-amd64
     version: v1.3.3
