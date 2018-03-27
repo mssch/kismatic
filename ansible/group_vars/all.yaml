@@ -118,7 +118,6 @@ kubernetes_master_apiserver_count: "{{ groups['master'] | length }}"
 local_kubernetes_master_ip: https://127.0.0.1:{{ kubernetes_master_secure_port }}
 kubernetes_master_ip: https://{{ kubernetes_load_balanced_fqdn }}:{{ kubernetes_master_secure_port }}
 kubernetes_schedulable: "{% if 'worker' in group_names %}true{% else %}false{% endif %}"
-cluster_dns_replicas: "{{ [2, groups['worker'] | length] | min }}"
 # cloud provider
 cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' %}{{ kubernetes_install_dir }}/cloud-provider.conf{% else %}{% endif %}"
 

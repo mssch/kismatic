@@ -180,6 +180,9 @@ func setDefaults(p *Plan) {
 	if p.AddOns.DNS.Provider == "" {
 		p.AddOns.DNS.Provider = "kubedns"
 	}
+	if p.AddOns.DNS.Options.Replicas <= 0 {
+		p.AddOns.DNS.Options.Replicas = 2
+	}
 
 	if p.AddOns.HeapsterMonitoring == nil {
 		p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
@@ -389,6 +392,7 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 	p.AddOns.CNI.Options.Calico.IPAutodetectionMethod = "first-found"
 	// DNS
 	p.AddOns.DNS.Provider = "kubedns"
+	p.AddOns.DNS.Options.Replicas = 2
 	// Heapster
 	p.AddOns.HeapsterMonitoring = &HeapsterMonitoring{}
 	p.AddOns.HeapsterMonitoring.Options.Heapster.Replicas = 2

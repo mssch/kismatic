@@ -55,7 +55,7 @@ metadata:
   annotations:
     kismatic/version: "{{ kismatic_short_version }}"
 spec:
-  replicas: {{ cluster_dns_replicas|int }}  # create 2 replicas or the number of worker nodes
+  replicas: {{ dns.options.replicas|int }}
   strategy:
     rollingUpdate:
       maxSurge: 1

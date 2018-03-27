@@ -781,6 +781,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	// DNS
 	cc.DNS.Enabled = !p.AddOns.DNS.Disable
 	cc.DNS.Provider = p.AddOns.DNS.Provider
+	cc.DNS.Options.Replicas = p.AddOns.DNS.Options.Replicas
 
 	// heapster
 	if p.AddOns.HeapsterMonitoring != nil && !p.AddOns.HeapsterMonitoring.Disable {
