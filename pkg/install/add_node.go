@@ -16,7 +16,7 @@ func (ae *ansibleExecutor) AddNode(originalPlan *Plan, newNode Node, roles []str
 	if err := checkAddNodePrereqs(ae.pki, newNode); err != nil {
 		return nil, err
 	}
-	updatedPlan := addNodeToPlan(*originalPlan, newNode, roles)
+	updatedPlan := AddNodeToPlan(*originalPlan, newNode, roles)
 
 	// Generate node certificates
 	util.PrintHeader(ae.stdout, "Generating Certificate For New Node", '=')
@@ -102,7 +102,7 @@ func (ae *ansibleExecutor) AddNode(originalPlan *Plan, newNode Node, roles []str
 	return &updatedPlan, nil
 }
 
-func addNodeToPlan(plan Plan, node Node, roles []string) Plan {
+func AddNodeToPlan(plan Plan, node Node, roles []string) Plan {
 	if util.Contains("worker", roles) {
 		plan.Worker.ExpectedCount++
 		plan.Worker.Nodes = append(plan.Worker.Nodes, node)

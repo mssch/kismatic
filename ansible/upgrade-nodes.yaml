@@ -4,6 +4,7 @@
     name: "Gather Node Facts"
     gather_facts: yes
     tasks: []
+  - include: _additional-files.yaml
   # Drain the node before we touch it
   - include: _kube-drain-node.yaml
 

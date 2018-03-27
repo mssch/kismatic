@@ -96,7 +96,9 @@ func doAddNode(out io.Writer, planFile string, opts *addNodeOpts, newNode instal
 		util.PrintValidationErrors(out, errs)
 		return errors.New("information provided about the new node is invalid")
 	}
-	if _, errs := install.ValidatePlan(plan); errs != nil {
+	// add new node to the plan just for validation
+	validatePlan := install.AddNodeToPlan(*plan, newNode, opts.Roles)
+	if _, errs := install.ValidatePlan(&validatePlan); errs != nil {
 		util.PrintValidationErrors(out, errs)
 		return errors.New("the plan file failed validation")
 	}

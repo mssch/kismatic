@@ -77,6 +77,14 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 		return fmt.Errorf("The number of nfs volumes must be greater than or equal to zero")
 	}
 
+	files, err := util.PromptForInt(in, out, "Number of existing files or directories to be copied", 0)
+	if err != nil {
+		return fmt.Errorf("Error reading number of files or directories: %v", err)
+	}
+	if files < 0 {
+		return fmt.Errorf("The number of files or directories must be greater than or equal to zero")
+	}
+
 	fmt.Fprintln(out)
 	fmt.Fprintf(out, "Generating installation plan file template with: \n")
 	fmt.Fprintf(out, "- %d etcd nodes\n", etcdNodes)
@@ -85,15 +93,17 @@ func doPlan(in io.Reader, out io.Writer, planner install.Planner, planFile strin
 	fmt.Fprintf(out, "- %d ingress nodes\n", ingressNodes)
 	fmt.Fprintf(out, "- %d storage nodes\n", storageNodes)
 	fmt.Fprintf(out, "- %d nfs volumes\n", nfsVolumes)
+	fmt.Fprintf(out, "- %d files\n", files)
 	fmt.Fprintln(out)
 
 	planTemplate := install.PlanTemplateOptions{
-		EtcdNodes:    etcdNodes,
-		MasterNodes:  masterNodes,
-		WorkerNodes:  workerNodes,
-		IngressNodes: ingressNodes,
-		StorageNodes: storageNodes,
-		NFSVolumes:   nfsVolumes,
+		EtcdNodes:       etcdNodes,
+		MasterNodes:     masterNodes,
+		WorkerNodes:     workerNodes,
+		IngressNodes:    ingressNodes,
+		StorageNodes:    storageNodes,
+		NFSVolumes:      nfsVolumes,
+		AdditionalFiles: files,
 	}
 	if err = install.WritePlanTemplate(planTemplate, planner); err != nil {
 		return fmt.Errorf("error planning installation: %v", err)

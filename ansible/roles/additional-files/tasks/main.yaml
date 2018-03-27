@@ -1,0 +1,20 @@
+---
+  - name: create directory
+    file:
+      path: "{{ item.destination | dirname }}"
+      mode: "{{ kubernetes_service_mode }}"
+      owner: "{{ kubernetes_owner }}"
+      group: "{{ kubernetes_group }}"
+      state: directory
+    when: inventory_hostname in item.hosts or 'all' in item.hosts or item.hosts | intersect(group_names) | count > 0
+    with_items: "{{ additional_files }}"
+  
+  - name: copy file or directory
+    copy:
+      src: "{{ item.source }}"
+      dest: "{{ item.destination}}"
+      mode: "{{ kubernetes_service_mode }}"
+      owner: "{{ kubernetes_owner }}"
+      group: "{{ kubernetes_group }}"
+    when: inventory_hostname in item.hosts or 'all' in item.hosts or item.hosts | intersect(group_names) | count > 0
+    with_items: "{{ additional_files }}"

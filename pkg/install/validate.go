@@ -144,6 +144,7 @@ func (p *Plan) validate() (bool, []error) {
 	}
 
 	v.validateWithErrPrefix("Docker", p.Docker)
+	v.validate(&additionalFilesGroup{AdditionalFiles: p.AdditionalFiles, Plan: p})
 	v.validate(&p.AddOns)
 	v.validate(nodeList{Nodes: p.getAllNodes()})
 	v.validateWithErrPrefix("Etcd nodes", &p.Etcd)
@@ -254,6 +255,37 @@ func (c *CloudProvider) validate() (bool, []error) {
 			if _, err := os.Stat(c.Config); os.IsNotExist(err) {
 				v.addError(fmt.Errorf("cloud config file was not found at %q", c.Config))
 			}
+		}
+	}
+	return v.valid()
+}
+
+type additionalFilesGroup struct {
+	AdditionalFiles []AdditionalFile
+	Plan            *Plan
+}
+
+func (fg *additionalFilesGroup) validate() (bool, []error) {
+	v := newValidator()
+	for _, f := range fg.AdditionalFiles {
+		if len(f.Hosts) < 1 {
+			v.addError(errors.New("File hosts cannot be empty"))
+		}
+		for _, h := range f.Hosts {
+			if !(fg.Plan.HostExists(h) || h == "all" || fg.Plan.ValidRole(h)) {
+				v.addError(fmt.Errorf("File host %q does not match any hosts or roles in the plan file", h))
+			}
+		}
+		if !f.SkipValidation {
+			if _, err := os.Stat(f.Source); os.IsNotExist(err) {
+				v.addError(fmt.Errorf("File source %q doesn't exist", f.Source))
+			}
+		}
+		if f.Source == "" || !filepath.IsAbs(f.Source) {
+			v.addError(fmt.Errorf("File source %q must be a valid absolute path", f.Source))
+		}
+		if f.Destination == "" || !filepath.IsAbs(f.Destination) {
+			v.addError(fmt.Errorf("File destination %q must be a valid absolute path", f.Destination))
 		}
 	}
 	return v.valid()
