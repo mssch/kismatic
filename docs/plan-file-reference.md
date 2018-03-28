@@ -76,6 +76,8 @@
         * [workload_mtu](#add_onscnioptionscalicoworkload_mtu)
         * [felix_input_mtu](#add_onscnioptionscalicofelix_input_mtu)
         * [ip_autodetection_method](#add_onscnioptionscalicoip_autodetection_method)
+      * [weave](#add_onscnioptionsweave)
+        * [password](#add_onscnioptionsweavepassword)
   * [dns](#add_onsdns)
     * [disable](#add_onsdnsdisable)
     * [provider](#add_onsdnsprovider)
@@ -792,6 +794,20 @@
 | **Kind** |  string |
 | **Required** |  No |
 | **Default** | `first-found` | 
+
+###  add_ons.cni.options.weave
+
+ The options that can be configured for the Weave CNI provider. 
+
+###  add_ons.cni.options.weave.password
+
+ The password to use for network traffic encryption. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
 
 ###  add_ons.dns
 
