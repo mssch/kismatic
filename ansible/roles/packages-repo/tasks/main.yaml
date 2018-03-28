@@ -8,6 +8,7 @@
       gpgkey: "{{ docker_yum_gpg_key_url }}"
       gpgcheck: yes
     when: ansible_os_family == 'RedHat' and docker.enabled|bool == true
+    environment: "{{proxy_env}}"
 
   - name: add Kubernetes yum repository
     yum_repository:
