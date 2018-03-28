@@ -167,7 +167,8 @@ add_ons:
 
       weave:
 
-        # Used by Weave for network traffic encryption. Should be reasonably strong, with at least 50 bits of entropy.
+        # Used by Weave for network traffic encryption.
+        # Should be reasonably strong, with at least 50 bits of entropy.
         password: ""
 
   dns:
