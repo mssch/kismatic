@@ -434,6 +434,14 @@ type DNS struct {
 	// +options=kubedns,coredns
 	// +default=kubedns
 	Provider string
+	// The options that can be configured for the cluster DNS add-on
+	Options DNSOptions
+}
+
+type DNSOptions struct {
+	// Number of cluster DNS replicas that should be scheduled on the cluster.
+	// +default=2
+	Replicas int
 }
 
 // The HeapsterMonitoring add-on configuration

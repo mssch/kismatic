@@ -79,6 +79,8 @@
   * [dns](#add_onsdns)
     * [disable](#add_onsdnsdisable)
     * [provider](#add_onsdnsprovider)
+    * [options](#add_onsdnsoptions)
+      * [replicas](#add_onsdnsoptionsreplicas)
   * [heapster](#add_onsheapster)
     * [disable](#add_onsheapsterdisable)
     * [options](#add_onsheapsteroptions)
@@ -815,6 +817,20 @@
 | **Required** |  Yes |
 | **Default** | `kubedns` | 
 | **Options** |  `kubedns`, `coredns`
+
+###  add_ons.dns.options
+
+ The options that can be configured for the cluster DNS add-on 
+
+###  add_ons.dns.options.replicas
+
+ Number of cluster DNS replicas that should be scheduled on the cluster. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  int |
+| **Required** |  No |
+| **Default** | `2` | 
 
 ###  add_ons.heapster
 

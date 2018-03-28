@@ -99,6 +99,9 @@ type ClusterCatalog struct {
 	DNS struct {
 		Enabled  bool
 		Provider string
+		Options  struct {
+			Replicas int
+		}
 	}
 
 	RunPodValidation bool `yaml:"run_pod_validation"`
