@@ -1,3 +1,11 @@
+  - name: copy rescheduler kubeconfig
+    template:
+      src: kubeconfig.j2
+      dest: "{{ kubernetes_kubeconfig.rescheduler }}"
+      owner: "{{ kubernetes_owner }}"
+      group: "{{ kubernetes_group }}"
+      mode: "{{ kubernetes_service_mode }}"
+
   - name: copy rescheduler.yaml manifest
     template:
       src: rescheduler.yaml
