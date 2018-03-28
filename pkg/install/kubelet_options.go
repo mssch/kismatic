@@ -15,7 +15,6 @@ var kubeletProtectedOptions = []string{
 	"network-plugin",
 	"docker",
 	"hostname-override",
-	"require-kubeconfig",
 	"kubeconfig",
 	"node-labels",
 	"node-ip",
