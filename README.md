@@ -32,7 +32,7 @@ KET operational tools include:
 | Weave | v2.2.1 |
 | Contiv | v1.1.1 |
 | KubeDNS | 1.14.8 |
-| CoreDNS | 1.10.1 |
+| CoreDNS | 1.1.1 |
 | Nginx Ingress Controller | 0.12.0 |
 | Helm | v2.8.2 |
 
