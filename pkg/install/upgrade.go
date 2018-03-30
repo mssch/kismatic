@@ -179,7 +179,8 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 	}
 	nodePods := []data.Pod{}
 	for _, p := range podList.Items {
-		if p.Spec.NodeName == node.Host {
+		// Don't check pods that are running in "kube-system" namespace
+		if p.Spec.NodeName == node.Host && p.Namespace != "kube-system" {
 			nodePods = append(nodePods, p)
 		}
 	}
