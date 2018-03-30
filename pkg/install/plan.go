@@ -29,7 +29,6 @@ type PlanTemplateOptions struct {
 	WorkerNodes     int
 	IngressNodes    int
 	StorageNodes    int
-	NFSVolumes      int
 	AdditionalFiles int
 	AdminPassword   string
 }
@@ -413,11 +412,6 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 	p.Ingress.ExpectedCount = templateOpts.IngressNodes
 	p.Storage.ExpectedCount = templateOpts.StorageNodes
 
-	for i := 0; i < templateOpts.NFSVolumes; i++ {
-		v := NFSVolume{Host: "", Path: "/"}
-		p.NFS.Volumes = append(p.NFS.Volumes, v)
-	}
-
 	for i := 0; i < templateOpts.AdditionalFiles; i++ {
 		f := AdditionalFile{}
 		p.AdditionalFiles = append(p.AdditionalFiles, f)
@@ -525,10 +519,7 @@ var commentMap = map[string][]string{
 	"storage":                                            []string{"Storage nodes will be used to create a distributed storage cluster that can", "be consumed by your workloads."},
 	"master.load_balanced_fqdn":                          []string{"If you have set up load balancing for master nodes, enter the FQDN name here.", "Otherwise, use the IP address of a single master node."},
 	"master.load_balanced_short_name":                    []string{"If you have set up load balancing for master nodes, enter the short name here.", "Otherwise, use the IP address of a single master node."},
-	"nfs":              []string{"A set of NFS volumes for use by on-cluster persistent workloads."},
-	"nfs.nfs_host":     []string{"The host name or ip address of an NFS server."},
-	"nfs.mount_path":   []string{"The mount path of an NFS share. Must start with '/'."},
-	"additional_files": []string{"A set of files or directories to copy from the local machine to any of the nodes in the cluster."},
+	"additional_files":                                   []string{"A set of files or directories to copy from the local machine to any of the nodes in the cluster."},
 }
 
 type stack struct {
