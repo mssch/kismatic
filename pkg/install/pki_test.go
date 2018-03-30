@@ -458,11 +458,12 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 
 	// Validate API server client certificates
 	tests := []struct {
-		name                  string
-		certFilename          string
-		issuer                string
-		expectedCommonName    string
-		expectedOrganizations []string
+		name                          string
+		certFilename                  string
+		issuer                        string
+		expectedCommonName            string
+		expectedSubjectAlternateNames []string
+		expectedOrganizations         []string
 	}{
 		{
 			name:               "kube scheduler certificate",
@@ -477,32 +478,36 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 			expectedCommonName: "system:kube-controller-manager",
 		},
 		{
-			name:                  "master node/kubelet certificate",
-			certFilename:          fmt.Sprintf("%s-kubelet.pem", masterNode.Host),
-			issuer:                "someName",
-			expectedCommonName:    fmt.Sprintf("system:node:%s", masterNode.Host),
-			expectedOrganizations: []string{"system:nodes"},
+			name:                          "master node/kubelet certificate",
+			certFilename:                  fmt.Sprintf("%s-kubelet.pem", masterNode.Host),
+			issuer:                        "someName",
+			expectedCommonName:            fmt.Sprintf("system:node:%s", masterNode.Host),
+			expectedSubjectAlternateNames: []string{masterNode.Host, masterNode.InternalIP},
+			expectedOrganizations:         []string{"system:nodes"},
 		},
 		{
-			name:                  "worker node/kubelet certificate",
-			certFilename:          fmt.Sprintf("%s-kubelet.pem", workerNode.Host),
-			issuer:                "someName",
-			expectedCommonName:    fmt.Sprintf("system:node:%s", workerNode.Host),
-			expectedOrganizations: []string{"system:nodes"},
+			name:                          "worker node/kubelet certificate",
+			certFilename:                  fmt.Sprintf("%s-kubelet.pem", workerNode.Host),
+			issuer:                        "someName",
+			expectedCommonName:            fmt.Sprintf("system:node:%s", workerNode.Host),
+			expectedSubjectAlternateNames: []string{workerNode.Host, workerNode.InternalIP},
+			expectedOrganizations:         []string{"system:nodes"},
 		},
 		{
-			name:                  "ingress node/kubelet certificate",
-			certFilename:          fmt.Sprintf("%s-kubelet.pem", ingressNode.Host),
-			issuer:                "someName",
-			expectedCommonName:    fmt.Sprintf("system:node:%s", ingressNode.Host),
-			expectedOrganizations: []string{"system:nodes"},
+			name:                          "ingress node/kubelet certificate",
+			certFilename:                  fmt.Sprintf("%s-kubelet.pem", ingressNode.Host),
+			issuer:                        "someName",
+			expectedCommonName:            fmt.Sprintf("system:node:%s", ingressNode.Host),
+			expectedSubjectAlternateNames: []string{ingressNode.Host, ingressNode.InternalIP},
+			expectedOrganizations:         []string{"system:nodes"},
 		},
 		{
-			name:                  "storage node/kubelet certificate",
-			certFilename:          fmt.Sprintf("%s-kubelet.pem", storageNode.Host),
-			issuer:                "someName",
-			expectedCommonName:    fmt.Sprintf("system:node:%s", storageNode.Host),
-			expectedOrganizations: []string{"system:nodes"},
+			name:                          "storage node/kubelet certificate",
+			certFilename:                  fmt.Sprintf("%s-kubelet.pem", storageNode.Host),
+			issuer:                        "someName",
+			expectedCommonName:            fmt.Sprintf("system:node:%s", storageNode.Host),
+			expectedSubjectAlternateNames: []string{storageNode.Host, storageNode.InternalIP},
+			expectedOrganizations:         []string{"system:nodes"},
 		},
 		{
 			name:                  "admin user certificate",
@@ -529,7 +534,7 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 
 	for _, test := range tests {
 		t.Run(test.name, validateClientCertificateAndKey(pki.GeneratedCertsDirectory,
-			test.certFilename, test.issuer, test.expectedCommonName, test.expectedOrganizations...))
+			test.certFilename, test.issuer, test.expectedCommonName, test.expectedSubjectAlternateNames, test.expectedOrganizations...))
 	}
 }
 
@@ -559,11 +564,20 @@ func TestGenerateClusterCertificatesPlanFileExpirationIsRespected(t *testing.T) 
 	}
 }
 
-func validateClientCertificateAndKey(certsDir, filename, expectedIssuer string, expectedCommonName string, expectedOrganizations ...string) func(t *testing.T) {
+func validateClientCertificateAndKey(certsDir, filename, expectedIssuer string, expectedCommonName string, expectedSubjectAlternateNames []string, expectedOrganizations ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cert := mustReadCertFile(filepath.Join(certsDir, filename), t)
 		if expectedCommonName != cert.Subject.CommonName {
 			t.Errorf("Expected common name %q but got %q", expectedCommonName, cert.Subject.CommonName)
+		}
+
+		altNames := []string{}
+		altNames = append(altNames, cert.DNSNames...)
+		for _, ip := range cert.IPAddresses {
+			altNames = append(altNames, ip.String())
+		}
+		if !util.Subset(expectedSubjectAlternateNames, altNames) {
+			t.Errorf("Expected subject alternate names: %s, but got %s", expectedSubjectAlternateNames, cert.DNSNames)
 		}
 
 		if !reflect.DeepEqual(cert.Subject.Organization, expectedOrganizations) {
