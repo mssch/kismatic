@@ -4,10 +4,6 @@ cluster:
   # Kubernetes cluster version (supported minor version "v1.10.x").
   version: v1.10.0
 
-  # This password is used to login to the Kubernetes Dashboard and can also be
-  # used for administration without a security certificate.
-  admin_password: password
-
   # Set to true if the nodes have the required packages installed.
   disable_package_installation: false
 
@@ -256,11 +252,13 @@ master:
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
   - host: ""
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
 # Worker nodes are the ones that will run your workloads on the cluster.
 worker:
@@ -270,16 +268,19 @@ worker:
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
   - host: ""
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
   - host: ""
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
 # Ingress nodes will run the ingress controllers.
 ingress:
@@ -289,11 +290,13 @@ ingress:
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
   - host: ""
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
 # Storage nodes will be used to create a distributed storage cluster that can
 # be consumed by your workloads.
@@ -304,8 +307,10 @@ storage:
     ip: ""
     internalip: ""
     labels: {}
+    taints: []
 
   - host: ""
     ip: ""
     internalip: ""
     labels: {}
+    taints: []

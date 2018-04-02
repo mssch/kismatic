@@ -161,6 +161,7 @@ type ClusterCatalog struct {
 	NoProxy    string `yaml:"no_proxy"`
 
 	NodeLabels         map[string][]string          `yaml:"node_labels"`
+	NodeTaints         map[string][]string          `yaml:"node_taints"`
 	KubeletNodeOptions map[string]map[string]string `yaml:"kubelet_node_overrides"`
 }
 

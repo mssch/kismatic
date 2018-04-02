@@ -118,6 +118,10 @@
     * [ip](#etcdnodesip)
     * [internalip](#etcdnodesinternalip)
     * [labels](#etcdnodeslabels)
+    * [taints](#etcdnodestaints)
+      * [key](#etcdnodestaintskey)
+      * [value](#etcdnodestaintsvalue)
+      * [effect](#etcdnodestaintseffect)
     * [kubelet](#etcdnodeskubelet)
       * [option_overrides](#etcdnodeskubeletoption_overrides)
 * [master](#master)
@@ -129,6 +133,10 @@
     * [ip](#masternodesip)
     * [internalip](#masternodesinternalip)
     * [labels](#masternodeslabels)
+    * [taints](#masternodestaints)
+      * [key](#masternodestaintskey)
+      * [value](#masternodestaintsvalue)
+      * [effect](#masternodestaintseffect)
     * [kubelet](#masternodeskubelet)
       * [option_overrides](#masternodeskubeletoption_overrides)
 * [worker](#worker)
@@ -138,6 +146,10 @@
     * [ip](#workernodesip)
     * [internalip](#workernodesinternalip)
     * [labels](#workernodeslabels)
+    * [taints](#workernodestaints)
+      * [key](#workernodestaintskey)
+      * [value](#workernodestaintsvalue)
+      * [effect](#workernodestaintseffect)
     * [kubelet](#workernodeskubelet)
       * [option_overrides](#workernodeskubeletoption_overrides)
 * [ingress](#ingress)
@@ -147,6 +159,10 @@
     * [ip](#ingressnodesip)
     * [internalip](#ingressnodesinternalip)
     * [labels](#ingressnodeslabels)
+    * [taints](#ingressnodestaints)
+      * [key](#ingressnodestaintskey)
+      * [value](#ingressnodestaintsvalue)
+      * [effect](#ingressnodestaintseffect)
     * [kubelet](#ingressnodeskubelet)
       * [option_overrides](#ingressnodeskubeletoption_overrides)
 * [storage](#storage)
@@ -156,6 +172,10 @@
     * [ip](#storagenodesip)
     * [internalip](#storagenodesinternalip)
     * [labels](#storagenodeslabels)
+    * [taints](#storagenodestaints)
+      * [key](#storagenodestaintskey)
+      * [value](#storagenodestaintsvalue)
+      * [effect](#storagenodestaintseffect)
     * [kubelet](#storagenodeskubelet)
       * [option_overrides](#storagenodeskubeletoption_overrides)
 * [nfs](#nfs)
@@ -1110,6 +1130,41 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  etcd.nodes.taints
+
+ Taints to add when installing the node in the cluster. If a node is defined under multiple roles, the taints for that node will be merged. If a taint is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. 
+
+###  etcd.nodes.taints.key
+
+ Key for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  etcd.nodes.taints.value
+
+ Value for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  etcd.nodes.taints.effect
+
+ Effect for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+| **Options** |  `NoSchedule`, `PreferNoSchedule`, `NoExecute`
+
 ###  etcd.nodes.kubelet
 
  Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
@@ -1202,6 +1257,41 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  master.nodes.taints
+
+ Taints to add when installing the node in the cluster. If a node is defined under multiple roles, the taints for that node will be merged. If a taint is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. 
+
+###  master.nodes.taints.key
+
+ Key for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  master.nodes.taints.value
+
+ Value for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  master.nodes.taints.effect
+
+ Effect for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+| **Options** |  `NoSchedule`, `PreferNoSchedule`, `NoExecute`
+
 ###  master.nodes.kubelet
 
  Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
@@ -1273,6 +1363,41 @@
 | **Kind** |  map[string]string |
 | **Required** |  No |
 | **Default** | ` ` | 
+
+###  worker.nodes.taints
+
+ Taints to add when installing the node in the cluster. If a node is defined under multiple roles, the taints for that node will be merged. If a taint is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. 
+
+###  worker.nodes.taints.key
+
+ Key for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  worker.nodes.taints.value
+
+ Value for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  worker.nodes.taints.effect
+
+ Effect for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+| **Options** |  `NoSchedule`, `PreferNoSchedule`, `NoExecute`
 
 ###  worker.nodes.kubelet
 
@@ -1346,6 +1471,41 @@
 | **Required** |  No |
 | **Default** | ` ` | 
 
+###  ingress.nodes.taints
+
+ Taints to add when installing the node in the cluster. If a node is defined under multiple roles, the taints for that node will be merged. If a taint is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. 
+
+###  ingress.nodes.taints.key
+
+ Key for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  ingress.nodes.taints.value
+
+ Value for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  ingress.nodes.taints.effect
+
+ Effect for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+| **Options** |  `NoSchedule`, `PreferNoSchedule`, `NoExecute`
+
 ###  ingress.nodes.kubelet
 
  Kubelet configuration applied to this node. If a node is repeated for multiple roles, the overrides cannot be different. 
@@ -1417,6 +1577,41 @@
 | **Kind** |  map[string]string |
 | **Required** |  No |
 | **Default** | ` ` | 
+
+###  storage.nodes.taints
+
+ Taints to add when installing the node in the cluster. If a node is defined under multiple roles, the taints for that node will be merged. If a taint is repeated for the same node, only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence. 
+
+###  storage.nodes.taints.key
+
+ Key for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  storage.nodes.taints.value
+
+ Value for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  storage.nodes.taints.effect
+
+ Effect for the taint 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+| **Options** |  `NoSchedule`, `PreferNoSchedule`, `NoExecute`
 
 ###  storage.nodes.kubelet
 

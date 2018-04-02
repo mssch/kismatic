@@ -830,6 +830,17 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 			cc.NodeLabels[n.Host] = keyValueList(n.Labels)
 		}
 	}
+	// merge node taints
+	// cannot use inventory file because nodes share roles
+	// set it to a map[host][]key=value:effect
+	cc.NodeTaints = make(map[string][]string)
+	for _, n := range p.getAllNodes() {
+		if val, ok := cc.NodeTaints[n.Host]; ok {
+			cc.NodeLabels[n.Host] = append(val, keyValueEffectList(n.Taints)...)
+		} else {
+			cc.NodeTaints[n.Host] = keyValueEffectList(n.Taints)
+		}
+	}
 
 	// setup kubelet node overrides
 	cc.KubeletNodeOptions = make(map[string]map[string]string)
@@ -991,4 +1002,12 @@ func keyValueList(in map[string]string) []string {
 		pairs = append(pairs, fmt.Sprintf("%s=%s", k, v))
 	}
 	return pairs
+}
+
+func keyValueEffectList(in []Taint) []string {
+	taints := make([]string, 0, len(in))
+	for _, taint := range in {
+		taints = append(taints, fmt.Sprintf("%s=%s:%s", taint.Key, taint.Value, taint.Effect))
+	}
+	return taints
 }
