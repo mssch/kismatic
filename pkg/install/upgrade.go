@@ -41,13 +41,13 @@ func (e masterNodeLoadBalancingErr) Error() string {
 type ingressNotSupportedErr struct{}
 
 func (e ingressNotSupportedErr) Error() string {
-	return "Upgrading this node may result in storage volumes becoming temporarily unavailable."
+	return "Upgrading this node may result in service unavailability if clients are accessing services directly through this ingress point."
 }
 
 type storageNotSupportedErr struct{}
 
 func (e storageNotSupportedErr) Error() string {
-	return "Upgrading this node may result in service unavailability if clients are accessing services directly through this ingress point."
+	return "Upgrading this node may result in storage volumes becoming temporarily unavailable."
 }
 
 type workerNodeCountErr struct{}
