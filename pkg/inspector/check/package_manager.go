@@ -55,7 +55,7 @@ type rpmManager struct {
 }
 
 func (m rpmManager) IsAvailable(p PackageQuery) (bool, error) {
-	out, err := m.run("yum", "list", "available", "-q", p.Name)
+	out, err := m.run("yum", "list", "--showduplicates", "available", "-q", p.Name)
 	if err != nil && strings.Contains(string(out), "No matching Packages to list") {
 		return false, nil
 	}

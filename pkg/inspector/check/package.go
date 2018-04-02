@@ -22,35 +22,59 @@ type PackageCheck struct {
 	PackageManager             PackageManager
 	InstallationDisabled       bool
 	DockerInstallationDisabled bool
+	DisconnectedInstallation   bool
 }
 
-// Check returns true if the package is installed. If pkg installation is disabled,
-// we would like to check if the package is available for install. However,
-// there is no guarantee that the node will have the kismatic package repo configured.
-// For this reason, this check is a no-op when package installation is disabled.
+// Check verifies a package is installed or in some cases available.
+// If DockerInstallationDisabled and a package contains "docker" always return true.
+// If InstallationDisabled, packages must be istalled. If packages are not isntalled
+// check if available and give useful feedback.
+// If DisconnectedInstallation, packages must be either installed or available.
 func (c PackageCheck) Check() (bool, error) {
-	if !c.InstallationDisabled {
-		return true, nil
-	}
-	// When docker installation is disabled do not check for any packages that contain "docker" in the name
-	// The package name could be different, we will only validate the docker executable is present
+	// When docker installation is disabled do not check for any packages that contain "docker" in the name.
+	// The package name could be different, we will only validate the docker executable is present.
 	if c.DockerInstallationDisabled && strings.Contains(c.PackageQuery.Name, "docker") {
 		return true, nil
 	}
-	installed, err := c.PackageManager.IsInstalled(c.PackageQuery)
-	if err != nil {
-		return false, fmt.Errorf("failed to determine if package is installed: %v", err)
+	// All packages need to be installed when installation is disabled
+	if c.InstallationDisabled {
+		installed, err := c.PackageManager.IsInstalled(c.PackageQuery)
+		if err != nil {
+			return false, fmt.Errorf("failed to determine if package is installed: %v", err)
+		}
+		if installed {
+			return true, nil
+		}
+		// We check to see if it's available to give useful feedback to the user
+		available, err := c.PackageManager.IsAvailable(c.PackageQuery)
+		if err != nil {
+			return false, fmt.Errorf("failed to determine if package is available for install: %v", err)
+		}
+		if !available {
+			return false, fmt.Errorf("package is not installed, and is not available in known package repositories")
+		}
+		return false, fmt.Errorf("package is not installed, but is available in a package repository")
 	}
-	if installed {
+	// Packages need to be available when disconnected installation
+	if c.DisconnectedInstallation {
+		installed, err := c.PackageManager.IsInstalled(c.PackageQuery)
+		if err != nil {
+			return false, fmt.Errorf("failed to determine if package is installed: %v", err)
+		}
+		if err != nil {
+			return false, fmt.Errorf("failed to determine if package is available for install: %v", err)
+		}
+		if installed {
+			return true, nil
+		}
+		available, err := c.PackageManager.IsAvailable(c.PackageQuery)
+		if err != nil {
+			return false, fmt.Errorf("failed to determine if package is available for install: %v", err)
+		}
+		if !available {
+			return false, fmt.Errorf("package is not installed, and is not available in known package repositories")
+		}
 		return true, nil
 	}
-	// We check to see if it's available to give useful feedback to the user
-	available, err := c.PackageManager.IsAvailable(c.PackageQuery)
-	if err != nil {
-		return false, fmt.Errorf("failed to determine if package is available for install: %v", err)
-	}
-	if !available {
-		return false, fmt.Errorf("package is not installed, and is not available in known package repositories")
-	}
-	return false, fmt.Errorf("package is not installed, but is available in a package repository")
+	return true, nil
 }
