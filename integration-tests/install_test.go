@@ -43,7 +43,6 @@ var _ = Describe("kismatic", func() {
 				Expect(helpText).To(ContainSubstring("3 worker nodes"))
 				Expect(helpText).To(ContainSubstring("2 ingress nodes"))
 				Expect(helpText).To(ContainSubstring("0 storage nodes"))
-				Expect(helpText).To(ContainSubstring("0 nfs volumes"))
 
 				Expect(FileExists("kismatic-cluster.yaml")).To(Equal(true))
 
@@ -65,7 +64,6 @@ var _ = Describe("kismatic", func() {
 				Expect(planFromYaml.Worker.ExpectedCount).To(Equal(3))
 				Expect(planFromYaml.Ingress.ExpectedCount).To(Equal(2))
 				Expect(planFromYaml.Storage.ExpectedCount).To(Equal(0))
-				Expect(len(planFromYaml.NFS.Volumes)).To(Equal(0))
 			})
 		})
 	})

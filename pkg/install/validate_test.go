@@ -5,99 +5,101 @@ import (
 	"testing"
 )
 
-var validPlan = Plan{
-	Cluster: Cluster{
-		Name:    "test",
-		Version: "v1.9.6",
-		Networking: NetworkConfig{
-			Type:             "overlay",
-			PodCIDRBlock:     "172.16.0.0/16",
-			ServiceCIDRBlock: "172.20.0.0/16",
+func validPlan() Plan {
+	return Plan{
+		Cluster: Cluster{
+			Name:    "test",
+			Version: "v1.9.6",
+			Networking: NetworkConfig{
+				Type:             "overlay",
+				PodCIDRBlock:     "172.16.0.0/16",
+				ServiceCIDRBlock: "172.20.0.0/16",
+			},
+			Certificates: CertsConfig{
+				Expiry: "17250h",
+			},
+			SSH: SSHConfig{
+				User: "root",
+				Key:  "/bin/sh",
+				Port: 22,
+			},
 		},
-		Certificates: CertsConfig{
-			Expiry: "17250h",
+		AdditionalFiles: []AdditionalFile{
+			{
+				Source:      "/bin/sh",
+				Destination: "/bin/sh",
+				Hosts:       []string{"master01"},
+			},
 		},
-		SSH: SSHConfig{
-			User: "root",
-			Key:  "/bin/sh",
-			Port: 22,
-		},
-	},
-	AdditionalFiles: []AdditionalFile{
-		{
-			Source:      "/bin/sh",
-			Destination: "/bin/sh",
-			Hosts:       []string{"master01"},
-		},
-	},
-	AddOns: AddOns{
-		CNI: &CNI{
-			Provider: "calico",
-			Options: CNIOptions{
-				Calico: CalicoOptions{
-					Mode:     "overlay",
-					LogLevel: "info",
+		AddOns: AddOns{
+			CNI: &CNI{
+				Provider: "calico",
+				Options: CNIOptions{
+					Calico: CalicoOptions{
+						Mode:     "overlay",
+						LogLevel: "info",
+					},
+				},
+			},
+			DNS: DNS{
+				Provider: "kubedns",
+			},
+			HeapsterMonitoring: &HeapsterMonitoring{
+				Options: HeapsterOptions{
+					Heapster: Heapster{
+						Replicas:    2,
+						ServiceType: "ClusterIP",
+					},
 				},
 			},
 		},
-		DNS: DNS{
-			Provider: "kubedns",
-		},
-		HeapsterMonitoring: &HeapsterMonitoring{
-			Options: HeapsterOptions{
-				Heapster: Heapster{
-					Replicas:    2,
-					ServiceType: "ClusterIP",
+		Etcd: NodeGroup{
+			ExpectedCount: 1,
+			Nodes: []Node{
+				{
+					Host: "etcd01",
+					IP:   "192.168.205.10",
 				},
 			},
 		},
-	},
-	Etcd: NodeGroup{
-		ExpectedCount: 1,
-		Nodes: []Node{
-			{
-				Host: "etcd01",
-				IP:   "192.168.205.10",
+		Master: MasterNodeGroup{
+			ExpectedCount: 1,
+			Nodes: []Node{
+				{
+					Host: "master01",
+					IP:   "192.168.205.11",
+				},
+			},
+			LoadBalancedFQDN:      "test",
+			LoadBalancedShortName: "test",
+		},
+		Worker: NodeGroup{
+			ExpectedCount: 1,
+			Nodes: []Node{
+				{
+					Host: "worker01",
+					IP:   "192.168.205.12",
+				},
 			},
 		},
-	},
-	Master: MasterNodeGroup{
-		ExpectedCount: 1,
-		Nodes: []Node{
-			{
-				Host: "master01",
-				IP:   "192.168.205.11",
+		Ingress: OptionalNodeGroup{
+			ExpectedCount: 1,
+			Nodes: []Node{
+				{
+					Host: "etcd01",
+					IP:   "192.168.205.10",
+				},
 			},
 		},
-		LoadBalancedFQDN:      "test",
-		LoadBalancedShortName: "test",
-	},
-	Worker: NodeGroup{
-		ExpectedCount: 1,
-		Nodes: []Node{
-			{
-				Host: "worker01",
-				IP:   "192.168.205.12",
+		NFS: &NFS{
+			Volumes: []NFSVolume{
+				{
+					Host: "10.10.2.20",
+					Path: "/",
+				},
 			},
 		},
-	},
-	Ingress: OptionalNodeGroup{
-		ExpectedCount: 1,
-		Nodes: []Node{
-			{
-				Host: "etcd01",
-				IP:   "192.168.205.10",
-			},
-		},
-	},
-	NFS: NFS{
-		Volumes: []NFSVolume{
-			{
-				Host: "10.10.2.20",
-				Path: "/",
-			},
-		},
-	},
+	}
 }
 
 func assertInvalidPlan(t *testing.T, p Plan) {
@@ -113,7 +115,7 @@ func TestValidateBlankPlan(t *testing.T) {
 }
 
 func TestValidateValidPlan(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	valid, errs := ValidatePlan(&p)
 	if !valid {
 		t.Errorf("expected valid, but got invalid")
@@ -309,43 +311,43 @@ func TestClusterVersion(t *testing.T) {
 }
 
 func TestValidatePlanEmptyPodCIDR(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Networking.PodCIDRBlock = ""
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanInvalidPodCIDR(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Networking.PodCIDRBlock = "foo"
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptyServicesCIDR(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Networking.ServiceCIDRBlock = ""
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanInvalidServicesCIDR(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Networking.ServiceCIDRBlock = "foo"
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptyCertificatesExpiry(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Certificates.Expiry = ""
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanInvalidCertExpiry(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Certificates.Expiry = "foo"
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptyCACertExpiryIsValid(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Certificates.CAExpiry = ""
 	valid, _ := p.validate()
 	if !valid {
@@ -354,88 +356,88 @@ func TestValidatePlanEmptyCACertExpiryIsValid(t *testing.T) {
 }
 
 func TestValidatePlanInvalidCACertificatesExpiry(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.Certificates.CAExpiry = "foo"
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptySSHUser(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.SSH.User = ""
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptySSHKey(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.SSH.Key = ""
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanNonExistentSSHKey(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.SSH.Key = "/foo"
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanNegativeSSHPort(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Cluster.SSH.Port = -1
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptyLoadBalancedFQDN(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Master.LoadBalancedFQDN = ""
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEmptyLoadBalancedShortName(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Master.LoadBalancedShortName = ""
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanNoEtcdNodes(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Etcd.ExpectedCount = 0
 	p.Etcd.Nodes = []Node{}
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanNoMasterNodes(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Master.ExpectedCount = 0
 	p.Master.Nodes = []Node{}
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanNoWorkerNodes(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Worker.ExpectedCount = 0
 	p.Worker.Nodes = []Node{}
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanEtcdNodesMismatch(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Etcd.ExpectedCount = 100
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanMasterNodesMismatch(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Master.ExpectedCount = 100
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanWorkerNodesMismatch(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Worker.ExpectedCount = 100
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanUnexpectedEtcdNodes(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Etcd.ExpectedCount = 1
 	p.Etcd.Nodes = []Node{
 		{
@@ -451,7 +453,7 @@ func TestValidatePlanUnexpectedEtcdNodes(t *testing.T) {
 }
 
 func TestValidatePlanUnexpectedMasterNodes(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Master.ExpectedCount = 1
 	p.Master.Nodes = []Node{
 		{
@@ -467,7 +469,7 @@ func TestValidatePlanUnexpectedMasterNodes(t *testing.T) {
 }
 
 func TestValidatePlanUnexpectedWorkerNodes(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Worker.ExpectedCount = 1
 	p.Worker.Nodes = []Node{
 		{
@@ -483,7 +485,7 @@ func TestValidatePlanUnexpectedWorkerNodes(t *testing.T) {
 }
 
 func TestValidatePlanNoIngress(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Ingress.ExpectedCount = 0
 	p.Ingress.Nodes = []Node{}
 	valid, _ := ValidatePlan(&p)
@@ -493,14 +495,14 @@ func TestValidatePlanNoIngress(t *testing.T) {
 }
 
 func TestValidatePlanIngressExpected(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Ingress.ExpectedCount = 1
 	p.Ingress.Nodes = []Node{}
 	assertInvalidPlan(t, p)
 }
 
 func TestValidatePlanIngressProvidedNotExpected(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 	p.Ingress.ExpectedCount = 0
 	p.Ingress.Nodes = []Node{
 		{
@@ -783,7 +785,7 @@ func TestValidateAllowAddress(t *testing.T) {
 }
 
 func TestValidatePlanNFSDupes(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 
 	p.NFS.Volumes = append(p.NFS.Volumes, NFSVolume{
 		Host: "10.10.2.20",
@@ -832,7 +834,7 @@ func TestValidateNFSVolume(t *testing.T) {
 }
 
 func TestValidatePlanCerts(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 
 	pki := getPKI(t)
 	defer cleanup(pki.GeneratedCertsDirectory, t)
@@ -856,7 +858,7 @@ func TestValidatePlanCerts(t *testing.T) {
 }
 
 func TestValidatePlanBadCerts(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 
 	pki := getPKI(t)
 	defer cleanup(pki.GeneratedCertsDirectory, t)
@@ -885,7 +887,7 @@ func TestValidatePlanBadCerts(t *testing.T) {
 }
 
 func TestValidatePlanMissingCerts(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 
 	pki := getPKI(t)
 	defer cleanup(pki.GeneratedCertsDirectory, t)
@@ -898,7 +900,7 @@ func TestValidatePlanMissingCerts(t *testing.T) {
 }
 
 func TestValidatePlanMissingSomeCerts(t *testing.T) {
-	p := validPlan
+	p := validPlan()
 
 	pki := getPKI(t)
 	defer cleanup(pki.GeneratedCertsDirectory, t)
@@ -1032,7 +1034,7 @@ func TestValidateNodeListDuplicate(t *testing.T) {
 }
 
 func TestValidatePlanDisconnectedInstallationFailsDueToMissingRegistry(t *testing.T) {
-	plan := validPlan
+	plan := validPlan()
 	plan.Cluster.DisconnectedInstallation = true
 	ok, errs := plan.validate()
 	if ok {
@@ -1050,7 +1052,7 @@ func TestValidatePlanDisconnectedInstallationFailsDueToMissingRegistry(t *testin
 }
 
 func TestValidatePlanDisconnectedInstallationSucceeds(t *testing.T) {
-	plan := validPlan
+	plan := validPlan()
 	plan.Cluster.DisconnectedInstallation = true
 	plan.DockerRegistry.Server = "localhost:5000"
 	if ok, errs := plan.validate(); !ok {
@@ -1962,7 +1964,8 @@ func TestValidateFile(t *testing.T) {
 				SkipValidation: test.skipValidation,
 			},
 		}
-		fg := additionalFilesGroup{AdditionalFiles: v, Plan: &validPlan}
+		plan := validPlan()
+		fg := additionalFilesGroup{AdditionalFiles: v, Plan: &plan}
 		if valid, errs := fg.validate(); valid != test.valid {
 			t.Errorf("test %d: expect valid = %t, but got %t", n, test.valid, valid)
 			if !valid {

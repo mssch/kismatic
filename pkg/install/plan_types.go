@@ -83,7 +83,7 @@ type Plan struct {
 	// Storage nodes of the cluster.
 	Storage OptionalNodeGroup
 	// NFS volumes of the cluster.
-	NFS NFS
+	NFS *NFS `yaml:"nfs,omitempty"`
 }
 
 // Cluster describes a Kubernetes cluster

@@ -151,7 +151,7 @@ func (p *Plan) validate() (bool, []error) {
 	v.validateWithErrPrefix("Master nodes", &p.Master)
 	v.validateWithErrPrefix("Worker nodes", &p.Worker)
 	v.validateWithErrPrefix("Ingress nodes", &p.Ingress)
-	v.validate(&p.NFS)
+	v.validate(p.NFS)
 	v.validateWithErrPrefix("Storage nodes", &p.Storage)
 
 	return v.valid()
@@ -593,6 +593,9 @@ func (dlvm *DockerStorageDirectLVMDeprecated) validate() (bool, []error) {
 
 func (nfs *NFS) validate() (bool, []error) {
 	v := newValidator()
+	if nfs == nil {
+		return v.valid()
+	}
 	uniqueVolumes := make(map[NFSVolume]bool)
 	for _, vol := range nfs.Volumes {
 		v.validate(vol)

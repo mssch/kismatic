@@ -300,7 +300,3 @@ ingress:
 storage:
   expected_count: 0
   nodes: []
-
-# A set of NFS volumes for use by on-cluster persistent workloads.
-nfs:
-  nfs_volume: []

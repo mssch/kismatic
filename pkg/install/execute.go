@@ -740,11 +740,13 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 		cc.EnableConfigureIngress = false
 	}
 
-	for _, n := range p.NFS.Volumes {
-		cc.NFSVolumes = append(cc.NFSVolumes, ansible.NFSVolume{
-			Path: n.Path,
-			Host: n.Host,
-		})
+	if p.NFS != nil {
+		for _, n := range p.NFS.Volumes {
+			cc.NFSVolumes = append(cc.NFSVolumes, ansible.NFSVolume{
+				Path: n.Path,
+				Host: n.Host,
+			})
+		}
 	}
 
 	cc.EnableGluster = p.Storage.Nodes != nil && len(p.Storage.Nodes) > 0
