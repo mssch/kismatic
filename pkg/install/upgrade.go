@@ -1,14 +1,11 @@
 package install
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/apprenda/kismatic/pkg/data"
 )
-
-const kubeCreatedBy = "kubernetes.io/created-by"
 
 type upgradeKubeInfoClient interface {
 	data.PodLister
@@ -44,13 +41,13 @@ func (e masterNodeLoadBalancingErr) Error() string {
 type ingressNotSupportedErr struct{}
 
 func (e ingressNotSupportedErr) Error() string {
-	return "Upgrading this node may result in storage volumes becoming temporarily unavailable."
+	return "Upgrading this node may result in service unavailability if clients are accessing services directly through this ingress point."
 }
 
 type storageNotSupportedErr struct{}
 
 func (e storageNotSupportedErr) Error() string {
-	return "Upgrading this node may result in service unavailability if clients are accessing services directly through this ingress point."
+	return "Upgrading this node may result in storage volumes becoming temporarily unavailable."
 }
 
 type workerNodeCountErr struct{}
@@ -182,7 +179,8 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 	}
 	nodePods := []data.Pod{}
 	for _, p := range podList.Items {
-		if p.Spec.NodeName == node.Host {
+		// Don't check pods that are running in "kube-system" namespace
+		if p.Spec.NodeName == node.Host && p.Namespace != "kube-system" {
 			nodePods = append(nodePods, p)
 		}
 	}
@@ -229,66 +227,64 @@ func detectWorkerNodeUpgradeSafety(node Node, kubeClient upgradeKubeInfoClient) 
 	//    verify that it is not the only one
 	// 4. Are there any pods that belong to a job running on this node?
 	for _, p := range nodePods {
-		creator, ok := p.Annotations[kubeCreatedBy]
-		if !ok {
+		if len(p.ObjectMeta.OwnerReferences) == 0 {
 			errs = append(errs, unmanagedPodErr{namespace: p.Namespace, name: p.Name})
 			continue
 		}
-		var r data.SerializedReference
-		err := json.Unmarshal([]byte(creator), &r)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("Unable to determine the creator of pod %s/%s", p.Namespace, p.Name))
+		owner := p.ObjectMeta.OwnerReferences[0]
+		if owner.Kind == "" || owner.Name == "" {
+			errs = append(errs, fmt.Errorf("Unable to determine the owner of pod %s/%s", p.Namespace, p.Name))
 			continue
 		}
-		switch strings.ToLower(r.Reference.Kind) {
+		switch strings.ToLower(owner.Kind) {
 		default:
-			errs = append(errs, fmt.Errorf("Unable to determine upgrade safety for a pod managed by a controller of type %q", r.Reference.Kind))
+			errs = append(errs, fmt.Errorf("Unable to determine upgrade safety for a pod managed by a controller of type %q", owner.Kind))
 		case "daemonset":
-			ds, err := kubeClient.GetDaemonSet(r.Reference.Namespace, r.Reference.Name)
+			ds, err := kubeClient.GetDaemonSet(p.Namespace, owner.Name)
 			if err != nil || ds == nil {
-				errs = append(errs, fmt.Errorf("Failed to get information about DaemonSet %s/%s", r.Reference.Namespace, r.Reference.Name))
+				errs = append(errs, fmt.Errorf("Failed to get information about DaemonSet %s/%s", p.Namespace, owner.Name))
 				continue
 			}
 			// Check if other nodes should be running this DS
 			if ds.Status.DesiredNumberScheduled < 2 {
-				errs = append(errs, podUnsafeDaemonErr{dsNamespace: r.Reference.Namespace, dsName: r.Reference.Name})
+				errs = append(errs, podUnsafeDaemonErr{dsNamespace: p.Namespace, dsName: owner.Name})
 			}
 		case "job":
-			errs = append(errs, podRunningJobErr{namespace: r.Reference.Namespace, name: r.Reference.Name})
+			errs = append(errs, podRunningJobErr{namespace: p.Namespace, name: owner.Name})
 		case "replicationcontroller":
-			rc, err := kubeClient.GetReplicationController(r.Reference.Namespace, r.Reference.Name)
+			rc, err := kubeClient.GetReplicationController(p.Namespace, owner.Name)
 			if err != nil || rc == nil {
-				errs = append(errs, fmt.Errorf(`Failed to get information about ReplicationController "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+				errs = append(errs, fmt.Errorf(`Failed to get information about ReplicationController "%s/%s"`, p.Namespace, owner.Name))
 				continue
 			}
 			if rc.Status.Replicas < 2 {
-				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
+				errs = append(errs, unsafeReplicaCountErr{kind: owner.Kind, namespace: p.Namespace, name: owner.Name})
 			}
-			rcPods[r.Reference.Namespace+r.Reference.Name]++
-			if rcPods[r.Reference.Namespace+r.Reference.Name] == rc.Status.Replicas {
-				errs = append(errs, replicasOnSingleNodeErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
+			rcPods[p.Namespace+owner.Name]++
+			if rcPods[p.Namespace+owner.Name] == rc.Status.Replicas {
+				errs = append(errs, replicasOnSingleNodeErr{kind: owner.Kind, namespace: p.Namespace, name: owner.Name})
 			}
 		case "replicaset":
-			rs, err := kubeClient.GetReplicaSet(r.Reference.Namespace, r.Reference.Name)
+			rs, err := kubeClient.GetReplicaSet(p.Namespace, owner.Name)
 			if err != nil || rs == nil {
-				errs = append(errs, fmt.Errorf(`Failed to get information about ReplicaSet "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+				errs = append(errs, fmt.Errorf(`Failed to get information about ReplicaSet "%s/%s"`, p.Namespace, owner.Name))
 				continue
 			}
 			if rs.Status.Replicas < 2 {
-				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
+				errs = append(errs, unsafeReplicaCountErr{kind: owner.Kind, namespace: p.Namespace, name: owner.Name})
 			}
-			rsPods[r.Reference.Namespace+r.Reference.Name]++
-			if rsPods[r.Reference.Namespace+r.Reference.Name] == rs.Status.Replicas {
-				errs = append(errs, replicasOnSingleNodeErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
+			rsPods[p.Namespace+owner.Name]++
+			if rsPods[p.Namespace+owner.Name] == rs.Status.Replicas {
+				errs = append(errs, replicasOnSingleNodeErr{kind: owner.Kind, namespace: p.Namespace, name: owner.Name})
 			}
 		case "statefulset":
-			sts, err := kubeClient.GetStatefulSet(r.Reference.Namespace, r.Reference.Name)
+			sts, err := kubeClient.GetStatefulSet(p.Namespace, owner.Name)
 			if err != nil || sts == nil {
-				errs = append(errs, fmt.Errorf(`Failed to get information about StatefulSet "%s/%s"`, r.Reference.Namespace, r.Reference.Name))
+				errs = append(errs, fmt.Errorf(`Failed to get information about StatefulSet "%s/%s"`, p.Namespace, owner.Name))
 				continue
 			}
 			if sts.Status.Replicas < 2 {
-				errs = append(errs, unsafeReplicaCountErr{kind: r.Reference.Kind, namespace: r.Reference.Namespace, name: r.Reference.Name})
+				errs = append(errs, unsafeReplicaCountErr{kind: owner.Kind, namespace: p.Namespace, name: owner.Name})
 			}
 		}
 	}

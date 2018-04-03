@@ -10,11 +10,22 @@ type Pod struct {
 }
 
 type ObjectMeta struct {
-	Annotations map[string]string `json:"annotations,omitempty"`
-	Name        string            `json:"name,omitempty"`
-	Namespace   string            `json:"namespace,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations     map[string]string `json:"annotations,omitempty"`
+	Name            string            `json:"name,omitempty"`
+	Namespace       string            `json:"namespace,omitempty"`
+	Labels          map[string]string `json:"labels,omitempty"`
+	OwnerReferences []OwnerReference  `json:"ownerReferences,omitempty"`
 }
+
+type OwnerReference struct {
+	APIVersion string `json:"apiVersion"`
+	Kind       string `json:"kind"`
+	Name       string `json:"name"`
+	UID        UID    `json:"uid"`
+	Controller bool   `json:"controller"`
+}
+
+type UID string
 
 // ObjectReference contains enough information to let you inspect or modify the referred object.
 type ObjectReference struct {

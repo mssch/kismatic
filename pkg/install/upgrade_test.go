@@ -1,7 +1,6 @@
 package install
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -70,25 +69,19 @@ func (f fakeUpgradeKubeClient) GetStatefulSet(namespace, name string) (*data.Sta
 }
 
 func getSafePodWithCreatedByRef(t *testing.T, nodeName string, createdByKind string) data.Pod {
-	createdByRef := data.SerializedReference{
-		Reference: data.ObjectReference{
-			Kind: createdByKind,
-		},
-	}
-	b, err := json.Marshal(createdByRef)
-	if err != nil {
-		t.Fatalf("failed to marshal SerializedReference: %v", err)
-	}
-	return data.Pod{
+	pod := data.Pod{
 		ObjectMeta: data.ObjectMeta{
-			Name:        "foo",
-			Namespace:   "foo",
-			Annotations: map[string]string{kubeCreatedBy: string(b)},
+			Name:      "foo",
+			Namespace: "foo",
 		},
 		Spec: data.PodSpec{
 			NodeName: nodeName,
 		},
 	}
+	if createdByKind != "" {
+		pod.OwnerReferences = []data.OwnerReference{data.OwnerReference{Kind: createdByKind, Name: "foo"}}
+	}
+	return pod
 }
 
 func TestDetectNodeUpgradeSafetyEtcdCountUnsafe(t *testing.T) {
@@ -552,7 +545,6 @@ func TestDetectNodeUpgradeSafetyLonePod(t *testing.T) {
 
 	// Setup a pod that is not managed by anything
 	pod := getSafePodWithCreatedByRef(t, node.Host, "")
-	delete(pod.Annotations, kubeCreatedBy)
 	k8sClient := fakeUpgradeKubeClient{
 		listPods: func() (*data.PodList, error) {
 			return &data.PodList{
