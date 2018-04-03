@@ -22,7 +22,6 @@ spec:
         cpu: 10m
         memory: 100Mi
     command:
-    command:
     - /rescheduler 
     - --running-in-cluster=false
     volumeMounts:
