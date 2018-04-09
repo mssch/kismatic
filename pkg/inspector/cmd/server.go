@@ -55,7 +55,7 @@ func runServer(out io.Writer, opts serverOpts) error {
 	if opts.disconnectedInstallation {
 		nodeFacts = append(nodeFacts, "disconnected")
 	}
-	s, err := inspector.NewServer(nodeFacts, opts.port, opts.packageInstallationDisabled, opts.dockerInstallationDisabled)
+	s, err := inspector.NewServer(nodeFacts, opts.port, opts.packageInstallationDisabled, opts.dockerInstallationDisabled, opts.disconnectedInstallation)
 	if err != nil {
 		return fmt.Errorf("error starting up inspector server: %v", err)
 	}

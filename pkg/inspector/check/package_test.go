@@ -20,6 +20,7 @@ func TestPackageCheck(t *testing.T) {
 		packageName                string
 		installationDisabled       bool
 		dockerInstallationDisabled bool
+		disconnectedInstallation   bool
 		isInstalled                bool
 		isAvailable                bool
 
@@ -94,6 +95,52 @@ func TestPackageCheck(t *testing.T) {
 			isAvailable:                false,
 			expected:                   true,
 		},
+		{
+			packageName:                "somePkg",
+			installationDisabled:       false,
+			dockerInstallationDisabled: false,
+			disconnectedInstallation:   true,
+			isInstalled:                true,
+			isAvailable:                true,
+			expected:                   true,
+		},
+		{
+			packageName:                "somePkg",
+			installationDisabled:       false,
+			dockerInstallationDisabled: false,
+			disconnectedInstallation:   true,
+			isInstalled:                true,
+			isAvailable:                false,
+			expected:                   true,
+		},
+		{
+			packageName:                "somePkg",
+			installationDisabled:       false,
+			dockerInstallationDisabled: false,
+			disconnectedInstallation:   true,
+			isInstalled:                false,
+			isAvailable:                true,
+			expected:                   true,
+		},
+		{
+			packageName:                "somePkg",
+			installationDisabled:       true,
+			dockerInstallationDisabled: false,
+			disconnectedInstallation:   true,
+			isInstalled:                false,
+			isAvailable:                false,
+			expected:                   false,
+			errExpected:                true,
+		},
+		{
+			packageName:                "docker-ce",
+			installationDisabled:       true,
+			dockerInstallationDisabled: true,
+			disconnectedInstallation:   true,
+			isInstalled:                false,
+			isAvailable:                false,
+			expected:                   true,
+		},
 	}
 
 	for i, test := range tests {
@@ -102,6 +149,7 @@ func TestPackageCheck(t *testing.T) {
 			PackageManager:             stubPkgManager{installed: test.isInstalled, available: test.isAvailable},
 			InstallationDisabled:       test.installationDisabled,
 			DockerInstallationDisabled: test.dockerInstallationDisabled,
+			DisconnectedInstallation:   test.disconnectedInstallation,
 		}
 		ok, err := c.Check()
 		if err != nil && !test.errExpected {

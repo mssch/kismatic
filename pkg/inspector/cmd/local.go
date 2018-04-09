@@ -17,6 +17,7 @@ type localOpts struct {
 	rulesFile                   string
 	packageInstallationDisabled bool
 	dockerInstallationDisabled  bool
+	disconnectedInstallation    bool
 	useUpgradeDefaults          bool
 	additionalVariables         map[string]string
 }
@@ -50,6 +51,7 @@ func NewCmdLocal(out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.rulesFile, "file", "f", "", "the path to an inspector rules file. If blank, the inspector uses the default rules")
 	cmd.Flags().BoolVar(&opts.packageInstallationDisabled, "pkg-installation-disabled", false, "when true, the inspector will ensure that the necessary packages are installed on the node")
 	cmd.Flags().BoolVar(&opts.dockerInstallationDisabled, "docker-installation-disabled", false, "when true, the inspector will check for docker packages to be installed")
+	cmd.Flags().BoolVar(&opts.disconnectedInstallation, "disconnected-installation", false, "when true will check for the required packages needed during a disconnected install")
 	cmd.Flags().BoolVarP(&opts.useUpgradeDefaults, "upgrade", "u", false, "use defaults for upgrade, rather than install")
 	cmd.Flags().StringSliceVar(&additionalVars, "additional-vars", []string{}, "provide a key=value list to template ruleset")
 	return cmd
@@ -87,6 +89,7 @@ func runLocal(out io.Writer, opts localOpts) error {
 			PackageManager:              pkgMgr,
 			PackageInstallationDisabled: opts.packageInstallationDisabled,
 			DockerInstallationDisabled:  opts.dockerInstallationDisabled,
+			DisconnectedInstallation:    opts.disconnectedInstallation,
 		},
 	}
 	labels := append(roles, string(distro))
