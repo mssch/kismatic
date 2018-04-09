@@ -24,7 +24,6 @@ func TestWritePlanTemplate(t *testing.T) {
 				IngressNodes:    2,
 				StorageNodes:    0,
 				AdditionalFiles: 1,
-				AdminPassword:   "password",
 			},
 		},
 		{
@@ -36,7 +35,6 @@ func TestWritePlanTemplate(t *testing.T) {
 				IngressNodes:    2,
 				StorageNodes:    2,
 				AdditionalFiles: 1,
-				AdminPassword:   "password",
 			},
 		},
 	}

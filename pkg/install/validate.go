@@ -523,7 +523,7 @@ func (n *Node) validate() (bool, []error) {
 	if ip := net.ParseIP(n.InternalIP); n.InternalIP != "" && ip == nil {
 		v.addError(fmt.Errorf("Invalid InternalIP provided"))
 	}
-	// validate node labels don't start with 'kismatic/' as that is reserved
+	// Validate node labels don't start with 'kismatic/' as that is reserved
 	for key, val := range n.Labels {
 		if strings.HasPrefix(key, "kismatic/") {
 			v.addError(fmt.Errorf("Node label %q cannot start with 'kismatic/'", key))
@@ -535,6 +535,24 @@ func (n *Node) validate() (bool, []error) {
 		errs = validation.IsValidLabelValue(val)
 		for _, err := range errs {
 			v.addError(fmt.Errorf("Node label %q is not valid %s", val, err))
+		}
+	}
+	// Validate node taints don't start with 'kismatic/' as that is reserved
+	// Don't validate effects as those will likely change
+	for _, taint := range n.Taints {
+		if strings.HasPrefix(taint.Key, "kismatic/") {
+			v.addError(fmt.Errorf("Node taint %q cannot start with 'kismatic/'", taint.Key))
+		}
+		errs := validation.IsQualifiedName(taint.Key)
+		for _, err := range errs {
+			v.addError(fmt.Errorf("Node taint name %q is not valid %s", taint.Key, err))
+		}
+		errs = validation.IsValidLabelValue(taint.Value)
+		for _, err := range errs {
+			v.addError(fmt.Errorf("Node taint %q is not valid %s", taint.Value, err))
+		}
+		if !util.Contains(taint.Effect, taintEffects()) {
+			v.addError(fmt.Errorf("Node taint effect %q is not valid. Valid effects are: %v", taint.Effect, taintEffects()))
 		}
 	}
 	return v.valid()

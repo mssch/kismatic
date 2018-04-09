@@ -53,6 +53,10 @@ func roles() []string {
 	return []string{"etcd", "master", "worker", "ingress", "storage"}
 }
 
+func taintEffects() []string {
+	return []string{"NoSchedule", "PreferNoSchedule", "NoExecute"}
+}
+
 // Plan is the installation plan that the user intends to execute
 type Plan struct {
 	// Kubernetes cluster configuration
@@ -607,9 +611,25 @@ type Node struct {
 	// only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence.
 	// It is recommended to use reverse-DNS notation to avoid collision with other labels.
 	Labels map[string]string
+	// Taints to add when installing the node in the cluster.
+	// If a node is defined under multiple roles, the taints for that node will be merged.
+	// If a taint is repeated for the same node,
+	// only one will be used in this order: etcd,master,worker,ingress,storage roles where 'storage' has the highest precedence.
+	Taints []Taint
 	// Kubelet configuration applied to this node.
 	// If a node is repeated for multiple roles, the overrides cannot be different.
 	KubeletOptions KubeletOptions `yaml:"kubelet,omitempty"`
+}
+
+// Taint for nodes
+type Taint struct {
+	// Key for the taint
+	Key string
+	// Value for the taint
+	Value string
+	// Effect for the taint
+	// +options=NoSchedule,PreferNoSchedule,NoExecute
+	Effect string
 }
 
 // Equal returns true of 2 nodes have the same host, IP and InternalIP

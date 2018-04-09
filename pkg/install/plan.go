@@ -216,7 +216,7 @@ func setDefaults(p *Plan) {
 	}
 }
 
-var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-A-Z.\d]+)[ ]*:`)
+var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-\/A-Z.\d]+)[ ]*:`)
 
 // Write the plan to the file system
 func (fp *FilePlanner) Write(p *Plan) error {
@@ -258,7 +258,10 @@ func (fp *FilePlanner) Write(p *Plan) error {
 			if etcdBlock && strings.Contains(text, "labels: {}") {
 				continue
 			}
-
+			// Don't print taints: [] for etcd group
+			if etcdBlock && strings.Contains(text, "taints: []") {
+				continue
+			}
 			// Add a new line if we are leaving a major indentation block
 			// (leaving a struct)..
 			if indent < prevIndent {

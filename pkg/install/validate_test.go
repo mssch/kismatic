@@ -1689,6 +1689,225 @@ func TestNodeLabels(t *testing.T) {
 	}
 }
 
+func TestNodeTaints(t *testing.T) {
+	tests := []struct {
+		n     Node
+		valid bool
+	}{
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host:   "foo",
+				IP:     "192.1.1.1",
+				Taints: []Taint{},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "com.foo/bar",
+						Value:  "",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "com.foo/bar",
+						Value:  "foobar",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "com.foo/bar",
+						Value:  "foobar",
+						Effect: "NoSchedule",
+					},
+					Taint{
+						Key:    "com.foo/xyz",
+						Value:  "xyz",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "kismatic/foo",
+						Value:  "bar",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "com.foo/kismatic-version",
+						Value:  "v1.0.0",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: true,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "",
+						Value:  "v1.0.0",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "",
+						Value:  "",
+						Effect: "NoSchedule",
+					},
+				},
+				Labels: map[string]string{"": ""},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "",
+						Value:  "",
+						Effect: "",
+					},
+				},
+				Labels: map[string]string{"": ""},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "node-type:test",
+						Value:  "test",
+						Effect: "NoSchedule",
+					},
+				},
+				Labels: map[string]string{"node-type:test": "test"},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "com.foo/invalid",
+						Value:  ":test",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "node-type:test",
+						Value:  ":test",
+						Effect: "NoSchedule",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "kismatic/foo",
+						Value:  "bar",
+						Effect: "",
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			n: Node{
+				Host: "foo",
+				IP:   "192.1.1.1",
+				Taints: []Taint{
+					Taint{
+						Key:    "kismatic/foo",
+						Value:  "bar",
+						Effect: "Foo",
+					},
+				},
+			},
+			valid: false,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.n.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}
+
 func TestNodeKubeletOptions(t *testing.T) {
 	tests := []struct {
 		nl    nodeList
