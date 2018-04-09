@@ -211,6 +211,10 @@ func setDefaults(p *Plan) {
 		p.AddOns.Dashboard = &Dashboard{}
 	}
 
+	if p.AddOns.Dashboard.Options.ServiceType == "" {
+		p.AddOns.Dashboard.Options.ServiceType = "ClusterIP"
+	}
+
 	if p.AddOns.PackageManager.Options.Helm.Namespace == "" {
 		p.AddOns.PackageManager.Options.Helm.Namespace = "kube-system"
 	}
@@ -407,6 +411,7 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 
 	p.AddOns.Dashboard = &Dashboard{}
 	p.AddOns.Dashboard.Disable = false
+	p.AddOns.Dashboard.Options.ServiceType = "ClusterIP"
 
 	// Generate entries for all node types
 	p.Etcd.ExpectedCount = templateOpts.EtcdNodes

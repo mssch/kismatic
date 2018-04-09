@@ -1478,6 +1478,36 @@ func TestHeapsterAddOn(t *testing.T) {
 	}
 }
 
+func TestDashbordAddOn(t *testing.T) {
+	tests := []struct {
+		d     Dashboard
+		valid bool
+	}{
+		{
+			d: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "ClusterIP",
+				},
+			},
+			valid: true,
+		},
+		{
+			d: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "Foo",
+				},
+			},
+			valid: false,
+		},
+	}
+	for i, test := range tests {
+		ok, _ := test.d.validate()
+		if ok != test.valid {
+			t.Errorf("test %d: expect %t, but got %t", i, test.valid, ok)
+		}
+	}
+}
+
 func TestPackageManagerAddOn(t *testing.T) {
 	tests := []struct {
 		p     PackageManager

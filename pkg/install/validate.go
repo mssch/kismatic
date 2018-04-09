@@ -296,6 +296,7 @@ func (f *AddOns) validate() (bool, []error) {
 	v.validate(f.CNI)
 	v.validate(f.DNS)
 	v.validate(f.HeapsterMonitoring)
+	v.validate(f.Dashboard)
 	v.validate(&f.PackageManager)
 	return v.valid()
 }
@@ -336,6 +337,16 @@ func (h *HeapsterMonitoring) validate() (bool, []error) {
 		}
 		if !util.Contains(h.Options.Heapster.ServiceType, serviceTypes()) {
 			v.addError(fmt.Errorf("Heapster Service Type %q is not a valid option %v", h.Options.Heapster.ServiceType, serviceTypes()))
+		}
+	}
+	return v.valid()
+}
+
+func (d *Dashboard) validate() (bool, []error) {
+	v := newValidator()
+	if d != nil && !d.Disable {
+		if !util.Contains(d.Options.ServiceType, serviceTypes()) {
+			v.addError(fmt.Errorf("Dashboard Service Type %q is not a valid option %v", d.Options.ServiceType, serviceTypes()))
 		}
 	}
 	return v.valid()

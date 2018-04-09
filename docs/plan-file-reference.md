@@ -98,8 +98,12 @@
     * [disable](#add_onsmetrics_serverdisable)
   * [dashboard](#add_onsdashboard)
     * [disable](#add_onsdashboarddisable)
+    * [options](#add_onsdashboardoptions)
+      * [service_type](#add_onsdashboardoptionsservice_type)
   * [dashbard _(deprecated)_](#add_onsdashbard-deprecated)
     * [disable](#add_onsdashbarddisable)
+    * [options](#add_onsdashbardoptions)
+      * [service_type](#add_onsdashbardoptionsservice_type)
   * [package_manager](#add_onspackage_manager)
     * [disable](#add_onspackage_managerdisable)
     * [provider](#add_onspackage_managerprovider)
@@ -983,6 +987,21 @@
 | **Required** |  No |
 | **Default** | `false` | 
 
+###  add_ons.dashboard.options
+
+ The options that can be configured for the Dashboard add-on 
+
+###  add_ons.dashboard.options.service_type
+
+ Kubernetes service type of the Dashboard service. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | `ClusterIP` | 
+| **Options** |  `ClusterIP`, `NodePort`, `LoadBalancer`, `ExternalName`
+
 ###  add_ons.dashbard _(deprecated)_
 
  The Dashboard add-on configuration. 
@@ -996,6 +1015,21 @@
 | **Kind** |  bool |
 | **Required** |  No |
 | **Default** | `false` | 
+
+###  add_ons.dashbard.options
+
+ The options that can be configured for the Dashboard add-on 
+
+###  add_ons.dashbard.options.service_type
+
+ Kubernetes service type of the Dashboard service. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | `ClusterIP` | 
+| **Options** |  `ClusterIP`, `NodePort`, `LoadBalancer`, `ExternalName`
 
 ###  add_ons.package_manager
 

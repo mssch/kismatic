@@ -803,6 +803,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	cc.Dashboard.Enabled = true
 	if p.AddOns.Dashboard != nil && p.AddOns.Dashboard.Disable {
 		cc.Dashboard.Enabled = false
+		cc.Dashboard.Options.ServiceType = p.AddOns.Dashboard.Options.ServiceType
 	}
 
 	// package_manager
