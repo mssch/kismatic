@@ -226,3 +226,4 @@ spec:
       targetPort: 8443
   selector:
     k8s-app: kubernetes-dashboard
+  type: {{ dashboard.options.service_type }}

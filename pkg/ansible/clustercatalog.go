@@ -143,6 +143,9 @@ type ClusterCatalog struct {
 
 	Dashboard struct {
 		Enabled bool
+		Options struct {
+			ServiceType string `yaml:"service_type"`
+		}
 	}
 
 	Helm struct {

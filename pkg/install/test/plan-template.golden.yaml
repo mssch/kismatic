@@ -202,6 +202,8 @@ add_ons:
 
   dashboard:
     disable: false
+    options:
+      service_type: ClusterIP
 
   package_manager:
     disable: false

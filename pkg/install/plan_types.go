@@ -518,6 +518,16 @@ type Dashboard struct {
 	// When set to true, the Kubernetes Dashboard will not be installed on the cluster.
 	// +default=false
 	Disable bool
+	// The options that can be configured for the Dashboard add-on
+	Options DashboardOptions
+}
+
+// The DashboardOptions for the Dashboard addon
+type DashboardOptions struct {
+	// Kubernetes service type of the Dashboard service.
+	// +default=ClusterIP
+	// +options=ClusterIP,NodePort,LoadBalancer,ExternalName
+	ServiceType string `yaml:"service_type"`
 }
 
 // PackageManager add-on configuration
