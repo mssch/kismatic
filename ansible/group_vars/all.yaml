@@ -230,7 +230,6 @@ kubelet_defaults:
   "network-plugin": "{% if cni.enabled|bool == true %}cni{% endif %}"
   "docker": "unix:///var/run/docker.sock"
   "hostname-override": "{{ inventory_hostname }}"
-  "require-kubeconfig": "true"
   "kubeconfig": "{{ kubernetes_kubeconfig.kubelet }}"
   "node-labels": "{% if 'master' in group_names %},node-role.kubernetes.io/master={% endif %}"
   "node-ip": "{{ internal_ipv4 }}"

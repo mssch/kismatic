@@ -9,7 +9,7 @@ func validPlan() Plan {
 	return Plan{
 		Cluster: Cluster{
 			Name:    "test",
-			Version: "v1.9.6",
+			Version: "v1.10.0",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -130,7 +130,7 @@ func TestClusterVersion(t *testing.T) {
 	}{
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.9.6",
+			Version: "v1.10.0",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -149,7 +149,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.9.6",
+			Version: "v1.10.0",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -187,7 +187,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.9.600",
+			Version: "v1.10.000",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -225,7 +225,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.10.0",
+			Version: "v1.20.0",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -241,26 +241,6 @@ func TestClusterVersion(t *testing.T) {
 			},
 		},
 			valid: false,
-		},
-		{c: Cluster{
-			Name:                     "test",
-			Version:                  "v1.9.600",
-			DisconnectedInstallation: true,
-			Networking: NetworkConfig{
-				Type:             "overlay",
-				PodCIDRBlock:     "172.16.0.0/16",
-				ServiceCIDRBlock: "172.20.0.0/16",
-			},
-			Certificates: CertsConfig{
-				Expiry: "17250h",
-			},
-			SSH: SSHConfig{
-				User: "root",
-				Key:  "/bin/sh",
-				Port: 22,
-			},
-		},
-			valid: true,
 		},
 		{c: Cluster{
 			Name:                     "test",
@@ -284,7 +264,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:                     "test",
-			Version:                  "v1.10.0",
+			Version:                  "v1.20.0",
 			DisconnectedInstallation: true,
 			Networking: NetworkConfig{
 				Type:             "overlay",
@@ -303,9 +283,9 @@ func TestClusterVersion(t *testing.T) {
 			valid: false,
 		},
 	}
-	for _, test := range tests {
+	for n, test := range tests {
 		if valid, _ := test.c.validate(); valid != test.valid {
-			t.Errorf("expected %v with %+v, but got %v - %q", test.valid, test.c, !test.valid)
+			t.Errorf("%d: expected %v with %+v, but got %v - %q", n, test.valid, test.c, !test.valid)
 		}
 	}
 }
