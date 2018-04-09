@@ -687,7 +687,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	cc.Versions.KubernetesYum = p.Cluster.Version[1:] + "-0"
 	cc.Versions.KubernetesDeb = p.Cluster.Version[1:] + "-00"
 
-	cc.NoProxy = p.AllAddresses()
+	cc.NoProxy = strings.Join(p.AllAddresses(), ",")
 	if p.Cluster.Networking.NoProxy != "" {
 		cc.NoProxy = cc.NoProxy + "," + p.Cluster.Networking.NoProxy
 	}

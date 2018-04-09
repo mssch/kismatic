@@ -642,6 +642,18 @@ func (node Node) HashCode() string {
 	return fmt.Sprint(node.Host, node.IP, node.InternalIP)
 }
 
+// KubeletAddresses returns the host and the internalIP
+// If no internalIP is provided, IP will be be returned instead
+func (node Node) KubeletAddresses() []string {
+	addr := []string{node.Host}
+	if node.InternalIP != "" {
+		addr = append(addr, node.InternalIP)
+	} else {
+		addr = append(addr, node.IP)
+	}
+	return addr
+}
+
 type NFS struct {
 	// List of NFS volumes that should be attached to the cluster during
 	// the installation.
@@ -726,7 +738,7 @@ func (p *Plan) getNodeWithIP(ip string) (*Node, error) {
 }
 
 // AllAddresses will return the hostnames, IPs and internal IPs for all nodes
-func (p *Plan) AllAddresses() string {
+func (p *Plan) AllAddresses() []string {
 	nodes := p.GetUniqueNodes()
 	var addr []string
 	for _, n := range nodes {
@@ -736,7 +748,7 @@ func (p *Plan) AllAddresses() string {
 			addr = append(addr, n.InternalIP)
 		}
 	}
-	return strings.Join(addr, ",")
+	return addr
 }
 
 func (p *Plan) ValidRole(role string) bool {
@@ -957,11 +969,12 @@ func (node Node) certSpecs(plan Plan, ca *tls.CA) ([]certificateSpec, error) {
 	// Kubelet and etcd client certificate
 	if containsAny([]string{"master", "worker", "ingress", "storage"}, roles) {
 		m = append(m, certificateSpec{
-			description:   fmt.Sprintf("%s kubelet", node.Host),
-			filename:      fmt.Sprintf("%s-kubelet", node.Host),
-			commonName:    fmt.Sprintf("%s:%s", kubeletUserPrefix, strings.ToLower(node.Host)),
-			organizations: []string{kubeletGroup},
-			ca:            ca,
+			description:           fmt.Sprintf("%s kubelet", node.Host),
+			filename:              fmt.Sprintf("%s-kubelet", node.Host),
+			commonName:            fmt.Sprintf("%s:%s", kubeletUserPrefix, strings.ToLower(node.Host)),
+			subjectAlternateNames: node.KubeletAddresses(),
+			organizations:         []string{kubeletGroup},
+			ca:                    ca,
 		})
 
 		// etcd client certificate

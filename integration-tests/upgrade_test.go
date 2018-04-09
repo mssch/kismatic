@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -267,6 +268,14 @@ func extractCurrentKismaticInstaller() {
 	FailIfError(err)
 }
 func upgradeCluster(online bool) {
+	// Remove old kubelet certificates
+	// TODO remove after 1.10 release
+	if err := deleteFiles("generated/keys/*-kubelet.pem"); err != nil {
+		FailIfError(err)
+	}
+	if err := deleteFiles("generated/keys/*-kubelet-key.pem"); err != nil {
+		FailIfError(err)
+	}
 	// Perform upgrade
 	cmd := exec.Command("./kismatic", "upgrade", "offline", "-f", "kismatic-testing.yaml")
 	if online {
@@ -287,4 +296,17 @@ func upgradeCluster(online bool) {
 	}
 
 	assertClusterVersionIsCurrent()
+}
+
+func deleteFiles(regex string) error {
+	files, err := filepath.Glob(regex)
+	if err != nil {
+		return fmt.Errorf("error getting a list of files %q: %v", regex, err)
+	}
+	for _, f := range files {
+		if err := os.Remove(f); err != nil {
+			return fmt.Errorf("error deleting file %q: %v", f, err)
+		}
+	}
+	return nil
 }
