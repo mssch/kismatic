@@ -15,6 +15,7 @@ import (
 
 type dashboardOpts struct {
 	dashboardURLMode   bool
+	tokenOnly          bool
 	generatedAssetsDir string
 	planFilename       string
 }
@@ -28,6 +29,30 @@ func NewCmdDashboard(in io.Reader, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dashboard",
 		Short: "Opens/displays the kubernetes dashboard URL of the cluster",
+		Long: `
+  This command is a convenience command to open the dashbord.
+  - Retrieves the token of the secret for ServiceAccount 'kubernetes-dashboard-admin':
+  -----------------------------------------------------------------------------------------------------------------------------------------------------
+  export SECRET="$(./kubectl get sa kubernetes-dashboard-admin -o 'jsonpath={.secrets[0].name}' -n kube-system --kubeconfig generated/kubeconfig)"
+  ./kubectl describe secrets $SECRET -n kube-system --kubeconfig generated/kubeconfig | awk '$1=="token:"{print $2}'
+  -----------------------------------------------------------------------------------------------------------------------------------------------------
+	
+  - Runs 'kubectl proxy':
+  -----------------------------------------------------------------------------------------------------------------------------------------------------
+  kubectl proxy --kubeconfig generated/kubeconfig
+  -----------------------------------------------------------------------------------------------------------------------------------------------------`,
+		Example: `  -----------------------------------------------------------------------------------------------------------------------------------------------------
+  ./kismatic dashboard
+  Opening kubernetes dashboard in default browser...
+  Use the kubeconfig in "generated/dashboard-admin-kubeconfig"
+  Starting to serve on 127.0.0.1:8001
+  -----------------------------------------------------------------------------------------------------------------------------------------------------
+  ./kismatic dashboard --url
+  http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+  -----------------------------------------------------------------------------------------------------------------------------------------------------
+  ./kismatic dashboard --token
+  Generated kubeconfig in "generated/dashboard-admin-kubeconfig"
+  -----------------------------------------------------------------------------------------------------------------------------------------------------`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 0 {
 				return fmt.Errorf("Unexpected args: %v", args)
@@ -38,6 +63,7 @@ func NewCmdDashboard(in io.Reader, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&opts.generatedAssetsDir, "generated-assets-dir", "generated", "path to the directory where assets generated during the installation process will be stored")
 	cmd.Flags().BoolVar(&opts.dashboardURLMode, "url", false, "Display the kubernetes dashboard URL instead of opening it in the default browser")
+	cmd.Flags().BoolVar(&opts.tokenOnly, "token", false, "Do not open the dashboard, only generate a kubeconfig file with the admin token")
 	addPlanFileFlag(cmd.PersistentFlags(), &opts.planFilename)
 	return cmd
 }
@@ -60,12 +86,22 @@ func doDashboard(in io.Reader, out io.Writer, opts *dashboardOpts) error {
 		planner := &install.FilePlanner{File: opts.planFilename}
 		plan, err := planner.Read()
 		if err != nil {
-			return fmt.Errorf("error reading plan file: %v", err)
+			return fmt.Errorf("Error reading plan file: %v", err)
 		}
 
-		if generateErr = generateDashboardAdminKubeconfig(out, opts.generatedAssetsDir, *plan); generateErr != nil {
-			fmt.Fprintf(out, "Error generating a kubeconfig file, you may still use the dashboard with your own ServiceAccount token\n\n")
+		generateErr = generateDashboardAdminKubeconfig(out, opts.generatedAssetsDir, *plan)
+	}
+
+	if opts.tokenOnly {
+		if generateErr != nil {
+			return fmt.Errorf("Error generating a kubeconfig file: %v", generateErr)
 		}
+		fmt.Fprintf(out, "Generated kubeconfig in %q\n", adminKubeconfig)
+		return nil
+	}
+
+	if generateErr != nil {
+		fmt.Fprintf(out, "Error generating a kubeconfig file, you may still use the dashboard with your own ServiceAccount token\n\n")
 	}
 
 	fmt.Fprintf(out, "Opening kubernetes dashboard in default browser...\n")
@@ -91,15 +127,15 @@ func doDashboard(in io.Reader, out io.Writer, opts *dashboardOpts) error {
 func generateDashboardAdminKubeconfig(out io.Writer, generatedAssetsDir string, plan install.Plan) error {
 	// All of this is required because cannot set a label on the secret so no selectors
 	cmd := exec.Command("./kubectl", "-n", "kube-system", "get", "sa", "kubernetes-dashboard-admin", "-o", "jsonpath={.secrets[0].name}", "--kubeconfig", filepath.Join(generatedAssetsDir, "kubeconfig"))
-	secret, err := cmd.Output()
+	sa, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error getting token secret: %v", err)
 	}
-	if len(secret) == 0 || !strings.Contains(string(secret), "kubernetes-dashboard-admin-token") {
+	if len(sa) == 0 || !strings.Contains(string(sa), "kubernetes-dashboard-admin-token") {
 		return fmt.Errorf("kubernetes-dashboard-admin-token secret not found")
 	}
 
-	cmd = exec.Command("./kubectl", "-n", "kube-system", "get", "secrets", string(secret), "-o", "jsonpath={.data.token}", "--kubeconfig", filepath.Join(generatedAssetsDir, "kubeconfig"))
+	cmd = exec.Command("./kubectl", "-n", "kube-system", "get", "secrets", string(sa), "-o", "jsonpath={.data.token}", "--kubeconfig", filepath.Join(generatedAssetsDir, "kubeconfig"))
 	token, err := cmd.Output()
 	if err != nil {
 		return fmt.Errorf("error getting the token: %v", err)
