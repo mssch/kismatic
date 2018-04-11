@@ -37,10 +37,10 @@ official_images:
     version: 1.1.1
   weave:
     name: weaveworks/weave-kube
-    version: 2.2.1
+    version: 2.3.0
   weave_npc:
     name: weaveworks/weave-npc
-    version: 2.2.1
+    version: 2.3.0
   defaultbackend:
     name: gcr.io/google_containers/defaultbackend
     version: 1.4
@@ -58,13 +58,13 @@ official_images:
     version: 3.0
   kubedns:
     name: gcr.io/google_containers/k8s-dns-kube-dns-amd64
-    version: 1.14.8
+    version: 1.14.9
   kube_dnsmasq:
     name: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64
-    version: 1.14.8
+    version: 1.14.9
   kubedns_sidecar:
     name: gcr.io/google_containers/k8s-dns-sidecar-amd64
-    version: 1.14.8
+    version: 1.14.9
   coredns:
     name: coredns/coredns
     version: 1.1.1
