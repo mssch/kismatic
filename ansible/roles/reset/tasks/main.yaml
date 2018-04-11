@@ -1,0 +1,98 @@
+---
+  - name: cleanup kubernetes packages
+    include: kubernetes.yaml
+    when: allow_package_installation|bool == true
+
+  - name: cleanup docker packages
+    include: docker.yaml
+    when: docker.enabled|bool == true
+
+  - name: cleanup gluster packages
+    include: gluster.yaml
+    when: >
+      allow_package_installation|bool == true and
+      'storage' in group_names
+
+  - name: remove kismatic binaries
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "{{ bin_dir }}/kismatic-inspector"
+      - "{{ bin_dir }}/kuberang"
+
+  - name: remove nodes from hosts file
+    blockinfile:
+      dest: /etc/hosts
+      state: absent
+      marker: "# Kismatic hosts {mark}"
+    when: modify_hosts_file|bool == true
+
+  - name: remove etcd service files
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "{{ init_system_dir }}/etcd_k8s.service"
+      - "{{ init_system_dir }}/etcd_networking.service"
+
+  - name: remove etcd directories
+    file:
+      path: "{{ item }}"
+      state: absent
+    when: "'etcd' in group_names"
+    with_items:
+      - "/etc/etcd_k8s"
+      - "/var/lib/etcd_k8s"
+      - "/etc/etcd_networking"
+      - "/var/lib/etcd_networking"
+
+  - name: remove kismatic service files
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "{{ init_system_dir }}/kismatic-inspector.service"
+
+  - name: unmount kubelet directories
+    command: bash -c "awk '$2 ~ path {print $2}' path=/var/lib/kubelet /proc/mounts | xargs -r umount"
+
+  - name: remove kubernetes directories
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "{{ kubernetes_install_dir }}"
+      - "{{ kubelet_lib_dir }}"
+      - "{{ network_cni_dir }}"
+      - "{{ kubernetes_kubectl_config_dir }}"
+      - "/var/run/kubernetes"
+      - "{{ calico_dir }}"
+      - "{{ weave_dir }}"
+
+  - name: remove docker directories
+    file:
+      path: "{{ item }}"
+      state: absent
+    when: "docker.enabled|bool == true"
+    with_items:
+      - "{{ docker_install_dir }}"
+      - "{{ docker_system_d }}"
+      - "/var/lib/docker"
+      - "/var/lib/dockershim"
+
+  - name: remove gluster directories
+    file:
+      path: "{{ item }}"
+      state: absent
+    when: "'storage' in group_names"
+    with_items:
+      - "/var/lib/glusterd"
+      - "/data"
+
+  - name: remove additional files and directories
+    file:
+      path: "{{ item.destination | dirname }}"
+      state: absent
+    when: inventory_hostname in item.hosts or 'all' in item.hosts or item.hosts | intersect(group_names) | count > 0
+    with_items: "{{ additional_files }}"

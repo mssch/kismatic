@@ -9,7 +9,7 @@ glusterfs_server_version_ubuntu: "3.8.15-ubuntu1~xenial1"
 
 #===============================================================================
 # common variables for all hosts
-init_system_dir: /etc/systemd/system/
+init_system_dir: /etc/systemd/system
 init_system_file_extenstion: service
 bin_dir: /usr/bin
 #===============================================================================
@@ -83,7 +83,8 @@ contiv:
 # directories
 kubernetes_install_dir: /etc/kubernetes
 kubernetes_spec_dir: /etc/kubernetes/specs
-network_plugin_dir: /etc/cni/net.d
+network_cni_dir: /etc/cni
+network_plugin_dir: "{{ network_cni_dir }}/net.d"
 kubernetes_auth_dir: /etc/kubernetes/auth
 kubelet_lib_dir: /var/lib/kubelet
 kubelet_pod_manifests_dir: /etc/kubernetes/manifests

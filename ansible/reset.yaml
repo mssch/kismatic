@@ -1,0 +1,3 @@
+---
+  # Contains list of playbooks to setup a HA enterprise ready kubernetes cluster
+  - include: _reset.yaml
