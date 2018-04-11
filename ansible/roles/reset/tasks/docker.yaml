@@ -1,0 +1,41 @@
+---
+  - name: stop docker service
+    service:
+      name: docker.service
+      state: stopped
+    register: result
+    failed_when: "result|failed and ('find' not in result.msg and 'found' not in result.msg)" # make idempotent
+
+  - name: remove docker-ce package
+    package: name=docker-ce state=absent
+    register: result
+    until: result|success
+    retries: 2
+    delay: 1
+
+  - name: remove docker yum repository
+    yum_repository:
+      name: docker
+      description: Docker Repository
+      state: absent
+    when: ansible_os_family == 'RedHat'
+    environment: "{{proxy_env}}"
+
+  - name: remove docker deb repository
+    apt_repository:
+      repo: 'deb [arch=amd64] {{ docker_deb_repository_url }} xenial stable'
+      state: absent
+    when: ansible_os_family == 'Debian'
+    environment: "{{proxy_env}}"
+
+  - name: remove docker deb key
+    apt_key:
+      id: 0EBFCD88
+      state: absent
+    when: ansible_os_family == 'Debian'
+    environment: "{{proxy_env}}"
+
+  - name: remove service file
+    file:
+      path: "{{ docker_service_file }}"
+      state: absent

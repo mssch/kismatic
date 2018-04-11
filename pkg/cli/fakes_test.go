@@ -44,6 +44,10 @@ func (fe *fakeExecutor) Install(p *install.Plan, restartServices bool, nodes ...
 	return fe.err
 }
 
+func (fe *fakeExecutor) Reset(p *install.Plan, nodes ...string) error {
+	return nil
+}
+
 func (fe *fakeExecutor) RunPreFlightCheck(p *install.Plan, nodes ...string) error {
 	return nil
 }

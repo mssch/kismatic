@@ -1,0 +1,47 @@
+---
+  - name: stop kubelet service
+    service:
+      name: kubelet.service
+      state: stopped
+    register: result
+    failed_when: "result|failed and ('find' not in result.msg and 'found' not in result.msg)" # make idempotent
+
+  - name: remove kubelet packages
+    package: name=kubelet state=absent
+    register: result
+    until: result|success
+    retries: 2
+    delay: 1
+    with_items:
+      - kubelet
+      - kubectl
+      - kubernetes-cni
+
+  - name: remove kubernetes yum repository
+    yum_repository:
+      name: kubernetes
+      description: Kubernetes Repository
+      baseurl: "{{ kubernetes_yum_repository_url }}"
+      state: absent
+    when: ansible_os_family == 'RedHat'
+    environment: "{{proxy_env}}"
+
+  - name: remove kubernetes deb repository
+    apt_repository:
+      repo: 'deb {{ kubernetes_deb_repository_url }} kubernetes-xenial main'
+      state: absent
+    when: ansible_os_family == 'Debian'
+    environment: "{{proxy_env}}"
+
+  - name: remove kubernetes deb key
+    apt_key:
+      id: BA07F4FB
+      url: "{{ kubernetes_deb_gpg_key_url }}"
+      state: absent
+    when: ansible_os_family == 'Debian'
+    environment: "{{proxy_env}}"
+  
+  - name: remove service file
+    file:
+      path: "{{ init_system_dir }}/kubelet.service"
+      state: absent

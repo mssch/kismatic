@@ -29,6 +29,7 @@ type PreFlightExecutor interface {
 type Executor interface {
 	PreFlightExecutor
 	Install(plan *Plan, restartServices bool, nodes ...string) error
+	Reset(plan *Plan, nodes ...string) error
 	GenerateCertificates(p *Plan, useExistingCA bool) error
 	RunSmokeTest(*Plan) error
 	AddNode(plan *Plan, node Node, roles []string, restartServices bool) (*Plan, error)
@@ -298,6 +299,24 @@ func (ae *ansibleExecutor) Install(p *Plan, restartServices bool, nodes ...strin
 		limit:          nodes,
 	}
 	util.PrintHeader(ae.stdout, "Installing Cluster", '=')
+	return ae.execute(t)
+}
+
+func (ae *ansibleExecutor) Reset(p *Plan, nodes ...string) error {
+	cc, err := ae.buildClusterCatalog(p)
+	if err != nil {
+		return err
+	}
+	t := task{
+		name:           "reset",
+		playbook:       "reset.yaml",
+		explainer:      ae.defaultExplainer(),
+		plan:           *p,
+		inventory:      buildInventoryFromPlan(p),
+		clusterCatalog: *cc,
+		limit:          nodes,
+	}
+	util.PrintHeader(ae.stdout, "Resetting Nodes in the Cluster", '=')
 	return ae.execute(t)
 }
 

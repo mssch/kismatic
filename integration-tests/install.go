@@ -71,6 +71,14 @@ func installKismaticMini(node NodeDeets, sshKey string) error {
 	return installKismaticWithPlan(plan)
 }
 
+func resetKismaticMini(node NodeDeets, sshKey string) error {
+	By("Resetting Cluster")
+	cmd := exec.Command("./kismatic", "reset", "-f", "kismatic-testing.yaml", "--force")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func installKismatic(nodes provisionedNodes, installOpts installOptions, sshKey string) error {
 	return installKismaticWithPlan(buildPlan(nodes, installOpts, sshKey))
 }
