@@ -246,6 +246,24 @@ func testStatefulWorkload(nodes provisionedNodes, sshKey string) error {
 		return fmt.Errorf("Reader workload failed: %v", err)
 	}
 
+	By("Deleting writer workload")
+	err = runViaSSH([]string{"sudo kubectl --kubeconfig /root/.kube/config delete job kismatic-writer"}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("Error deleting writer workload: %v", err)
+	}
+
+	By("Deleting reader workload")
+	err = runViaSSH([]string{"sudo kubectl --kubeconfig /root/.kube/config delete job kismatic-reader"}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("Error deleting reader workload: %v", err)
+	}
+
+	By("Deleting the storage volume claim")
+	err = runViaSSH([]string{"sudo kubectl --kubeconfig /root/.kube/config delete pvc kismatic-integration-claim"}, []NodeDeets{nodes.master[0]}, sshKey, 30*time.Second)
+	if err != nil {
+		return fmt.Errorf("Error deleting pvc: %v", err)
+	}
+
 	By("Deleting the storage volume")
 	err = deleteVolume(plan, "kis-int-test")
 	if err != nil {
