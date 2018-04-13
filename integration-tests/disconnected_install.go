@@ -61,12 +61,12 @@ func seedRegistry(repoNode NodeDeets, registryCAFile string, registryPort int, s
 	By("Seeding the registry")
 	start := time.Now()
 	cmds = []string{
-		fmt.Sprintf("sudo docker login -u kismaticuser -p kismaticpassword %s", registry),
+		fmt.Sprintf("echo 'y' | sudo docker login -u kismaticuser -p kismaticpassword %s", registry),
 		"sudo mkdir kismatic",
 		"sudo tar -xf /tmp/kismatic-" + runtime.GOOS + ".tar.gz -C kismatic",
 		fmt.Sprintf("sudo ./kismatic/kismatic seed-registry --server %s", registry),
 	}
-	err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 90*time.Minute)
+	err = runViaSSH(cmds, []NodeDeets{repoNode}, sshKey, 30*time.Minute)
 	if err != nil {
 		return fmt.Errorf("failed to seed the registry: %v", err)
 	}
