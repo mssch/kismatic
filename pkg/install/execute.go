@@ -856,7 +856,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	cc.NodeTaints = make(map[string][]string)
 	for _, n := range p.getAllNodes() {
 		if val, ok := cc.NodeTaints[n.Host]; ok {
-			cc.NodeLabels[n.Host] = append(val, keyValueEffectList(n.Taints)...)
+			cc.NodeTaints[n.Host] = append(val, keyValueEffectList(n.Taints)...)
 		} else {
 			cc.NodeTaints[n.Host] = keyValueEffectList(n.Taints)
 		}
