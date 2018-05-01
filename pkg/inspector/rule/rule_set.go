@@ -160,12 +160,6 @@ const defaultRuleSet = `---
   - ["master", "worker", "ingress", "storage"]
   port: 10250
   procName: kubelet
-# kubelet no auth
-- kind: TCPPortAvailable
-  when: 
-  - ["master", "worker", "ingress", "storage"]
-  port: 10255
-  procName: kubelet
 
 # Ports used by K8s worker are accessible
 # kube-proxy

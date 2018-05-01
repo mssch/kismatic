@@ -179,7 +179,7 @@ kubernetes_api_server_option_defaults:
   "kubelet-client-certificate": "{{ kubernetes_certificates.kube_apiserver_kubelet_client }}"
   "kubelet-client-key": "{{ kubernetes_certificates.kube_apiserver_kubelet_client_key }}"
   "kubelet-preferred-address-types": "{% if modify_hosts_file is defined and modify_hosts_file|bool == true %}InternalIP,ExternalIP,Hostname{% endif %}"
-  "runtime-config": "extensions/v1beta1=true,extensions/v1beta1/networkpolicies=true"
+  "runtime-config": "extensions/v1beta1=true,extensions/v1beta1/networkpolicies=true,authentication.k8s.io/v1beta1=true"
   "secure-port": "{{ kubernetes_master_secure_port }}"
   "service-account-key-file": "{{ kubernetes_certificates.service_account_key }}"
   "service-cluster-ip-range": "{{ kubernetes_services_cidr }}"
@@ -217,6 +217,7 @@ kube_proxy_option_defaults:
 
 kubelet_defaults:
   "allow-privileged": "true"
+  "authentication-token-webhook": "true"
   "authorization-mode": "Webhook"
   "event-qps": "0"
   "cadvisor-port" : "0"
@@ -237,6 +238,7 @@ kubelet_defaults:
   "node-ip": "{{ internal_ipv4 }}"
   "pod-infra-container-image": "{{ images.pause }}"
   "pod-manifest-path": "{{ kubelet_pod_manifests_dir }}"
+  "read-only-port": "0"
   "register-schedulable": "{{ kubernetes_schedulable }}"
   "serialize-image-pulls": "false"
   "streaming-connection-idle-timeout": "0"
