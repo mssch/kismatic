@@ -33,7 +33,7 @@ KET operational tools include:
 | Contiv | v1.1.1 |
 | KubeDNS | 1.14.9 |
 | CoreDNS | 1.1.1 |
-| Nginx Ingress Controller | 0.12.0 |
+| Nginx Ingress Controller | 0.14.0 |
 | Helm | v2.8.2 |
 
 
