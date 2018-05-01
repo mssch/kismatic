@@ -8,6 +8,15 @@
     file:
       path: "{{ weave_dir }}"
       state: directory
+
+  - name: copy weavenet.conflist to remote
+    template:
+        src: weavenet.conflist
+        dest: "{{ network_plugin_dir }}/00-weave.conflist"
+        owner: "{{ kubernetes_owner }}"
+        group: "{{ kubernetes_group }}"
+        mode: "{{ kubernetes_service_mode }}"
+
   - name: copy weave.yaml to remote
     template:
       src: weave.yaml
