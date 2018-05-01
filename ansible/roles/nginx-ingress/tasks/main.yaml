@@ -48,19 +48,17 @@
     when: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
 
   - block:
-    - name: get desired number of ingress pods
-      shell: "kubectl get ds ingress --namespace=kube-system -o=jsonpath='{.status.desiredNumberScheduled}'"
-      register: desiredPods
+    - name: get the name of the ingress pod running on this node
+      command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} get pods -l=name=ingress --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname|lower }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system
+      register: pod_name
+      until: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
+      retries: 20
+      delay: 6
 
-    - name: wait up to 5 minutes until all ingress controllers pods are ready
-      command: "kubectl get ds ingress --namespace=kube-system -o=jsonpath='{.status.numberReady}'"
+    - name: wait until pod is in "Running" state
+      command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} get pods {{ pod_name.stdout }} -o=jsonpath='{.status.phase}' -n kube-system
       register: readyPods
-      until: desiredPods.stdout|int == readyPods.stdout|int
-      retries: 30
-      delay: 10
-      failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
-    - name: fail if any ingress pods are not ready
-      fail:
-        msg: "Waited for all ingress controller pods to be ready, but they took longer than 5 minutes to be in the ready state."
-      when: desiredPods.stdout|int != readyPods.stdout|int
+      until: readyPods.stdout == "Running"
+      retries: 20
+      delay: 6
     when: run_pod_validation|bool == true
