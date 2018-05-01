@@ -31,10 +31,10 @@ KET operational tools include:
 | Calico | v2.6.9 |
 | Weave | v2.3.0 |
 | Contiv | v1.1.1 |
-| KubeDNS | 1.14.9 |
-| CoreDNS | 1.1.1 |
+| KubeDNS | 1.14.10 |
+| CoreDNS | 1.1.2 |
 | Nginx Ingress Controller | 0.14.0 |
-| Helm | v2.8.2 |
+| Helm | v2.9.0 |
 
 
 [Download KET here](https://github.com/apprenda/kismatic/releases)
