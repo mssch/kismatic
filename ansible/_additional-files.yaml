@@ -1,7 +1,7 @@
 ---
   - hosts: all
     any_errors_fatal: true
-    name: "{{ play_name | default('Copy Addition Files and Directories') }}"
+    name: "{{ play_name | default('Copy Additional Files and Directories') }}"
     serial: "{{ serial_count | default('100%') }}"
     become: yes
     vars_files:
