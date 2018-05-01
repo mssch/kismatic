@@ -149,7 +149,6 @@ kubernetes_certificates:
   service_account_key: "{{ kubernetes_certificates_dir }}/service-account-key.pem"
 
 kubernetes_api_server_option_defaults:
-  "admission-control": "NamespaceLifecycle,LimitRanger,ServiceAccount,NodeRestriction,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota"
   "advertise-address": "{{ internal_ipv4 }}"
   "allow-privileged": "true"
   "apiserver-count": "{{ kubernetes_master_apiserver_count }}"
@@ -158,6 +157,7 @@ kubernetes_api_server_option_defaults:
   "basic-auth-file": "{% if kubernetes_admin_password is defined and kubernetes_admin_password != '' %}{{ kubernetes_basic_auth_path }}{% endif %}"
   "bind-address": "0.0.0.0"
   "client-ca-file": "{{ kubernetes_certificates.ca }}"
+  "enable-admission-plugins": "NamespaceLifecycle,LimitRanger,ServiceAccount,NodeRestriction,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota"
   "requestheader-client-ca-file": "{{ kubernetes_certificates.proxy_client_ca }}"
   "proxy-client-cert-file": "{{ kubernetes_certificates.proxy_client }}"
   "proxy-client-key-file": "{{ kubernetes_certificates.proxy_client_key }}"
