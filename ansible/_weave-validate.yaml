@@ -8,23 +8,16 @@
       - group_vars/all.yaml
 
     tasks:
-      - name: get desired number of weave pods
-        command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} get ds weave-net -o=jsonpath='{.status.desiredNumberScheduled}' --namespace=kube-system
-        register: desiredPods
-        until: desiredPods|success
+      - name: get the name of the weave-net pod running on this node
+        command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} get pods -l=k8s-app=weave-net --template {%raw%}'{{range .items}}{{if eq .spec.nodeName{%endraw%} "{{ inventory_hostname|lower }}"{%raw%}}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}'{%endraw%} -n kube-system
+        register: pod_name
+        until: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
         retries: 20
         delay: 6
-        run_once: true
-      - name: wait until all weave pods are ready
-        command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} get ds weave-net -o=jsonpath='{.status.numberReady}' --namespace=kube-system
+
+      - name: wait until pod is in "Running" state
+        command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} get pods {{ pod_name.stdout }} -o=jsonpath='{.status.phase}' -n kube-system
         register: readyPods
-        until: desiredPods.stdout|int == readyPods.stdout|int
+        until: readyPods.stdout == "Running"
         retries: 20
         delay: 6
-        failed_when: false # We don't want this task to actually fail (We catch the failure with a custom msg in the next task)
-        run_once: true
-      - name: fail if any weave pods are not ready
-        fail:
-          msg: "Timed out waiting for all weave pods to be ready."
-        run_once: true
-        when: desiredPods.stdout|int != readyPods.stdout|int
