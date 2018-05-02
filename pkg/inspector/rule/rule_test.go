@@ -4,7 +4,7 @@ import "testing"
 
 func TestDefaultRules(t *testing.T) {
 	// This will panic if there are errors in the default rule
-	rules := DefaultRules(map[string]string{"kubernetes_yum_version": "1.10.1-0", "kubernetes_deb_version": "1.10.1-00"})
+	rules := DefaultRules(map[string]string{"kubernetes_yum_version": "1.10.2-0", "kubernetes_deb_version": "1.10.2-00"})
 	if len(rules) != 76 {
 		t.Errorf("expected to have %d rules, instead got %d", 76, len(rules))
 	}
@@ -17,7 +17,7 @@ func TestDefaultRules(t *testing.T) {
 
 func TestUpgradeRules(t *testing.T) {
 	// This will panic if there are errors in the upgrade rule
-	rules := UpgradeRules(map[string]string{"kubernetes_yum_version": "1.10.1-0", "kubernetes_deb_version": "1.10.1-00"})
+	rules := UpgradeRules(map[string]string{"kubernetes_yum_version": "1.10.2-0", "kubernetes_deb_version": "1.10.2-00"})
 	if len(rules) != 16 {
 		t.Errorf("expected to have %d rules, instead got %d", 16, len(rules))
 	}
