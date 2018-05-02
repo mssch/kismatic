@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-var versions = []string{"v1.9.2"}
+var versions = []string{"v1.10.0"}
 
 var _ = Describe("Upgrade", func() {
 	Describe("Upgrading a cluster using online mode", func() {
