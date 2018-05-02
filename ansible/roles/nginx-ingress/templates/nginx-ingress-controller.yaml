@@ -14,7 +14,6 @@ spec:
         prometheus.io/scrape: "true"
     spec:
       terminationGracePeriodSeconds: 60
-      hostNetwork: true # required in a CNI networkd
       nodeSelector:
         kismatic/ingress: "true"
       containers:
