@@ -70,7 +70,7 @@ There are four pieces of information we will need to be able to address each nod
 
 By default, Kismatic will attempt to install any of the software packages below if missing. This can cause the installer to take significantly more time and use more bandwidth than pre-baking an image and will require internet access to the Kismatic package repository, DockerHub and a repository for your operating system.
 
-If you are building a large cluster or one that won't have access to these repositories, you will want to [cache the necessary packages](PACKAGES.md) in a repository on your network.
+If you are building a large cluster or one that won't have access to these repositories, you will want to [cache the necessary packages](packages.md#synchronizing-a-local-repo) in a repository on your network.
 
 <table>
   <tr>
