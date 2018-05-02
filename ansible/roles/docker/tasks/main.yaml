@@ -7,10 +7,13 @@
     file:
       path: /etc/docker
       state: directory
+
   - name: write docker config file
     template:
       src: daemon.json
       dest: /etc/docker/daemon.json
+    register: config
+
   # start and verify that Docker installed successfully and is running
   - name: start docker service
     service:
@@ -28,6 +31,7 @@
       state: restarted
       enabled: yes
     when: >
+      (config.changed) or
       (force_docker_restart is defined and force_docker_restart|bool == true) or
       ((upgrading is defined and upgrading|bool == true) and
       (allow_package_installation|bool == false or
