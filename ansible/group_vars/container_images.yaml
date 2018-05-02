@@ -58,16 +58,16 @@ official_images:
     version: 3.0
   kubedns:
     name: gcr.io/google_containers/k8s-dns-kube-dns-amd64
-    version: 1.14.9
+    version: 1.14.10
   kube_dnsmasq:
     name: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64
-    version: 1.14.9
+    version: 1.14.10
   kubedns_sidecar:
     name: gcr.io/google_containers/k8s-dns-sidecar-amd64
-    version: 1.14.9
+    version: 1.14.10
   coredns:
     name: coredns/coredns
-    version: 1.1.1
+    version: 1.1.2
   kubernetes_dashboard:
     name: gcr.io/google_containers/kubernetes-dashboard-amd64
     version: v1.8.3
@@ -76,10 +76,10 @@ official_images:
     version: v1.0.0
   helm:
     name: gcr.io/kubernetes-helm/tiller
-    version: v2.8.2
+    version: v2.9.0
   heapster:
     name: gcr.io/google_containers/heapster-amd64
-    version: v1.5.2
+    version: v1.5.3
   influxdb:
     name: gcr.io/google_containers/heapster-influxdb-amd64
     version: v1.3.3
