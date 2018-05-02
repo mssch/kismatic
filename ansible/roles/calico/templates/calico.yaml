@@ -221,7 +221,7 @@ spec:
                   name: calico-config
                   key: cni_network_config
             - name: CNI_CONF_NAME
-              value: "10-calico.conflist"
+              value: "00-calico.conflist"
           securityContext:
             privileged: true
           volumeMounts:
