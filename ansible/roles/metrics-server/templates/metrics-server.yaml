@@ -41,6 +41,15 @@ rules:
   - list
   - watch
 - apiGroups:
+  - ""
+  resources: 
+  - nodes/stats
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+- apiGroups:
   - "extensions"
   resources:
   - deployments
@@ -126,4 +135,4 @@ spec:
         imagePullPolicy: Always
         command:
         - /metrics-server
-        - --source=kubernetes.summary_api:''
+        - --source=kubernetes.summary_api:https://kubernetes.default?kubeletHttps=true&kubeletPort=10250&useServiceAccount=true
