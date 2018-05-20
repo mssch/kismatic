@@ -93,6 +93,10 @@ spec:
       tolerations:
         - effect: NoSchedule
           operator: Exists
+        - effect: NoExecute
+          operator: Exists
+        - key: CriticalAddonsOnly
+          operator: Exists
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
