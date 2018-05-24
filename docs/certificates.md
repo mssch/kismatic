@@ -30,20 +30,25 @@ as a cluster admin.
 
 ### Generated Certificates
 
-| Certificate | Purpose | Filename |
-|---|---|---|
-| Self-Signed CA | Sign generated certificates |  ca.pem |
-| Self-Signed proxy-client CA | Sign generated certificates | proxy-client-ca.pem |
-| Etcd Server Cert | Serving API over HTTPS, performing peer-authentication | $nodeName-etcd.pem | 
-| API Server Cert | Serving API over HTTPS | $nodeName-apiserver.pem  |
-| Controller Manager Client Cert  | Used by controller manager to talk to API Server  | kube-controller-manager.pem  |
-| Scheduler Client Cert | Used by scheduler to talk to API Server | kube-scheduler.pem |
-| Service Account Signing Cert | Used by controller mgr to sign service accounts | service-account.pem |
-| Kubelet Client Cert | Used by Kubelet to talk to API Server | $nodeName-kubelet.pem |
-| Kube API Server Kubelet Client Cert | Used by kube-apiserver to talk to the kubelet | apiserver-kubelet-client.pem |
-| Etcd Client Cert | Used by calico to talk to etcd | etcd-client.pem |
-| Admin Client Cert | Used by admin to authenticate with the cluster using kubectl | admin.pem | 
-| Proxy Client Cert | Used by the proxy-client and aggregation layer | proxy-client.pem | 
+| CA | Purpose | Filename | CN | O | OU |
+|---|---|---|----|---|---|
+| Self-Signed | Sign generated certificates | ca.pem | kubernetes | Kubernetes | CA |
+| Self-Signed proxy-client | Sign generated Aggregator API server certificate | proxy-client-ca.pem | proxyClientCA | Kubernetes | CA |
+
+---
+
+| Certificate | Purpose | Filename | CN | SANs | O |
+|---|---|---|--|--|--|
+| Etcd Server | Serving API over HTTPS, performing peer-authentication | $nodeName-etcd.pem | $nodeName | $nodeName, 127.0.0.1, $IP | |
+| Etcd Client | Used by Calico and API Server to talk to etcd | etcd-client.pem | etcd-client | | |
+| Kubelet Client | Used by Kubelet to talk to API Server | $nodeName-kubelet.pem | system:node:$nodeName | $nodeName, $IP | system:nodes |
+| Kube API Server Kubelet Client | Used by API Server to talk to the Kubelet | apiserver-kubelet-client.pem | kube-apiserver-kubelet-client | | system:masters |
+| API Server | Serving API over HTTPS. In the SANs include any LoadBalancer IPs or DNS names used to access the API server | $nodeName-apiserver.pem  | $nodeName | kubernetes, kubernetes.default, kubernetes.default.svc, kubernetes.default.svc.cluster.local, 127.0.0.1, 172.20.0.1, $nodeName, $IP | |
+| Controller Manager Client  | Used by controller manager to talk to API Server  | kube-controller-manager.pem  | system:kube-controller-manager | | |
+| Scheduler Client | Used by scheduler to talk to API Server | kube-scheduler.pem | system:kube-scheduler | | |
+| Admin Client | Used by admin to authenticate with the cluster using kubectl | admin.pem | admin | | system:masters |
+| Service Account Signing | Used by controller mgr to sign service accounts | service-account.pem | kube-service-account | | |
+| Proxy Client | Used by the proxy-client and aggregation layer | proxy-client.pem | aggregator | | system:masters |
 
 ### Secured Interactions
 
