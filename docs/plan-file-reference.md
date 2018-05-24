@@ -208,7 +208,7 @@
 |----------|-----------------|
 | **Kind** |  string |
 | **Required** |  No |
-| **Default** | `v1.10.2` | 
+| **Default** | `v1.10.3` | 
 
 ###  cluster.admin_password _(deprecated)_
 

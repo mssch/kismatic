@@ -15,9 +15,9 @@ var (
 	httpTimeout                  = 5 * time.Second
 	kubeReleaseRegex             = regexp.MustCompile(`^v1\.10\.(0|[1-9][0-9]*)$`)
 	kubernetesReleaseURL         = "https://storage.googleapis.com/kubernetes-release/release/stable-1.10.txt"
-	kubernetesVersionString      = "v1.10.2"
+	kubernetesVersionString      = "v1.10.3"
 	kubernetesMinorVersionString = "v1.10.x"
-	kubernetesVersion            = semver.Version{Major: 1, Minor: 10, Patch: 2} // build the struct directly to not get an error
+	kubernetesVersion            = semver.Version{Major: 1, Minor: 10, Patch: 3} // build the struct directly to not get an error
 )
 
 func parseVersion(versionString string) (semver.Version, error) {
