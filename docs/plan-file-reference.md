@@ -70,6 +70,8 @@
     * [disable](#add_onscnidisable)
     * [provider](#add_onscniprovider)
     * [options](#add_onscnioptions)
+      * [portmap](#add_onscnioptionsportmap)
+        * [disable](#add_onscnioptionsportmapdisable)
       * [calico](#add_onscnioptionscalico)
         * [mode](#add_onscnioptionscalicomode)
         * [log_level](#add_onscnioptionscalicolog_level)
@@ -762,6 +764,20 @@
 ###  add_ons.cni.options
 
  The CNI options that can be configured for each CNI provider. 
+
+###  add_ons.cni.options.portmap
+
+ The options that can be configured for the Portmap CNI provider. 
+
+###  add_ons.cni.options.portmap.disable
+
+ Disable the portmap CNI plugin 
+
+| | |
+|----------|-----------------|
+| **Kind** |  bool |
+| **Required** |  No |
+| **Default** | `false` | 
 
 ###  add_ons.cni.options.calico
 

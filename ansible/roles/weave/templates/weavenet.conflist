@@ -6,11 +6,11 @@
             "name": "weave",
             "type": "weave-net",
             "hairpinMode": true
-        },
+        }{% if cni.options.portmap.enabled == true %},
         {
             "type": "portmap",
             "capabilities": {"portMappings": true},
             "snat": true
-        }
+        }{% endif %}
     ]
 }

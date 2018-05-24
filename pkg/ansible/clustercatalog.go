@@ -110,6 +110,9 @@ type ClusterCatalog struct {
 		Enabled  bool
 		Provider string
 		Options  struct {
+			Portmap struct {
+				Enabled bool
+			}
 			Calico struct {
 				Mode                  string
 				LogLevel              string `yaml:"log_level"`

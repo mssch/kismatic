@@ -788,6 +788,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	if p.AddOns.CNI != nil && !p.AddOns.CNI.Disable {
 		cc.CNI.Enabled = true
 		cc.CNI.Provider = p.AddOns.CNI.Provider
+		cc.CNI.Options.Portmap.Enabled = !p.AddOns.CNI.Options.Portmap.Disable
 		// Calico
 		cc.CNI.Options.Calico.Mode = p.AddOns.CNI.Options.Calico.Mode
 		cc.CNI.Options.Calico.LogLevel = p.AddOns.CNI.Options.Calico.LogLevel

@@ -42,12 +42,12 @@ data:
             "kubernetes": {
                 "kubeconfig": "__KUBECONFIG_FILEPATH__"
             }
-        },
+        }{% if cni.options.portmap.enabled == true %},
         {
           "type": "portmap",
           "snat": true,
           "capabilities": {"portMappings": true}
-        }
+        }{% endif %}
       ]
     }
   # If you're using TLS enabled etcd uncomment the following.
