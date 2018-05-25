@@ -101,6 +101,8 @@ add_ons:
     disable: {{.DisableCNI}}
     provider: {{if .CNIProvider}}{{.CNIProvider}}{{else}}calico{{end}}
     options:
+      portmap:
+        disable: false
       calico:
         mode: overlay
         log_level: info

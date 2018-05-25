@@ -402,10 +402,19 @@ type CNI struct {
 
 // CNIOptions that can be configured for each CNI provider.
 type CNIOptions struct {
+	// The options that can be configured for the Portmap CNI provider.
+	Portmap PortmapOptions
 	// The options that can be configured for the Calico CNI provider.
 	Calico CalicoOptions
 	// The options that can be configured for the Weave CNI provider.
 	Weave WeaveOptions
+}
+
+// The PortmapOptions that can be configured for the Portmap CNI plugin.
+type PortmapOptions struct {
+	// Disable the portmap CNI plugin
+	// +default=false
+	Disable bool
 }
 
 // The CalicoOptions that can be configured for the Calico CNI provider.
