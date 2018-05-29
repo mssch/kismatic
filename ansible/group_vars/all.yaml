@@ -126,6 +126,7 @@ cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' 
 # kubernetes certificate config
 # TODO: Do we want to change this?
 kubernetes_certificates_dir: "{{ kubernetes_install_dir }}/pki"
+flexvolume_plugin_dir: "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/"
 kubernetes_certificates:
   ca: "{{ kubernetes_certificates_dir }}/ca.pem"
   proxy_client_ca: "{{ kubernetes_certificates_dir }}/proxy-client-ca.pem"
@@ -244,6 +245,7 @@ kubelet_defaults:
   "streaming-connection-idle-timeout": "0"
   "tls-cert-file": "{{ kubernetes_certificates.kubelet }}"
   "tls-private-key-file": "{{ kubernetes_certificates.kubelet_key }}"
+  "volume-plugin-dir": "{{ flexvolume_plugin_dir }}"
   "v": "2"
 
 # etcd IPs
