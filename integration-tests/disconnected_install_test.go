@@ -146,12 +146,14 @@ var _ = Describe("disconnected installation", func() {
 				proxyNode := nodes.etcd[0]
 
 				By("Installing the proxy")
-				err := runViaSSH([]string{"sudo yum install -y squid"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
+				err := runViaSSH([]string{"sudo yum update -y openssl"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
+				FailIfError(err, "Failed update openssl")
+				err = runViaSSH([]string{"sudo yum install -y squid"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
 				FailIfError(err, "Failed install proxy")
 				err = runViaSSH([]string{"sudo sed -i -e 's/http_access deny all/http_access allow all/g' /etc/squid/squid.conf"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
 				FailIfError(err, "Failed modify squif.conf")
 				err = runViaSSH([]string{"sudo systemctl restart squid"}, []NodeDeets{proxyNode}, sshKey, 5*time.Minute)
-				FailIfError(err, "Failed install proxy")
+				FailIfError(err, "Failed restart proxy")
 
 				By("Disabling internet access")
 				err = disableInternetAccess(clusterNodes.allNodes(), sshKey)
