@@ -369,6 +369,12 @@ else
 	CIRCLE_ENDPOINT=https://circleci.com/api/v1.1/project/github/apprenda/kismatic/tree/$(CIRCLE_CI_BRANCH)
 endif
 
+trigger-pr:
+	@echo Triggering PR tests
+	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"    \
+	  -d '{ "revision": "$(PR_COMMIT)", "build_parameters": {}}'                     \
+	  https://circleci.com/api/v1.1/project/github/apprenda/kismatic/tree/pull/$(PR_NUMBER)
+
 trigger-ci-slow-tests:
 	@echo Triggering build with slow tests
 	curl -u $(CIRCLE_CI_TOKEN): -X POST --header "Content-Type: application/json"    \
