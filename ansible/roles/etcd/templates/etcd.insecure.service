@@ -30,6 +30,7 @@ ExecStart={{ bin_dir }}/docker run \
   --initial-cluster-state=new
 Restart=on-failure
 RestartSec=3
+RestartForceExitStatus=SIGPIPE
 
 ExecStop=-{{ bin_dir }}/docker stop {{ etcd_name }}
 

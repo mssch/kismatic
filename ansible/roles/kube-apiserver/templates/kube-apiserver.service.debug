@@ -12,6 +12,7 @@ ExecStart={{ bin_dir }}/kube-apiserver \
 {% endfor %}
 Restart=on-failure
 RestartSec=3
+RestartForceExitStatus=SIGPIPE
 
 [Install]
 WantedBy=multi-user.target
