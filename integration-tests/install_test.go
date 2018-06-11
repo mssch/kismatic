@@ -146,7 +146,7 @@ var _ = Describe("kismatic", func() {
 					// Ensure preflight checks are idempotent on CentOS7
 					err = runValidate("kismatic-testing.yaml")
 					Expect(err).ToNot(HaveOccurred())
-					err = resetKismaticMini(node, sshKey)
+					err = resetKismatic()
 					Expect(err).ToNot(HaveOccurred())
 				})
 			})
@@ -160,7 +160,7 @@ var _ = Describe("kismatic", func() {
 					// Ensure preflight checks are idempotent on RedHat7
 					err = runValidate("kismatic-testing.yaml")
 					Expect(err).ToNot(HaveOccurred())
-					err = resetKismaticMini(node, sshKey)
+					err = resetKismatic()
 					Expect(err).ToNot(HaveOccurred())
 				})
 			})
@@ -174,7 +174,7 @@ var _ = Describe("kismatic", func() {
 					// Ensure preflight checks are idempotent on Ubuntu 1604
 					err = runValidate("kismatic-testing.yaml")
 					Expect(err).ToNot(HaveOccurred())
-					err = resetKismaticMini(node, sshKey)
+					err = resetKismatic()
 					Expect(err).ToNot(HaveOccurred())
 				})
 			})
@@ -196,6 +196,8 @@ var _ = Describe("kismatic", func() {
 						}
 						err := installKismatic(nodes, installOpts, sshKey)
 						Expect(err).ToNot(HaveOccurred())
+						err = resetKismatic()
+						Expect(err).ToNot(HaveOccurred())
 					})
 				})
 			})
@@ -211,6 +213,8 @@ var _ = Describe("kismatic", func() {
 							ingress: theNode,
 						}
 						err := installKismatic(nodes, installOpts, sshKey)
+						Expect(err).ToNot(HaveOccurred())
+						err = resetKismatic()
 						Expect(err).ToNot(HaveOccurred())
 					})
 				})

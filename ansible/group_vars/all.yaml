@@ -348,3 +348,7 @@ proxy_env:
   http_proxy: "{{ http_proxy }}"
   NO_PROXY: "{{ no_proxy }}"
   no_proxy: "{{ no_proxy }}"
+
+#===============================================================================
+# reset
+flush_iptables: true
