@@ -1504,6 +1504,24 @@ func TestDashbordAddOn(t *testing.T) {
 			},
 			valid: false,
 		},
+		{
+			d: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "ClusterIP",
+					NodePort:    "32500",
+				},
+			},
+			valid: false,
+		},
+		{
+			d: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "NodePort",
+					NodePort:    "32500",
+				},
+			},
+			valid: true,
+		},
 	}
 	for i, test := range tests {
 		ok, _ := test.d.validate()

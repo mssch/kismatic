@@ -348,6 +348,9 @@ func (d *Dashboard) validate() (bool, []error) {
 		if !util.Contains(d.Options.ServiceType, serviceTypes()) {
 			v.addError(fmt.Errorf("Dashboard Service Type %q is not a valid option %v", d.Options.ServiceType, serviceTypes()))
 		}
+		if d.Options.NodePort != "" && d.Options.ServiceType != "NodePort" {
+			v.addError(fmt.Errorf("Dashboard Node Port option can only be used with Service Type 'NodePort'"))
+		}
 	}
 	return v.valid()
 }

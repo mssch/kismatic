@@ -534,6 +534,10 @@ type DashboardOptions struct {
 	// +default=ClusterIP
 	// +options=ClusterIP,NodePort,LoadBalancer,ExternalName
 	ServiceType string `yaml:"service_type"`
+	// When using NodePort set the port to use.
+	// When left empty Kubernetes will allocate a random port.
+	// +default=''
+	NodePort string `yaml:"node_port"`
 }
 
 // PackageManager add-on configuration

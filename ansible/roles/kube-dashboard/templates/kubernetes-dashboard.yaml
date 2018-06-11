@@ -224,6 +224,7 @@ spec:
   ports:
     - port: 443
       targetPort: 8443
+      nodePort: {{ dashboard.options.node_port }}
   selector:
     k8s-app: kubernetes-dashboard
   type: {{ dashboard.options.service_type }}

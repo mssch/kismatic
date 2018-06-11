@@ -822,6 +822,7 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	// dashboard
 	cc.Dashboard.Enabled = !p.AddOns.Dashboard.Disable
 	cc.Dashboard.Options.ServiceType = p.AddOns.Dashboard.Options.ServiceType
+	cc.Dashboard.Options.NodePort = p.AddOns.Dashboard.Options.NodePort
 
 	// package_manager
 	if !p.AddOns.PackageManager.Disable {
