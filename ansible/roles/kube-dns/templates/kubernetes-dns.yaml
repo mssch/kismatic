@@ -126,7 +126,6 @@ spec:
         - --domain=cluster.local
         - --dns-port=10053
         - --config-dir=/kube-dns-config
-        #- --kube-master-url={{ kubernetes_master_ip }}
         - --v=2
         ports:
         - containerPort: 10053
@@ -138,15 +137,7 @@ spec:
         - containerPort: 10055
           name: metrics
           protocol: TCP
-        # setting these vars to use with serviceaccount
-        # --kube-master-url does not work with error:
-        #  x509: failed to load system roots and no roots provided
-        # CA does not get mounted correctly with that flag
         env:
-        - name: KUBERNETES_SERVICE_HOST
-          value: "{{ kubernetes_load_balanced_fqdn }}"
-        - name: KUBERNETES_SERVICE_PORT
-          value: "{{ kubernetes_master_secure_port }}"
         - name: PROMETHEUS_PORT
           value: "10055"
         volumeMounts:
