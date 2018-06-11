@@ -1,9 +1,14 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: ingress
   namespace: kube-system
+  labels:
+    name: ingress
 spec:
+  selector:
+    matchLabels:
+      name: ingress
   template:
     metadata:
       labels:

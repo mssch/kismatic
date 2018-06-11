@@ -1,10 +1,15 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: default-http-backend
   namespace: kube-system
+  labels:
+    app: default-http-backend
 spec:
+  selector:
+    matchLabels:
+      app: default-http-backend
   template:
     metadata:
       labels:

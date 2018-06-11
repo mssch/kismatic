@@ -1,9 +1,14 @@
 kind: DaemonSet
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: gluster-healthz
   namespace: kube-system
+  labels:
+    app: gluster-healthz
 spec:
+  selector:
+    matchLabels:
+      app: gluster-healthz
   template:
     metadata:
       labels:

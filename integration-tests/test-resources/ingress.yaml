@@ -10,7 +10,7 @@ spec:
   selector:
     app: echoserver
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: echoserver
@@ -40,7 +40,7 @@ spec:
   selector:
     app: echoserver-tls
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: echoserver-tls
@@ -58,7 +58,7 @@ spec:
         ports:
         - containerPort: 80
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: echoserver
@@ -76,7 +76,7 @@ spec:
           serviceName: echoserver
           servicePort: 80
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Ingress
 metadata:
   name: echoserver-tls

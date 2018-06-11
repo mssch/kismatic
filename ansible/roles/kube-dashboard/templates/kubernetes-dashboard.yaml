@@ -78,7 +78,7 @@ subjects:
 
 ---
 # ------------------- Dashboard Admin User ------------------- #
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: kubernetes-dashboard-admin
@@ -119,7 +119,7 @@ type: kubernetes.io/service-account-token
 ---
 # ------------------- Dashboard Deployment ------------------- #
 
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kubernetes-dashboard
