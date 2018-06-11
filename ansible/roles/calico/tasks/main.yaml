@@ -1,5 +1,5 @@
 ---
-  - name: create /etc/calico directory
+  - name: create {{ calico_dir }} directory
     file:
       path: "{{ calico_dir }}"
       state: directory
@@ -7,7 +7,7 @@
   - name: copy rbac.yaml to remote
     template:
       src: rbac.yaml
-      dest: /etc/calico/rbac.yaml
+      dest: "{{ calico_dir }}/rbac.yaml"
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
@@ -15,15 +15,11 @@
   - name: copy calico.yaml to remote
     template:
       src: calico.yaml
-      dest: /etc/calico/calico.yaml
+      dest: "{{ calico_dir }}/calico.yaml"
       owner: "{{ kubernetes_owner }}"
       group: "{{ kubernetes_group }}"
       mode: "{{ kubernetes_service_mode }}"
 
-  - name: create {{ calico_dir }} directory
-    file:
-      path: "{{ calico_dir }}"
-      state: directory
   - name: copy calicoctl.cfg to remote
     template:
       src: calicoctl.cfg
@@ -33,7 +29,7 @@
       mode: "{{ network_environment_mode }}"
 
   - name: create calico RBAC roles
-    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} apply -f /etc/calico/rbac.yaml
+    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} apply -f {{ calico_dir }}/rbac.yaml
     run_once: true
 
   - name: get the name of the calico pod running on this node
@@ -42,7 +38,7 @@
     when: upgrading is defined and upgrading|bool == true
 
   - name: start calico containers
-    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} apply -f /etc/calico/calico.yaml
+    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} apply -f {{ calico_dir }}/calico.yaml
     run_once: true
 
   - name: delete calico pod running on this node

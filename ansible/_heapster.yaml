@@ -1,7 +1,7 @@
 ---
   - hosts: master[0]
     any_errors_fatal: true
-    name: "Configure Heapster Cluster Monitoring"
+    name: "Start Heapster Cluster Monitoring"
     become: yes
     run_once: true
     vars_files:
