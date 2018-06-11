@@ -44,6 +44,11 @@ func validPlan() Plan {
 			DNS: DNS{
 				Provider: "kubedns",
 			},
+			Dashboard: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "ClusterIP",
+				},
+			},
 			HeapsterMonitoring: &HeapsterMonitoring{
 				Options: HeapsterOptions{
 					Heapster: Heapster{

@@ -296,7 +296,7 @@ func (f *AddOns) validate() (bool, []error) {
 	v.validate(f.CNI)
 	v.validate(f.DNS)
 	v.validate(f.HeapsterMonitoring)
-	v.validate(f.Dashboard)
+	v.validate(&f.Dashboard)
 	v.validate(&f.PackageManager)
 	return v.valid()
 }

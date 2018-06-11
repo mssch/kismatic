@@ -365,10 +365,7 @@ type AddOns struct {
 	// Required for Horizontal Pod Autoscaler to function properly.
 	MetricsServer MetricsServer `yaml:"metrics_server"`
 	// The Dashboard add-on configuration.
-	Dashboard *Dashboard `yaml:"dashboard"`
-	// The Dashboard add-on configuration.
-	// +deprecated
-	DashboardDeprecated *Dashboard `yaml:"dashbard,omitempty"`
+	Dashboard Dashboard `yaml:"dashboard"`
 	// The PackageManager add-on configuration.
 	PackageManager PackageManager `yaml:"package_manager"`
 	// The Rescheduler add-on configuration.
