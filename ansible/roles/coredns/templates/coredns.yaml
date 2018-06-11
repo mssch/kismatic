@@ -106,6 +106,12 @@ spec:
         image: "{{ images.coredns }}"
         imagePullPolicy: IfNotPresent
         args: [ "-conf", "/etc/coredns/Corefile" ]
+        resources:
+          limits:
+            memory: 170Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns
@@ -116,6 +122,9 @@ spec:
         - containerPort: 53
           name: dns-tcp
           protocol: TCP
+       - containerPort: 9153
+         name: metrics
+         protocol: TCP
         livenessProbe:
           httpGet:
             path: /health
