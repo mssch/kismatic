@@ -719,11 +719,16 @@ func (ae *ansibleExecutor) buildClusterCatalog(p *Plan) (*ansible.ClusterCatalog
 	}
 	cc.LocalKubeconfigDirectory = generatedDir
 
-	// Setup FQDN or default to first master
-	if p.Master.LoadBalancedFQDN != "" {
-		cc.LoadBalancedFQDN = p.Master.LoadBalancedFQDN
-	} else {
-		cc.LoadBalancedFQDN = p.Master.Nodes[0].InternalIP
+	// Setup LB or default to first master
+	cc.LoadBalancer = p.Master.Nodes[0].InternalIP
+	cc.LoadBalancerPort = "6443"
+	if p.Master.LoadBalancer != "" {
+		host, port, err := p.ClusterAddress()
+		if err != nil {
+			return nil, err
+		}
+		cc.LoadBalancer = host
+		cc.LoadBalancerPort = port
 	}
 
 	if p.PrivateRegistryProvided() {

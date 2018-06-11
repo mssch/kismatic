@@ -26,10 +26,9 @@ type ClusterPlan struct {
 		Nodes         []NodePlan
 	}
 	Master struct {
-		ExpectedCount         int `yaml:"expected_count"`
-		Nodes                 []NodePlan
-		LoadBalancedFQDN      string `yaml:"load_balanced_fqdn"`
-		LoadBalancedShortName string `yaml:"load_balanced_short_name"`
+		ExpectedCount int `yaml:"expected_count"`
+		Nodes         []NodePlan
+		LoadBalancer  string `yaml:"load_balancer"`
 	}
 	Worker struct {
 		ExpectedCount int `yaml:"expected_count"`

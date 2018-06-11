@@ -109,6 +109,7 @@ func TestDetectNodeUpgradeSafetyEtcdCountUnsafe(t *testing.T) {
 func TestDetectNodeUpgradeSafetyMasterCountUnsafe(t *testing.T) {
 	plan := Plan{
 		Master: MasterNodeGroup{
+			LoadBalancer:  "lb:6443",
 			ExpectedCount: 1,
 			Nodes: []Node{
 				{
@@ -131,8 +132,8 @@ func TestDetectNodeUpgradeSafetyMasterCountUnsafe(t *testing.T) {
 func TestDetectNodeUpgradeSafetyMasterLoadBalancingUnsafe(t *testing.T) {
 	plan := Plan{
 		Master: MasterNodeGroup{
-			ExpectedCount:    2,
-			LoadBalancedFQDN: "foo",
+			ExpectedCount: 2,
+			LoadBalancer:  "foo:6443",
 			Nodes: []Node{
 				{
 					Host: "foo",
@@ -158,8 +159,8 @@ func TestDetectNodeUpgradeSafetyMasterLoadBalancingUnsafe(t *testing.T) {
 func TestDetectNodeUpgradeSafetyMasterLoadBalancingSafe(t *testing.T) {
 	plan := Plan{
 		Master: MasterNodeGroup{
-			ExpectedCount:    2,
-			LoadBalancedFQDN: "someLoadBalancer",
+			ExpectedCount: 2,
+			LoadBalancer:  "someLoadBalancer:6443",
 			Nodes: []Node{
 				{
 					Host: "foo",

@@ -72,6 +72,15 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 }
 
 func readDeprecatedFields(p *Plan) {
+	if p.Master.LoadBalancedShortName != nil && *p.Master.LoadBalancedFQDN != "" {
+		if p.Cluster.Certificates.APIServerCertExtraSANs != "" {
+			p.Cluster.Certificates.APIServerCertExtraSANs = p.Cluster.Certificates.APIServerCertExtraSANs + ","
+		}
+		p.Cluster.Certificates.APIServerCertExtraSANs = p.Cluster.Certificates.APIServerCertExtraSANs + *p.Master.LoadBalancedFQDN
+	}
+	if p.Master.LoadBalancer == "" && p.Master.LoadBalancedFQDN != nil && *p.Master.LoadBalancedFQDN != "" {
+		p.Master.LoadBalancer = *p.Master.LoadBalancedFQDN + ":6443"
+	}
 	// only set if not already being set by the user
 	// package_manager moved from features: to add_ons: after KET v1.3.3
 	if p.Features != nil && p.Features.PackageManager != nil {
@@ -207,6 +216,7 @@ func setDefaults(p *Plan) {
 	if p.AddOns.PackageManager.Options.Helm.Namespace == "" {
 		p.AddOns.PackageManager.Options.Helm.Namespace = "kube-system"
 	}
+
 }
 
 var yamlKeyRE = regexp.MustCompile(`[^a-zA-Z]*([a-z_\-\/A-Z.\d]+)[ ]*:`)
@@ -476,6 +486,7 @@ var commentMap = map[string][]string{
 	"cluster.certificates":                               []string{"Generated certs configuration."},
 	"cluster.certificates.expiry":                        []string{"Self-signed certificate expiration period in hours; default is 2 years."},
 	"cluster.certificates.ca_expiry":                     []string{"CA certificate expiration period in hours; default is 2 years."},
+	"cluster.certificates.apiserver_cert_extra_sans":     []string{"Optional extra Subject Alternative Names (SANs) to use for the API Server serving certificate.", "Can be both IP addresses and DNS names."},
 	"cluster.ssh":                                        []string{"SSH configuration for cluster nodes."},
 	"cluster.ssh.user":                                   []string{"This user must be able to sudo without password."},
 	"cluster.ssh.ssh_key":                                []string{"Absolute path to the ssh private key we should use to manage nodes."},
@@ -514,8 +525,7 @@ var commentMap = map[string][]string{
 	"worker":                                             []string{"Worker nodes are the ones that will run your workloads on the cluster."},
 	"ingress":                                            []string{"Ingress nodes will run the ingress controllers."},
 	"storage":                                            []string{"Storage nodes will be used to create a distributed storage cluster that can", "be consumed by your workloads."},
-	"master.load_balanced_fqdn":                          []string{"If you have set up load balancing for master nodes, enter the FQDN name here.", "Otherwise, use the IP address of a single master node."},
-	"master.load_balanced_short_name":                    []string{"If you have set up load balancing for master nodes, enter the short name here.", "Otherwise, use the IP address of a single master node."},
+	"master.load_balancer":                               []string{"If you have set up load balancing for master nodes, enter the IP or DNS and Port.", "Otherwise, use the IP address of a single master node and port '6443'."},
 	"additional_files":                                   []string{"A set of files or directories to copy from the local machine to any of the nodes in the cluster."},
 }
 

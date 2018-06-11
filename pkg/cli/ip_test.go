@@ -30,7 +30,7 @@ func TestIPCmdEmptyAddress(t *testing.T) {
 		planFilename: "planFile",
 	}
 	if err := doIP(out, fp, opts); err == nil {
-		t.Errorf("ip did not return an error when LoadBalancedFQDN is empty")
+		t.Errorf("ip did not return an error when LoadBalancer is empty")
 	}
 }
 
@@ -39,7 +39,7 @@ func TestIPCmdValidAddress(t *testing.T) {
 	fp := &fakePlanner{
 		plan: &install.Plan{
 			Master: install.MasterNodeGroup{
-				LoadBalancedFQDN: "10.0.0.10",
+				LoadBalancer: "10.0.0.10:6443",
 			},
 		},
 		exists: true,
@@ -51,7 +51,7 @@ func TestIPCmdValidAddress(t *testing.T) {
 	if err != nil {
 		t.Errorf("ip returned an error %v", err)
 	}
-	if out.String() != fp.plan.Master.LoadBalancedFQDN+"\n" {
-		t.Errorf("ip returned %s, but expectetd %s", out.String(), fp.plan.Master.LoadBalancedFQDN)
+	if out.String() != fp.plan.Master.LoadBalancer+"\n" {
+		t.Errorf("ip returned %s, but expectetd %s", out.String(), fp.plan.Master.LoadBalancer)
 	}
 }

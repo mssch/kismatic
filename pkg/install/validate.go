@@ -512,12 +512,12 @@ func (mng *MasterNodeGroup) validate() (bool, []error) {
 		v.validateWithErrPrefix(fmt.Sprintf("Node #%d", i+1), &n)
 	}
 
-	if mng.LoadBalancedFQDN == "" {
-		v.addError(fmt.Errorf("Load balanced FQDN is required"))
-	}
-
-	if mng.LoadBalancedShortName == "" {
-		v.addError(fmt.Errorf("Load balanced shortname is required"))
+	if mng.LoadBalancer == "" {
+		v.addError(fmt.Errorf("Load Balancer IP or DNS is required"))
+	} else {
+		if _, _, err := net.SplitHostPort(mng.LoadBalancer); err != nil {
+			v.addError(fmt.Errorf("Could not read Load Balancer: %v", err))
+		}
 	}
 
 	return v.valid()

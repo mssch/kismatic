@@ -211,6 +211,9 @@ type CertsConfig struct {
 	// For example: "17520h" for 2 years.
 	// +required.
 	CAExpiry string `yaml:"ca_expiry"`
+	// Comma-separated list of Subject Alternative Names (SANs) to use for the API Server serving certificate.
+	// Can be both IP addresses and DNS names.
+	APIServerCertExtraSANs string `yaml:"apiserver_cert_extra_sans"`
 }
 
 // SSHConfig describes the cluster's SSH configuration for accessing nodes
@@ -586,14 +589,17 @@ type MasterNodeGroup struct {
 	// Number of master nodes that are part of the cluster.
 	// +required
 	ExpectedCount int `yaml:"expected_count"`
+	// The IP or DNS and Port of the load balancer that is fronting multiple master nodes.
+	// In the case where there no load balancer this can be set to the IP address of the master node with port '6443'.
+	LoadBalancer string `yaml:"load_balancer"`
 	// The FQDN of the load balancer that is fronting multiple master nodes.
 	// In the case where there is only one master node, this can be set to the IP address of the master node.
-	// +required
-	LoadBalancedFQDN string `yaml:"load_balanced_fqdn"`
+	// +deprecated
+	LoadBalancedFQDN *string `yaml:"load_balanced_fqdn,omitempty"`
 	// The short name of the load balancer that is fronting multiple master nodes.
 	// In the case where there is only one master node, this can be set to the IP address of the master nodes.
-	// +required
-	LoadBalancedShortName string `yaml:"load_balanced_short_name"`
+	// +deprecated
+	LoadBalancedShortName *string `yaml:"load_balanced_short_name,omitempty"`
 	// List of master nodes that are part of the cluster.
 	// +required
 	Nodes []Node
@@ -714,6 +720,17 @@ type StorageVolume struct {
 type SSHConnection struct {
 	SSHConfig *SSHConfig
 	Node      *Node
+}
+
+func (p *Plan) ClusterAddress() (string, string, error) {
+	if p.Master.LoadBalancer == "" {
+		return "", "", fmt.Errorf("master load balancer IP or DNS is not set in the plan file")
+	}
+	host, port, err := net.SplitHostPort(p.Master.LoadBalancer)
+	if err != nil {
+		return "", "", fmt.Errorf("could not split host:port from master load balancer %q: %v", p.Master.LoadBalancer, err)
+	}
+	return host, port, nil
 }
 
 // GetUniqueNodes returns a list of the unique nodes that are listed in the plan file.
@@ -950,11 +967,20 @@ func (node Node) certSpecs(plan Plan, ca *tls.CA) ([]certificateSpec, error) {
 		if node.InternalIP != "" {
 			san = append(san, node.InternalIP)
 		}
-		if !contains(plan.Master.LoadBalancedFQDN, san) {
-			san = append(san, plan.Master.LoadBalancedFQDN)
+		// include any additional SANs
+		sans := strings.Split(plan.Cluster.Certificates.APIServerCertExtraSANs, ",")
+		for _, s := range sans {
+			if s != "" {
+				san = append(san, strings.TrimSpace(s))
+			}
 		}
-		if !contains(plan.Master.LoadBalancedShortName, san) {
-			san = append(san, plan.Master.LoadBalancedShortName)
+		// include LoadBalancer if not already in the list
+		host, _, err := plan.ClusterAddress()
+		if err != nil {
+			return m, err
+		}
+		if !contains(host, san) {
+			san = append(san, host)
 		}
 		m = append(m, certificateSpec{
 			description:           fmt.Sprintf("%s API server", node.Host),

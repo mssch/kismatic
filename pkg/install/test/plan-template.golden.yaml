@@ -43,6 +43,10 @@ cluster:
     # CA certificate expiration period in hours; default is 2 years.
     ca_expiry: 17520h
 
+    # Optional extra Subject Alternative Names (SANs) to use for the API Server serving certificate.
+    # Can be both IP addresses and DNS names.
+    apiserver_cert_extra_sans: ""
+
   # SSH configuration for cluster nodes.
   ssh:
 
@@ -246,13 +250,9 @@ etcd:
 master:
   expected_count: 2
 
-  # If you have set up load balancing for master nodes, enter the FQDN name here.
-  # Otherwise, use the IP address of a single master node.
-  load_balanced_fqdn: ""
-
-  # If you have set up load balancing for master nodes, enter the short name here.
-  # Otherwise, use the IP address of a single master node.
-  load_balanced_short_name: ""
+  # If you have set up load balancing for master nodes, enter the IP or DNS and Port.
+  # Otherwise, use the IP address of a single master node and port '6443'.
+  load_balancer: ""
   nodes:
   - host: ""
     ip: ""

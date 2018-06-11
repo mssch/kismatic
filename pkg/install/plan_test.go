@@ -69,17 +69,26 @@ func TestWritePlanTemplate(t *testing.T) {
 }
 
 func TestReadWithDeprecated(t *testing.T) {
+	p := &Plan{}
 	pm := &DeprecatedPackageManager{
 		Enabled: true,
 	}
-	p := &Plan{}
 	p.Features = &Features{
 		PackageManager: pm,
 	}
 	b := false
 	p.Cluster.AllowPackageInstallation = &b
+	lb := "lb"
+	p.Master.LoadBalancedFQDN = &lb
+	p.Master.LoadBalancedShortName = &lb
 	readDeprecatedFields(p)
 
+	if p.Cluster.Certificates.APIServerCertExtraSANs != "lb" {
+		t.Errorf("Expected master.load_balanced_short_name to be added to apiserver_cert_extra_sans")
+	}
+	if p.Master.LoadBalancer != "lb:6443" {
+		t.Errorf("Expected master.load_balancer to be read from master.load_balanced_fqdn, instead got %q", p.Master.LoadBalancer)
+	}
 	// features.package_manager should be set to add_ons.package_manager
 	if p.AddOns.PackageManager.Disable || p.AddOns.PackageManager.Provider != "helm" {
 		t.Errorf("Expected add_ons.package_manager to be read from features.package_manager")

@@ -75,8 +75,7 @@ func validPlan() Plan {
 					IP:   "192.168.205.11",
 				},
 			},
-			LoadBalancedFQDN:      "test",
-			LoadBalancedShortName: "test",
+			LoadBalancer: "test:6443",
 		},
 		Worker: NodeGroup{
 			ExpectedCount: 1,
@@ -370,15 +369,9 @@ func TestValidatePlanNegativeSSHPort(t *testing.T) {
 	assertInvalidPlan(t, p)
 }
 
-func TestValidatePlanEmptyLoadBalancedFQDN(t *testing.T) {
+func TestValidatePlanEmptyLoadBalancer(t *testing.T) {
 	p := validPlan()
-	p.Master.LoadBalancedFQDN = ""
-	assertInvalidPlan(t, p)
-}
-
-func TestValidatePlanEmptyLoadBalancedShortName(t *testing.T) {
-	p := validPlan()
-	p.Master.LoadBalancedShortName = ""
+	p.Master.LoadBalancer = ""
 	assertInvalidPlan(t, p)
 }
 

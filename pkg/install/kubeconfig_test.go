@@ -29,7 +29,7 @@ func TestRegenerateKubeconfigPreviousDoesNotExist(t *testing.T) {
 
 	p := &Plan{}
 	p.Cluster.Name = "test"
-	p.Master.LoadBalancedFQDN = "test"
+	p.Master.LoadBalancer = "test:6443"
 
 	backup, err := RegenerateKubeconfig(p, tempDir)
 	if err != nil {
@@ -53,14 +53,14 @@ func TestRegenerateKubeconfigDifferentIsBackedUp(t *testing.T) {
 
 	p := &Plan{}
 	p.Cluster.Name = "old"
-	p.Master.LoadBalancedFQDN = "old"
+	p.Master.LoadBalancer = "old:6443"
 
 	if err := GenerateKubeconfig(p, path); err != nil {
 		t.Fatalf("error creating pre-existing kubeconfig file: %v", err)
 	}
 
 	p.Cluster.Name = "new"
-	p.Master.LoadBalancedFQDN = "new"
+	p.Master.LoadBalancer = "new:6443"
 	backup, err := RegenerateKubeconfig(p, path)
 	if err != nil {
 		t.Fatalf("unexected error: %v", err)
@@ -83,7 +83,7 @@ func TestRegenerateKubeconfigSameIsNotBackedUp(t *testing.T) {
 
 	p := &Plan{}
 	p.Cluster.Name = "old"
-	p.Master.LoadBalancedFQDN = "old"
+	p.Master.LoadBalancer = "old:6443"
 
 	if err := GenerateKubeconfig(p, path); err != nil {
 		t.Fatalf("error creating pre-existing kubeconfig file: %v", err)
