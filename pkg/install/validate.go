@@ -296,7 +296,7 @@ func (f *AddOns) validate() (bool, []error) {
 	v.validate(f.CNI)
 	v.validate(f.DNS)
 	v.validate(f.HeapsterMonitoring)
-	v.validate(f.Dashboard)
+	v.validate(&f.Dashboard)
 	v.validate(&f.PackageManager)
 	return v.valid()
 }
@@ -347,6 +347,9 @@ func (d *Dashboard) validate() (bool, []error) {
 	if d != nil && !d.Disable {
 		if !util.Contains(d.Options.ServiceType, serviceTypes()) {
 			v.addError(fmt.Errorf("Dashboard Service Type %q is not a valid option %v", d.Options.ServiceType, serviceTypes()))
+		}
+		if d.Options.NodePort != "" && d.Options.ServiceType != "NodePort" {
+			v.addError(fmt.Errorf("Dashboard Node Port option can only be used with Service Type 'NodePort'"))
 		}
 	}
 	return v.valid()

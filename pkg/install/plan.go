@@ -84,13 +84,6 @@ func readDeprecatedFields(p *Plan) {
 		p.Cluster.DisablePackageInstallation = !*p.Cluster.AllowPackageInstallation
 	}
 
-	// Only read the deprecated dashboard field if the new one is not set
-	if p.AddOns.DashboardDeprecated != nil && p.AddOns.Dashboard == nil {
-		p.AddOns.Dashboard = &Dashboard{
-			Disable: p.AddOns.DashboardDeprecated.Disable,
-		}
-	}
-
 	if p.DockerRegistry.Server == "" && p.DockerRegistry.Address != "" && p.DockerRegistry.Port != 0 {
 		p.DockerRegistry.Server = fmt.Sprintf("%s:%d", p.DockerRegistry.Address, p.DockerRegistry.Port)
 	}
@@ -205,10 +198,6 @@ func setDefaults(p *Plan) {
 
 	if p.Cluster.Certificates.CAExpiry == "" {
 		p.Cluster.Certificates.CAExpiry = defaultCAExpiry
-	}
-
-	if p.AddOns.Dashboard == nil {
-		p.AddOns.Dashboard = &Dashboard{}
 	}
 
 	if p.AddOns.Dashboard.Options.ServiceType == "" {
@@ -409,7 +398,7 @@ func buildPlanFromTemplateOptions(templateOpts PlanTemplateOptions) Plan {
 	p.AddOns.PackageManager.Provider = "helm"
 	p.AddOns.PackageManager.Options.Helm.Namespace = "kube-system"
 
-	p.AddOns.Dashboard = &Dashboard{}
+	// Dashboard
 	p.AddOns.Dashboard.Disable = false
 	p.AddOns.Dashboard.Options.ServiceType = "ClusterIP"
 

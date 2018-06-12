@@ -148,6 +148,7 @@ type ClusterCatalog struct {
 		Enabled bool
 		Options struct {
 			ServiceType string `yaml:"service_type"`
+			NodePort    string `yaml:"node_port"`
 		}
 	}
 

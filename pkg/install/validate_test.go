@@ -44,6 +44,11 @@ func validPlan() Plan {
 			DNS: DNS{
 				Provider: "kubedns",
 			},
+			Dashboard: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "ClusterIP",
+				},
+			},
 			HeapsterMonitoring: &HeapsterMonitoring{
 				Options: HeapsterOptions{
 					Heapster: Heapster{
@@ -1498,6 +1503,24 @@ func TestDashbordAddOn(t *testing.T) {
 				},
 			},
 			valid: false,
+		},
+		{
+			d: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "ClusterIP",
+					NodePort:    "32500",
+				},
+			},
+			valid: false,
+		},
+		{
+			d: Dashboard{
+				Options: DashboardOptions{
+					ServiceType: "NodePort",
+					NodePort:    "32500",
+				},
+			},
+			valid: true,
 		},
 	}
 	for i, test := range tests {

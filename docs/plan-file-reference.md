@@ -102,10 +102,7 @@
     * [disable](#add_onsdashboarddisable)
     * [options](#add_onsdashboardoptions)
       * [service_type](#add_onsdashboardoptionsservice_type)
-  * [dashbard _(deprecated)_](#add_onsdashbard-deprecated)
-    * [disable](#add_onsdashbarddisable)
-    * [options](#add_onsdashbardoptions)
-      * [service_type](#add_onsdashbardoptionsservice_type)
+      * [node_port](#add_onsdashboardoptionsnode_port)
   * [package_manager](#add_onspackage_manager)
     * [disable](#add_onspackage_managerdisable)
     * [provider](#add_onspackage_managerprovider)
@@ -1018,34 +1015,15 @@
 | **Default** | `ClusterIP` | 
 | **Options** |  `ClusterIP`, `NodePort`, `LoadBalancer`, `ExternalName`
 
-###  add_ons.dashbard _(deprecated)_
+###  add_ons.dashboard.options.node_port
 
- The Dashboard add-on configuration. 
-
-###  add_ons.dashbard.disable
-
- Whether the dashboard add-on should be disabled. When set to true, the Kubernetes Dashboard will not be installed on the cluster. 
-
-| | |
-|----------|-----------------|
-| **Kind** |  bool |
-| **Required** |  No |
-| **Default** | `false` | 
-
-###  add_ons.dashbard.options
-
- The options that can be configured for the Dashboard add-on 
-
-###  add_ons.dashbard.options.service_type
-
- Kubernetes service type of the Dashboard service. 
+ When using NodePort set the port to use. When left empty Kubernetes will allocate a random port. 
 
 | | |
 |----------|-----------------|
 | **Kind** |  string |
 | **Required** |  No |
-| **Default** | `ClusterIP` | 
-| **Options** |  `ClusterIP`, `NodePort`, `LoadBalancer`, `ExternalName`
+| **Default** | `''` | 
 
 ###  add_ons.package_manager
 
