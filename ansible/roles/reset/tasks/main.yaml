@@ -81,6 +81,14 @@
       - "/var/lib/docker"
       - "/var/lib/dockershim"
 
+  - name: remove docker logical volume
+    lvol:
+      state: absent
+      vg: docker
+      lv: thinpool
+      force: yes
+    when: "ansible_os_family == 'RedHat' and docker.storage.driver == 'devicemapper' and docker.storage.direct_lvm_block_device.path != ''"
+
   - name: remove gluster directories
     file:
       path: "{{ item }}"
@@ -96,3 +104,11 @@
       state: absent
     when: inventory_hostname in item.hosts or 'all' in item.hosts or item.hosts | intersect(group_names) | count > 0
     with_items: "{{ additional_files }}"
+
+  - name: flush iptables
+    iptables:
+      table: "{{ item }}"
+      flush: yes
+    with_items:
+      - filter
+      - nat
