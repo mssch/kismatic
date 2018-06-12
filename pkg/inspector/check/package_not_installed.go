@@ -36,7 +36,7 @@ func (c PackageNotInstalledCheck) Check() (bool, error) {
 		return true, nil
 	}
 	if c.AcceptablePackageVersion == "" {
-		return false, fmt.Errorf("package should not be installed")
+		return false, fmt.Errorf("uninstall package before retrying")
 	}
 	// check if the version installed is the acceptable version
 	acceptableVersionInstalled, err := c.PackageManager.IsInstalled(PackageQuery{Name: c.PackageQuery.Name, Version: c.AcceptablePackageVersion})
