@@ -963,7 +963,7 @@ func (node Node) certSpecs(plan Plan, ca *tls.CA) ([]certificateSpec, error) {
 		if err != nil {
 			return nil, err
 		}
-		san = append(san, node.Host, node.IP, "127.0.0.1")
+		san = append(san, node.Host, node.IP)
 		if node.InternalIP != "" {
 			san = append(san, node.InternalIP)
 		}
