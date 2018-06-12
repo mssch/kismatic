@@ -20,14 +20,20 @@ spec:
     k8s-app: heapster
   type: {{ heapster.options.heapster.service_type }}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: heapster
   namespace: kube-system
+  labels:
+    task: monitoring
+    k8s-app: heapster
   annotations:
     kismatic/version: "{{ kismatic_short_version }}"
 spec:
+  selector:
+    matchLabels:
+      k8s-app: heapster
   replicas: {{ heapster.options.heapster.replicas }}
   template:
     metadata:

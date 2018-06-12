@@ -1,7 +1,7 @@
 ---
   - hosts: master[0]
     any_errors_fatal: true
-    name: "{{ play_name | default('Configure Calico Network Policy') }}"
+    name: "{{ play_name | default('Start Calico Network Policy') }}"
     become: yes
     run_once: true
     vars_files:

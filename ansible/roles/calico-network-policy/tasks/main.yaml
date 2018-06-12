@@ -1,15 +1,14 @@
 ---
-  - name: create /etc/kubernetes/specs directory
+  - name: create {{ calico_dir }} directory
     file:
-      path: "{{ kubernetes_spec_dir }}"
+      path: "{{ calico_dir }}"
       state: directory
-  # TODO notify user of the port, ingress
-  - name: copy policy-controller.yaml to remote
+  - name: copy network-policy-controller.yaml to remote
     template:
-      src: policy-controller.yaml
-      dest: "{{ kubernetes_spec_dir }}/policy-controller.yaml"
+      src: network-policy-controller.yaml
+      dest: "{{ calico_dir }}/network-policy-controller.yaml"
   - name: start calico policy controller
-    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} apply -f {{ kubernetes_spec_dir }}/policy-controller.yaml
+    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} apply -f {{ calico_dir }}/network-policy-controller.yaml
     register: out
 
   - name: wait until policy controller pods are ready

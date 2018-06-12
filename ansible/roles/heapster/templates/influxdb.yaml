@@ -13,14 +13,20 @@ spec:
   selector:
     k8s-app: influxdb
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: heapster-influxdb
   namespace: kube-system
+  labels:
+    task: monitoring
+    k8s-app: influxdb
   annotations:
     kismatic/version: "{{ kismatic_short_version }}"
 spec:
+  selector:
+    matchLabels:
+      k8s-app: influxdb
   replicas: 1
   template:
     metadata:

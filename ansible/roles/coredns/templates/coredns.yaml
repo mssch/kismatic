@@ -4,7 +4,7 @@ metadata:
   name: coredns
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
@@ -22,7 +22,7 @@ rules:
   - list
   - watch
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   annotations:
@@ -59,7 +59,7 @@ data:
         cache 30
     }
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: coredns
@@ -106,6 +106,12 @@ spec:
         image: "{{ images.coredns }}"
         imagePullPolicy: IfNotPresent
         args: [ "-conf", "/etc/coredns/Corefile" ]
+        resources:
+          limits:
+            memory: 170Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns
@@ -116,6 +122,9 @@ spec:
         - containerPort: 53
           name: dns-tcp
           protocol: TCP
+       - containerPort: 9153
+         name: metrics
+         protocol: TCP
         livenessProbe:
           httpGet:
             path: /health
