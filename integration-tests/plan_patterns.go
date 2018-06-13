@@ -11,8 +11,7 @@ type PlanAWS struct {
 	Ingress                      []NodeDeets
 	Storage                      []NodeDeets
 	NFSVolume                    []NFSVolume
-	MasterNodeFQDN               string
-	MasterNodeShortName          string
+	LoadBalancer                 string
 	SSHUser                      string
 	SSHKeyFile                   string
 	HomeDirectory                string
@@ -147,8 +146,7 @@ master:
     internalip: {{.PrivateIP}}
     labels:
       com.integrationtest/master: true{{end}}
-  load_balanced_fqdn: {{.MasterNodeFQDN}}
-  load_balanced_short_name: {{.MasterNodeShortName}}
+  load_balancer: {{.LoadBalancer}}
 worker:
   expected_count: {{len .Worker}}
   nodes:{{range .Worker}}

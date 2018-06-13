@@ -58,15 +58,14 @@ type installOptions struct {
 func installKismaticMini(node NodeDeets, sshKey string) error {
 	sshUser := node.SSHUser
 	plan := PlanAWS{
-		Etcd:                []NodeDeets{node},
-		Master:              []NodeDeets{node},
-		Worker:              []NodeDeets{node},
-		Ingress:             []NodeDeets{node},
-		Storage:             []NodeDeets{node},
-		MasterNodeFQDN:      node.PublicIP,
-		MasterNodeShortName: node.PublicIP,
-		SSHKeyFile:          sshKey,
-		SSHUser:             sshUser,
+		Etcd:         []NodeDeets{node},
+		Master:       []NodeDeets{node},
+		Worker:       []NodeDeets{node},
+		Ingress:      []NodeDeets{node},
+		Storage:      []NodeDeets{node},
+		LoadBalancer: node.PublicIP + ":6443",
+		SSHKeyFile:   sshKey,
+		SSHUser:      sshUser,
 	}
 	return installKismaticWithPlan(plan)
 }
@@ -105,8 +104,7 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		Worker:                       nodes.worker,
 		Ingress:                      nodes.ingress,
 		Storage:                      nodes.storage,
-		MasterNodeFQDN:               masterDNS,
-		MasterNodeShortName:          masterDNS,
+		LoadBalancer:                 masterDNS + ":6443",
 		SSHKeyFile:                   sshKey,
 		SSHUser:                      sshUser,
 		DockerRegistryCAPath:         installOpts.dockerRegistryCAPath,
@@ -202,14 +200,13 @@ func installKismaticWithABadNode() {
 	sshKey, err := GetSSHKeyFile()
 	FailIfError(err, "Error getting SSH Key file")
 	plan := PlanAWS{
-		Etcd:                []NodeDeets{fakeNode},
-		Master:              []NodeDeets{fakeNode},
-		Worker:              []NodeDeets{fakeNode},
-		Ingress:             []NodeDeets{fakeNode},
-		MasterNodeFQDN:      "yep.nope",
-		MasterNodeShortName: "yep",
-		SSHUser:             "Billy Rubin",
-		SSHKeyFile:          sshKey,
+		Etcd:         []NodeDeets{fakeNode},
+		Master:       []NodeDeets{fakeNode},
+		Worker:       []NodeDeets{fakeNode},
+		Ingress:      []NodeDeets{fakeNode},
+		LoadBalancer: "yep.nope:6443",
+		SSHUser:      "Billy Rubin",
+		SSHKeyFile:   sshKey,
 	}
 	By("Writing plan file out to disk")
 	f, err := os.Create("kismatic-testing.yaml")
