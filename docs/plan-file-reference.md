@@ -209,7 +209,7 @@
 |----------|-----------------|
 | **Kind** |  string |
 | **Required** |  No |
-| **Default** | `v1.10.3` | 
+| **Default** | `v1.10.4` | 
 
 ###  cluster.admin_password _(deprecated)_
 
