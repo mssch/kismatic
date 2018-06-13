@@ -122,7 +122,7 @@ spec:
             # The location of the Kubernetes API.  Use the default Kubernetes
             # service for API access.
             - name: K8S_API
-              value: "{{ kubernetes_master_ip }}"
+              value: "https://kubernetes.default:443"
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
             # Choose which controllers to run.

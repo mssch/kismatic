@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"io"
 
@@ -44,17 +43,9 @@ func doIP(out io.Writer, planner install.Planner, opts *ipOpts) error {
 	if err != nil {
 		return fmt.Errorf("error reading plan file: %v", err)
 	}
-	address, err := getClusterAddress(*plan)
-	if err != nil {
-		return err
+	if plan.Master.LoadBalancer == "" {
+		return fmt.Errorf("master load balancer is not set in the plan file")
 	}
-	fmt.Fprintln(out, address)
+	fmt.Fprintln(out, plan.Master.LoadBalancer)
 	return nil
-}
-
-func getClusterAddress(plan install.Plan) (string, error) {
-	if plan.Master.LoadBalancedFQDN == "" {
-		return "", errors.New("Master load balanced FQDN is not set in the plan file")
-	}
-	return plan.Master.LoadBalancedFQDN, nil
 }

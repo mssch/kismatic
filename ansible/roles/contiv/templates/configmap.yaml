@@ -16,7 +16,7 @@ data:
     }
   config: |-
     {
-       "K8S_API_SERVER": "https://{{ kubernetes_load_balanced_fqdn }}:6443",
+       "K8S_API_SERVER": "https://{{ kubernetes_load_balancer }}:{{ kubernetes_load_balancer_port }}",
        "K8S_CA": "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
        "K8S_KEY": "",
        "K8S_CERT": "",

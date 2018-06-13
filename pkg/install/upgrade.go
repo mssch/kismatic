@@ -38,6 +38,13 @@ func (e masterNodeLoadBalancingErr) Error() string {
 		"Upgrading it may make the cluster unavailable"
 }
 
+type loadBalancerSplitError struct{}
+
+func (e loadBalancerSplitError) Error() string {
+	return "Could not determine cluster load balancer address. " +
+		"Upgrading it may make the cluster unavailable"
+}
+
 type ingressNotSupportedErr struct{}
 
 func (e ingressNotSupportedErr) Error() string {
@@ -146,8 +153,11 @@ func DetectNodeUpgradeSafety(plan Plan, node Node, kubeClient upgradeKubeInfoCli
 			if plan.Master.ExpectedCount < 2 {
 				errs = append(errs, masterNodeCountErr{})
 			}
-			lbFQDN := plan.Master.LoadBalancedFQDN
-			if lbFQDN == node.Host || lbFQDN == node.IP {
+			lb, _, err := plan.ClusterAddress()
+			if err != nil {
+				errs = append(errs, loadBalancerSplitError{})
+			}
+			if lb == node.Host || lb == node.IP {
 				errs = append(errs, masterNodeLoadBalancingErr{})
 			}
 		case "ingress":

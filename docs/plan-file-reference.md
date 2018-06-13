@@ -18,6 +18,7 @@
   * [certificates](#clustercertificates)
     * [expiry](#clustercertificatesexpiry)
     * [ca_expiry](#clustercertificatesca_expiry)
+    * [apiserver_cert_extra_sans](#clustercertificatesapiserver_cert_extra_sans)
   * [ssh](#clusterssh)
     * [user](#clustersshuser)
     * [ssh_key](#clustersshssh_key)
@@ -129,8 +130,9 @@
       * [option_overrides](#etcdnodeskubeletoption_overrides)
 * [master](#master)
   * [expected_count](#masterexpected_count)
-  * [load_balanced_fqdn](#masterload_balanced_fqdn)
-  * [load_balanced_short_name](#masterload_balanced_short_name)
+  * [load_balancer](#masterload_balancer)
+  * [load_balanced_fqdn _(deprecated)_](#masterload_balanced_fqdn-deprecated)
+  * [load_balanced_short_name _(deprecated)_](#masterload_balanced_short_name-deprecated)
   * [nodes](#masternodes)
     * [host](#masternodeshost)
     * [ip](#masternodesip)
@@ -346,6 +348,16 @@
 |----------|-----------------|
 | **Kind** |  string |
 | **Required** |  Yes |
+| **Default** | ` ` | 
+
+###  cluster.certificates.apiserver_cert_extra_sans
+
+ Comma-separated list of Subject Alternative Names (SANs) to use for the API Server serving certificate. Can be both IP addresses and DNS names. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
 | **Default** | ` ` | 
 
 ###  cluster.ssh
@@ -1221,24 +1233,34 @@
 | **Required** |  Yes |
 | **Default** | ` ` | 
 
-###  master.load_balanced_fqdn
+###  master.load_balancer
+
+ The IP or DNS and Port of the load balancer that is fronting multiple master nodes. In the case where there no load balancer this can be set to the IP address of the master node with port '6443'. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  No |
+| **Default** | ` ` | 
+
+###  master.load_balanced_fqdn _(deprecated)_
 
  The FQDN of the load balancer that is fronting multiple master nodes. In the case where there is only one master node, this can be set to the IP address of the master node. 
 
 | | |
 |----------|-----------------|
 | **Kind** |  string |
-| **Required** |  Yes |
+| **Required** |  No |
 | **Default** | ` ` | 
 
-###  master.load_balanced_short_name
+###  master.load_balanced_short_name _(deprecated)_
 
  The short name of the load balancer that is fronting multiple master nodes. In the case where there is only one master node, this can be set to the IP address of the master nodes. 
 
 | | |
 |----------|-----------------|
 | **Kind** |  string |
-| **Required** |  Yes |
+| **Required** |  No |
 | **Default** | ` ` | 
 
 ###  master.nodes

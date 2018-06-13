@@ -118,7 +118,7 @@ docker_certificates_group: root
 # kubernetes cluster config
 kubernetes_master_apiserver_count: "{{ groups['master'] | length }}"
 local_kubernetes_master_ip: https://127.0.0.1:{{ kubernetes_master_secure_port }}
-kubernetes_master_ip: https://{{ kubernetes_load_balanced_fqdn }}:{{ kubernetes_master_secure_port }}
+kubernetes_master_ip: https://{{ kubernetes_load_balancer }}:{{ kubernetes_load_balancer_port }}
 kubernetes_schedulable: "{% if 'worker' in group_names %}true{% else %}false{% endif %}"
 # cloud provider
 cloud_config: "{% if cloud_config_local is defined and cloud_config_local != '' %}{{ kubernetes_install_dir }}/cloud-provider.conf{% else %}{% endif %}"

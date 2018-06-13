@@ -90,8 +90,7 @@ func getPlan() *Plan {
 					InternalIP: "88.88.88.88",
 				},
 			},
-			LoadBalancedFQDN:      "someFQDN",
-			LoadBalancedShortName: "someShortName",
+			LoadBalancer: "someFQDN:6443",
 		},
 		Worker: NodeGroup{
 			Nodes: []Node{
@@ -421,8 +420,12 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 			t.Errorf("expected common name: %q, but got %q", masterNode.Host, cert.Subject.CommonName)
 		}
 
-		// DNS names should contain node's hostname and load balanced names
-		for _, expected := range []string{masterNode.Host, p.Master.LoadBalancedFQDN, p.Master.LoadBalancedShortName} {
+		// DNS names should contain node's hostname and load balanced name
+		lb, _, err := p.ClusterAddress()
+		if err != nil {
+			t.Errorf("could not get load balancer: %v", err)
+		}
+		for _, expected := range []string{masterNode.Host, lb} {
 			var found bool
 			for _, n := range cert.DNSNames {
 				if n == expected {
@@ -431,7 +434,7 @@ func TestGenerateClusterCertificatesValidateCertificateInformation(t *testing.T)
 				}
 			}
 			if !found {
-				t.Errorf("did not find name %q in the certificates DNS names: %v", masterNode.Host, cert.DNSNames)
+				t.Errorf("did not find name %q in the certificates DNS names: %v", expected, cert.DNSNames)
 			}
 		}
 
@@ -611,24 +614,13 @@ func TestLoadBalancedNamesNotInEtcdCert(t *testing.T) {
 
 	found := false
 	for _, name := range cert.DNSNames {
-		if name == p.Master.LoadBalancedFQDN {
+		if name == p.Master.LoadBalancer {
 			found = true
 			break
 		}
 	}
 	if found {
 		t.Errorf("load balanced FQDN was found in etcd certificate")
-	}
-
-	found = false
-	for _, name := range cert.DNSNames {
-		if name == p.Master.LoadBalancedShortName {
-			found = true
-			break
-		}
-	}
-	if found {
-		t.Errorf("load balanced name was found in etcd certificate")
 	}
 }
 

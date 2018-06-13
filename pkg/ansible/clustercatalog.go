@@ -23,7 +23,8 @@ type ClusterCatalog struct {
 	EnablePackageInstallation bool   `yaml:"allow_package_installation"`
 	DisconnectedInstallation  bool   `yaml:"disconnected_installation"`
 	KuberangPath              string `yaml:"kuberang_path"`
-	LoadBalancedFQDN          string `yaml:"kubernetes_load_balanced_fqdn"`
+	LoadBalancer              string `yaml:"kubernetes_load_balancer"`
+	LoadBalancerPort          string `yaml:"kubernetes_load_balancer_port"`
 
 	APIServerOptions             map[string]string `yaml:"kubernetes_api_server_option_overrides"`
 	KubeControllerManagerOptions map[string]string `yaml:"kube_controller_manager_option_overrides"`

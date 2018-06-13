@@ -52,7 +52,11 @@ users:
 // GenerateKubeconfig generate a kubeconfig file for a specific user
 func GenerateKubeconfig(p *Plan, generatedAssetsDir string) error {
 	user := "admin"
-	server := "https://" + p.Master.LoadBalancedFQDN + ":6443"
+	host, port, err := p.ClusterAddress()
+	if err != nil {
+		return err
+	}
+	server := "https://" + host + ":" + port
 	cluster := p.Cluster.Name
 	context := p.Cluster.Name + "-" + user
 
@@ -81,7 +85,11 @@ func GenerateKubeconfig(p *Plan, generatedAssetsDir string) error {
 
 func GenerateDashboardAdminKubeconfig(base64token string, p *Plan, generatedAssetsDir string) error {
 	user := "admin"
-	server := "https://" + p.Master.LoadBalancedFQDN + ":6443"
+	host, port, err := p.ClusterAddress()
+	if err != nil {
+		return err
+	}
+	server := "https://" + host + ":" + port
 	cluster := p.Cluster.Name
 	context := p.Cluster.Name + "-" + "dashboard-admin"
 
