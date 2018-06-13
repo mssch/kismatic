@@ -20,7 +20,7 @@ var _ = Describe("hosts file modification feature", func() {
 				By("Setting the hostnames to be different than the actual ones")
 
 				// test hostname feature and unusual hostname formats
-				loadBalancedFQDN := nodes.master[0].PublicIP
+				loadBalancer := nodes.master[0].PublicIP + ":6443"
 				nodes.etcd[0].Hostname = "etcd01"
 				nodes.master[0].Hostname = "MASTER01"
 				nodes.worker[0].Hostname = "WORKER01"
@@ -34,16 +34,15 @@ var _ = Describe("hosts file modification feature", func() {
 				}
 
 				plan := PlanAWS{
-					Etcd:                nodes.etcd,
-					Master:              nodes.master,
-					MasterNodeFQDN:      loadBalancedFQDN,
-					MasterNodeShortName: loadBalancedFQDN,
-					Worker:              nodes.worker[0:3],
-					Ingress:             nodes.worker[0:3],
-					Storage:             nodes.worker[0:3],
-					SSHKeyFile:          sshKey,
-					SSHUser:             nodes.master[0].SSHUser,
-					ModifyHostsFiles:    true,
+					Etcd:             nodes.etcd,
+					Master:           nodes.master,
+					LoadBalancer:     loadBalancer + ":6443",
+					Worker:           nodes.worker[0:3],
+					Ingress:          nodes.worker[0:3],
+					Storage:          nodes.worker[0:3],
+					SSHKeyFile:       sshKey,
+					SSHUser:          nodes.master[0].SSHUser,
+					ModifyHostsFiles: true,
 				}
 
 				By("Installing kismatic with bogus hostnames that are added to hosts files")
