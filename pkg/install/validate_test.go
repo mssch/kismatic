@@ -9,7 +9,7 @@ func validPlan() Plan {
 	return Plan{
 		Cluster: Cluster{
 			Name:    "test",
-			Version: "v1.10.3",
+			Version: "v1.10.4",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -134,7 +134,7 @@ func TestClusterVersion(t *testing.T) {
 	}{
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.10.3",
+			Version: "v1.10.4",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -153,7 +153,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.10.3",
+			Version: "v1.10.4",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
@@ -191,7 +191,7 @@ func TestClusterVersion(t *testing.T) {
 		},
 		{c: Cluster{
 			Name:    "test",
-			Version: "v1.10.300",
+			Version: "v1.10.400",
 			Networking: NetworkConfig{
 				Type:             "overlay",
 				PodCIDRBlock:     "172.16.0.0/16",
