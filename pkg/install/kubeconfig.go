@@ -2,7 +2,6 @@ package install
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -13,7 +12,6 @@ import (
 )
 
 const kubeconfigFilename = "kubeconfig"
-const dashboardAdminKubeconfigFilename = "dashboard-admin-kubeconfig"
 
 // ConfigOptions sds
 type ConfigOptions struct {
@@ -83,7 +81,7 @@ func GenerateKubeconfig(p *Plan, generatedAssetsDir string) error {
 	return writeTemplate(configOptions, filepath.Join(generatedAssetsDir, kubeconfigFilename))
 }
 
-func GenerateDashboardAdminKubeconfig(base64token string, p *Plan, generatedAssetsDir string) error {
+func GenerateDashboardAdminKubeconfig(token string, p *Plan, generatedAssetsDir string, file string) error {
 	user := "admin"
 	host, port, err := p.ClusterAddress()
 	if err != nil {
@@ -101,13 +99,9 @@ func GenerateDashboardAdminKubeconfig(base64token string, p *Plan, generatedAsse
 		return fmt.Errorf("error reading ca file for kubeconfig: %v", err)
 	}
 
-	token, err := base64.StdEncoding.DecodeString(base64token)
-	if err != nil {
-		return fmt.Errorf("error decoding token: %v", err)
-	}
 	configOptions := ConfigOptions{caEncoded, server, cluster, user, context, "", "", string(token)}
 
-	return writeTemplate(configOptions, filepath.Join(generatedAssetsDir, dashboardAdminKubeconfigFilename))
+	return writeTemplate(configOptions, file)
 }
 
 func writeTemplate(conf ConfigOptions, file string) error {
