@@ -586,12 +586,13 @@ type DeprecatedPackageManager struct {
 
 // MasterNodeGroup is the collection of master nodes
 type MasterNodeGroup struct {
+	// The IP or DNS and Port of the load balancer that is fronting multiple master nodes.
+	// In the case where there no load balancer this can be set to the IP address of the master node with port '6443'.
+	// +required
+	LoadBalancer string `yaml:"load_balancer"`
 	// Number of master nodes that are part of the cluster.
 	// +required
 	ExpectedCount int `yaml:"expected_count"`
-	// The IP or DNS and Port of the load balancer that is fronting multiple master nodes.
-	// In the case where there no load balancer this can be set to the IP address of the master node with port '6443'.
-	LoadBalancer string `yaml:"load_balancer"`
 	// The FQDN of the load balancer that is fronting multiple master nodes.
 	// In the case where there is only one master node, this can be set to the IP address of the master node.
 	// +deprecated

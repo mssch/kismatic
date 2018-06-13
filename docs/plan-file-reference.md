@@ -129,8 +129,8 @@
     * [kubelet](#etcdnodeskubelet)
       * [option_overrides](#etcdnodeskubeletoption_overrides)
 * [master](#master)
-  * [expected_count](#masterexpected_count)
   * [load_balancer](#masterload_balancer)
+  * [expected_count](#masterexpected_count)
   * [load_balanced_fqdn _(deprecated)_](#masterload_balanced_fqdn-deprecated)
   * [load_balanced_short_name _(deprecated)_](#masterload_balanced_short_name-deprecated)
   * [nodes](#masternodes)
@@ -1223,6 +1223,16 @@
 
  Master nodes of the cluster 
 
+###  master.load_balancer
+
+ The IP or DNS and Port of the load balancer that is fronting multiple master nodes. In the case where there no load balancer this can be set to the IP address of the master node with port '6443'. 
+
+| | |
+|----------|-----------------|
+| **Kind** |  string |
+| **Required** |  Yes |
+| **Default** | ` ` | 
+
 ###  master.expected_count
 
  Number of master nodes that are part of the cluster. 
@@ -1231,16 +1241,6 @@
 |----------|-----------------|
 | **Kind** |  int |
 | **Required** |  Yes |
-| **Default** | ` ` | 
-
-###  master.load_balancer
-
- The IP or DNS and Port of the load balancer that is fronting multiple master nodes. In the case where there no load balancer this can be set to the IP address of the master node with port '6443'. 
-
-| | |
-|----------|-----------------|
-| **Kind** |  string |
-| **Required** |  No |
 | **Default** | ` ` | 
 
 ###  master.load_balanced_fqdn _(deprecated)_

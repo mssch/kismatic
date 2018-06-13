@@ -248,11 +248,11 @@ etcd:
 
 # Master nodes are the ones that run the Kubernetes control plane components.
 master:
-  expected_count: 2
 
   # If you have set up load balancing for master nodes, enter the IP or DNS and Port.
   # Otherwise, use the IP address of a single master node and port '6443'.
   load_balancer: ""
+  expected_count: 2
   nodes:
   - host: ""
     ip: ""

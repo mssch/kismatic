@@ -139,6 +139,7 @@ etcd:
     ip: {{.PublicIP}}
     internalip: {{.PrivateIP}}{{end}}
 master:
+  load_balancer: {{.LoadBalancer}}
   expected_count: {{len .Master}}
   nodes:{{range .Master}}
   - host: {{.Hostname}}
@@ -146,7 +147,6 @@ master:
     internalip: {{.PrivateIP}}
     labels:
       com.integrationtest/master: true{{end}}
-  load_balancer: {{.LoadBalancer}}
 worker:
   expected_count: {{len .Worker}}
   nodes:{{range .Worker}}
