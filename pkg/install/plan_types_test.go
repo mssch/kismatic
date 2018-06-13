@@ -62,7 +62,7 @@ func TestClusterAddress(t *testing.T) {
 	for _, test := range tests {
 		host, port, err := test.plan.ClusterAddress()
 		if test.valid != (err == nil) {
-			t.Fatalf("expected err to be %q, instead got %q", test.valid, err)
+			t.Fatalf("expected err to be %t, instead error %v", test.valid, err)
 		}
 		if test.host != host {
 			t.Errorf("expected host to be %q, instead got %q", test.host, host)

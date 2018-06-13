@@ -289,7 +289,7 @@ func TestClusterVersion(t *testing.T) {
 	}
 	for n, test := range tests {
 		if valid, _ := test.c.validate(); valid != test.valid {
-			t.Errorf("%d: expected %v with %+v, but got %v - %q", n, test.valid, test.c, !test.valid)
+			t.Errorf("%d: expected %t with %+v, but got %t", n, test.valid, test.c, valid)
 		}
 	}
 }

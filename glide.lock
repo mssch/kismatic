@@ -1,8 +1,8 @@
-hash: f1e1c7515c49bc69417f943bf7c8dc863edf1b0936bd768db5284244e97ca0d5
-updated: 2017-12-20T10:43:52.814734-05:00
+hash: 1528f9088e4eabcc0f091554f5cdb33d5dac505b674218fd8276b0f8e61daf44
+updated: 2018-06-13T19:53:34.8503483Z
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 40f45e34986ba617a372d1590de273a0ca84a53d
+  version: d6a1221343a35a6e32c5faafdfd0d61d075d94d1
   subpackages:
   - aws
   - aws/awserr
@@ -14,15 +14,20 @@ imports:
   - aws/credentials/ec2rolecreds
   - aws/credentials/endpointcreds
   - aws/credentials/stscreds
+  - aws/csm
   - aws/defaults
   - aws/ec2metadata
   - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
+  - internal/sdkio
+  - internal/sdkrand
   - internal/shareddefaults
   - private/protocol
   - private/protocol/ec2query
+  - private/protocol/eventstream
+  - private/protocol/eventstream/eventstreamapi
   - private/protocol/json/jsonutil
   - private/protocol/jsonrpc
   - private/protocol/query
@@ -39,7 +44,7 @@ imports:
 - name: github.com/blang/semver
   version: 2ee87856327ba09384cabd113bc6b5d174e9ec0f
 - name: github.com/cloudflare/cfssl
-  version: db0d0650b6496bfe8061ec56a92edd32d8e75c30
+  version: 5d63dbd981b5c408effbb58c442d54761ff94fbd
   subpackages:
   - api
   - api/client
@@ -62,39 +67,45 @@ imports:
   - signer/remote
   - signer/universal
 - name: github.com/cpuguy83/go-md2man
-  version: 1d903dcb749992f3741d744c0f8376b4bd7eb3e1
+  version: 20f5889cbdc3c73dbd2862796665e7c465ade7d1
   subpackages:
   - md2man
 - name: github.com/fatih/color
   version: 87d4004f2ab62d0d255e0a38f1680aa534549fe3
 - name: github.com/go-ini/ini
-  version: 3d73f4b845efdf9989fffd4b4e562727744a34ba
-- name: github.com/google/certificate-transparency
-  version: 6e5648d13b43cdde25cc8274b87675230ffefbd6
-  repo: https://github.com/google/certificate-transparency
+  version: 06f5f3d67269ccec1fe5fe4134ba6e982984f7f5
+- name: github.com/golang/protobuf
+  version: 5831880292e721c76b58a16ecc60adc27d8e6355
   subpackages:
-  - go
-  - go/asn1
-  - go/client
-  - go/x509
-  - go/x509/pkix
+  - proto
+  - ptypes
+  - ptypes/any
+  - ptypes/duration
+  - ptypes/timestamp
+- name: github.com/google/certificate-transparency-go
+  version: b3614d4295036ea2b5e81eb800d17584a8a6992e
+  subpackages:
+  - asn1
+  - client
+  - client/configpb
+  - jsonclient
+  - tls
+  - x509
+  - x509/pkix
 - name: github.com/gosuri/uilive
   version: ac356e6e42cd31fcef8e6aec13ae9ed6fe87713e
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+  version: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
 - name: github.com/mattn/go-colorable
-  version: 3fa8c76f9daed4067e4a806fb7e4dc86455c6d6a
+  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
 - name: github.com/mattn/go-isatty
   version: 0360b2af4f38e8d38c7fce2a9f4e702702d73a39
 - name: github.com/mitchellh/go-homedir
-  version: b8bc1bf767474819792c23f32d8286a45736f1c6
-- name: github.com/mreiferson/go-httpclient
-  version: 63fe23f7434723dc904c901043af07931f293c47
-  repo: https://github.com/mreiferson/go-httpclient
+  version: 3864e76763d94a6df2f9960b16a20a33da9f9a66
 - name: github.com/onsi/ginkgo
-  version: 8382b23d18dbaaff8e5f7e83784c53ebb8ec2f47
+  version: c73579c58881b5ba90d3b08f6ac59cb1c909d6dd
   subpackages:
   - config
   - internal/codelocation
@@ -114,7 +125,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: c893efa28eb45626cdaa76c9f653b62488858837
+  version: 9be84105672ba4433a3b61f1b4d7f9ff8b022293
   subpackages:
   - format
   - internal/assertion
@@ -128,37 +139,46 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/packethost/packngo
-  version: 8ff1de745a8a4fdc5323ffd9ac2bc55195ff671e
+  version: db5b2fb99ee303eba5699cb0f9d74aeba8b39b73
 - name: github.com/pkg/browser
   version: c90ca0c84f15f81c982e32665bffd8d7aac8f097
 - name: github.com/russross/blackfriday
-  version: 067529f716f4c3f5e37c8c95ddd59df1007290ae
+  version: 11635eb403ff09dbc3a6b5a007ab5ab09151c229
 - name: github.com/spf13/cobra
-  version: 34594c771f2c18301dc152640ad40ece28795373
+  version: 1e58aa3361fd650121dceeedc399e7189c05674a
   subpackages:
   - cobra
   - doc
 - name: github.com/spf13/pflag
-  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+  version: 3ebe029320b2676d667ae88da602a5f854788a8a
 - name: golang.org/x/crypto
-  version: 1f22c0103821b9390939b6776727195525381532
+  version: 8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9
   subpackages:
+  - cryptobyte
+  - cryptobyte/asn1
   - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - internal/chacha20
+  - ocsp
   - pkcs12
   - pkcs12/internal/rc2
+  - poly1305
   - ssh
 - name: golang.org/x/net
-  version: ab5485076ff3407ad2d02db054635913f017b0ed
+  version: db08ff08e8622530d9ed3a0e8ac279f6d4c02196
   subpackages:
+  - context
+  - context/ctxhttp
   - html
   - html/atom
   - html/charset
 - name: golang.org/x/sys
-  version: 85d149506305e7abe0aca5ad5ac4b1fce82ccd11
+  version: 56ede360ec1c541828fb88741b3f1049406d28f5
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 836efe42bb4aa16aaa17b9c155d8813d336ed720
+  version: 5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877
   subpackages:
   - encoding
   - encoding/charmap
@@ -170,11 +190,13 @@ imports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
+  - internal/language
+  - internal/language/compact
   - internal/tag
   - internal/utf8internal
   - language
   - runes
   - transform
 - name: gopkg.in/yaml.v2
-  version: 25c4ec802a7d637f88d584ab26798e94ad14c13b
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 testImports: []
