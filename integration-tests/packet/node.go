@@ -39,7 +39,7 @@ type Node struct {
 // CreateNode creates a node in packet with the given hostname and OS
 func (c Client) CreateNode(hostname string, os OS, _ map[string]string) (*Node, error) {
 	device := &packngo.DeviceCreateRequest{
-		HostName:     hostname,
+		Hostname:     hostname,
 		OS:           string(os),
 		Tags:         []string{"integration-test"},
 		ProjectID:    c.ProjectID,
@@ -62,7 +62,7 @@ func (c *Client) getAPIClient() *packngo.Client {
 	if c.apiClient != nil {
 		return c.apiClient
 	}
-	c.apiClient = packngo.NewClient("", c.Token, http.DefaultClient)
+	c.apiClient = packngo.NewClientWithAuth(c.Token, "", http.DefaultClient)
 	return c.apiClient
 }
 
