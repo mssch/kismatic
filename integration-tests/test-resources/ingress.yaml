@@ -45,6 +45,9 @@ kind: Deployment
 metadata:
   name: echoserver-tls
 spec:
+  selector:
+    matchLabels:
+      name: echoserver-tls
   replicas: 1
   template:
     metadata:
