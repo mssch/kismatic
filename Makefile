@@ -44,7 +44,7 @@ PROVISIONER_VERSION = v1.13.0
 KUBERANG_VERSION = v1.3.0
 GO_VERSION = 1.10.3
 KUBECTL_VERSION = v1.10.4
-HELM_VERSION = v2.9.0
+HELM_VERSION = v2.9.1
 
 install: 
 	@echo Building kismatic in container
