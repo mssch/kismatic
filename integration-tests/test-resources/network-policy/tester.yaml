@@ -22,7 +22,12 @@ kind: Deployment
 metadata:
   name: network-policy-echoserver
   namespace: policy-tester
+  labels:
+    app: network-policy-echoserver
 spec:
+  selector:
+    matchLabels:
+      app: network-policy-echoserver
   replicas: 1
   template:
     metadata:
