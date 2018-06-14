@@ -85,7 +85,7 @@ func ValidateKismaticMini(node NodeDeets, user, sshKey string) PlanAWS {
 		Etcd:         []NodeDeets{node},
 		Master:       []NodeDeets{node},
 		Worker:       []NodeDeets{node},
-		LoadBalancer: node.Hostname + ":6443",
+		LoadBalancer: node.Hostname,
 		SSHUser:      user,
 		SSHKeyFile:   sshKey,
 	}
@@ -120,7 +120,7 @@ func ValidateKismaticMiniDenyPkgInstallation(node NodeDeets, sshUser, sshKey str
 		Worker:       []NodeDeets{node},
 		Ingress:      []NodeDeets{node},
 		Storage:      []NodeDeets{node},
-		LoadBalancer: node.Hostname + ":6443",
+		LoadBalancer: node.Hostname,
 		SSHUser:      sshUser,
 		SSHKeyFile:   sshKey,
 	}
@@ -150,7 +150,7 @@ func ValidateKismaticMiniWithBadSSH(node NodeDeets, user, sshKey string) PlanAWS
 		Etcd:         []NodeDeets{node},
 		Master:       []NodeDeets{node},
 		Worker:       []NodeDeets{node},
-		LoadBalancer: node.Hostname + ":6443",
+		LoadBalancer: node.Hostname,
 		SSHUser:      user,
 		SSHKeyFile:   sshKey,
 	}

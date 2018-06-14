@@ -139,7 +139,9 @@ etcd:
     ip: {{.PublicIP}}
     internalip: {{.PrivateIP}}{{end}}
 master:
-  load_balancer: {{.LoadBalancer}}
+  load_balancer: {{.LoadBalancer}}:6443
+  load_balanced_fqdn: {{.LoadBalancer}} # TODO remove
+  load_balanced_short_name: {{.LoadBalancer}}
   expected_count: {{len .Master}}
   nodes:{{range .Master}}
   - host: {{.Hostname}}

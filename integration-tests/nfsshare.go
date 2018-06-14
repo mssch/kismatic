@@ -12,7 +12,7 @@ func testNFSShare(aws infrastructureProvisioner, distro linuxDistro) {
 			Etcd:         []NodeDeets{node},
 			Master:       []NodeDeets{node},
 			Worker:       []NodeDeets{node},
-			LoadBalancer: node.PublicIP + ":6443",
+			LoadBalancer: node.PublicIP,
 			SSHKeyFile:   sshKey,
 			SSHUser:      node.SSHUser,
 			NFSVolume: []NFSVolume{

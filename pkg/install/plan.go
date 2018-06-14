@@ -72,14 +72,18 @@ func (fp *FilePlanner) Read() (*Plan, error) {
 }
 
 func readDeprecatedFields(p *Plan) {
-	if p.Master.LoadBalancedShortName != nil && *p.Master.LoadBalancedFQDN != "" {
-		if p.Cluster.Certificates.APIServerCertExtraSANs != "" {
-			p.Cluster.Certificates.APIServerCertExtraSANs = p.Cluster.Certificates.APIServerCertExtraSANs + ","
+	// set load_balancer from fqdn:6443
+	// set extra_sans from short_name
+	if p.Master.LoadBalancer == "" {
+		if p.Master.LoadBalancedShortName != nil && *p.Master.LoadBalancedShortName != "" {
+			if p.Cluster.Certificates.APIServerCertExtraSANs != "" {
+				p.Cluster.Certificates.APIServerCertExtraSANs = p.Cluster.Certificates.APIServerCertExtraSANs + ","
+			}
+			p.Cluster.Certificates.APIServerCertExtraSANs = p.Cluster.Certificates.APIServerCertExtraSANs + *p.Master.LoadBalancedFQDN
 		}
-		p.Cluster.Certificates.APIServerCertExtraSANs = p.Cluster.Certificates.APIServerCertExtraSANs + *p.Master.LoadBalancedFQDN
-	}
-	if p.Master.LoadBalancer == "" && p.Master.LoadBalancedFQDN != nil && *p.Master.LoadBalancedFQDN != "" {
-		p.Master.LoadBalancer = *p.Master.LoadBalancedFQDN + ":6443"
+		if p.Master.LoadBalancedFQDN != nil && *p.Master.LoadBalancedFQDN != "" {
+			p.Master.LoadBalancer = *p.Master.LoadBalancedFQDN + ":6443"
+		}
 	}
 	// only set if not already being set by the user
 	// package_manager moved from features: to add_ons: after KET v1.3.3

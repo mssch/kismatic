@@ -63,7 +63,7 @@ func installKismaticMini(node NodeDeets, sshKey string) error {
 		Worker:       []NodeDeets{node},
 		Ingress:      []NodeDeets{node},
 		Storage:      []NodeDeets{node},
-		LoadBalancer: node.PublicIP + ":6443",
+		LoadBalancer: node.PublicIP,
 		SSHKeyFile:   sshKey,
 		SSHUser:      sshUser,
 	}
@@ -104,7 +104,7 @@ func buildPlan(nodes provisionedNodes, installOpts installOptions, sshKey string
 		Worker:                       nodes.worker,
 		Ingress:                      nodes.ingress,
 		Storage:                      nodes.storage,
-		LoadBalancer:                 masterDNS + ":6443",
+		LoadBalancer:                 masterDNS,
 		SSHKeyFile:                   sshKey,
 		SSHUser:                      sshUser,
 		DockerRegistryCAPath:         installOpts.dockerRegistryCAPath,
@@ -204,7 +204,7 @@ func installKismaticWithABadNode() {
 		Master:       []NodeDeets{fakeNode},
 		Worker:       []NodeDeets{fakeNode},
 		Ingress:      []NodeDeets{fakeNode},
-		LoadBalancer: "yep.nope:6443",
+		LoadBalancer: "yep.nope",
 		SSHUser:      "Billy Rubin",
 		SSHKeyFile:   sshKey,
 	}

@@ -20,7 +20,7 @@ var _ = Describe("hosts file modification feature", func() {
 				By("Setting the hostnames to be different than the actual ones")
 
 				// test hostname feature and unusual hostname formats
-				loadBalancer := nodes.master[0].PublicIP + ":6443"
+				loadBalancer := nodes.master[0].PublicIP
 				nodes.etcd[0].Hostname = "etcd01"
 				nodes.master[0].Hostname = "MASTER01"
 				nodes.worker[0].Hostname = "WORKER01"
@@ -36,7 +36,7 @@ var _ = Describe("hosts file modification feature", func() {
 				plan := PlanAWS{
 					Etcd:             nodes.etcd,
 					Master:           nodes.master,
-					LoadBalancer:     loadBalancer + ":6443",
+					LoadBalancer:     loadBalancer,
 					Worker:           nodes.worker[0:3],
 					Ingress:          nodes.worker[0:3],
 					Storage:          nodes.worker[0:3],
