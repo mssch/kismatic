@@ -130,7 +130,7 @@ func standupGlusterCluster(planFile *os.File, nodes []NodeDeets, sshKey string, 
 		Master:       nodes,
 		Worker:       nodes,
 		Storage:      nodes,
-		LoadBalancer: nodes[0].Hostname + ":6443",
+		LoadBalancer: nodes[0].Hostname,
 		SSHKeyFile:   sshKey,
 		SSHUser:      nodes[0].SSHUser,
 	}
