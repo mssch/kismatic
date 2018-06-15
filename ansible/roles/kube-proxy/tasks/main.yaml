@@ -26,7 +26,7 @@
     run_once: true
 
   - name: delete kube-proxy pod running on this node
-    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} delete pod {{ pod_name.stdout }} -n kube-system --now
+    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} delete pod {{ pod_name.stdout }} -n kube-system --now --ignore-not-found=true
     when: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
 
     # wait for pod to shutdown

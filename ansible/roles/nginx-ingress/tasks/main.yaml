@@ -26,7 +26,7 @@
     command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} apply -f {{ kubernetes_spec_dir }}/default-backend.yaml
 
   - name: delete default-backend pod running on this node
-    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} delete pod {{ pod_name.stdout }} -n kube-system --now
+    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} delete pod {{ pod_name.stdout }} -n kube-system --now --ignore-not-found=true
     when: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
 
   - name: copy nginx-ingress-controller.yaml to remote
@@ -44,7 +44,7 @@
     register: out
 
   - name: delete ingress pod running on this node
-    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} delete pod {{ pod_name.stdout }} -n kube-system --now
+    command: kubectl --kubeconfig {{ kubernetes_kubeconfig.kubectl }} delete pod {{ pod_name.stdout }} -n kube-system --now --ignore-not-found=true
     when: pod_name is defined and pod_name.stdout is defined and pod_name.stdout != ""
 
   - block:
