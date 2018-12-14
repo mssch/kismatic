@@ -265,7 +265,7 @@ func uploadKismaticLogs(path string) {
 	}
 	s3path = s3path + fileInfo.Name()
 
-	s3bucket := "kismatic-integration-tests"
+	s3bucket := "kismatic-ci"
 	downloadPath := fmt.Sprintf("https://console.aws.amazon.com/s3/buckets/%s%s", s3bucket, s3path)
 	fmt.Println("Uploading logs to S3. Get them at", downloadPath)
 	params := &s3.PutObjectInput{
