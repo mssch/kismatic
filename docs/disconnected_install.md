@@ -95,11 +95,11 @@ EOF'
 sudo bash -c 'cat <<EOF > /etc/yum.repos.d/gluster.repo
 [gluster]
 name=Gluster
-baseurl=http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.8/
+baseurl=http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.13/
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
-gpgkey=https://download.gluster.org/pub/gluster/glusterfs/3.8/3.8.7/rsa.pub
+gpgkey=https://download.gluster.org/pub/gluster/glusterfs/3.13/3.13.2/rsa.pub
 EOF'
 
 # Clean yum cache
@@ -219,7 +219,7 @@ aptly snapshot create ubuntu-main from mirror ubuntu-main
 ### Create a snapshot of the Gluster repository
 ```
 gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keyserver.ubuntu.com --recv-keys 3FE869A9
-aptly mirror create gluster ppa:gluster/glusterfs-3.8
+aptly mirror create gluster ppa:gluster/glusterfs-3.13
 aptly mirror update gluster
 aptly snapshot create gluster from mirror gluster
 ```

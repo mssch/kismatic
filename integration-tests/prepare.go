@@ -40,11 +40,11 @@ EOF
 	createGlusterRepoFileYum = `cat <<EOF > /tmp/gluster.repo
 [gluster]
 name=Gluster
-baseurl=http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.8/
+baseurl=http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.13/
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
-gpgkey=https://download.gluster.org/pub/gluster/glusterfs/3.8/3.8.7/rsa.pub
+gpgkey=https://download.gluster.org/pub/gluster/glusterfs/3.13/3.13.2/rsa.pub
 EOF`
 
 	moveKubernetesRepoFileYum = `sudo mv /tmp/kubernetes.repo /etc/yum.repos.d`
@@ -55,7 +55,7 @@ EOF`
 	installKubeletYum         = `sudo yum -y install kubelet-1.10.5-0`
 	installNFSUtilsYum        = `sudo yum -y install nfs-utils` // required for the kubelet
 	installKubectlYum         = `sudo yum -y install kubectl-1.10.5-0`
-	installGlusterfsServerYum = `sudo yum -y install --nogpgcheck glusterfs-server-3.8.15-2.el7`
+	installGlusterfsServerYum = `sudo yum -y install --nogpgcheck glusterfs-server-3.13.2-2.el7`
 
 	updateAptGet        = `sudo apt-get update`
 	addDockerRepoKeyApt = `wget -qO - https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`
@@ -69,8 +69,8 @@ EOF`
 	installNFSCommonApt     = `sudo apt-get -y install nfs-common`
 	installKubectlApt       = `sudo apt-get -y install kubectl=1.10.5-00`
 
-	addGlusterRepoApt         = `sudo add-apt-repository -y ppa:gluster/glusterfs-3.8`
-	installGlusterfsServerApt = `sudo apt-get -y install glusterfs-server=3.8.15-ubuntu1~xenial1`
+	addGlusterRepoApt         = `sudo add-apt-repository -y ppa:gluster/glusterfs-3.13`
+	installGlusterfsServerApt = `sudo apt-get -y install glusterfs-server=3.13.2-ubuntu1~xenial2`
 )
 
 type nodePrep struct {

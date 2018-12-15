@@ -7,9 +7,9 @@
       name: rpcbind.service
       state: started
       enabled: yes
-  - name: start glusterfs-server service
+  - name: start glusterd service
     service:
-      name: glusterfs-server.service
+      name: glusterd.service
       state: started
       enabled: yes
     when: ansible_os_family == 'Debian'

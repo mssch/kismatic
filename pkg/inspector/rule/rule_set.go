@@ -446,19 +446,19 @@ const defaultRuleSet = `---
   - ["storage"]
   - ["centos"]
   packageName: glusterfs-server
-  packageVersion: 3.8.15-2.el7
+  packageVersion: 3.13.2-2.el7
 - kind: PackageDependency
   when: 
   - ["storage"]
   - ["rhel"]
   packageName: glusterfs-server
-  packageVersion: 3.8.15-2.el7
+  packageVersion: 3.13.2-2.el7
 - kind: PackageDependency
   when: 
   - ["storage"] 
   - ["ubuntu"]
   packageName: glusterfs-server
-  packageVersion: 3.8.15-ubuntu1~xenial1
+  packageVersion: 3.13.2-ubuntu1~xenial2
 `
 
 const upgradeRuleSet = `---
@@ -544,19 +544,19 @@ const upgradeRuleSet = `---
   - ["storage"]
   - ["centos"]
   packageName: glusterfs-server
-  packageVersion: 3.8.15-2.el7
+  packageVersion: 3.13.2-2.el7
 - kind: PackageDependency
   when: 
   - ["storage"]
   - ["rhel"]
   packageName: glusterfs-server
-  packageVersion: 3.8.15-2.el7
+  packageVersion: 3.13.2-2.el7
 - kind: PackageDependency
   when: 
   - ["storage"] 
   - ["ubuntu"]
   packageName: glusterfs-server
-  packageVersion: 3.8.15-ubuntu1~xenial1
+  packageVersion: 3.13.2-ubuntu1~xenial2
 `
 
 // DefaultRules returns the list of rules that are built into the inspector
