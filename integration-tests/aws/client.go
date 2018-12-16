@@ -18,11 +18,11 @@ const (
 	// StateAvailable is the AWS string returned when machine is available
 	StateAvailable = ec2.StateAvailable
 	// Ubuntu1604LTSEast is the AMI for Ubuntu 16.04 LTS
-	Ubuntu1604LTSEast = AMI("ami-29f96d3e")
+	Ubuntu1604LTSEast = AMI("ami-0f9cf087c1f27d9b1")
 	// CentOS7East is the AMI for CentOS 7
-	CentOS7East = AMI("ami-6d1c2007")
+	CentOS7East = AMI("ami-9887c6e7")
 	// RedHat7East is the AMI for RedHat 7
-	RedHat7East = AMI("ami-c998b6b2")
+	RedHat7East = AMI("ami-011b3ccf1bd6db744")
 	// T2Micro is the T2 Micro instance type
 	T2Micro = InstanceType(ec2.InstanceTypeT2Micro)
 	// T2Medium is the T2 Medium instance type
@@ -129,7 +129,7 @@ func (c Client) CreateNode(ami AMI, instanceType InstanceType, addBlockDevice bo
 		KeyName:          aws.String(c.Config.Keyname),
 		SecurityGroupIds: []*string{aws.String(c.Config.SecurityGroupID)},
 		IamInstanceProfile: &ec2.IamInstanceProfileSpecification{
-			Arn: aws.String("arn:aws:iam::633668368853:instance-profile/ket-cloud-provider"),
+			Arn: aws.String("arn:aws:iam::116621101481:instance-profile/kismatic-ci"),
 		},
 	}
 	if addBlockDevice {
@@ -283,7 +283,7 @@ func (c Client) CreateDNSRecords(nodeIPs []string) (*DNSRecord, error) {
 		return nil, err
 	}
 	// Setup variables to modify hosted zone
-	name := strconv.FormatInt(time.Now().Unix(), 10) + ".kismatic.integration-tests"
+	name := strconv.FormatInt(time.Now().Unix(), 10) + ".kismatic.ci"
 	dnsRecord := &DNSRecord{Name: name, Values: nodeIPs}
 	err = modifyHostedZone(dnsRecord, route53.ChangeActionUpsert, c.Config.HostedZoneID, api)
 	if err != nil {

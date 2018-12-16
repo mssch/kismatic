@@ -84,7 +84,7 @@ aptly snapshot create ubuntu-main from mirror ubuntu-main
 
 ### Create a snapshot of the Gluster repository
 gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keyserver.ubuntu.com --recv-keys 3FE869A9
-aptly mirror create gluster ppa:gluster/glusterfs-3.8
+aptly mirror create gluster ppa:gluster/glusterfs-3.13
 aptly mirror update gluster
 aptly snapshot create gluster from mirror gluster
 

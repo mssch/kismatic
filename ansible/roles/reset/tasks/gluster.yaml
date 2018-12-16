@@ -7,9 +7,9 @@
     register: result
     failed_when: "result|failed and ('find' not in result.msg and 'found' not in result.msg)" # make idempotent
 
-  - name: stop glusterfs-server service
+  - name: stop glusterd service
     service:
-      name: glusterfs-server.service
+      name: glusterd.service
       state: stopped
       enabled: yes
     when: ansible_os_family == 'Debian'
@@ -30,15 +30,15 @@
   - name: remove gluster yum repository
     yum_repository:
       name: gluster
-      description: Gluster 3.8
-      baseurl: "http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.8/"
+      description: Gluster 3.13
+      baseurl: "http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.13/"
       state: absent
     when: ansible_os_family == 'RedHat' and 'storage' in group_names
     environment: "{{proxy_env}}"
 
   - name: remove gluster deb repository
     apt_repository:
-      repo: ppa:gluster/glusterfs-3.8
+      repo: ppa:gluster/glusterfs-3.13
       state: absent
     when: ansible_os_family == 'Debian' and 'storage' in group_names
     environment: "{{proxy_env}}"

@@ -4,8 +4,8 @@ kubernetes_yum_version: "{{ versions.kubernetes_yum }}"
 kubernetes_deb_version: "{{ versions.kubernetes_deb }}"
 docker_ce_yum_version: 17.03.2.ce-1.el7.centos
 docker_ce_apt_version: 17.03.2~ce-0~ubuntu-xenial
-glusterfs_server_version_rhel: "3.8.15-2.el7"
-glusterfs_server_version_ubuntu: "3.8.15-ubuntu1~xenial1"
+glusterfs_server_version_rhel: "3.13.2-2.el7"
+glusterfs_server_version_ubuntu: "3.13.2-ubuntu1~xenial2"
 
 #===============================================================================
 # common variables for all hosts

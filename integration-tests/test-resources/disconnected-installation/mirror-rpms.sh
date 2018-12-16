@@ -32,11 +32,11 @@ EOF
 cat <<EOF > /etc/yum.repos.d/gluster.repo
 [gluster]
 name=Gluster
-baseurl=http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.8/
+baseurl=http://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.13/
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
-gpgkey=https://download.gluster.org/pub/gluster/glusterfs/3.8/3.8.7/rsa.pub
+gpgkey=https://download.gluster.org/pub/gluster/glusterfs/3.13/3.13.2/rsa.pub
 EOF
 
 reposync -p /var/www/html/ -r base -r updates -r docker -r gluster
