@@ -15,7 +15,7 @@ var (
 	httpTimeout                  = 5 * time.Second
 	kubeReleaseRegex             = regexp.MustCompile(`^v1\.10\.(0|[1-9][0-9]*)$`)
 	kubernetesReleaseURL         = "https://storage.googleapis.com/kubernetes-release/release/stable-1.10.txt"
-	kubernetesVersionString      = "v1.10.5"
+	kubernetesVersionString      = "v1.10.11"
 	kubernetesMinorVersionString = "v1.10.x"
 	kubernetesVersion            = semver.Version{Major: 1, Minor: 10, Patch: 5} // build the struct directly to not get an error
 )
