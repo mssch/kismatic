@@ -137,7 +137,7 @@ spec:
         - /metrics-server
         - --kubelet-preferred-address-types="InternalIP"
         - --kubelet-insecure-tls
-        - --metric-resolution={{ metrics_server_metric_resolution }}
+        - --metric-resolution=60s
         ports:
         - containerPort: 443
           name: https
