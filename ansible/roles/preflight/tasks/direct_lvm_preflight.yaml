@@ -2,6 +2,7 @@
   - name: stat the block device path
     stat:
       path: "{{ docker.storage.direct_lvm_block_device.path }}"
+      follow: true
     register: block_device_stat
   - name: fail if the block device does not exists
     fail:
