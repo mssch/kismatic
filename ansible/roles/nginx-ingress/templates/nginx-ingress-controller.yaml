@@ -19,6 +19,7 @@ spec:
         prometheus.io/scrape: "true"
     spec:
       terminationGracePeriodSeconds: 60
+      hostNetwork: true
       nodeSelector:
         kismatic/ingress: "true"
       containers:
@@ -56,6 +57,7 @@ spec:
         - /nginx-ingress-controller
         - --default-backend-service=kube-system/default-http-backend
         - --configmap=$(POD_NAMESPACE)/nginx-conf
+        - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-ingress-mappings
         - --profiling=false
         - --annotations-prefix=ingress.kubernetes.io
       serviceAccountName: nginx-ingress-serviceaccount
