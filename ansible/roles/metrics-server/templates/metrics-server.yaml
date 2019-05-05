@@ -135,4 +135,37 @@ spec:
         imagePullPolicy: Always
         command:
         - /metrics-server
-        - --source=kubernetes.summary_api:https://kubernetes.default?kubeletHttps=true&kubeletPort=10250&useServiceAccount=true
+        - --kubelet-preferred-address-types="InternalIP"
+        - --kubelet-insecure-tls
+        - --metric-resolution={{ metrics_server_metric_resolution }}
+        ports:
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: https
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 10
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 443
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 10
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+

@@ -1,31 +1,31 @@
 official_images:
   etcd:
     name: quay.io/coreos/etcd
-    version: v3.1.13
+    version: v3.2.26
   kube_proxy:
-    name: gcr.io/google-containers/kube-proxy-amd64
+    name: k8s.gcr.io/kube-proxy-amd64
     version: "{{ versions.kubernetes }}"
   kube_controller_manager:
-    name: gcr.io/google-containers/kube-controller-manager-amd64
+    name: k8s.gcr.io/kube-controller-manager-amd64
     version: "{{ versions.kubernetes }}"
   kube_scheduler:
-    name: gcr.io/google-containers/kube-scheduler-amd64
+    name: k8s.gcr.io/kube-scheduler-amd64
     version: "{{ versions.kubernetes }}"
   kube_apiserver:
-    name: gcr.io/google-containers/kube-apiserver-amd64
+    name: k8s.gcr.io/kube-apiserver-amd64
     version: "{{ versions.kubernetes }}"
   calico_node:
     name: calico/node
-    version: v2.6.10
+    version: v3.4.0
   calico_ctl:
     name: calico/ctl
-    version: v1.6.4
+    version: v3.4.4
   calico_cni:
     name: calico/cni
-    version: v1.11.6
+    version: v3.4.0
   calico_kube_controller:
     name: calico/kube-controllers
-    version: v1.0.4
+    version: v3.4.0
   cni_bin:
     name: apprenda/cni-bin
     version: v0.6.0
@@ -46,7 +46,7 @@ official_images:
     version: 1.4
   nginx_ingress_controller:
     name: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
-    version: 0.15.0
+    version: 0.21.0
   nginx:
     name: nginx
     version: stable-alpine
@@ -55,7 +55,7 @@ official_images:
     version: latest
   pause:
     name: gcr.io/google_containers/pause-amd64
-    version: 3.0
+    version: 3.1
   kubedns:
     name: gcr.io/google_containers/k8s-dns-kube-dns-amd64
     version: 1.14.10
@@ -67,10 +67,10 @@ official_images:
     version: 1.14.10
   coredns:
     name: coredns/coredns
-    version: 1.1.3
+    version: 1.5.0
   kubernetes_dashboard:
     name: gcr.io/google_containers/kubernetes-dashboard-amd64
-    version: v1.8.3
+    version: v1.10.1
   apprenda_tcp_healthz: 
     name: apprenda/tcp-healthz-amd64
     version: v1.0.0
@@ -88,4 +88,4 @@ official_images:
     version: v0.3.1
   metrics_server:
     name: gcr.io/google_containers/metrics-server-amd64
-    version: v0.2.1
+    version: v0.3.1
